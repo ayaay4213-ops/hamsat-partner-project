@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<script>
+window.onerror=function(msg,src,line,col,err){window.parent.postMessage({type:'app-error',message:msg,source:src,lineno:line,colno:col,stack:err&&err.stack||''},'*');};
+window.onunhandledrejection=function(e){window.parent.postMessage({type:'app-error',message:'Unhandled promise rejection: '+(e.reason&&e.reason.message||e.reason||'unknown'),stack:e.reason&&e.reason.stack||''},'*');};
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t!==window&&t.tagName==='SCRIPT'){var u=t.src||'';window.parent.postMessage({type:'app-error',message:'Failed to load script'+(u?': '+u:' (inline module)'),source:u},'*');}},true);
+(function(){var _f=window.fetch;window.fetch=function(){var a=arguments,u=typeof a[0]==='string'?a[0]:(a[0]&&a[0].url)||'';var p=_f.apply(this,a);p.then(function(r){if(r.status===500){r.clone().text().then(function(b){window.parent.postMessage({type:'fetch-error',url:u,status:500,body:b},'*');}).catch(function(){window.parent.postMessage({type:'fetch-error',url:u,status:500,body:''},'*');});}}).catch(function(e){window.parent.postMessage({type:'fetch-error',url:u,status:0,body:e.message||'fetch failed'},'*');});return p;};})();
+</script>
+<script src="https://builder.puter.com/runtime.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#08090C">
+<meta name="description" content="همسات — تطبيق اجتماعي عربي للغرف الصوتية والتواصل">
+<title>همسات Hamsat</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { sans: ['Tajawal', 'system-ui', 'sans-serif'] },
+  colors: {
+    ink: { 950: '#050608', 900: '#090A0D', 800: '#111318', 700: '#191C22', 600: '#292D35', 500: '#454A54' },
+    gold: { 300: '#F5E2A0', 400: '#E7C65A', 500: '#D4AF37', 600: '#A9821F' }
+  }
+}}};
+</script>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://js.puter.com/v2/"></script>
+    <!-- puter-pwa: generated, do not edit -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="همسات Hamsat">
+    <!-- /puter-pwa -->
+</head>
+<body class="bg-ink-950 text-white font-sans antialiased">
+  <div id="app" class="app-shell mx-auto relative min-h-[100dvh] bg-ink-900 flex flex-col">
+    <div id="screen" class="flex-1 flex flex-col"></div>
+    <nav id="tabbar" class="hidden fixed bottom-0 inset-x-0 mx-auto app-width z-30 bg-ink-900/95 backdrop-blur border-t border-ink-600">
+      <div class="grid grid-cols-5 pb-safe">
+        <a href="#/home" data-tab="home" class="tab"><i data-lucide="house"></i><span>الرئيسية</span></a>
+        <a href="#/rooms" data-tab="rooms" class="tab"><i data-lucide="mic"></i><span>الغرف</span></a>
+        <a href="#/gifts" data-tab="gifts" class="tab"><i data-lucide="gift"></i><span>الهدايا</span></a>
+        <a href="#/wallet" data-tab="wallet" class="tab"><i data-lucide="wallet"></i><span>المحفظة</span></a>
+        <a href="#/me" data-tab="me" class="tab"><i data-lucide="user-round"></i><span>حسابي</span></a>
+      </div>
+    </nav>
+    <div id="sheet-root"></div>
+    <div id="toast" class="toast"></div>
+  </div>
+  <script type="module" src="js/app.js"></script>
+  <!-- Preview safety net: keeps the existing app files intact and shows a local preview
+       when TrebEdit's file preview cannot load JavaScript modules or Puter. -->
+  <script>
+  (function () {
+    function showLocalPreview() {
+      var screen = document.getElementById('screen');
+      var tabbar = document.getElementById('tabbar');
+      if (!screen || screen.dataset.previewReady === '1') return;
+      var text = (screen.innerText || '').trim();
+      var hasRealScreen = text.length > 25 && !screen.querySelector('.spinner');
+      if (hasRealScreen) return;
+      screen.dataset.previewReady = '1';
+      if (tabbar) tabbar.classList.add('hidden');
+      screen.className = 'flex-1 flex flex-col';
+      screen.innerHTML = `
+      <div id="local-auth" style="min-height:100dvh;padding:18px 20px 28px;background:radial-gradient(ellipse at 50% 0%,rgba(212,175,55,.15),transparent 48%),linear-gradient(160deg,#111216,#08090c);color:#f7f4eb;font-family:Tajawal,system-ui,sans-serif;box-sizing:border-box">
+        <div style="max-width:420px;margin:auto;text-align:center">
+          <img src="assets/hamsat-hero.svg" alt="همسات" style="display:block;width:min(100%,330px);height:235px;object-fit:contain;margin:0 auto 2px" onerror="this.style.display='none'">
+          <div style="color:#e7c65a;font-size:11px;letter-spacing:5px">WELCOME TO</div>
+          <div style="font-size:42px;font-weight:800;color:#f5e2a0;text-shadow:0 0 24px #8f702b;margin:2px 0">همسات</div>
+          <div style="font-size:12px;letter-spacing:6px;color:#a9821f">H A M S A T</div>
+          <p style="color:#c9c2b1;font-size:14px;line-height:1.9;margin:12px 0 20px">مساحتك الخاصة للحديث، والتعارف، وصناعة لحظات جميلة.</p>
+          <div style="text-align:right;border:1px solid rgba(212,175,55,.25);border-radius:24px;padding:20px;background:rgba(255,255,255,.035);box-shadow:0 12px 35px #0006;backdrop-filter:blur(12px)">
+            <h2 style="font-size:21px;margin:0 0 5px">أهلًا بكِ من جديد</h2>
+            <p style="font-size:13px;color:#b7b2a5;margin:0 0 18px">سجّلي الدخول للانتقال إلى الصفحة الرئيسية</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px"><button type="button" id="local-email" style="flex:1;padding:11px;border-radius:12px;border:1px solid #d4af37;background:#d4af37;color:#17140b;font-weight:bold">البريد الإلكتروني</button><button type="button" id="local-phone" style="flex:1;padding:11px;border-radius:12px;border:1px solid #51472b;background:transparent;color:#f5e2a0">رقم الهاتف</button></div>
+            <form id="local-form"><label id="local-label" style="display:block;font-size:13px;color:#d7c99b;margin:0 0 6px">البريد الإلكتروني</label><input id="local-identity" type="email" required placeholder="name@example.com" autocomplete="email" style="box-sizing:border-box;width:100%;padding:13px;border-radius:12px;border:1px solid #51472b;background:#0b0c0f;color:white;margin-bottom:13px;font-size:15px"><label style="display:block;font-size:13px;color:#d7c99b;margin:0 0 6px">كلمة المرور</label><input type="password" required placeholder="أدخلي كلمة المرور" style="box-sizing:border-box;width:100%;padding:13px;border-radius:12px;border:1px solid #51472b;background:#0b0c0f;color:white;margin-bottom:16px;font-size:15px"><button type="submit" style="width:100%;padding:14px;border-radius:14px;border:1px solid #f5e2a0;background:linear-gradient(135deg,#f5e2a0,#d4af37,#a9821f);font-size:15px;font-weight:800;color:#17140b">تسجيل الدخول للمعاينة</button></form>
+            <button id="local-create" type="button" style="width:100%;padding:12px;margin-top:10px;border-radius:14px;border:1px solid rgba(212,175,55,.28);background:transparent;color:#eee8d6">إنشاء حساب جديد</button>
+            <p id="local-note" style="font-size:11px;line-height:1.8;text-align:center;color:#9c9686;margin:14px 0 0">هذه معاينة محلية للتصميم فقط؛ الحسابات الحقيقية تحتاج إلى خدمة تسجيل دخول.</p>
+          </div>
+        </div>
+      </div>`;
+      var method='email';
+      var id=document.getElementById('local-identity');
+      function setMethod(next){method=next;document.getElementById('local-label').textContent=next==='email'?'البريد الإلكتروني':'رقم الهاتف';id.type=next==='email'?'email':'tel';id.placeholder=next==='email'?'name@example.com':'+213 5XX XX XX XX';id.autocomplete=next==='email'?'email':'tel';document.getElementById('local-email').style.background=next==='email'?'#d4af37':'transparent';document.getElementById('local-email').style.color=next==='email'?'#17140b':'#f5e2a0';document.getElementById('local-phone').style.background=next==='phone'?'#d4af37':'transparent';document.getElementById('local-phone').style.color=next==='phone'?'#17140b':'#f5e2a0';}
+      document.getElementById('local-email').onclick=function(){setMethod('email')};
+      document.getElementById('local-phone').onclick=function(){setMethod('phone')};
+      document.getElementById('local-form').onsubmit=function(e){e.preventDefault();showHomePreview()};
+      document.getElementById('local-create').onclick=function(){document.getElementById('local-note').textContent='إنشاء الحساب الحقيقي يحتاج ربط خدمة حسابات. يمكنك تجربة شكل الصفحة الرئيسية عبر تسجيل الدخول للمعاينة.'};
+      function showHomePreview(){
+        screen.innerHTML=`<div style="min-height:100dvh;background:radial-gradient(ellipse at 80% 0%,rgba(212,175,55,.12),transparent 40%),#08090c;color:#f7f4eb;font-family:Tajawal,system-ui,sans-serif;padding:24px 20px 100px;box-sizing:border-box"><div style="max-width:440px;margin:auto"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #343027;padding:8px 0 18px"><div><div style="font-size:12px;color:#d4af37;letter-spacing:3px">H A M S A T</div><h1 style="font-size:30px;color:#f5e2a0;margin:5px 0">همسات ✦</h1></div><div style="border:1px solid #51472b;border-radius:50%;padding:12px;color:#f5e2a0">✧</div></div><div style="border:1px solid rgba(212,175,55,.25);border-radius:22px;padding:22px;margin-top:22px;background:linear-gradient(135deg,#1b1b1c,#101114)"><div style="font-size:12px;color:#d4af37">مساحتك الخاصة</div><h2 style="font-size:24px;margin:8px 0">أهلًا بكِ في همسات</h2><p style="color:#b7b2a5;line-height:1.8">اجتمعي بالأصدقاء، اكتشفي الغرف، وشاركي لحظات جميلة.</p><button onclick="document.getElementById('local-rooms').scrollIntoView({behavior:'smooth'})" style="background:linear-gradient(135deg,#f5e2a0,#d4af37);color:#17140b;border:0;border-radius:12px;padding:12px 18px;font-weight:bold">اكتشفي الغرف الصوتية</button></div><h3 style="color:#f5e2a0;margin-top:26px">الوصول السريع</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"><div style="padding:18px 8px;text-align:center;border:1px solid #343027;border-radius:16px;background:#121316">🎙️<p>الغرف</p></div><div style="padding:18px 8px;text-align:center;border:1px solid #343027;border-radius:16px;background:#121316">🎁<p>الهدايا</p></div><div style="padding:18px 8px;text-align:center;border:1px solid #343027;border-radius:16px;background:#121316">🪙<p>المحفظة</p></div></div><h3 id="local-rooms" style="color:#f5e2a0;margin-top:26px">الغرف الصوتية</h3><div style="border:1px solid #343027;border-radius:16px;padding:16px;background:#121316"><div style="font-size:20px">🎙️ سهرة الأصدقاء</div><p style="color:#b7b2a5;font-size:13px">غرفة تجريبية لعرض التصميم فقط</p><span style="color:#d4af37;font-size:12px">● معاينة فقط</span></div><button id="local-back" style="margin-top:24px;width:100%;padding:13px;border:1px solid #51472b;background:transparent;color:#f5e2a0;border-radius:13px">العودة إلى تسجيل الدخول</button></div></div>`;
+        document.getElementById('local-back').onclick=showLocalPreview;
+      }
+    }
+    window.setTimeout(showLocalPreview, 1800);
+  })();
+  </script>
+</body>
+</html>
