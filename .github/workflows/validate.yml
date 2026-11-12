@@ -1,0 +1,26 @@
+name: Validate Hamsat
+
+on:
+  push:
+    branches:
+      - repair/unify-zip-github
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate project files
+        run: node scripts/validate.mjs
