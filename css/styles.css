@@ -321,3 +321,31 @@ body{font-family:'Tajawal',system-ui,sans-serif;background:
 @media (min-width:600px) {
  .room-sheet { max-width:560px !important; left:50% !important; right:auto !important; transform:translateX(-50%) !important; border-inline:1px solid rgba(212,175,55,.2) !important; }
 }
+
+
+/* HAMSAT NAVIGATION + MEDIA UPLOAD + GIFT COLLECTION */
+#tabbar{z-index:1000!important;display:block!important;left:50%;transform:translateX(-50%);width:min(100%,520px);min-height:66px;padding-top:5px;padding-bottom:env(safe-area-inset-bottom);background:rgba(12,13,17,.97)!important;border-top:1px solid rgba(232,196,93,.24)!important;box-shadow:0 -12px 35px #0008;backdrop-filter:blur(24px)}
+#tabbar.hidden{display:none!important}
+#tabbar .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));max-width:520px;margin:auto}
+#tabbar .tab{display:flex!important;min-height:58px;align-items:center;justify-content:center;gap:4px;padding:7px 1px 5px;color:#aaa6a0;font-size:10px;font-weight:700;text-decoration:none}
+#tabbar .tab svg{width:22px;height:22px}
+#tabbar .tab.active{color:#f1d47b;background:linear-gradient(180deg,rgba(232,196,93,.12),transparent 90%)}
+.menu-button{width:38px;height:38px;flex:none;display:grid;place-items:center;border:1px solid rgba(232,196,93,.23);border-radius:13px;background:rgba(232,196,93,.07);color:#f1d47b}
+.menu-button svg{width:20px;height:20px}
+#side-drawer-root:empty{display:none}
+.side-drawer-backdrop{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.68);backdrop-filter:blur(4px)}
+.side-drawer{position:fixed;z-index:1201;top:0;bottom:0;right:0;width:min(82vw,330px);padding:calc(25px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));background:linear-gradient(165deg,#242018,#111216 56%,#0b0c10);border-left:1px solid rgba(232,196,93,.25);box-shadow:-20px 0 60px #0009;animation:hsDrawerIn .2s ease-out;display:flex;flex-direction:column}
+@keyframes hsDrawerIn{from{transform:translateX(25px);opacity:.6}to{transform:translateX(0);opacity:1}}
+.side-drawer-brand{padding:14px 4px 25px;border-bottom:1px solid rgba(232,196,93,.18);display:flex;flex-direction:column;gap:7px}
+.side-drawer-brand span{font-size:10px;letter-spacing:4px;color:#c7a84c}.side-drawer-brand strong{font-size:28px;color:#f5e2a0}
+.side-drawer-brand small,.side-drawer-note{font-size:11px;color:#aaa39a}
+.side-drawer-links{display:grid;gap:8px;padding-top:20px}
+.side-drawer-links a{display:flex;align-items:center;gap:14px;padding:14px 13px;border:1px solid rgba(232,196,93,.10);border-radius:15px;background:rgba(255,255,255,.025);color:#eee7d5;font-size:14px;font-weight:700;text-decoration:none}
+.side-drawer-links a svg{width:20px;height:20px;color:#e7c65a}
+.side-drawer-note{margin-top:auto;border-top:1px solid rgba(232,196,93,.14);padding-top:18px}
+.photo-picker{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid rgba(232,196,93,.28);border-radius:13px;background:rgba(232,196,93,.07);color:#f0d47c;font-size:12px;font-weight:700;cursor:pointer}
+.photo-picker svg{width:17px;height:17px}
+.gift-card{min-height:150px;border-radius:20px;background:radial-gradient(ellipse at 50% 0%,rgba(232,196,93,.13),transparent 65%),linear-gradient(145deg,#242018,#121318)!important;border-color:rgba(232,196,93,.22)!important}
+.gift-art{width:70px;height:70px;display:grid;place-items:center;margin-bottom:11px;border-radius:23px;background:linear-gradient(145deg,rgba(232,196,93,.16),rgba(255,255,255,.025));border:1px solid rgba(232,196,93,.2);font-size:39px;filter:drop-shadow(0 6px 10px #0008)}
+.gift-member-row{text-decoration:none;min-height:65px;border-radius:16px}
+@media(max-width:360px){#tabbar .tab{font-size:9px}#tabbar .tab svg{width:20px;height:20px}.side-drawer{width:min(86vw,310px)}}
