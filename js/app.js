@@ -407,11 +407,22 @@ async function openRoom(r) {
       if (!membersEl.isConnected) return;
       countEl.textContent = num(members.length) + ' أعضاء';
       membersEl.innerHTML = members.length ? members.map(m => `<div class="flex items-center gap-1.5 rounded-full bg-ink-800 px-2 py-1">${avatar(m,25)}<span class="text-xs">${esc(m.displayName)}</span></div>`).join('') : '<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
-      seatsEl.innerHTML = Array.from({length:8},(_,i)=> {
-        const m = members[i];
-        return m ? `<div class="rounded-xl bg-ink-900/70 border border-gold-600/30 p-2 text-center min-w-0">${avatar(m,36)}<p class="text-[10px] text-[#e5cf91] mt-1 truncate">${esc(m.displayName)}</p><i data-lucide="mic-off" class="w-3.5 h-3.5 text-[#8a76a8] mx-auto mt-1"></i></div>`
-          : `<div class="rounded-xl bg-ink-900/70 border border-ink-700 p-2 text-center min-w-0"><div class="w-9 h-9 mx-auto rounded-full bg-ink-700 flex items-center justify-center"><i data-lucide="mic-off" class="w-4 h-4 text-gold-400"></i></div><p class="text-[10px] text-[#8a76a8] mt-1">مقعد ${i+1}</p></div>`;
+      const {seats}=await api.roomSeats(r.id);
+      const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
+      seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
+        const seat=bySeat[i+1],m=seat?.member,own=seat?.user_id===state.profile?.uuid;
+        return seat
+          ? `<button type="button" data-seat="${i+1}" data-own="${own}" class="room-seat ${own?'room-seat-own':''}" ${own?'':'disabled'}>${m?avatar(m,36):'<span class="seat-empty">♙</span>'}<p>${esc(m?.displayName||'عضو')}</p><small>${own?'اضغطي لمغادرة المقعد':'مشغول'}</small></button>`
+          : `<button type="button" data-seat="${i+1}" class="room-seat"><span class="seat-empty"><i data-lucide="mic" class="w-5 h-5"></i></span><p>مقعد ${i+1}</p><small>اضغطي للانضمام</small></button>`;
       }).join('');
+      seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
+        try{
+          if(b.dataset.own==='true')await api.leaveRoomSeat(r.id);
+          else await api.requestRoomSeat(r.id,Number(b.dataset.seat));
+          await drawMembers();
+          toast(b.dataset.own==='true'?'غادرتِ المقعد':'تم حجز المقعد');
+        }catch(e){toast(e.message,'error');}
+      });
       icons_();
     };
     try {
