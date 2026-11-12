@@ -10,7 +10,7 @@ function mapProfile(p) {
   return {
     uuid: p.id, handle: p.handle || '', displayName: p.display_name || '',
     bio: p.bio || '', country: p.country || '', color: p.color || '#7c3aed',
-    avatarUrl: p.avatar_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
+    avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
 }
 function mapWallet(w, tx = []) {
@@ -73,7 +73,7 @@ export const api = {
       id: user.id, handle: String(p.handle || '').trim().toLowerCase(),
       display_name: String(p.displayName || '').trim(), bio: String(p.bio || ''),
       country: String(p.country || ''), color: String(p.color || '#7c3aed'),
-      avatar_url: p.avatarUrl || null
+      avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
     };
     const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select('*').single();
     fail(error);
