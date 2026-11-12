@@ -310,12 +310,16 @@ function emptyBox(icon, title, sub = '') {
 
 function roomCard(r) {
   return `<button data-room="${esc(r.id)}" class="card w-full p-4 flex items-center gap-3 text-right hover:border-ink-500 transition">
-    <div class="w-12 h-12 rounded-2xl bg-ink-700 flex items-center justify-center shrink-0"><i data-lucide="audio-lines" class="w-6 h-6 text-gold-400"></i></div>
-    <div class="flex-1 min-w-0">
-      <p class="font-bold truncate">${esc(r.title)}</p>
-      <p class="text-xs text-[#a993c8] mt-0.5 truncate">${esc(r.ownerName)} · ${timeAgo(r.createdAt)}</p>
+    <div class="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden" style="background:radial-gradient(circle at 30% 25%,rgba(244,218,143,.34),rgba(142,101,34,.16) 48%,#17171b 78%);border:1px solid rgba(232,196,93,.32)">
+      <i data-lucide="audio-lines" class="w-7 h-7 text-gold-400"></i>
+      <span class="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#17171b]"></span>
     </div>
-    <span class="chip">${esc(r.topic)}</span>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><span class="text-[9px] rounded-full px-2 py-1 shrink-0" style="background:rgba(232,196,93,.1);color:#f0d47b;border:1px solid rgba(232,196,93,.18)">عامة</span></div>
+      <p class="text-xs text-[#c3bba9] truncate">${esc(r.ownerName)} · ${timeAgo(r.createdAt)}</p>
+      <p class="text-[10px] text-[#8f8e88] mt-1 truncate">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف')}</p>
+    </div>
+    <span class="chip shrink-0">${esc(r.topic)}</span>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
@@ -348,6 +352,7 @@ async function openRoom(r) {
     <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">هذه غرفة حقيقية: دخول الأعضاء والرسائل محفوظة في قاعدة البيانات. الصوت غير متاح حتى يربطه الشريك.</p></div>
     ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
   `, async (sheet) => {
+    sheet.classList.add('room-sheet');
     const chat = sheet.querySelector('#room-chat');
     const membersEl = sheet.querySelector('#room-members');
     const seatsEl = sheet.querySelector('#room-seats');
