@@ -46,6 +46,16 @@ export const api = {
     fail(error); return data;
   },
   signOut: async () => { const { error } = await client().auth.signOut(); fail(error); },
+  uploadMedia: async (file, folder) => {
+    const user=await currentUser();
+    if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('اختاري صورة JPG أو PNG أو WEBP');
+    if(file.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت');
+    const ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1];
+    const path=user.id+'/'+folder+'/'+Date.now()+'.'+ext;
+    const {data,error}=await client().storage.from('hamsat-media').upload(path,file,{upsert:true,contentType:file.type});fail(error);
+    const {data:publicData}=client().storage.from('hamsat-media').getPublicUrl(data.path);
+    return {url:publicData.publicUrl,path:data.path};
+  },
   me: async () => {
     const user = await currentUser();
     const [pr, wr] = await Promise.all([
@@ -62,7 +72,8 @@ export const api = {
     const payload = {
       id: user.id, handle: String(p.handle || '').trim().toLowerCase(),
       display_name: String(p.displayName || '').trim(), bio: String(p.bio || ''),
-      country: String(p.country || ''), color: String(p.color || '#7c3aed')
+      country: String(p.country || ''), color: String(p.color || '#7c3aed'),
+      avatar_url: p.avatarUrl || null
     };
     const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select('*').single();
     fail(error);
@@ -105,7 +116,7 @@ export const api = {
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
       return { id: r.id, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
-        description: r.description, createdAt: new Date(r.created_at).getTime(),
+        description: r.description, coverUrl: r.cover_url || null, createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
         ownerColor: p.color || '#7c3aed' };
     }) };
@@ -114,7 +125,7 @@ export const api = {
     const user = await currentUser();
     const { data, error } = await client().from('rooms').insert({
       owner_id: user.id, title: String(r.title || '').trim(),
-      topic: r.topic || 'عام', description: r.description || ''
+      topic: r.topic || 'عام', description: r.description || '', cover_url: r.coverUrl || null
     }).select('*').single();
     fail(error); return data;
   },
