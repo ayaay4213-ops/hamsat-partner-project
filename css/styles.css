@@ -349,3 +349,59 @@ body{font-family:'Tajawal',system-ui,sans-serif;background:
 .gift-art{width:70px;height:70px;display:grid;place-items:center;margin-bottom:11px;border-radius:23px;background:linear-gradient(145deg,rgba(232,196,93,.16),rgba(255,255,255,.025));border:1px solid rgba(232,196,93,.2);font-size:39px;filter:drop-shadow(0 6px 10px #0008)}
 .gift-member-row{text-decoration:none;min-height:65px;border-radius:16px}
 @media(max-width:360px){#tabbar .tab{font-size:9px}#tabbar .tab svg{width:20px;height:20px}.side-drawer{width:min(86vw,310px)}}
+
+
+/* MOBILE FIX — centered full-width navigation and readable room descriptions */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+#app,.app-shell{width:100%;max-width:520px;margin-inline:auto;min-width:0}
+#tabbar{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  inset-inline:auto!important;
+  transform:translateX(-50%)!important;
+  width:100%!important;
+  max-width:520px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+#tabbar .grid{
+  width:100%!important;
+  max-width:none!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  box-sizing:border-box!important;
+}
+#tabbar .tab{
+  min-width:0!important;
+  width:100%!important;
+  overflow:visible!important;
+  white-space:nowrap!important;
+  font-size:clamp(9px,2.7vw,11px)!important;
+  line-height:1.35!important;
+}
+#tabbar .tab span{display:block;max-width:100%;overflow:visible;text-align:center}
+.room-description{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  overflow-wrap:anywhere;
+  text-overflow:clip!important;
+  line-height:1.9!important;
+  min-height:2.8em;
+  max-height:3.8em;
+  font-size:12px!important;
+  color:#c2bdb2!important;
+}
+.room-card-body{padding:16px 16px 15px!important}
+.room-card-footer{margin-top:13px!important;padding-top:12px!important;min-height:34px}
+@media(max-width:380px){
+ #tabbar .tab{font-size:9px!important;gap:3px!important}
+ #tabbar .tab svg{width:19px!important;height:19px!important}
+ .room-card-body{padding:14px 13px 13px!important}
+ .room-description{font-size:11px!important}
+}
