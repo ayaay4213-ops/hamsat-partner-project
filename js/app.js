@@ -15,7 +15,10 @@ function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 function icons_() { createIcons({ icons }); }
 function initial(name) { return esc((name || '؟').trim().charAt(0)); }
 function avatar(p, size = 44) {
-  return `<div class="avatar" style="width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px">${initial(p?.displayName)}</div>`;
+  const style = `width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px`;
+  return p?.avatarUrl
+    ? `<div class="avatar avatar-photo" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy"></div>`
+    : `<div class="avatar" style="${style}">${initial(p?.displayName)}</div>`;
 }
 function num(n) { return Number(n || 0).toLocaleString('ar-EG'); }
 function dateAr(ts) { return new Date(ts).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }); }
@@ -309,17 +312,21 @@ function emptyBox(icon, title, sub = '') {
 }
 
 function roomCard(r) {
-  return `<button data-room="${esc(r.id)}" class="card w-full p-4 flex items-center gap-3 text-right hover:border-ink-500 transition">
-    <div class="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden" style="background:radial-gradient(circle at 30% 25%,rgba(244,218,143,.34),rgba(142,101,34,.16) 48%,#17171b 78%);border:1px solid rgba(232,196,93,.32)">
-      <i data-lucide="audio-lines" class="w-7 h-7 text-gold-400"></i>
-      <span class="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#17171b]"></span>
+  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition">
+    <div class="room-cover">
+      <div class="room-cover-glow"></div>
+      <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
+      <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
+      <span class="room-cover-topic">${esc(r.topic)}</span>
     </div>
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2 mb-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><span class="text-[9px] rounded-full px-2 py-1 shrink-0" style="background:rgba(232,196,93,.1);color:#f0d47b;border:1px solid rgba(232,196,93,.18)">عامة</span></div>
-      <p class="text-xs text-[#c3bba9] truncate">${esc(r.ownerName)} · ${timeAgo(r.createdAt)}</p>
-      <p class="text-[10px] text-[#8f8e88] mt-1 truncate">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف')}</p>
+    <div class="room-card-body">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="min-w-0 flex-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><p class="text-xs text-[#b7b2a5] mt-1 truncate">بواسطة ${esc(r.ownerName)}</p></div>
+        ${avatar({displayName:r.ownerName,color:r.ownerColor},38)}
+      </div>
+      <p class="room-description">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف ومشاركة الأحاديث')}</p>
+      <div class="room-card-footer"><span><i data-lucide="clock-3"></i>${timeAgo(r.createdAt)}</span><span class="room-enter">دخول الغرفة <i data-lucide="arrow-left"></i></span></div>
     </div>
-    <span class="chip shrink-0">${esc(r.topic)}</span>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
@@ -332,15 +339,15 @@ async function openRoom(r) {
     <div class="flex items-start gap-3 mb-4">
       <div class="w-12 h-12 rounded-2xl bg-ink-700 flex items-center justify-center shrink-0"><i data-lucide="messages-square" class="w-6 h-6 text-gold-400"></i></div>
       <div class="flex-1 min-w-0"><h2 class="text-lg font-bold leading-7">${esc(r.title)}</h2><span class="chip inline-block mt-1">${esc(r.topic)}</span></div>
-      <span class="chip text-gold-300">كتابية</span>
+      <span class="room-status"><span></span> غرفة عامة</span>
     </div>
     <div class="rounded-2xl border border-gold-600/20 bg-ink-800/60 p-3 mb-4">
-      <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold">مقاعد الغرفة</p><span id="room-member-count" class="text-xs text-[#a993c8]">...</span></div>
+      <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold">منصة المايكات</p><span id="room-member-count" class="text-xs text-[#a993c8]">...</span></div>
       <div id="room-seats" class="grid grid-cols-4 gap-2"></div>
-      <p class="text-[11px] text-[#a993c8] mt-3 text-center">الميكروفونات ظاهرة للتجهيز فقط — الصوت غير مفعّل حاليًا</p>
+      <p class="text-[11px] text-[#a993c8] mt-3 text-center">المقاعد جاهزة لربط الصوت لاحقًا من الشريك</p>
     </div>
     <div class="card p-3 mb-4">
-      <div class="flex items-center justify-between mb-2"><p class="font-bold text-sm">الموجودون الآن</p><button id="refresh-room" class="text-xs text-gold-300">تحديث</button></div>
+      <div class="flex items-center justify-between mb-2"><p class="font-bold text-sm">أعضاء الغرفة</p><button id="refresh-room" class="text-xs text-gold-300">تحديث</button></div>
       <div id="room-members" class="flex flex-wrap gap-2"><span class="text-xs text-[#8a76a8]">جارٍ تحميل الأعضاء...</span></div>
     </div>
     <div class="mb-2 flex items-center justify-between"><p class="font-bold text-sm">الدردشة الكتابية</p><span class="text-[11px] text-[#8a76a8]">رسائل الغرفة</span></div>
@@ -349,7 +356,7 @@ async function openRoom(r) {
       <input name="message" class="field flex-1 min-w-0" maxlength="1000" placeholder="اكتبي رسالة..." autocomplete="off" required>
       <button class="btn-gold px-4" type="submit" aria-label="إرسال"><i data-lucide="send" class="w-5 h-5"></i></button>
     </form>
-    <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">هذه غرفة حقيقية: دخول الأعضاء والرسائل محفوظة في قاعدة البيانات. الصوت غير متاح حتى يربطه الشريك.</p></div>
+    <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">الغرفة مرتبطة بقاعدة بيانات همسات. الدردشة تعمل، ويمكن للشريك إضافة البث الصوتي لاحقًا.</p></div>
     ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
