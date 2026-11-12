@@ -148,6 +148,23 @@ export const api = {
     const byId = Object.fromEntries(res.data.map(p => [p.id, mapProfile(p)]));
     return { members: data.map(x => ({ ...byId[x.user_id], userId: x.user_id, joinedAt: new Date(x.joined_at).getTime() })).filter(x => x.displayName) };
   },
+  roomSeats: async (roomId) => {
+    const {data,error}=await client().from('room_seats').select('seat_no,user_id,seated_at').eq('room_id',roomId).order('seat_no');
+    fail(error);
+    const ids=[...new Set(data.map(x=>x.user_id))];
+    if(!ids.length)return {seats:data};
+    const res=await client().from('profiles').select('*').in('id',ids);fail(res.error);
+    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    return {seats:data.map(x=>({...x,member:byId[x.user_id]||null}))};
+  },
+  requestRoomSeat: async (roomId,seatNo) => {
+    const {data,error}=await client().rpc('request_room_seat',{p_room_id:roomId,p_seat_no:seatNo});
+    fail(error);return data;
+  },
+  leaveRoomSeat: async (roomId) => {
+    const {data,error}=await client().rpc('leave_room_seat',{p_room_id:roomId});
+    fail(error);return data;
+  },
   roomMessages: async (roomId) => {
     const { data, error } = await client().from('room_messages').select('id,user_id,body,created_at').eq('room_id', roomId).order('created_at', { ascending: true }).limit(100);
     fail(error);
