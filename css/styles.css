@@ -427,3 +427,10 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .room-seat-own{border-color:#e8c65d;box-shadow:0 0 15px #d4af3733}
 .seat-empty{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#24252a;color:#e7c65a}
 #room-emoji-bar button{width:34px;height:34px;border:1px solid rgba(212,175,55,.2);border-radius:11px;background:#ffffff08;font-size:18px}
+
+
+/* FINAL MOBILE NAV FIX: full viewport width and six useful destinations */
+#tabbar{left:0!important;right:0!important;inset-inline:0!important;transform:none!important;width:100vw!important;max-width:none!important;margin:0!important;box-sizing:border-box!important}
+#tabbar .grid{width:100%!important;max-width:none!important;grid-template-columns:repeat(6,minmax(0,1fr))!important}
+#tabbar .tab{min-width:0!important;padding-inline:1px!important;font-size:clamp(8px,2.5vw,11px)!important;white-space:nowrap!important}
+#tabbar .tab span{font-size:inherit!important;letter-spacing:-.2px}
