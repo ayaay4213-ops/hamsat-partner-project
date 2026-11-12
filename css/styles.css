@@ -419,3 +419,11 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .avatar.frame-gold{outline:2px solid #d9b84d;outline-offset:3px;box-shadow:0 0 12px #d9b84d88}
 .avatar.frame-royal{outline:3px double #f1d47b;outline-offset:3px;box-shadow:0 0 0 5px #6e4a18,0 0 16px #d9b84d99}
 .avatar.frame-diamond{outline:3px solid #a8e5f4;outline-offset:3px;box-shadow:0 0 0 5px #e8fbff,0 0 18px #6ed8ff99}
+
+.room-seat{min-width:0;min-height:94px;padding:8px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:15px;border:1px solid rgba(212,175,55,.22);background:linear-gradient(145deg,rgba(212,175,55,.08),rgba(255,255,255,.02));color:#e9d99f}
+.room-seat:disabled{opacity:.82}
+.room-seat p{max-width:100%;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room-seat small{font-size:9px;color:#a9a394}
+.room-seat-own{border-color:#e8c65d;box-shadow:0 0 15px #d4af3733}
+.seat-empty{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#24252a;color:#e7c65a}
+#room-emoji-bar button{width:34px;height:34px;border:1px solid rgba(212,175,55,.2);border-radius:11px;background:#ffffff08;font-size:18px}
