@@ -190,6 +190,7 @@ export const api = {
   },
   subscribeRoomMessages: (roomId, callback) => client().channel('room-chat-' + roomId)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: 'room_id=eq.' + roomId }, callback)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'room_seats', filter: 'room_id=eq.' + roomId }, callback)
     .subscribe(),
   unsubscribeRoomChannel: async (channel) => { if (channel) await client().removeChannel(channel); },
   deleteRoom: async (id) => {
