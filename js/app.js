@@ -94,8 +94,12 @@ function welcomeScreen() {
         <input id="auth-identity" class="field" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com" required>
         <label class="label">كلمة المرور</label>
         <input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required>
+        <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">
+          لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !
+        </div>
         <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول</button>
       </form>
+      <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
       <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">يمكنك إنشاء حساب بالبريد الإلكتروني. قد تحتاجين إلى تأكيد البريد قبل تسجيل الدخول. تسجيل الهاتف سيُفعّل بعد إعداد مزود رسائل SMS.</p>
     </div>
@@ -105,21 +109,54 @@ function welcomeScreen() {
   const submit = form.querySelector('[type="submit"]');
   const create = $('#auth-create');
   const identity = $('#auth-identity');
+  const passwordInput = $('#auth-password');
+  const rules = $('#auth-password-rules');
+  const feedback = $('#auth-feedback');
   screen.querySelector('[data-method="phone"]').disabled = true;
-  create.onclick = () => {
-    authMode = authMode === 'signin' ? 'signup' : 'signin';
-    submit.innerHTML = authMode === 'signin' ? '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول' : '<i data-lucide="user-plus" class="w-5 h-5"></i>إنشاء الحساب';
-    create.textContent = authMode === 'signin' ? 'إنشاء حساب جديد' : 'لديك حساب؟ تسجيل الدخول';
+  const showFeedback = (message, isError = false) => {
+    feedback.textContent = message;
+    feedback.className = 'text-xs leading-6 mt-3 rounded-xl p-3 ' + (isError
+      ? 'border border-red-500/30 bg-red-950/30 text-red-200'
+      : 'border border-gold-600/30 bg-ink-800/70 text-[#e7d8a8]');
+    feedback.classList.remove('hidden');
+  };
+  const clearFeedback = () => { feedback.textContent = ''; feedback.classList.add('hidden'); };
+  const syncAuthMode = () => {
+    const signingUp = authMode === 'signup';
+    submit.innerHTML = signingUp ? '<i data-lucide="user-plus" class="w-5 h-5"></i>إنشاء الحساب' : '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول';
+    create.textContent = signingUp ? 'لديك حساب؟ تسجيل الدخول' : 'إنشاء حساب جديد';
+    passwordInput.autocomplete = signingUp ? 'new-password' : 'current-password';
+    passwordInput.setAttribute('aria-describedby', signingUp ? 'auth-password-rules' : '');
+    rules.classList.toggle('hidden', !signingUp);
+    clearFeedback();
     icons_();
   };
+  create.onclick = () => {
+    authMode = authMode === 'signin' ? 'signup' : 'signin';
+    syncAuthMode();
+  };
+  passwordInput.addEventListener('input', clearFeedback);
+  identity.addEventListener('input', clearFeedback);
   form.onsubmit = async (e) => {
     e.preventDefault();
     const email = identity.value.trim();
-    const password = $('#auth-password').value;
-    if (authMode === 'signup' && password.length < 8) {
-      toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return;
+    const password = passwordInput.value;
+    if (authMode === 'signup') {
+      const checks = [
+        password.length >= 8,
+        /[a-z]/.test(password),
+        /[A-Z]/.test(password),
+        /[0-9]/.test(password),
+        Array.from("!@#$%^&*()_+-=[]{};':\"\\\\|<>?,./`~").some((ch) => password.includes(ch))
+      ];
+      if (!checks.every(Boolean)) {
+        showFeedback('كلمة المرور غير مطابقة للشروط: 8 أحرف على الأقل، حرف صغير، حرف كبير، رقم، ورمز خاص مثل @ أو # أو !.', true);
+        passwordInput.focus();
+        return;
+      }
     }
     submit.disabled = true;
+    clearFeedback();
     try {
       if (authMode === 'signin') {
         await api.signInWithEmail(email, password);
@@ -131,14 +168,21 @@ function welcomeScreen() {
           await boot();
         } else {
           authMode = 'signin';
-          submit.innerHTML = '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول';
-          create.textContent = 'إنشاء حساب جديد';
-          toast('تم إنشاء الحساب. افتحي بريدك وأكدي التسجيل ثم سجّلي الدخول.');
-          icons_();
+          syncAuthMode();
+          showFeedback('تم إرسال رسالة تأكيد إلى بريدك. افتحي Gmail واضغطي رابط التأكيد، ثم عودي وسجّلي الدخول بكلمة المرور نفسها.');
         }
       }
     } catch (err) {
-      toast(err.message || 'تعذّر إكمال العملية', 'error');
+      const message = String(err?.message || '');
+      if (/password.*(weak|contain|character)|weak password/i.test(message)) {
+        showFeedback('كلمة المرور لا تحقق شروط الأمان. استخدمي 8 أحرف على الأقل مع حرف صغير وكبير ورقم ورمز خاص.', true);
+      } else if (/email not confirmed/i.test(message)) {
+        showFeedback('لم يتم تأكيد البريد بعد. افتحي رسالة Supabase في Gmail واضغطي رابط التأكيد، ثم حاولي تسجيل الدخول.', true);
+      } else if (/invalid login credentials/i.test(message)) {
+        showFeedback('البريد أو كلمة المرور غير صحيحة. تأكدي من كتابتهما كما عند إنشاء الحساب.', true);
+      } else {
+        showFeedback(message || 'تعذّر إكمال العملية. حاولي مرة أخرى.', true);
+      }
     } finally { submit.disabled = false; }
   };
   icons_();
