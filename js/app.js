@@ -485,7 +485,7 @@ async function giftsScreen() {
         <div class="w-16 h-16 rounded-full bg-ink-700 border border-gold-600/30 flex items-center justify-center mb-3"><i data-lucide="${esc(g.icon)}" class="w-8 h-8 text-gold-400"></i></div>
         <p class="font-bold">${esc(g.name)}</p>
         <p class="flex items-center gap-1 text-sm text-gold-300 mt-1 mb-3">${coin(16)}${num(g.price)}</p>
-        <span class="badge-soon">الإرسال قريبًا</span>
+        <span class="badge-soon">من ملف العضو</span>
       </div>`).join('');
     icons_();
   } catch (e) { const el = $('#gifts-grid'); if (el) { el.className = ''; el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الهدايا', e.message); icons_(); } }
