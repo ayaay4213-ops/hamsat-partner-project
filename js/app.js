@@ -54,21 +54,12 @@ function openSheet(html, onMount) {
 function closeSheet() { $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
-async function signIn() {
-  try {
-    if (!window.puter?.auth?.signIn) throw new Error('خدمة Puter لم تُحمّل بعد. أعيدي فتح الصفحة أو تحققي من الاتصال.');
-    await window.puter.auth.signIn();
-    await boot();
-  } catch (e) {
-    toast(e.message || 'لم يكتمل تسجيل الدخول', 'error');
-  }
-}
 async function signOut() {
   closeSheet();
-  try { puter.auth.signOut(); } catch (e) {}
+  try { await api.signOut(); } catch (e) { toast(e.message, 'error'); return; }
   state.account = state.profile = state.wallet = null;
   location.hash = '#/home';
-  render();
+  await render();
 }
 
 async function loadMe() {
@@ -96,7 +87,7 @@ function welcomeScreen() {
       <p class="text-sm text-[#b7b2a5] mb-5">سجّلي الدخول للانتقال إلى الصفحة الرئيسية</p>
       <div class="grid grid-cols-2 gap-2 mb-4" id="auth-methods">
         <button type="button" data-method="email" class="auth-method active">البريد الإلكتروني</button>
-        <button type="button" data-method="phone" class="auth-method">رقم الهاتف</button>
+        <button type="button" data-method="phone" class="auth-method" disabled title="تفعيل SMS مطلوب">الهاتف قريبًا</button>
       </div>
       <form id="auth-preview-form" class="space-y-3">
         <label class="label" id="auth-id-label">البريد الإلكتروني</label>
@@ -106,30 +97,50 @@ function welcomeScreen() {
         <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول</button>
       </form>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
-      <div class="auth-divider"><span>أو للتجربة الحالية</span></div>
-      <button id="btn-signin" class="btn-ghost w-full"><i data-lucide="user-round" class="w-5 h-5"></i>الدخول التجريبي عبر Puter</button>
-      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">تسجيل الدخول بالبريد أو الهاتف ظاهر كواجهة أولية؛ يحتاج ربط خدمة حسابات فعلية. الدخول التجريبي يستخدم Puter.</p>
+      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">يمكنك إنشاء حساب بالبريد الإلكتروني. قد تحتاجين إلى تأكيد البريد قبل تسجيل الدخول. تسجيل الهاتف سيُفعّل بعد إعداد مزود رسائل SMS.</p>
     </div>
   </div>`;
-  let method = 'email';
+  let authMode = 'signin';
+  const form = $('#auth-preview-form');
+  const submit = form.querySelector('[type="submit"]');
+  const create = $('#auth-create');
   const identity = $('#auth-identity');
-  const label = $('#auth-id-label');
-  screen.querySelectorAll('[data-method]').forEach(b => b.onclick = () => {
-    method = b.dataset.method;
-    screen.querySelectorAll('[data-method]').forEach(x => x.classList.toggle('active', x === b));
-    label.textContent = method === 'email' ? 'البريد الإلكتروني' : 'رقم الهاتف';
-    identity.type = method === 'email' ? 'email' : 'tel';
-    identity.autocomplete = method === 'email' ? 'email' : 'tel';
-    identity.dir = method === 'email' ? 'ltr' : 'auto';
-    identity.placeholder = method === 'email' ? 'name@example.com' : '+213 5XX XX XX XX';
-    identity.value = '';
-  });
-  $('#auth-preview-form').onsubmit = e => {
-    e.preventDefault();
-    toast('هذه الواجهة جاهزة شكليًا؛ يلزم ربط خدمة تسجيل دخول بالبريد أو الهاتف قبل أن تعمل الحسابات.', 'error');
+  screen.querySelector('[data-method="phone"]').disabled = true;
+  create.onclick = () => {
+    authMode = authMode === 'signin' ? 'signup' : 'signin';
+    submit.innerHTML = authMode === 'signin' ? '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول' : '<i data-lucide="user-plus" class="w-5 h-5"></i>إنشاء الحساب';
+    create.textContent = authMode === 'signin' ? 'إنشاء حساب جديد' : 'لديك حساب؟ تسجيل الدخول';
+    icons_();
   };
-  $('#auth-create').onclick = () => toast('إنشاء الحساب بالبريد أو الهاتف يحتاج ربط خدمة حسابات فعلية.', 'error');
-  $('#btn-signin').onclick = signIn;
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const email = identity.value.trim();
+    const password = $('#auth-password').value;
+    if (authMode === 'signup' && password.length < 8) {
+      toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return;
+    }
+    submit.disabled = true;
+    try {
+      if (authMode === 'signin') {
+        await api.signInWithEmail(email, password);
+        await boot();
+      } else {
+        const result = await api.signUpWithEmail(email, password);
+        if (result.session) {
+          toast('تم إنشاء الحساب بنجاح');
+          await boot();
+        } else {
+          authMode = 'signin';
+          submit.innerHTML = '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول';
+          create.textContent = 'إنشاء حساب جديد';
+          toast('تم إنشاء الحساب. افتحي بريدك وأكدي التسجيل ثم سجّلي الدخول.');
+          icons_();
+        }
+      }
+    } catch (err) {
+      toast(err.message || 'تعذّر إكمال العملية', 'error');
+    } finally { submit.disabled = false; }
+  };
   icons_();
 }
 
@@ -431,7 +442,7 @@ function meScreen() {
     <div class="px-5 py-5 space-y-3">
       <div class="grid grid-cols-2 gap-3">
         <a href="#/wallet" class="card p-4"><p class="text-xs text-[#a993c8] mb-1">الرصيد</p><p class="flex items-center gap-1.5 font-bold text-gold-300 text-lg">${coin(18)}${num(state.wallet?.balance)}</p></a>
-        <div class="card p-4"><p class="text-xs text-[#a993c8] mb-1">حساب Puter</p><p class="font-bold text-sm truncate" dir="ltr">${esc(state.account?.username)}</p></div>
+        <div class="card p-4"><p class="text-xs text-[#a993c8] mb-1">البريد الإلكتروني</p><p class="font-bold text-sm truncate" dir="ltr">${esc(state.account?.email)}</p></div>
       </div>
       <button id="edit-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="pen-line" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">تعديل الملف الشخصي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
       <button id="share-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="share-2" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">نسخ اسم المستخدم</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
@@ -468,7 +479,7 @@ async function userScreen(handle) {
 /* ---------- router ---------- */
 async function render() {
   closeSheet();
-  if (!window.puter?.auth?.isSignedIn || !window.puter.auth.isSignedIn() || !state.account) return welcomeScreen();
+  if (!state.account) return welcomeScreen();
   if (!state.profile) return onboardingScreen();
 
   const [path, query] = (location.hash.slice(1) || '/home').split('?');
@@ -497,23 +508,20 @@ async function render() {
 async function boot() {
   icons_();
   screen.innerHTML = loading();
-  if (!window.puter?.auth?.isSignedIn) {
-    screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'خدمة تسجيل الدخول غير جاهزة', 'تعذّر تحميل Puter SDK. تأكدي من فتح همسات عبر رابط HTTPS مع اتصال بالإنترنت.') }<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
-    icons_(); $('#retry').onclick = boot; return;
-  }
-  if (!window.puter.auth.isSignedIn()) { state.account = null; return render(); }
   try {
-    await loadMe();
-  } catch (e) {
-    if (e.status === 401) {
+    const session = await api.getSession();
+    if (!session) {
       state.account = state.profile = state.wallet = null;
       return render();
     }
-    screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'تعذّر الاتصال بالخادم', e.message || 'تحققي من اتصال الإنترنت ونشر خدمة Hamsat API.') }<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
-    icons_(); $('#retry').onclick = boot; return;
+    await loadMe();
+    await render();
+  } catch (e) {
+    state.account = state.profile = state.wallet = null;
+    screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'تعذّر الاتصال بخدمة همسات', e.message || 'تحققي من إعداد Supabase واتصال الإنترنت.') }<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
+    icons_(); $('#retry').onclick = boot;
   }
-  await render();
 }
 
-window.addEventListener('hashchange', () => { if (state.profile) render(); });
+window.addEventListener('hashchange', () => { if (state.account) render(); });
 boot();
