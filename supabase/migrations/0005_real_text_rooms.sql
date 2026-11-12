@@ -32,7 +32,7 @@ alter table public.room_messages enable row level security;
 drop policy if exists "Room members read room messages" on public.room_messages;
 create policy "Room members read room messages" on public.room_messages
   for select to authenticated using (
-    exists (select 1 from public.room_members m where m.room_id = room_id and m.user_id = auth.uid())
+    exists (select 1 from public.room_members m where m.room_id = room_messages.room_id and m.user_id = auth.uid())
   );
 drop policy if exists "Room members send their own messages" on public.room_messages;
 create policy "Room members send their own messages" on public.room_messages
