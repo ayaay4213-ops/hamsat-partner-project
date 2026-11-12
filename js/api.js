@@ -123,10 +123,12 @@ export const api = {
   },
   createRoom: async (r) => {
     const user = await currentUser();
-    const { data, error } = await client().from('rooms').insert({
+    const payload = {
       owner_id: user.id, title: String(r.title || '').trim(),
-      topic: r.topic || 'عام', description: r.description || '', cover_url: r.coverUrl || null
-    }).select('*').single();
+      topic: r.topic || 'عام', description: r.description || ''
+    };
+    if (r.coverUrl) payload.cover_url = r.coverUrl;
+    const { data, error } = await client().from('rooms').insert(payload).select('*').single();
     fail(error); return data;
   },
 
