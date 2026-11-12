@@ -1,0 +1,5 @@
+# Local secrets and environment configuration
+supabase/config.js
+.env
+.env.*
+!.env.example
