@@ -203,12 +203,12 @@ function onboardingScreen() {
     <div class="px-6 pt-10 pb-8 fade-in">
       <p class="text-gold-400 text-sm font-medium mb-1">خطوة أخيرة</p>
       <h1 class="text-2xl font-extrabold mb-2">أنشئ ملفك الشخصي</h1>
-      <p class="text-sm text-[#bba9d6] mb-6">هكذا سيراك الآخرون في همسات. ستحصل على ١٠٠ عملة ترحيبية.</p>
+      <p class="text-sm text-[#bba9d6] mb-6">أكملي بياناتك ليظهر ملفك الشخصي للأعضاء الآخرين.</p>
       ${profileForm({}, true)}
       <button id="ob-out" class="w-full text-sm text-[#8a76a8] mt-5 py-2">تسجيل الخروج</button>
     </div>`;
   icons_();
-  bindProfileForm(screen, () => { toast('أهلًا بك في همسات! أُضيفت ١٠٠ عملة لمحفظتك'); location.hash = '#/home'; render(); });
+  bindProfileForm(screen, () => { toast('تم حفظ ملفك الشخصي بنجاح'); location.hash = '#/home'; render(); });
   $('#ob-out').onclick = signOut;
 }
 
