@@ -405,3 +405,17 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .room-card-body{padding:14px 13px 13px!important}
  .room-description{font-size:11px!important}
 }
+
+
+/* Hamsat cosmetics collection and premium avatar frames */
+.cosmetic-card{min-width:0;border-color:rgba(212,175,55,.2)!important;background:linear-gradient(150deg,#201e19,#111318)!important}
+.cosmetic-preview{width:100%;height:112px;display:grid;place-items:center;border-radius:15px;background:radial-gradient(circle,rgba(212,175,55,.13),transparent 68%),#0b0d11;border:1px solid rgba(212,175,55,.13)}
+.cosmetic-avatar{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-size:30px;font-weight:800;color:#fff;background:linear-gradient(145deg,#6d35a7,#27113e);position:relative}
+.cosmetic-avatar:after{content:"";position:absolute;inset:-6px;border-radius:50%;pointer-events:none}
+.cosmetic-avatar.gold:after{border:3px solid #d9b84d;box-shadow:0 0 12px #d9b84d88,inset 0 0 8px #d9b84d55}
+.cosmetic-avatar.royal:after{border:4px double #f1d47b;box-shadow:0 0 0 3px #6e4a18,0 0 18px #d9b84d99}
+.cosmetic-avatar.diamond:after{border:3px solid #a8e5f4;box-shadow:0 0 0 3px #e8fbff,0 0 20px #6ed8ff99}
+.emoji-preview{font-size:25px;letter-spacing:3px;color:#f3d77e}
+.avatar.frame-gold{outline:2px solid #d9b84d;outline-offset:3px;box-shadow:0 0 12px #d9b84d88}
+.avatar.frame-royal{outline:3px double #f1d47b;outline-offset:3px;box-shadow:0 0 0 5px #6e4a18,0 0 16px #d9b84d99}
+.avatar.frame-diamond{outline:3px solid #a8e5f4;outline-offset:3px;box-shadow:0 0 0 5px #e8fbff,0 0 18px #6ed8ff99}
