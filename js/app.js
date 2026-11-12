@@ -212,6 +212,10 @@ function profileForm(p = {}, isNew = true) {
       <div id="pf-avatar">${avatar({ displayName: p.displayName || 'ه', color, avatarUrl: p.avatarUrl }, 76)}</div>
       <label class="photo-picker"><i data-lucide="camera"></i><span>اختيار صورة من الهاتف</span><input type="file" name="avatarFile" accept="image/png,image/jpeg,image/webp" hidden></label>
       <input type="hidden" name="avatarUrl" value="${esc(p.avatarUrl || '')}">
+      <div class="profile-media-fields card p-3 space-y-3">
+        <div><label class="label">غلاف الملف الشخصي</label><label class="photo-picker"><i data-lucide="image"></i><span>اختيار صورة غلاف</span><input type="file" name="coverFile" accept="image/png,image/jpeg,image/webp" hidden></label><input type="hidden" name="coverUrl" value="${esc(p.coverUrl || '')}"></div>
+        <div><label class="label">خلفية ملفي الشخصي</label><label class="photo-picker"><i data-lucide="palette"></i><span>اختيار خلفية من الهاتف</span><input type="file" name="backgroundFile" accept="image/png,image/jpeg,image/webp" hidden></label><input type="hidden" name="backgroundUrl" value="${esc(p.backgroundUrl || '')}"></div>
+      </div>
       <div class="flex gap-2" id="pf-colors">
         ${COLORS.map(c => `<button type="button" data-color="${c}" class="w-7 h-7 rounded-full border-2 ${c === color ? 'border-gold-400' : 'border-transparent'}" style="background:${c}" aria-label="لون"></button>`).join('')}
       </div>
@@ -241,13 +245,10 @@ function bindProfileForm(root, onSaved) {
     refreshAvatar();
   });
   nameInput.oninput = refreshAvatar;
-  form.elements.avatarFile.onchange = async () => {
-    const file=form.elements.avatarFile.files?.[0]; if(!file)return;
-    if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}
-    const label=form.querySelector('.photo-picker span'); label.textContent='جارٍ رفع الصورة...';
-    try{const uploaded=await api.uploadMedia(file,'avatars');form.elements.avatarUrl.value=uploaded.url;refreshAvatar();label.textContent='تم اختيار الصورة ✓';}
-    catch(err){toast(err.message,'error');label.textContent='اختيار صورة من الهاتف';}
-  };
+  const bindMediaUpload=(field,folder,labelText)=>{form.elements[field].onchange=async()=>{const file=form.elements[field].files?.[0];if(!file)return;const label=form.elements[field].closest('label').querySelector('span');if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}label.textContent='جارٍ رفع الصورة...';try{const uploaded=await api.uploadMedia(file,folder);form.elements[field.replace('File','Url')].value=uploaded.url;label.textContent='تم رفع الصورة ✓';if(field==='avatarFile')refreshAvatar();}catch(err){toast(err.message,'error');label.textContent=labelText;}};};
+  bindMediaUpload('avatarFile','avatars','اختيار صورة من الهاتف');
+  bindMediaUpload('coverFile','profile-covers','اختيار صورة غلاف');
+  bindMediaUpload('backgroundFile','profile-backgrounds','اختيار خلفية من الهاتف');
   form.onsubmit = async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type=submit]');
@@ -641,8 +642,9 @@ function drawWallet() {
 
 function profileView(p, own) {
   return `
-    <div class="ornament border-b border-ink-700 px-5 pt-8 pb-6 flex flex-col items-center text-center">
-      ${avatar(p, 92)}
+    <div class="profile-hero border-b border-ink-700 pb-6 flex flex-col items-center text-center" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.18),rgba(5,6,8,.94)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
+      <div class="profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.05),rgba(5,6,8,.55)),url(${JSON.stringify(p.coverUrl)})` : ''}"></div>
+      <div class="profile-avatar-overlap">${avatar(p, 92)}
       <h2 class="text-xl font-extrabold mt-4">${esc(p.displayName)}</h2>
       <p class="text-sm text-gold-400 mt-0.5" dir="ltr">@${esc(p.handle)}</p>
       ${p.bio ? `<p class="text-sm text-[#cbb9e6] leading-7 mt-3 max-w-xs">${esc(p.bio)}</p>` : own ? `<p class="text-sm text-[#8a76a8] mt-3">لم تضف نبذة بعد</p>` : ''}
