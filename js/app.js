@@ -16,9 +16,10 @@ function icons_() { createIcons({ icons }); }
 function initial(name) { return esc((name || '؟').trim().charAt(0)); }
 function avatar(p, size = 44) {
   const style = `width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px`;
+  const frameClass = p?.equippedFrameId ? ' frame-' + esc(p.equippedFrameId.replace('frame_','')) : '';
   return p?.avatarUrl
-    ? `<div class="avatar avatar-photo" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy"></div>`
-    : `<div class="avatar" style="${style}">${initial(p?.displayName)}</div>`;
+    ? `<div class="avatar avatar-photo${frameClass}" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy"></div>`
+    : `<div class="avatar${frameClass}" style="${style}">${initial(p?.displayName)}</div>`;
 }
 function num(n) { return Number(n || 0).toLocaleString('ar-EG'); }
 function dateAr(ts) { return new Date(ts).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }); }
@@ -622,6 +623,7 @@ function meScreen() {
         <div class="card p-4"><p class="text-xs text-[#a993c8] mb-1">البريد الإلكتروني</p><p class="font-bold text-sm truncate" dir="ltr">${esc(state.account?.email)}</p></div>
       </div>
       <button id="edit-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="pen-line" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">تعديل الملف الشخصي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
+      <a href="#/shop" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="gem" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">إطاراتي ومقتنياتي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></a>
       <button id="share-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="share-2" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">نسخ اسم المستخدم</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
       <button id="logout" class="btn-danger w-full mt-4"><i data-lucide="log-out" class="w-5 h-5"></i>تسجيل الخروج</button>
     </div></div>`;
