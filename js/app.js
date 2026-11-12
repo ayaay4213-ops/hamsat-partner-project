@@ -5,7 +5,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null };
 
 const COLORS = ['#7c3aed', '#9d174d', '#0f766e', '#b45309', '#1d4ed8', '#6d28d9', '#be123c', '#047857'];
 const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تقنية', 'رياضة', 'تعارف', 'ألعاب'];
@@ -67,7 +67,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } $('#sheet-root').innerHTML = ''; }
+function closeSheet() { if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
 async function signOut() {
@@ -428,6 +428,7 @@ async function openRoom(r) {
     };
     try {
       await api.joinRoom(r.id);
+      state.activeRoomId = r.id;
       await Promise.all([drawMessages(), drawMembers()]);
       state.roomChannel = api.subscribeRoomMessages(r.id, () => Promise.all([drawMessages(),drawMembers()]).catch(e => toast(e.message,'error')));
     } catch (e) {
@@ -481,6 +482,8 @@ let roomFilter = 'الكل';
 async function roomsScreen(params) {
   screen.innerHTML = header('الغرف الصوتية', `<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء</button>`) + `
     <div class="px-5 pt-4 fade-in">
+      <section class="rooms-welcome card ornament p-4 mb-4"><div class="flex items-center justify-between gap-3"><div><span class="text-[10px] tracking-[.2em] text-gold-400">H A M S A T  •  LIVE</span><h2 class="text-lg font-extrabold mt-1">مساحات تجمعنا</h2><p class="text-xs text-[#b7b2a5] mt-1 leading-5">ادخلي غرفة، تعرّفي على الأعضاء وشاركي الحديث</p></div><div class="rooms-welcome-icon"><i data-lucide="audio-lines"></i></div></div><div class="rooms-live-note"><span></span> غرف المجتمع · دردشة ومقاعد تفاعلية</div></section>
+      <div class="flex items-center justify-between mb-2"><span class="text-xs text-[#b7b2a5]">الغرف المتاحة</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
         ${['الكل', ...TOPICS].map(t => `<button data-t="${t}" class="chip ${t === roomFilter ? 'active' : ''}">${t}</button>`).join('')}
       </div>
@@ -494,7 +497,7 @@ async function roomsScreen(params) {
     const list = roomFilter === 'الكل' ? rooms : rooms.filter(r => r.topic === roomFilter);
     const el = $('#rooms-list'); if (!el) return;
     el.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف هنا', 'أنشئ غرفة جديدة لتبدأ');
-    bindRoomCards(el, rooms); icons_();
+    bindRoomCards(el, rooms); const badge=$('#rooms-real-count'); if(badge)badge.textContent=num(list.length)+' غرفة'; icons_();
   };
   $('#filters').querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
     roomFilter = b.dataset.t;
