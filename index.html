@@ -58,6 +58,7 @@ tailwind.config = { theme: { extend: {
   <script>
   (function () {
     function showLocalPreview() {
+      if (location.protocol !== 'file:') return;
       var screen = document.getElementById('screen');
       var tabbar = document.getElementById('tabbar');
       if (!screen || screen.dataset.previewReady === '1') return;
@@ -97,7 +98,7 @@ tailwind.config = { theme: { extend: {
         document.getElementById('local-back').onclick=showLocalPreview;
       }
     }
-    window.setTimeout(showLocalPreview, 1800);
+    window.setTimeout(showLocalPreview, 10000);
   })();
   </script>
 </body>
