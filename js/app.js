@@ -364,7 +364,7 @@ async function giftsScreen() {
     <div class="px-5 pt-4 pb-6 fade-in">
       <div class="rounded-2xl border border-dashed border-ink-500 p-4 flex gap-3 mb-5">
         <i data-lucide="info" class="w-5 h-5 text-gold-400 shrink-0 mt-0.5"></i>
-        <p class="text-[13px] text-[#cbb9e6] leading-6">هذا كتالوج الهدايا المتاحة. إرسال الهدايا للأعضاء سيتوفر في تحديث قادم، ولن تُخصم أي عملات حاليًا.</p>
+        <p class="text-[13px] text-[#cbb9e6] leading-6">اختاري عضوًا من قائمة الأعضاء وافتحي ملفه لإرسال هدية. يتم خصم العملات وتحويلها عبر قاعدة البيانات بشكل آمن.</p>
       </div>
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
     </div>`;
@@ -470,10 +470,43 @@ async function userScreen(handle) {
     const { profile } = await api.user(handle);
     $('#user-body').innerHTML = `<div class="fade-in">${profileView(profile, false)}
       <div class="px-5 py-5 space-y-3">
-        <button class="btn-gold w-full" disabled><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية — قريبًا</button>
+        <button id="send-gift" class="btn-gold w-full"><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية</button>
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
+  const giftButton = $('#send-gift');
+  if (giftButton) giftButton.onclick = async () => {
+    try {
+      if (!state.gifts) state.gifts = (await api.gifts()).gifts;
+      const options = state.gifts.map(g => `<option value="${esc(g.id)}">${esc(g.name)} — ${num(g.price)} عملة</option>`).join('');
+      openSheet(`
+        <h2 class="text-lg font-bold mb-2">إرسال هدية إلى ${esc(profile.displayName)}</h2>
+        <p class="text-xs text-[#a993c8] mb-4">رصيدك الحالي: ${num(state.wallet?.balance)} عملة</p>
+        <form id="gift-send-form" class="space-y-4">
+          <div><label class="label">اختاري الهدية</label><select name="giftId" class="field">${options}</select></div>
+          <div><label class="label">الكمية</label><input name="quantity" class="field" type="number" min="1" max="100" value="1" required></div>
+          <button type="submit" class="btn-gold w-full"><i data-lucide="send" class="w-5 h-5"></i>تأكيد الإرسال</button>
+        </form>`, sheet => {
+          const form = sheet.querySelector('#gift-send-form');
+          form.onsubmit = async e => {
+            e.preventDefault();
+            const button = form.querySelector('[type="submit"]');
+            button.disabled = true;
+            try {
+              const values = Object.fromEntries(new FormData(form));
+              await api.sendGift(profile.uuid, values.giftId, Number(values.quantity));
+              state.wallet = (await api.wallet()).wallet;
+              closeSheet();
+              toast('تم إرسال الهدية بنجاح');
+              render();
+            } catch (err) {
+              toast(err.message, 'error');
+              button.disabled = false;
+            }
+          };
+        });
+    } catch (err) { toast(err.message, 'error'); }
+  };
 }
 
 /* ---------- router ---------- */
