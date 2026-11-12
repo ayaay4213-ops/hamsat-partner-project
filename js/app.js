@@ -147,7 +147,7 @@ function welcomeScreen() {
         /[a-z]/.test(password),
         /[A-Z]/.test(password),
         /[0-9]/.test(password),
-        /[!@#$%^&*()_+\\-=\\[\\]{};':"\\\\|<>?,./\x60~]/.test(password)
+        Array.from("!@#$%^&*()_+-=[]{};':\"\\\\|<>?,./`~").some((ch) => password.includes(ch))
       ];
       if (!checks.every(Boolean)) {
         showFeedback('كلمة المرور غير مطابقة للشروط: 8 أحرف على الأقل، حرف صغير، حرف كبير، رقم، ورمز خاص مثل @ أو # أو !.', true);
