@@ -184,6 +184,23 @@ export const api = {
     const { data, error } = await client().from('gifts').select('id,name,price,icon').eq('active', true).order('price');
     fail(error); return { gifts: data };
   },
+  shopItems: async () => {
+    const {data,error}=await client().from('shop_items').select('*').eq('active',true).order('price');
+    fail(error); return {items:data};
+  },
+  inventory: async () => {
+    const user=await currentUser();
+    const {data,error}=await client().from('user_inventory').select('item_id,purchased_at,shop_items(id,name,item_type,price,rarity,visual_key)').eq('user_id',user.id).order('purchased_at',{ascending:false});
+    fail(error); return {items:data.map(x=>({...x.shop_items,purchasedAt:x.purchased_at}))};
+  },
+  purchaseShopItem: async (itemId) => {
+    const {data,error}=await client().rpc('purchase_shop_item',{p_item_id:itemId});
+    fail(error); return data;
+  },
+  equipShopItem: async (itemId) => {
+    const {data,error}=await client().rpc('equip_shop_item',{p_item_id:itemId});
+    fail(error); return data;
+  },
   sendGift: async (recipientId, giftId, quantity = 1) => {
     const { data, error } = await client().rpc('send_gift', {
       p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity
