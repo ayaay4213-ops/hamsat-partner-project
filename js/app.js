@@ -582,7 +582,7 @@ async function shopScreen() {
     $('#shop-grid').querySelectorAll('[data-item]').forEach(b=>b.onclick=async()=>{
       b.disabled=true;
       try{
-        if(b.dataset.owned==='true'){await api.equipShopItem(b.dataset.item);toast('تم تجهيز العنصر في حسابك');}
+        if(b.dataset.owned==='true'){await api.equipShopItem(b.dataset.item);if(b.dataset.item.startsWith('frame_'))state.profile.equippedFrameId=b.dataset.item;else state.profile.equippedEmojiPackId=b.dataset.item;toast('تم تجهيز العنصر في حسابك');}
         else{await api.purchaseShopItem(b.dataset.item);state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;toast('تم الشراء وإضافة العنصر إلى مقتنياتك');}
         draw();
       }catch(e){toast(e.message,'error');b.disabled=false;}
