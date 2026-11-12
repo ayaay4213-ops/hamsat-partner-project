@@ -10,7 +10,7 @@ function mapProfile(p) {
   return {
     uuid: p.id, handle: p.handle || '', displayName: p.display_name || '',
     bio: p.bio || '', country: p.country || '', color: p.color || '#7c3aed',
-    avatarUrl: p.avatar_url || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
+    avatarUrl: p.avatar_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
 }
 function mapWallet(w, tx = []) {
