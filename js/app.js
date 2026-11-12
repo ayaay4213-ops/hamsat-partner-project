@@ -56,10 +56,11 @@ function closeSheet() { $('#sheet-root').innerHTML = ''; }
 /* ---------- auth ---------- */
 async function signIn() {
   try {
-    await puter.auth.signIn();
+    if (!window.puter?.auth?.signIn) throw new Error('خدمة Puter لم تُحمّل بعد. أعيدي فتح الصفحة أو تحققي من الاتصال.');
+    await window.puter.auth.signIn();
     await boot();
   } catch (e) {
-    toast('لم يكتمل تسجيل الدخول', 'error');
+    toast(e.message || 'لم يكتمل تسجيل الدخول', 'error');
   }
 }
 async function signOut() {
@@ -467,7 +468,7 @@ async function userScreen(handle) {
 /* ---------- router ---------- */
 async function render() {
   closeSheet();
-  if (!puter.auth.isSignedIn() || !state.account) return welcomeScreen();
+  if (!window.puter?.auth?.isSignedIn || !window.puter.auth.isSignedIn() || !state.account) return welcomeScreen();
   if (!state.profile) return onboardingScreen();
 
   const [path, query] = (location.hash.slice(1) || '/home').split('?');
@@ -496,17 +497,22 @@ async function render() {
 async function boot() {
   icons_();
   screen.innerHTML = loading();
-  if (!puter.auth.isSignedIn()) { state.account = null; return render(); }
+  if (!window.puter?.auth?.isSignedIn) {
+    screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'خدمة تسجيل الدخول غير جاهزة', 'تعذّر تحميل Puter SDK. تأكدي من فتح همسات عبر رابط HTTPS مع اتصال بالإنترنت.') }<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
+    icons_(); $('#retry').onclick = boot; return;
+  }
+  if (!window.puter.auth.isSignedIn()) { state.account = null; return render(); }
   try {
     await loadMe();
   } catch (e) {
-    if (e.status === 401) { state.account = null; }
-    else {
-      screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'تعذّر الاتصال بالخادم', e.message)}<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
-      icons_(); $('#retry').onclick = boot; return;
+    if (e.status === 401) {
+      state.account = state.profile = state.wallet = null;
+      return render();
     }
+    screen.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center p-8 text-center">${emptyBox('wifi-off', 'تعذّر الاتصال بالخادم', e.message || 'تحققي من اتصال الإنترنت ونشر خدمة Hamsat API.') }<button id="retry" class="btn-gold mt-4">إعادة المحاولة</button></div>`;
+    icons_(); $('#retry').onclick = boot; return;
   }
-  render();
+  await render();
 }
 
 window.addEventListener('hashchange', () => { if (state.profile) render(); });
