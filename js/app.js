@@ -42,7 +42,7 @@ function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a></nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -518,6 +518,48 @@ async function giftsScreen() {
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
 
+
+async function shopScreen() {
+  screen.innerHTML = header('المتجر والمقتنيات', `<a href="#/wallet" class="text-sm text-gold-300">${coin(18)} ${num(state.wallet?.balance)}</a>`) + `
+    <div class="px-5 pt-4 pb-8 fade-in">
+      <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">متجر همسات الملكي</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">امتلكي إطارات لحسابك وحزم إيموجي للدردشة. العناصر التي تشترينها تبقى محفوظة في مقتنياتك.</p></div>
+      <div class="flex gap-2 mb-4"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div>
+      <div id="shop-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
+    </div>`;
+  icons_();
+  let items=[],owned=[];
+  try {
+    const [catalog,inventory]=await Promise.all([api.shopItems(),api.inventory()]);
+    items=catalog.items;owned=inventory.items;
+  } catch(e) { $('#shop-grid').innerHTML=emptyBox('wifi-off','تعذّر تحميل المتجر',e.message);return; }
+  let mode='all';
+  const draw=()=>{
+    const list=mode==='owned'?owned:items;
+    $('#shop-grid').innerHTML=list.length?list.map(it=>{
+      const has=owned.some(o=>o.id===it.id);
+      const visual=it.item_type==='frame'?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
+        '<div class="cosmetic-preview emoji-preview">'+(it.visual_key==='love'?'💖 💗 💕':it.visual_key==='luxe'?'👑 💎 ✨':'🌙 ⭐ 🌟')+'</div>';
+      return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?'مملوك لديك':num(it.price)+' عملة'}</p>
+        <button class="btn-${has?'ghost':'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-owned="${has}">${has?'تجهيز':'شراء'}</button></article>`;
+    }).join(''):emptyBox('package-open','لا توجد مقتنيات بعد','تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي');
+    $('#shop-grid').querySelectorAll('[data-item]').forEach(b=>b.onclick=async()=>{
+      b.disabled=true;
+      try{
+        if(b.dataset.owned==='true'){await api.equipShopItem(b.dataset.item);toast('تم تجهيز العنصر في حسابك');}
+        else{await api.purchaseShopItem(b.dataset.item);state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;toast('تم الشراء وإضافة العنصر إلى مقتنياتك');}
+        draw();
+      }catch(e){toast(e.message,'error');b.disabled=false;}
+    });
+    icons_();
+  };
+  screen.querySelectorAll('[data-shop-tab]').forEach(b=>b.onclick=()=>{
+    mode=b.dataset.shopTab;
+    screen.querySelectorAll('[data-shop-tab]').forEach(x=>x.classList.toggle('active',x===b));
+    draw();
+  });
+  draw();
+}
+
 async function walletScreen() {
   screen.innerHTML = header('المحفظة') + `<div id="wallet-body" class="px-5 pt-4 pb-6 fade-in">${loading()}</div>`;
   try { state.wallet = (await api.wallet()).wallet; } catch (e) { toast(e.message, 'error'); }
@@ -664,6 +706,7 @@ async function render() {
   try {
     if (route === 'rooms') await roomsScreen(params);
     else if (route === 'gifts') await giftsScreen();
+    else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
