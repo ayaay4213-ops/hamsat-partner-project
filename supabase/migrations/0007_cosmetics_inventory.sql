@@ -84,3 +84,58 @@ revoke all on function public.purchase_shop_item(text) from public;
 grant execute on function public.purchase_shop_item(text) to authenticated;
 revoke all on function public.equip_shop_item(text) from public;
 grant execute on function public.equip_shop_item(text) to authenticated;
+
+
+-- Real seat reservations, ready for the partner's live-audio layer.
+create table if not exists public.room_seats (
+  room_id uuid not null references public.rooms(id) on delete cascade,
+  seat_no smallint not null check (seat_no between 1 and 8),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  seated_at timestamptz not null default now(),
+  primary key(room_id,seat_no),
+  unique(room_id,user_id)
+);
+alter table public.room_seats enable row level security;
+drop policy if exists "Members can view room seats" on public.room_seats;
+create policy "Members can view room seats" on public.room_seats for select to authenticated using (true);
+drop policy if exists "Members can leave their own seats" on public.room_seats;
+create policy "Members can leave their own seats" on public.room_seats for delete to authenticated using (auth.uid()=user_id);
+grant select,delete on public.room_seats to authenticated;
+
+create or replace function public.request_room_seat(p_room_id uuid,p_seat_no smallint)
+returns jsonb language plpgsql security definer set search_path = ''
+as $$
+declare v_user uuid:=auth.uid();
+begin
+ if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+ if p_seat_no<1 or p_seat_no>8 then raise exception 'رقم المقعد غير صالح'; end if;
+ if not exists(select 1 from public.room_members where room_id=p_room_id and user_id=v_user) then
+   raise exception 'انضمي إلى الغرفة أولًا';
+ end if;
+ if exists(select 1 from public.room_seats where room_id=p_room_id and user_id=v_user) then
+   raise exception 'لديك مقعد بالفعل؛ اتركيه أولًا';
+ end if;
+ insert into public.room_seats(room_id,seat_no,user_id) values(p_room_id,p_seat_no,v_user);
+ return jsonb_build_object('success',true,'seat_no',p_seat_no);
+exception when unique_violation then
+ raise exception 'هذا المقعد مشغول أو لديك مقعد آخر';
+end; $$;
+
+create or replace function public.leave_room_seat(p_room_id uuid)
+returns boolean language plpgsql security definer set search_path = ''
+as $$
+begin
+ if auth.uid() is null then raise exception 'يجب تسجيل الدخول'; end if;
+ delete from public.room_seats where room_id=p_room_id and user_id=auth.uid();
+ return true;
+end; $$;
+
+revoke all on function public.request_room_seat(uuid,smallint) from public;
+grant execute on function public.request_room_seat(uuid,smallint) to authenticated;
+revoke all on function public.leave_room_seat(uuid) from public;
+grant execute on function public.leave_room_seat(uuid) to authenticated;
+
+do $$ begin
+ alter publication supabase_realtime add table public.room_seats;
+exception when duplicate_object then null;
+end $$;
