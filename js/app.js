@@ -101,7 +101,7 @@ function welcomeScreen() {
       </form>
       <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
-      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">يمكنك إنشاء حساب بالبريد الإلكتروني. قد تحتاجين إلى تأكيد البريد قبل تسجيل الدخول. تسجيل الهاتف سيُفعّل بعد إعداد مزود رسائل SMS.</p>
+      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">بعد إنشاء الحساب، يتم الدخول مباشرة عند إيقاف تأكيد البريد من إعدادات Supabase. تسجيل الهاتف سيُفعّل لاحقًا بعد إعداد مزود رسائل SMS.</p>
     </div>
   </div>`;
   let authMode = 'signin';
@@ -169,7 +169,7 @@ function welcomeScreen() {
         } else {
           authMode = 'signin';
           syncAuthMode();
-          showFeedback('تم إرسال رسالة تأكيد إلى بريدك. افتحي Gmail واضغطي رابط التأكيد، ثم عودي وسجّلي الدخول بكلمة المرور نفسها.');
+          showFeedback('لم يسمح خادم التسجيل بالدخول المباشر. يجب إيقاف Confirm email في Supabase ثم حفظ التغيير. لا تحتاجين إلى فتح Gmail أو إدخال أي كود.', true);
         }
       }
     } catch (err) {
@@ -177,7 +177,7 @@ function welcomeScreen() {
       if (/password.*(weak|contain|character)|weak password/i.test(message)) {
         showFeedback('كلمة المرور لا تحقق شروط الأمان. استخدمي 8 أحرف على الأقل مع حرف صغير وكبير ورقم ورمز خاص.', true);
       } else if (/email not confirmed/i.test(message)) {
-        showFeedback('لم يتم تأكيد البريد بعد. افتحي رسالة Supabase في Gmail واضغطي رابط التأكيد، ثم حاولي تسجيل الدخول.', true);
+        showFeedback('إعداد تأكيد البريد ما زال مفعّلًا على الخادم. أوقفي Confirm email في Supabase واحفظي التغيير، ثم أعيدي المحاولة ببريد جديد.', true);
       } else if (/invalid login credentials/i.test(message)) {
         showFeedback('البريد أو كلمة المرور غير صحيحة. تأكدي من كتابتهما كما عند إنشاء الحساب.', true);
       } else {
