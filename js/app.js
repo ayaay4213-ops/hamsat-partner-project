@@ -358,10 +358,9 @@ function bindRoomCards(root, rooms) {
 async function openRoom(r) {
   if (!r) return;
   openSheet(`
-    <div class="flex items-start gap-3 mb-4">
-      <div class="w-12 h-12 rounded-2xl bg-ink-700 flex items-center justify-center shrink-0"><i data-lucide="messages-square" class="w-6 h-6 text-gold-400"></i></div>
-      <div class="flex-1 min-w-0"><h2 class="text-lg font-bold leading-7">${esc(r.title)}</h2><span class="chip inline-block mt-1">${esc(r.topic)}</span></div>
-      <span class="room-status"><span></span> غرفة عامة</span>
+    <div class="room-hero-banner" style="${r.coverUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.08),rgba(5,6,8,.92)),url(${JSON.stringify(r.coverUrl)})` : ''}">
+      <div class="room-hero-top"><span class="room-live-pill"><i data-lucide="radio"></i> غرفة مجتمعية</span><span class="room-topic-pill">${esc(r.topic)}</span></div>
+      <div class="room-hero-bottom"><div class="room-owner-avatar">${avatar({displayName:r.ownerName,color:r.ownerColor},48)}</div><div class="min-w-0"><h2 class="text-xl font-extrabold">${esc(r.title)}</h2><p class="text-xs text-[#d3c8aa] mt-1">بواسطة ${esc(r.ownerName||'عضو')}</p></div></div>
     </div>
     <button id="room-send-gift" class="btn-gold w-full mb-3"><i data-lucide="gift" class="w-4 h-4"></i>إرسال هدية لعضو في الغرفة</button>
     <div id="room-gift-panel" class="card p-3 mb-3 hidden"><form id="room-gift-form" class="space-y-3"><select name="recipient" class="field"></select><select name="gift" class="field"></select><button type="submit" class="btn-gold w-full">إرسال الهدية</button></form></div>
