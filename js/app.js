@@ -362,6 +362,7 @@ async function openRoom(r) {
       <div class="flex-1 min-w-0"><h2 class="text-lg font-bold leading-7">${esc(r.title)}</h2><span class="chip inline-block mt-1">${esc(r.topic)}</span></div>
       <span class="room-status"><span></span> غرفة عامة</span>
     </div>
+    <button id="room-send-gift" class="btn-gold w-full mb-3"><i data-lucide="gift" class="w-4 h-4"></i>إرسال هدية لعضو في الغرفة</button>
     <div class="rounded-2xl border border-gold-600/20 bg-ink-800/60 p-3 mb-4">
       <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold">منصة المايكات</p><span id="room-member-count" class="text-xs text-[#a993c8]">...</span></div>
       <div id="room-seats" class="grid grid-cols-4 gap-2"></div>
@@ -377,6 +378,7 @@ async function openRoom(r) {
       <input name="message" class="field flex-1 min-w-0" maxlength="1000" placeholder="اكتبي رسالة..." autocomplete="off" required>
       <button class="btn-gold px-4" type="submit" aria-label="إرسال"><i data-lucide="send" class="w-5 h-5"></i></button>
     </form>
+    <div id="room-emoji-bar" class="flex flex-wrap gap-2 mb-3"><button type="button" data-emoji="💖">💖</button><button type="button" data-emoji="🌹">🌹</button><button type="button" data-emoji="😂">😂</button><button type="button" data-emoji="😍">😍</button><button type="button" data-emoji="👏">👏</button><button type="button" data-emoji="✨">✨</button><button type="button" data-emoji="🌙">🌙</button></div>
     <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">الغرفة مرتبطة بقاعدة بيانات همسات. الدردشة تعمل، ويمكن للشريك إضافة البث الصوتي لاحقًا.</p></div>
     ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
   `, async (sheet) => {
@@ -430,6 +432,24 @@ async function openRoom(r) {
       try { await api.sendRoomMessage(r.id,value); input.value=''; await drawMessages(); }
       catch (err) { toast(err.message,'error'); }
       finally { button.disabled = false; input.focus(); }
+    };
+    sheet.querySelectorAll('#room-emoji-bar [data-emoji]').forEach(b=>b.onclick=()=>{
+      form.elements.message.value += b.dataset.emoji;
+      form.elements.message.focus();
+    });
+    sheet.querySelector('#room-send-gift').onclick=async()=>{
+      try{
+        const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);
+        state.gifts=giftData.gifts;
+        const others=members.filter(m=>m.userId!==state.profile?.uuid);
+        if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}
+        openSheet(`<h2 class="font-bold text-lg mb-3">إرسال هدية داخل الغرفة</h2><form id="room-gift-form" class="space-y-3">
+          <div><label class="label">المستلم</label><select name="recipient" class="field">${others.map(m=>`<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join('')}</select></div>
+          <div><label class="label">الهدية</label><select name="gift" class="field">${state.gifts.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} — ${num(g.price)} عملة</option>`).join('')}</select></div>
+          <button class="btn-gold w-full" type="submit">إرسال الهدية</button></form>`,sh=>{
+          sh.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=e.currentTarget.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(e.currentTarget));await api.sendGift(v.recipient,v.gift,1);state.wallet=(await api.wallet()).wallet;closeSheet();toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');b.disabled=false;}};
+        });
+      }catch(e){toast(e.message,'error');}
     };
     const del = sheet.querySelector('#del-room');
     if (del) del.onclick = async () => {
