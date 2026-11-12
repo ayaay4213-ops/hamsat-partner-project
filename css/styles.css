@@ -500,3 +500,13 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .cosmetic-avatar.royal{box-shadow:0 0 0 4px #a78bfa,0 0 22px #a78bfa66}
 .cosmetic-avatar.diamond{box-shadow:0 0 0 4px #8de7f2,0 0 22px #8de7f266}
 @media(max-width:380px){.sheet.room-sheet{padding-inline:12px!important}.room-sheet .room-seat{min-height:98px!important}.profile-cover{height:148px}}
+
+
+.room-hero-banner{height:190px;margin:-12px -16px 18px;padding:14px 16px 18px;display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(ellipse at 50% 0%,rgba(212,175,55,.24),transparent 65%),linear-gradient(135deg,#28251c,#111217);background-size:cover;background-position:center;border-bottom:1px solid rgba(212,175,55,.2);position:relative}
+.room-hero-top,.room-hero-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.room-live-pill,.room-topic-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;font-size:10px;background:rgba(7,8,10,.68);border:1px solid rgba(212,175,55,.3);color:#f2dc8d;backdrop-filter:blur(10px)}
+.room-live-pill svg{width:13px;height:13px}
+.room-hero-bottom{justify-content:flex-start}
+.room-owner-avatar{padding:3px;border-radius:50%;background:rgba(212,175,55,.16);border:1px solid rgba(212,175,55,.6)}
+.room-sheet #room-send-gift{min-height:48px}
+.room-sheet #room-gift-panel{border-color:rgba(212,175,55,.24)}
