@@ -38,9 +38,21 @@ function toast(msg, type = '') {
 function loading() {
   return `<div class="flex-1 flex items-center justify-center py-24"><div class="spinner"></div></div>`;
 }
+function openSideMenu() {
+  const root = $('#side-drawer-root'); if (!root) return;
+  root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
+    <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a></nav>
+    <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
+  root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
+  root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
+}
+function closeSideMenu() { const root=$('#side-drawer-root'); if(root) root.innerHTML=''; }
+function menuButton() { return `<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>`; }
+window.hamsatOpenMenu = openSideMenu;
 function header(title, right = '') {
   return `<header class="sticky top-0 z-20 bg-ink-900/95 backdrop-blur border-b border-ink-700 px-5 h-14 flex items-center justify-between">
-    <h1 class="text-lg font-bold">${title}</h1>${right}</header>`;
+    <div class="flex items-center gap-3">${menuButton()}<h1 class="text-lg font-bold">${title}</h1></div><div class="flex items-center gap-2">${right}</div></header>`;
 }
 function coin(size = 18) {
   return `<span class="inline-flex items-center justify-center rounded-full bg-gold-500 text-ink-800" style="width:${size}px;height:${size}px"><i data-lucide="sparkle" style="width:${size * 0.6}px;height:${size * 0.6}px"></i></span>`;
@@ -196,7 +208,9 @@ function profileForm(p = {}, isNew = true) {
   return `
   <form id="profile-form" class="space-y-4">
     <div class="flex flex-col items-center gap-3 pb-2">
-      <div id="pf-avatar">${avatar({ displayName: p.displayName || 'ه', color }, 76)}</div>
+      <div id="pf-avatar">${avatar({ displayName: p.displayName || 'ه', color, avatarUrl: p.avatarUrl }, 76)}</div>
+      <label class="photo-picker"><i data-lucide="camera"></i><span>اختيار صورة من الهاتف</span><input type="file" name="avatarFile" accept="image/png,image/jpeg,image/webp" hidden></label>
+      <input type="hidden" name="avatarUrl" value="${esc(p.avatarUrl || '')}">
       <div class="flex gap-2" id="pf-colors">
         ${COLORS.map(c => `<button type="button" data-color="${c}" class="w-7 h-7 rounded-full border-2 ${c === color ? 'border-gold-400' : 'border-transparent'}" style="background:${c}" aria-label="لون"></button>`).join('')}
       </div>
@@ -217,7 +231,7 @@ function bindProfileForm(root, onSaved) {
   const colorInput = form.querySelector('[name=color]');
   const nameInput = form.querySelector('[name=displayName]');
   const refreshAvatar = () => {
-    form.querySelector('#pf-avatar').innerHTML = avatar({ displayName: nameInput.value || 'ه', color: colorInput.value }, 76);
+    form.querySelector('#pf-avatar').innerHTML = avatar({ displayName: nameInput.value || 'ه', color: colorInput.value, avatarUrl: form.elements.avatarUrl.value }, 76);
   };
   form.querySelectorAll('[data-color]').forEach(b => b.onclick = () => {
     colorInput.value = b.dataset.color;
@@ -226,6 +240,13 @@ function bindProfileForm(root, onSaved) {
     refreshAvatar();
   });
   nameInput.oninput = refreshAvatar;
+  form.elements.avatarFile.onchange = async () => {
+    const file=form.elements.avatarFile.files?.[0]; if(!file)return;
+    if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}
+    const label=form.querySelector('.photo-picker span'); label.textContent='جارٍ رفع الصورة...';
+    try{const uploaded=await api.uploadMedia(file,'avatars');form.elements.avatarUrl.value=uploaded.url;refreshAvatar();label.textContent='تم اختيار الصورة ✓';}
+    catch(err){toast(err.message,'error');label.textContent='اختيار صورة من الهاتف';}
+  };
   form.onsubmit = async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button[type=submit]');
@@ -263,8 +284,7 @@ async function homeScreen() {
   const p = state.profile;
   screen.innerHTML = `
   <header class="px-5 pt-6 pb-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <a href="#/me">${avatar(p, 44)}</a>
+    <div class="flex items-center gap-3">${menuButton()}<a href="#/me">${avatar(p, 44)}</a>
       <div><p class="text-xs text-[#a993c8]">مرحبًا بعودتك</p><p class="font-bold text-[17px]">${esc(p.displayName)}</p></div>
     </div>
     <a href="#/wallet" class="flex items-center gap-1.5 bg-ink-800 border border-ink-600 rounded-full ps-2 pe-3 py-1.5">${coin(20)}<span class="font-bold text-gold-300 text-sm">${num(state.wallet?.balance)}</span></a>
@@ -313,7 +333,7 @@ function emptyBox(icon, title, sub = '') {
 
 function roomCard(r) {
   return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition">
-    <div class="room-cover">
+    <div class="room-cover" ${r.coverUrl ? `style="background-image:linear-gradient(180deg,rgba(4,5,8,.12),rgba(4,5,8,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
       <div class="room-cover-glow"></div>
       <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
       <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
@@ -455,9 +475,11 @@ function newRoomSheet() {
       <div><label class="label">عنوان الغرفة</label><input name="title" class="field" maxlength="50" required placeholder="مثال: سهرة شعرية"></div>
       <div><label class="label">الموضوع</label><div id="topic-pick" class="flex flex-wrap gap-2">${TOPICS.map((t, i) => `<button type="button" data-t="${t}" class="chip ${i === 0 ? 'active' : ''}">${t}</button>`).join('')}</div><input type="hidden" name="topic" value="${TOPICS[0]}"></div>
       <div><label class="label">وصف قصير</label><textarea name="description" class="field resize-none" rows="3" maxlength="160" placeholder="اختياري"></textarea></div>
+      <div><label class="label">صورة الغرفة</label><label class="photo-picker room-photo-picker"><i data-lucide="image-plus"></i><span>اختيار غلاف من الهاتف</span><input type="file" name="coverFile" accept="image/png,image/jpeg,image/webp" hidden></label><input type="hidden" name="coverUrl" value=""></div>
       <button class="btn-gold w-full" type="submit"><i data-lucide="check" class="w-5 h-5"></i>إنشاء الغرفة</button>
     </form>`, (sheet) => {
     const f = sheet.querySelector('#room-form');
+    f.elements.coverFile.onchange=async()=>{const file=f.elements.coverFile.files?.[0];if(!file)return;if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}const label=sheet.querySelector('.room-photo-picker span');label.textContent='جارٍ رفع الغلاف...';try{const uploaded=await api.uploadMedia(file,'rooms');f.elements.coverUrl.value=uploaded.url;label.textContent='تم اختيار الغلاف ✓';}catch(err){toast(err.message,'error');label.textContent='اختيار غلاف من الهاتف';}};
     sheet.querySelectorAll('#topic-pick [data-t]').forEach(b => b.onclick = () => {
       f.topic.value = b.dataset.t;
       sheet.querySelectorAll('#topic-pick .chip').forEach(c => c.classList.toggle('active', c === b));
@@ -482,20 +504,18 @@ async function giftsScreen() {
         <p class="text-[13px] text-[#cbb9e6] leading-6">اختاري عضوًا من قائمة الأعضاء وافتحي ملفه لإرسال هدية. يتم خصم العملات وتحويلها عبر قاعدة البيانات بشكل آمن.</p>
       </div>
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
+      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><div id="gift-members" class="space-y-2">${loading()}</div></section>
     </div>`;
   icons_();
   try {
-    if (!state.gifts) state.gifts = (await api.gifts()).gifts;
-    const el = $('#gifts-grid'); if (!el) return;
-    el.innerHTML = state.gifts.map(g => `
-      <div class="card p-4 flex flex-col items-center text-center">
-        <div class="w-16 h-16 rounded-full bg-ink-700 border border-gold-600/30 flex items-center justify-center mb-3"><i data-lucide="${esc(g.icon)}" class="w-8 h-8 text-gold-400"></i></div>
-        <p class="font-bold">${esc(g.name)}</p>
-        <p class="flex items-center gap-1 text-sm text-gold-300 mt-1 mb-3">${coin(16)}${num(g.price)}</p>
-        <span class="badge-soon">من ملف العضو</span>
-      </div>`).join('');
+    const [giftResult,memberResult]=await Promise.all([state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts(),api.users()]);
+    state.gifts=giftResult.gifts; const el=$('#gifts-grid');if(!el)return;
+    const art={rose:'🌹',heart:'💖',coffee:'☕',star:'⭐',moon:'🌙',gem:'💎',crown:'👑',rocket:'🚀'};
+    el.innerHTML=state.gifts.map(g=>`<div class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art">${art[g.id]||'🎁'}</div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p></div>`).join('');
+    const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
+    members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${esc(u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
     icons_();
-  } catch (e) { const el = $('#gifts-grid'); if (el) { el.className = ''; el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الهدايا', e.message); icons_(); } }
+  } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
 
 async function walletScreen() {
@@ -635,6 +655,7 @@ async function render() {
   const parts = path.split('/').filter(Boolean);
   const route = parts[0] || 'home';
 
+  closeSideMenu();
   tabbar.classList.remove('hidden');
   screen.className = 'flex-1 flex flex-col has-tabbar';
   tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === route));
