@@ -510,7 +510,7 @@ async function giftsScreen() {
   try {
     const [giftResult,memberResult]=await Promise.all([state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts(),api.users()]);
     state.gifts=giftResult.gifts; const el=$('#gifts-grid');if(!el)return;
-    const art={rose:'🌹',heart:'💖',coffee:'☕',star:'⭐',moon:'🌙',gem:'💎',crown:'👑',rocket:'🚀'};
+    const art={rose:'🌹',heart:'💖',coffee:'☕',star:'⭐',moon:'🌙',gem:'💎',crown:'👑',rocket:'🚀',car:'🏎️',castle:'🏰',fireworks:'🎆',diamond_ring:'💍'};
     el.innerHTML=state.gifts.map(g=>`<div class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art">${art[g.id]||'🎁'}</div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p></div>`).join('');
     const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
     members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${esc(u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
