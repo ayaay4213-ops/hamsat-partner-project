@@ -428,7 +428,7 @@ async function openRoom(r) {
     try {
       await api.joinRoom(r.id);
       await Promise.all([drawMessages(), drawMembers()]);
-      state.roomChannel = api.subscribeRoomMessages(r.id, () => drawMessages().catch(e => toast(e.message,'error')));
+      state.roomChannel = api.subscribeRoomMessages(r.id, () => Promise.all([drawMessages(),drawMembers()]).catch(e => toast(e.message,'error')));
     } catch (e) {
       chat.innerHTML = emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);
     }
