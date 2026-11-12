@@ -8,9 +8,17 @@ async function call(path, { method = 'GET', body } = {}) {
   }
   let res;
   try {
-    res = await puter.workers.exec(BASE + path, opts);
+    if (!globalThis.puter?.workers?.exec) {
+      throw new Error('خدمة Puter Workers غير متاحة في هذه الصفحة');
+    }
+    res = await globalThis.puter.workers.exec(BASE + path, opts);
   } catch (e) {
-    throw new Error('تعذّر الاتصال بالخادم، تحقق من الإنترنت');
+    const error = new Error(e?.message || 'تعذّر الاتصال بخادم همسات. تحققي من الإنترنت ونشر Hamsat API.');
+    error.cause = e;
+    throw error;
+  }
+  if (!res || typeof res.json !== 'function' || typeof res.ok !== 'boolean') {
+    throw new Error('استجابة غير صالحة من خادم همسات؛ تحققي من إعداد نشر Worker.');
   }
   let data = null;
   try { data = await res.json(); } catch (e) {}
