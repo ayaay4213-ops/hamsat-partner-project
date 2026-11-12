@@ -132,6 +132,11 @@ export const api = {
     fail(error); return data;
   },
 
+  leaveRoom: async (roomId) => {
+    const user = await currentUser();
+    const { error } = await client().from('room_members').delete().eq('room_id', roomId).eq('user_id', user.id);
+    fail(error); return { success: true };
+  },
   joinRoom: async (roomId) => {
     const user = await currentUser();
     const { error } = await client().from('room_members').insert({ room_id: roomId, user_id: user.id });
