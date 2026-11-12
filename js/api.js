@@ -118,6 +118,50 @@ export const api = {
     }).select('*').single();
     fail(error); return data;
   },
+
+  joinRoom: async (roomId) => {
+    const user = await currentUser();
+    const { error } = await client().from('room_members').insert({ room_id: roomId, user_id: user.id });
+    if (error && error.code !== '23505') fail(error);
+    return api.roomMembers(roomId);
+  },
+  roomMembers: async (roomId) => {
+    const { data, error } = await client().from('room_members').select('user_id,joined_at').eq('room_id', roomId).order('joined_at', { ascending: true });
+    fail(error);
+    const ids = [...new Set(data.map(x => x.user_id))];
+    if (!ids.length) return { members: [] };
+    const res = await client().from('profiles').select('*').in('id', ids);
+    fail(res.error);
+    const byId = Object.fromEntries(res.data.map(p => [p.id, mapProfile(p)]));
+    return { members: data.map(x => ({ ...byId[x.user_id], userId: x.user_id, joinedAt: new Date(x.joined_at).getTime() })).filter(x => x.displayName) };
+  },
+  roomMessages: async (roomId) => {
+    const { data, error } = await client().from('room_messages').select('id,user_id,body,created_at').eq('room_id', roomId).order('created_at', { ascending: true }).limit(100);
+    fail(error);
+    const ids = [...new Set(data.map(x => x.user_id))];
+    let profiles = [];
+    if (ids.length) {
+      const res = await client().from('profiles').select('*').in('id', ids);
+      fail(res.error); profiles = res.data;
+    }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    return { messages: data.map(x => ({ id: x.id, body: x.body, userId: x.user_id,
+      displayName: byId[x.user_id]?.displayName || 'عضو',
+      color: byId[x.user_id]?.color || '#7c3aed',
+      createdAt: new Date(x.created_at).getTime() })) };
+  },
+  sendRoomMessage: async (roomId, body) => {
+    const user = await currentUser();
+    const text = String(body || '').trim();
+    if (!text || text.length > 1000) throw new Error('اكتبي رسالة من 1 إلى 1000 حرف');
+    const { error } = await client().from('room_messages').insert({ room_id: roomId, user_id: user.id, body: text });
+    fail(error);
+    return { success: true };
+  },
+  subscribeRoomMessages: (roomId, callback) => client().channel('room-chat-' + roomId)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: 'room_id=eq.' + roomId }, callback)
+    .subscribe(),
+  unsubscribeRoomChannel: async (channel) => { if (channel) await client().removeChannel(channel); },
   deleteRoom: async (id) => {
     const user = await currentUser();
     const { error } = await client().from('rooms').delete().eq('id', id).eq('owner_id', user.id);

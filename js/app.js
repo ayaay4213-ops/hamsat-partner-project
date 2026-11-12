@@ -5,7 +5,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null };
 
 const COLORS = ['#7c3aed', '#9d174d', '#0f766e', '#b45309', '#1d4ed8', '#6d28d9', '#be123c', '#047857'];
 const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تقنية', 'رياضة', 'تعارف', 'ألعاب'];
@@ -51,7 +51,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { $('#sheet-root').innerHTML = ''; }
+function closeSheet() { if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
 async function signOut() {
@@ -322,23 +322,82 @@ function bindRoomCards(root, rooms) {
   root.querySelectorAll('[data-room]').forEach(b => b.onclick = () => openRoom(rooms.find(r => r.id === b.dataset.room)));
 }
 
-function openRoom(r) {
+async function openRoom(r) {
   if (!r) return;
-  const mine = r.ownerUuid === state.profile?.uuid;
   openSheet(`
     <div class="flex items-start gap-3 mb-4">
-      <div class="w-14 h-14 rounded-2xl bg-ink-700 flex items-center justify-center shrink-0"><i data-lucide="audio-lines" class="w-7 h-7 text-gold-400"></i></div>
+      <div class="w-12 h-12 rounded-2xl bg-ink-700 flex items-center justify-center shrink-0"><i data-lucide="messages-square" class="w-6 h-6 text-gold-400"></i></div>
       <div class="flex-1 min-w-0"><h2 class="text-lg font-bold leading-7">${esc(r.title)}</h2><span class="chip inline-block mt-1">${esc(r.topic)}</span></div>
+      <span class="chip text-gold-300">كتابية</span>
     </div>
-    ${r.description ? `<p class="text-sm text-[#cbb9e6] leading-7 mb-4">${esc(r.description)}</p>` : ''}
-    <a href="#/u/${esc(r.ownerHandle)}" data-close class="card p-3 flex items-center gap-3 mb-4">${avatar({ displayName: r.ownerName, color: r.ownerColor }, 40)}<div><p class="text-xs text-[#a993c8]">المضيف</p><p class="font-bold text-sm">${esc(r.ownerName)}</p></div></a>
-    <div class="rounded-2xl border border-dashed border-ink-500 p-4 flex gap-3 mb-5">
-      <i data-lucide="info" class="w-5 h-5 text-gold-400 shrink-0 mt-0.5"></i>
-      <p class="text-[13px] text-[#cbb9e6] leading-6">البث الصوتي المباشر غير متاح بعد في هذه النسخة. الغرفة محفوظة وستعمل فور إطلاق الميزة.</p>
+    <div class="rounded-2xl border border-gold-600/20 bg-ink-800/60 p-3 mb-4">
+      <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold">مقاعد الغرفة</p><span id="room-member-count" class="text-xs text-[#a993c8]">...</span></div>
+      <div id="room-seats" class="grid grid-cols-4 gap-2"></div>
+      <p class="text-[11px] text-[#a993c8] mt-3 text-center">الميكروفونات ظاهرة للتجهيز فقط — الصوت غير مفعّل حاليًا</p>
     </div>
-    <button class="btn-gold w-full mb-3" disabled><i data-lucide="mic" class="w-5 h-5"></i>الانضمام صوتيًا — قريبًا</button>
-    ${mine ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
-  `, (sheet) => {
+    <div class="card p-3 mb-4">
+      <div class="flex items-center justify-between mb-2"><p class="font-bold text-sm">الموجودون الآن</p><button id="refresh-room" class="text-xs text-gold-300">تحديث</button></div>
+      <div id="room-members" class="flex flex-wrap gap-2"><span class="text-xs text-[#8a76a8]">جارٍ تحميل الأعضاء...</span></div>
+    </div>
+    <div class="mb-2 flex items-center justify-between"><p class="font-bold text-sm">الدردشة الكتابية</p><span class="text-[11px] text-[#8a76a8]">رسائل الغرفة</span></div>
+    <div id="room-chat" class="rounded-2xl bg-ink-900/70 border border-ink-700 p-3 h-56 overflow-y-auto space-y-3"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
+    <form id="room-chat-form" class="flex gap-2 mt-3 mb-4">
+      <input name="message" class="field flex-1 min-w-0" maxlength="1000" placeholder="اكتبي رسالة..." autocomplete="off" required>
+      <button class="btn-gold px-4" type="submit" aria-label="إرسال"><i data-lucide="send" class="w-5 h-5"></i></button>
+    </form>
+    <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">هذه غرفة حقيقية: دخول الأعضاء والرسائل محفوظة في قاعدة البيانات. الصوت غير متاح حتى يربطه الشريك.</p></div>
+    ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
+  `, async (sheet) => {
+    const chat = sheet.querySelector('#room-chat');
+    const membersEl = sheet.querySelector('#room-members');
+    const seatsEl = sheet.querySelector('#room-seats');
+    const countEl = sheet.querySelector('#room-member-count');
+    const form = sheet.querySelector('#room-chat-form');
+    const drawMessages = async () => {
+      const { messages } = await api.roomMessages(r.id);
+      if (!chat.isConnected) return;
+      chat.innerHTML = messages.length ? messages.map(m => `
+        <div class="flex items-start gap-2 ${m.userId === state.profile?.uuid ? 'flex-row-reverse text-right' : ''}">
+          ${avatar({displayName:m.displayName,color:m.color},30)}
+          <div class="max-w-[82%] rounded-xl bg-ink-800 px-3 py-2">
+            <p class="text-[10px] text-gold-300 mb-1">${esc(m.displayName)}</p>
+            <p class="text-sm leading-6 break-words">${esc(m.body)}</p>
+            <p class="text-[9px] text-[#8a76a8] mt-1">${timeAgo(m.createdAt)}</p>
+          </div>
+        </div>`).join('') : '<p class="text-xs text-[#8a76a8] text-center py-12">كونوا أول من يبدأ الحديث 🌙</p>';
+      chat.scrollTop = chat.scrollHeight;
+    };
+    const drawMembers = async () => {
+      const { members } = await api.roomMembers(r.id);
+      if (!membersEl.isConnected) return;
+      countEl.textContent = num(members.length) + ' أعضاء';
+      membersEl.innerHTML = members.length ? members.map(m => `<div class="flex items-center gap-1.5 rounded-full bg-ink-800 px-2 py-1">${avatar(m,25)}<span class="text-xs">${esc(m.displayName)}</span></div>`).join('') : '<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      seatsEl.innerHTML = Array.from({length:8},(_,i)=> {
+        const m = members[i];
+        return m ? `<div class="rounded-xl bg-ink-900/70 border border-gold-600/30 p-2 text-center min-w-0">${avatar(m,36)}<p class="text-[10px] text-[#e5cf91] mt-1 truncate">${esc(m.displayName)}</p><i data-lucide="mic-off" class="w-3.5 h-3.5 text-[#8a76a8] mx-auto mt-1"></i></div>`
+          : `<div class="rounded-xl bg-ink-900/70 border border-ink-700 p-2 text-center min-w-0"><div class="w-9 h-9 mx-auto rounded-full bg-ink-700 flex items-center justify-center"><i data-lucide="mic-off" class="w-4 h-4 text-gold-400"></i></div><p class="text-[10px] text-[#8a76a8] mt-1">مقعد ${i+1}</p></div>`;
+      }).join('');
+      icons_();
+    };
+    try {
+      await api.joinRoom(r.id);
+      await Promise.all([drawMessages(), drawMembers()]);
+      state.roomChannel = api.subscribeRoomMessages(r.id, () => drawMessages().catch(e => toast(e.message,'error')));
+    } catch (e) {
+      chat.innerHTML = emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);
+    }
+    sheet.querySelector('#refresh-room').onclick = () => Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const input = form.elements.message;
+      const button = form.querySelector('button');
+      const value = input.value.trim();
+      if (!value) return;
+      button.disabled = true;
+      try { await api.sendRoomMessage(r.id,value); input.value=''; await drawMessages(); }
+      catch (err) { toast(err.message,'error'); }
+      finally { button.disabled = false; input.focus(); }
+    };
     const del = sheet.querySelector('#del-room');
     if (del) del.onclick = async () => {
       if (!confirm('هل تريد حذف هذه الغرفة؟')) return;
