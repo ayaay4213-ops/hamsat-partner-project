@@ -402,127 +402,74 @@ function bindRoomCards(root, rooms) {
 
 async function openRoom(r) {
   if (!r) return;
-  openSheet(`
-    <div class="room-hero-banner" style="${r.coverUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.08),rgba(5,6,8,.92)),url(${JSON.stringify(r.coverUrl)})` : ''}">
-      <div class="room-hero-top"><span class="room-live-pill"><i data-lucide="radio"></i> غرفة مجتمعية</span><span class="room-topic-pill">${esc(r.topic)}</span></div>
-      <div class="room-hero-bottom"><div class="room-owner-avatar">${avatar({displayName:r.ownerName,color:r.ownerColor},48)}</div><div class="min-w-0"><h2 class="text-xl font-extrabold">${esc(r.title)}</h2><p class="text-xs text-[#d3c8aa] mt-1">بواسطة ${esc(r.ownerName||'عضو')}</p></div></div>
+  openSheet(\`
+    <div class="hs-room-head">
+      <div class="hs-room-cover" style="\${r.coverUrl ? \`background-image:linear-gradient(180deg,#08090a22,#08090add),url(\${JSON.stringify(r.coverUrl)})\` : ''}">
+        <div class="hs-room-head-row">
+          <button type="button" class="hs-room-close" data-close aria-label="إغلاق"><i data-lucide="arrow-right"></i></button>
+          <span class="hs-room-state"><i></i> غرفة اجتماعية</span>
+          <button type="button" id="refresh-room" class="hs-room-close" aria-label="تحديث"><i data-lucide="refresh-cw"></i></button>
+        </div>
+        <div class="hs-room-title-row">
+          <div class="hs-room-owner">\${avatar({displayName:r.ownerName,color:r.ownerColor},52)}</div>
+          <div class="min-w-0 flex-1"><h2>\${esc(r.title)}</h2><p>\${esc(r.topic)} · بواسطة \${esc(r.ownerName||'عضو')}</p></div>
+          <span class="hs-room-owner-tag">المضيف</span>
+        </div>
+      </div>
+      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span><i data-lucide="shield-check"></i> مجتمع همسات</span><button type="button" id="room-send-gift"><i data-lucide="gift"></i> هدية</button></div>
     </div>
-    <button id="room-send-gift" class="btn-gold w-full mb-3"><i data-lucide="gift" class="w-4 h-4"></i>إرسال هدية لعضو في الغرفة</button>
     <div id="room-gift-panel" class="card p-3 mb-3 hidden"><form id="room-gift-form" class="space-y-3"><select name="recipient" class="field"></select><select name="gift" class="field"></select><button type="submit" class="btn-gold w-full">إرسال الهدية</button></form></div>
-    <div class="rounded-2xl border border-gold-600/20 bg-ink-800/60 p-3 mb-4">
-      <div class="flex items-center justify-between mb-3"><p class="text-sm font-bold">منصة المايكات</p><span id="room-member-count" class="text-xs text-[#a993c8]">...</span></div>
-      <div id="room-seats" class="grid grid-cols-4 gap-2"></div>
-      <p class="text-[11px] text-[#a993c8] mt-3 text-center">المقاعد جاهزة لربط الصوت لاحقًا من الشريك</p>
-    </div>
-    <div class="card p-3 mb-4">
-      <div class="flex items-center justify-between mb-2"><p class="font-bold text-sm">أعضاء الغرفة</p><button id="refresh-room" class="text-xs text-gold-300">تحديث</button></div>
-      <div id="room-members" class="flex flex-wrap gap-2"><span class="text-xs text-[#8a76a8]">جارٍ تحميل الأعضاء...</span></div>
-    </div>
-    <div class="mb-2 flex items-center justify-between"><p class="font-bold text-sm">الدردشة الكتابية</p><span class="text-[11px] text-[#8a76a8]">رسائل الغرفة</span></div>
-    <div id="room-chat" class="rounded-2xl bg-ink-900/70 border border-ink-700 p-3 h-56 overflow-y-auto space-y-3"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
-    <form id="room-chat-form" class="flex gap-2 mt-3 mb-4">
-      <input name="message" class="field flex-1 min-w-0" maxlength="1000" placeholder="اكتبي رسالة..." autocomplete="off" required>
-      <button class="btn-gold px-4" type="submit" aria-label="إرسال"><i data-lucide="send" class="w-5 h-5"></i></button>
-    </form>
-    <div id="room-emoji-bar" class="flex flex-wrap gap-2 mb-3">${(state.profile?.equippedEmojiPackId === "emoji_love" ? ["💖","💗","💕","💞","😘","😍","🌹"] : state.profile?.equippedEmojiPackId === "emoji_luxe" ? ["👑","💎","✨","🥂","🪞","💍","🌟"] : state.profile?.equippedEmojiPackId === "emoji_moon" ? ["🌙","⭐","🌟","☄️","🪐","🌌","✨"] : ["💖","🌹","😂","😍","👏","✨","🌙"]).map(e=>`<button type="button" data-emoji="${e}">${e}</button>`).join("")}</div>
-    <div class="rounded-xl border border-dashed border-ink-600 p-3 mb-3"><p class="text-xs text-[#a993c8] leading-6">الغرفة مرتبطة بقاعدة بيانات همسات. الدردشة تعمل، ويمكن للشريك إضافة البث الصوتي لاحقًا.</p></div>
-    ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full"><i data-lucide="trash-2" class="w-5 h-5"></i>حذف الغرفة</button>` : ''}
-  `, async (sheet) => {
+    <section class="hs-room-stage">
+      <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
+      <div id="room-seats" class="hs-room-seats"></div>
+      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>المقاعد تفاعلية حاليًا. البث الصوتي المباشر يحتاج ربط خدمة الصوت.</span></div>
+    </section>
+    <section class="hs-room-people">
+      <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">IN THE ROOM</span><h3>الحاضرون</h3></div><span class="hs-room-people-live"><i></i> الآن</span></div>
+      <div id="room-members" class="hs-room-members"><span class="text-xs">جارٍ تحميل الأعضاء...</span></div>
+    </section>
+    <section class="hs-room-chat-area">
+      <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">COMMUNITY CHAT</span><h3>المحادثة</h3></div><span class="text-xs text-[#b7b2a5]">رسائل الغرفة</span></div>
+      <div id="room-chat" class="hs-room-chat"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
+      <div id="room-emoji-bar" class="hs-room-emojis">\${(state.profile?.equippedEmojiPackId === "emoji_love" ? ["💖","💗","💕","💞","😘","😍","🌹"] : state.profile?.equippedEmojiPackId === "emoji_luxe" ? ["👑","💎","✨","🥂","🪞","💍","🌟"] : state.profile?.equippedEmojiPackId === "emoji_moon" ? ["🌙","⭐","🌟","☄️","🪐","🌌","✨"] : ["💖","🌹","😂","😍","👏","✨","🌙"]).map(e=>\`<button type="button" data-emoji="\${e}">\${e}</button>\`).join("")}</div>
+      <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
+    </section>
+    \${r.ownerUuid === state.profile?.uuid ? \`<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>\` : ''}
+  \`, async (sheet) => {
     sheet.classList.add('room-sheet');
-    const chat = sheet.querySelector('#room-chat');
-    const membersEl = sheet.querySelector('#room-members');
-    const seatsEl = sheet.querySelector('#room-seats');
-    const countEl = sheet.querySelector('#room-member-count');
-    const form = sheet.querySelector('#room-chat-form');
-    const drawMessages = async () => {
-      const { messages } = await api.roomMessages(r.id);
-      if (!chat.isConnected) return;
-      chat.innerHTML = messages.length ? messages.map(m => `
-        <div class="flex items-start gap-2 ${m.userId === state.profile?.uuid ? 'flex-row-reverse text-right' : ''}">
-          ${avatar({displayName:m.displayName,color:m.color},30)}
-          <div class="max-w-[82%] rounded-xl bg-ink-800 px-3 py-2">
-            <p class="text-[10px] text-gold-300 mb-1">${esc(m.displayName)}</p>
-            <p class="text-sm leading-6 break-words">${esc(m.body)}</p>
-            <p class="text-[9px] text-[#8a76a8] mt-1">${timeAgo(m.createdAt)}</p>
-          </div>
-        </div>`).join('') : '<p class="text-xs text-[#8a76a8] text-center py-12">كونوا أول من يبدأ الحديث 🌙</p>';
-      chat.scrollTop = chat.scrollHeight;
+    const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
+    const drawMessages=async()=>{
+      const {messages}=await api.roomMessages(r.id); if(!chat.isConnected)return;
+      chat.innerHTML=messages.length?messages.map(m=>\`<div class="hs-room-message \${m.userId===state.profile?.uuid?'mine':''}">\${avatar({displayName:m.displayName,color:m.color},30)}<div><b>\${esc(m.displayName)}</b><p>\${esc(m.body)}</p><small>\${timeAgo(m.createdAt)}</small></div></div>\`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
+      chat.scrollTop=chat.scrollHeight;
     };
-    const drawMembers = async () => {
-      const { members } = await api.roomMembers(r.id);
-      if (!membersEl.isConnected) return;
-      countEl.textContent = num(members.length) + ' أعضاء';
-      membersEl.innerHTML = members.length ? members.map(m => `<div class="flex items-center gap-1.5 rounded-full bg-ink-800 px-2 py-1">${avatar(m,25)}<span class="text-xs">${esc(m.displayName)}</span></div>`).join('') : '<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
-      const {seats}=await api.roomSeats(r.id);
-      const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
+    const drawMembers=async()=>{
+      const {members}=await api.roomMembers(r.id); if(!membersEl.isConnected)return;
+      countEl.textContent=num(members.length);
+      membersEl.innerHTML=members.length?members.map(m=>\`<div class="hs-room-person">\${avatar(m,34)}<span>\${esc(m.displayName)}</span></div>\`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      const {seats}=await api.roomSeats(r.id), bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
       seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
-        const seat=bySeat[i+1],m=seat?.member,own=seat?.user_id===state.profile?.uuid;
-        return seat
-          ? `<button type="button" data-seat="${i+1}" data-own="${own}" class="room-seat ${own?'room-seat-own':''}" ${own?'':'disabled'}>${m?avatar(m,36):'<span class="seat-empty">♙</span>'}<p>${esc(m?.displayName||'عضو')}</p><small>${own?'اضغطي لمغادرة المقعد':'مشغول'}</small></button>`
-          : `<button type="button" data-seat="${i+1}" class="room-seat"><span class="seat-empty"><i data-lucide="mic" class="w-5 h-5"></i></span><p>مقعد ${i+1}</p><small>اضغطي للانضمام</small></button>`;
+        const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
+        if(!seat)return \`<button type="button" data-seat="\${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>\${isHost?'مقعد المضيف':'مايك '+n}</b><small>\${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>\`;
+        return \`<button type="button" data-seat="\${n}" data-own="\${own}" class="hs-room-seat occupied \${own?'mine':''}" \${own?'':'disabled'}>\${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>\${esc(m?.displayName||'عضو')}</b><small>\${own?'اضغطي للنزول':'على المايك'}</small>\${isHost?'<em>HOST</em>':''}</button>\`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
-        try{
-          if(b.dataset.own==='true')await api.leaveRoomSeat(r.id);
-          else await api.requestRoomSeat(r.id,Number(b.dataset.seat));
-          await drawMembers();
-          toast(b.dataset.own==='true'?'غادرتِ المقعد':'تم حجز المقعد');
-        }catch(e){toast(e.message,'error');}
+        try{if(b.dataset.own==='true')await api.leaveRoomSeat(r.id);else await api.requestRoomSeat(r.id,Number(b.dataset.seat));await drawMembers();toast(b.dataset.own==='true'?'غادرتِ المايك':'تم حجز المقعد');}
+        catch(e){toast(e.message,'error');}
       });
       icons_();
     };
-    try {
-      await api.joinRoom(r.id);
-      state.activeRoomId = r.id;
-      await Promise.all([drawMessages(), drawMembers()]);
-      state.roomChannel = api.subscribeRoomMessages(r.id, () => Promise.all([drawMessages(),drawMembers()]).catch(e => toast(e.message,'error')));
-    } catch (e) {
-      chat.innerHTML = emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);
-    }
-    sheet.querySelector('#refresh-room').onclick = () => Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const input = form.elements.message;
-      const button = form.querySelector('button');
-      const value = input.value.trim();
-      if (!value) return;
-      button.disabled = true;
-      try { await api.sendRoomMessage(r.id,value); input.value=''; await drawMessages(); }
-      catch (err) { toast(err.message,'error'); }
-      finally { button.disabled = false; input.focus(); }
-    };
-    sheet.querySelectorAll('#room-emoji-bar [data-emoji]').forEach(b=>b.onclick=()=>{
-      form.elements.message.value += b.dataset.emoji;
-      form.elements.message.focus();
-    });
-    const giftPanel=sheet.querySelector('#room-gift-panel');
-    const giftForm=sheet.querySelector('#room-gift-form');
-    sheet.querySelector('#room-send-gift').onclick=async()=>{
-      try{
-        const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);
-        state.gifts=giftData.gifts;
-        const others=members.filter(m=>m.userId!==state.profile?.uuid);
-        if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}
-        giftForm.elements.recipient.innerHTML=others.map(m=>`<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join('');
-        giftForm.elements.gift.innerHTML=state.gifts.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} — ${num(g.price)} عملة</option>`).join('');
-        giftPanel.classList.toggle('hidden');
-      }catch(e){toast(e.message,'error');}
-    };
-    giftForm.onsubmit=async e=>{
-      e.preventDefault();const b=giftForm.querySelector('button');b.disabled=true;
-      try{const v=Object.fromEntries(new FormData(giftForm));await api.sendGift(v.recipient,v.gift,1);state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');toast('تم إرسال الهدية بنجاح');}
-      catch(err){toast(err.message,'error');}finally{b.disabled=false;}
-    };
-    const del = sheet.querySelector('#del-room');
-    if (del) del.onclick = async () => {
-      if (!confirm('هل تريد حذف هذه الغرفة؟')) return;
-      del.disabled = true;
-      try { await api.deleteRoom(r.id); closeSheet(); toast('تم حذف الغرفة'); render(); }
-      catch (e) { toast(e.message, 'error'); del.disabled = false; }
-    };
+    try{await api.joinRoom(r.id);state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));}
+    catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
+    sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
+    form.onsubmit=async e=>{e.preventDefault();const input=form.elements.message,button=form.querySelector('button'),value=input.value.trim();if(!value)return;button.disabled=true;try{await api.sendRoomMessage(r.id,value);input.value='';await drawMessages();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
+    sheet.querySelectorAll('#room-emoji-bar [data-emoji]').forEach(b=>b.onclick=()=>{form.elements.message.value+=b.dataset.emoji;form.elements.message.focus();});
+    const giftPanel=sheet.querySelector('#room-gift-panel'),giftForm=sheet.querySelector('#room-gift-form');
+    sheet.querySelector('#room-send-gift').onclick=async()=>{try{const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);state.gifts=giftData.gifts;const others=members.filter(m=>m.userId!==state.profile?.uuid);if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}giftForm.elements.recipient.innerHTML=others.map(m=>\`<option value="\${esc(m.userId)}">\${esc(m.displayName)}</option>\`).join('');giftForm.elements.gift.innerHTML=state.gifts.map(g=>\`<option value="\${esc(g.id)}">\${esc(g.name)} — \${num(g.price)} عملة</option>\`).join('');giftPanel.classList.toggle('hidden');}catch(e){toast(e.message,'error');}};
+    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftForm.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendGift(v.recipient,v.gift,1);state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    const del=sheet.querySelector('#del-room');if(del)del.onclick=async()=>{if(!confirm('هل تريد حذف هذه الغرفة؟'))return;del.disabled=true;try{await api.deleteRoom(r.id);closeSheet();toast('تم حذف الغرفة');render();}catch(e){toast(e.message,'error');del.disabled=false;}};
   });
 }
-
 let roomFilter = 'الكل';
 async function roomsScreen(params) {
   screen.innerHTML = header('الغرف الصوتية', `<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء</button>`) + `
