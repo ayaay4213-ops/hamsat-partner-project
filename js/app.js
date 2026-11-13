@@ -235,8 +235,11 @@ function bindProfileForm(root, onSaved) {
   const form = root.querySelector('#profile-form');
   const colorInput = form.querySelector('[name=color]');
   const nameInput = form.querySelector('[name=displayName]');
+  const saveButton = form.querySelector('button[type=submit]');
+  const pendingUploads = new Set();
+  const field = name => form.querySelector('[name="' + name + '"]');
   const refreshAvatar = () => {
-    form.querySelector('#pf-avatar').innerHTML = avatar({ displayName: nameInput.value || 'ه', color: colorInput.value, avatarUrl: form.elements.avatarUrl.value }, 76);
+    form.querySelector('#pf-avatar').innerHTML = avatar({ displayName: nameInput.value || 'ه', color: colorInput.value, avatarUrl: field('avatarUrl').value }, 76);
   };
   form.querySelectorAll('[data-color]').forEach(b => b.onclick = () => {
     colorInput.value = b.dataset.color;
@@ -245,23 +248,65 @@ function bindProfileForm(root, onSaved) {
     refreshAvatar();
   });
   nameInput.oninput = refreshAvatar;
-  const bindMediaUpload=(field,folder,labelText)=>{form.elements[field].onchange=async()=>{const file=form.elements[field].files?.[0];if(!file)return;const label=form.elements[field].closest('label').querySelector('span');if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}label.textContent='جارٍ رفع الصورة...';try{const uploaded=await api.uploadMedia(file,folder);form.elements[field.replace('File','Url')].value=uploaded.url;label.textContent='تم رفع الصورة ✓';if(field==='avatarFile')refreshAvatar();}catch(err){toast(err.message,'error');label.textContent=labelText;}};};
+  const bindMediaUpload = (fileName, folder, labelText) => {
+    const input = field(fileName);
+    input.onchange = () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const label = input.closest('label').querySelector('span');
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        toast('اختاري صورة JPG أو PNG أو WEBP بحجم أقل من 5 ميغابايت', 'error');
+        input.value = '';
+        return;
+      }
+      label.textContent = 'جارٍ رفع الصورة...';
+      saveButton.disabled = true;
+      const task = (async () => {
+        const uploaded = await api.uploadMedia(file, folder);
+        const urlField = field(fileName.replace('File', 'Url'));
+        if (!uploaded?.url) throw new Error('تم رفع الملف لكن لم يصل رابط الصورة من التخزين');
+        urlField.value = uploaded.url;
+        label.textContent = 'تم رفع الصورة ✓';
+        if (fileName === 'avatarFile') refreshAvatar();
+        return uploaded.url;
+      })().catch(err => {
+        label.textContent = labelText;
+        toast('لم تُحفظ الصورة: ' + err.message, 'error');
+        throw err;
+      }).finally(() => {
+        pendingUploads.delete(task);
+        saveButton.disabled = pendingUploads.size > 0;
+      });
+      pendingUploads.add(task);
+    };
+  };
   bindMediaUpload('avatarFile','avatars','اختيار صورة من الهاتف');
   bindMediaUpload('coverFile','profile-covers','اختيار صورة غلاف');
   bindMediaUpload('backgroundFile','profile-backgrounds','اختيار خلفية من الهاتف');
   form.onsubmit = async (e) => {
     e.preventDefault();
-    const btn = form.querySelector('button[type=submit]');
-    const fd = Object.fromEntries(new FormData(form));
-    btn.disabled = true;
+    if (pendingUploads.size) {
+      try { await Promise.all([...pendingUploads]); }
+      catch (_) { return; }
+    }
+    const values = Object.fromEntries(new FormData(form));
+    const payload = {
+      handle: values.handle, displayName: values.displayName, bio: values.bio,
+      country: values.country, color: values.color,
+      avatarUrl: values.avatarUrl, coverUrl: values.coverUrl, backgroundUrl: values.backgroundUrl
+    };
+    saveButton.disabled = true;
+    saveButton.textContent = 'جارٍ حفظ الملف...';
     try {
-      const res = await api.saveProfile(fd);
+      const res = await api.saveProfile(payload);
+      if (!res.profile) throw new Error('لم يرجع الخادم بيانات الملف بعد الحفظ');
       state.profile = res.profile;
       state.wallet = res.wallet;
       onSaved(res);
     } catch (err) {
-      toast(err.message, 'error');
-      btn.disabled = false;
+      toast('تعذّر حفظ الملف: ' + err.message, 'error');
+      saveButton.disabled = false;
+      saveButton.innerHTML = 'إعادة المحاولة';
     }
   };
 }
@@ -643,7 +688,7 @@ function profileView(p, own) {
   return `
     <div class="profile-hero border-b border-ink-700 pb-6 flex flex-col items-center text-center" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.18),rgba(5,6,8,.94)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
       <div class="profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.05),rgba(5,6,8,.55)),url(${JSON.stringify(p.coverUrl)})` : ''}"></div>
-      <div class="profile-avatar-overlap">${avatar(p, 92)}
+      <div class="profile-avatar-overlap">${avatar(p, 92)}</div>
       <h2 class="text-xl font-extrabold mt-4">${esc(p.displayName)}</h2>
       <p class="text-sm text-gold-400 mt-0.5" dir="ltr">@${esc(p.handle)}</p>
       ${p.bio ? `<p class="text-sm text-[#cbb9e6] leading-7 mt-3 max-w-xs">${esc(p.bio)}</p>` : own ? `<p class="text-sm text-[#8a76a8] mt-3">لم تضف نبذة بعد</p>` : ''}
