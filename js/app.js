@@ -603,6 +603,17 @@ function newRoomSheet() {
   });
 }
 
+function showGiftCelebration(gift, quantity = 1) {
+  const root = document.createElement('div');
+  root.className = 'gift-celebration';
+  root.setAttribute('role', 'status');
+  root.innerHTML = `<div class="gift-celebration-card"><span class="gift-celebration-spark">✦</span><div class="gift-celebration-icon"><i data-lucide="${esc(gift?.icon || 'gift')}"></i></div><strong>${esc(gift?.name || 'هدية')}</strong><small>${quantity > 1 ? '× ' + num(quantity) : 'هدية من القلب'}</small><span class="gift-celebration-spark second">✧</span></div>`;
+  document.body.appendChild(root);
+  icons_();
+  requestAnimationFrame(() => root.classList.add('show'));
+  window.setTimeout(() => { root.classList.remove('show'); window.setTimeout(() => root.remove(), 350); }, 2100);
+}
+
 async function giftsScreen() {
   screen.innerHTML = header('الهدايا', `<a href="#/wallet" class="flex items-center gap-1.5 text-sm">${coin(18)}<span class="font-bold text-gold-300">${num(state.wallet?.balance)}</span></a>`) + `
     <div class="px-5 pt-4 pb-6 fade-in">
@@ -617,8 +628,8 @@ async function giftsScreen() {
   try {
     const [giftResult,memberResult]=await Promise.all([state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts(),api.users()]);
     state.gifts=giftResult.gifts; const el=$('#gifts-grid');if(!el)return;
-    const art={rose:'🌹',heart:'💖',coffee:'☕',star:'⭐',moon:'🌙',gem:'💎',crown:'👑',rocket:'🚀',car:'🏎️',castle:'🏰',fireworks:'🎆',diamond_ring:'💍'};
-    el.innerHTML=state.gifts.map(g=>`<div class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art">${art[g.id]||'🎁'}</div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p></div>`).join('');
+    el.innerHTML=state.gifts.map(g=>`<article class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art gift-art-luxe"><i data-lucide="${esc(g.icon || 'gift')}"></i><span>✦</span></div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p><small class="gift-card-note">هدية همسات</small></article>`).join('');
+    icons_();
     const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
     members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${esc(u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
     icons_();
@@ -782,7 +793,9 @@ async function userScreen(handle) {
               const values = Object.fromEntries(new FormData(form));
               await api.sendGift(profile.uuid, values.giftId, Number(values.quantity));
               state.wallet = (await api.wallet()).wallet;
+              const sentGift = state.gifts.find(g => g.id === values.giftId);
               closeSheet();
+              showGiftCelebration(sentGift, Number(values.quantity));
               toast('تم إرسال الهدية بنجاح');
               render();
             } catch (err) {
