@@ -545,7 +545,7 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     if(r.coverUrl){const roomBg='linear-gradient(180deg,rgba(7,8,12,.82),rgba(7,8,12,.91)),url("'+r.coverUrl+'")';sheet.querySelectorAll('.hs-room-cover,.hs-room-stage,.hs-room-people,.hs-room-chat-area').forEach(el=>{el.style.backgroundImage=roomBg;el.style.backgroundSize='cover';el.style.backgroundPosition='center';});}
-    if(r.coverUrl){sheet.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.80),rgba(7,8,12,.93)),url("'+String(r.coverUrl).replace(/["\\\\]/g,'')+'")';sheet.style.backgroundSize='cover';sheet.style.backgroundPosition='center';sheet.style.backgroundAttachment='fixed';}
+    if(r.coverUrl){sheet.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.80),rgba(7,8,12,.93)),url("'+String(r.coverUrl).replaceAll('"','')+'")';sheet.style.backgroundSize='cover';sheet.style.backgroundPosition='center';sheet.style.backgroundAttachment='fixed';}
     const settingsToggle=sheet.querySelector('#room-settings-toggle');
     if(settingsToggle){
       const panel=sheet.querySelector('#room-settings-panel');let chosenEmoji=r.roomEmoji||'🎙️',chosenCover=r.coverUrl||null;
