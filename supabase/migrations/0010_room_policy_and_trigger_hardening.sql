@@ -49,6 +49,21 @@ create policy "Room members can view microphone seats"
   using (public.is_room_member(room_seats.room_id));
 
 
+
+-- Presence and seat changes are consumed by the room UI through Postgres Changes.
+do $
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'room_members'
+  ) then
+    alter publication supabase_realtime add table public.room_members;
+  end if;
+end
+$;
+
 -- Serialize microphone seat allocation per room and reserve seat 1 for its owner.
 -- Keep the existing smallint signature to match the currently deployed RPC.
 create or replace function public.request_room_seat(
