@@ -1,15 +1,22 @@
 import { supabase } from './supabase-auth.js';
 
+// STUN is sufficient for some peer-to-peer networks. Reliable mobile/carrier
+// connectivity still requires a TURN relay or an SFU with server credentials.
 const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 
 export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
   if (!supabase) throw new Error('إعداد Supabase غير مكتمل.');
   if (!roomId || !userId) throw new Error('تعذّر تحديد الغرفة أو حساب المستخدم.');
+  if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
+    throw new Error('هذا المتصفح لا يدعم الاتصال الصوتي. افتحي همسات عبر Chrome أو Safari مع اتصال آمن HTTPS.');
+  }
 
   let channel = null;
   let localStream = null;
   let joined = false;
   let muted = false;
+  let audioUnlocked = false;
+  let joining = null;
   const peers = new Map();
   const audioNodes = new Map();
   const pendingIce = new Map();
@@ -18,11 +25,35 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
 
   async function send(to, kind, data = {}) {
     if (!channel) return;
-    await channel.send({
+    const result = await channel.send({
       type: 'broadcast',
       event: 'signal',
       payload: { from: userId, to, kind, ...data }
     });
+    if (result && result !== 'ok') throw new Error('تعذّر إرسال إشارة الاتصال الصوتي.');
+  }
+
+  function playRemoteAudio(remoteId) {
+    const audio = audioNodes.get(remoteId);
+    if (!audio || !audio.srcObject) return Promise.resolve(false);
+    audio.muted = false;
+    return audio.play().then(() => true).catch(() => {
+      status('اضغطي «سماع الآخرين» للسماح بتشغيل الصوت على هاتفك', true);
+      return false;
+    });
+  }
+
+  async function enableAudio() {
+    audioUnlocked = true;
+    const nodes = [...audioNodes.keys()];
+    if (!nodes.length) {
+      status('تم السماح بالصوت. سيعمل عند اتصال أول مشارك.', true);
+      return true;
+    }
+    const results = await Promise.all(nodes.map(playRemoteAudio));
+    if (results.some(Boolean)) status('تم تفعيل سماع المشاركين', true);
+    else throw new Error('لم يبدأ تشغيل الصوت. تحققي من مستوى الصوت ثم أعيدي الضغط.');
+    return true;
   }
 
   function makePeer(remoteId) {
@@ -32,7 +63,10 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
     pc.onicecandidate = event => {
-      if (event.candidate) send(remoteId, 'ice', { candidate: event.candidate.toJSON() }).catch(() => {});
+      if (event.candidate) {
+        send(remoteId, 'ice', { candidate: event.candidate.toJSON() })
+          .catch(error => status('تعذّر تبادل بيانات الاتصال: ' + error.message));
+      }
     };
     pc.ontrack = event => {
       let audio = audioNodes.get(remoteId);
@@ -40,24 +74,30 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
         audio = document.createElement('audio');
         audio.autoplay = true;
         audio.playsInline = true;
+        audio.setAttribute('playsinline', '');
+        audio.setAttribute('aria-label', 'صوت مشارك في الغرفة');
         audio.dataset.voicePeer = remoteId;
         const root = document.getElementById('voice-audio');
         if (root) root.appendChild(audio);
         audioNodes.set(remoteId, audio);
       }
-      audio.srcObject = event.streams[0];
-      audio.play().catch(() => status('اضغطي بدء الصوت للسماح بتشغيل صوت الآخرين', true));
-      status('الصوت المباشر متصل', true);
+      const stream = event.streams?.[0] || new MediaStream([event.track]);
+      audio.srcObject = stream;
+      if (audioUnlocked) playRemoteAudio(remoteId);
+      else status('وصل مشارك. اضغطي «سماع الآخرين» لتفعيل الصوت', true);
     };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected' || pc.connectionState === 'closed') {
+      if (pc.connectionState === 'connected') status('الصوت المباشر متصل', true);
+      if (pc.connectionState === 'failed') {
         dropPeer(remoteId);
+        status('تعذّر ربط أحد المشاركين. قد تحتاج الشبكة إلى TURN.', false);
       }
     };
     return pc;
   }
 
   async function offerTo(remoteId) {
+    // Deterministic initiator: only the lexicographically smaller user ID offers.
     if (!joined || !remoteId || userId.localeCompare(remoteId) >= 0 || peers.has(remoteId)) return;
     const pc = makePeer(remoteId);
     try {
@@ -66,7 +106,7 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
       await send(remoteId, 'offer', { description: pc.localDescription.toJSON() });
     } catch (error) {
       dropPeer(remoteId);
-      throw error;
+      status('تعذّر بدء الاتصال مع مشارك: ' + error.message);
     }
   }
 
@@ -74,7 +114,8 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
     const queued = pendingIce.get(remoteId) || [];
     pendingIce.delete(remoteId);
     for (const candidate of queued) {
-      try { await pc.addIceCandidate(candidate); } catch (_) {}
+      try { await pc.addIceCandidate(candidate); }
+      catch (error) { console.warn('Ignored invalid queued ICE candidate', error); }
     }
   }
 
@@ -103,7 +144,8 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
       }
     } else if (payload.kind === 'ice' && payload.candidate) {
       if (pc.remoteDescription) {
-        try { await pc.addIceCandidate(payload.candidate); } catch (_) {}
+        try { await pc.addIceCandidate(payload.candidate); }
+        catch (error) { console.warn('Ignored invalid ICE candidate', error); }
       } else {
         const queued = pendingIce.get(remoteId) || [];
         queued.push(payload.candidate);
@@ -117,6 +159,7 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
     if (pc) {
       pc.ontrack = null;
       pc.onicecandidate = null;
+      pc.onconnectionstatechange = null;
       pc.close();
       peers.delete(remoteId);
     }
@@ -132,56 +175,57 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
 
   async function join() {
     if (joined) return;
-    status('نطلب إذن الميكروفون...');
-    localStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      video: false
-    });
-    channel = supabase.channel('hamsat-live-audio-' + roomId, {
-      config: { broadcast: { self: false }, presence: { key: userId } }
-    });
-    channel
-      .on('broadcast', { event: 'signal' }, ({ payload }) => {
-        handleSignal(payload).catch(error => status('تعذّر إنشاء اتصال صوتي: ' + error.message));
-      })
-      .on('presence', { event: 'sync' }, () => {
-        const present = channel.presenceState();
-        Object.values(present).flat().forEach(entry => {
-          const remoteId = entry?.user_id;
-          if (remoteId && remoteId !== userId) offerTo(remoteId).catch(error => status(error.message));
+    if (joining) return joining;
+    joining = (async () => {
+      status('نطلب إذن الميكروفون...');
+      localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
+      });
+      channel = supabase.channel('hamsat-live-audio-' + roomId, {
+        config: { broadcast: { self: false }, presence: { key: userId } }
+      });
+      channel
+        .on('broadcast', { event: 'signal' }, ({ payload }) => {
+          handleSignal(payload).catch(error => status('تعذّر إنشاء اتصال صوتي: ' + error.message));
+        })
+        .on('presence', { event: 'sync' }, () => {
+          const present = channel.presenceState();
+          Object.values(present).flat().forEach(entry => {
+            const remoteId = entry?.user_id;
+            if (remoteId && remoteId !== userId) offerTo(remoteId);
+          });
+        });
+
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('انتهت مهلة الاتصال بخدمة الغرف الصوتية.')), 15000);
+        channel.subscribe(async state => {
+          if (state === 'SUBSCRIBED') {
+            clearTimeout(timeout);
+            try {
+              await channel.track({ user_id: userId, joined_at: new Date().toISOString() });
+              joined = true;
+              const present = channel.presenceState();
+              Object.values(present).flat().forEach(entry => {
+                const remoteId = entry?.user_id;
+                if (remoteId && remoteId !== userId) offerTo(remoteId);
+              });
+              await send('*', 'hello');
+              status('الميكروفون يعمل، جارٍ ربط المشاركين', true);
+              resolve();
+            } catch (error) {
+              clearTimeout(timeout);
+              reject(error);
+            }
+          } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
+            clearTimeout(timeout);
+            reject(new Error('تعذّر الاتصال بقناة الصوت. تحققي من إعدادات Realtime في Supabase.'));
+          }
         });
       });
-
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('انتهت مهلة الاتصال بخدمة الغرف الصوتية.')), 12000);
-      channel.subscribe(async state => {
-        if (state === 'SUBSCRIBED') {
-          clearTimeout(timeout);
-          try {
-            await channel.track({ user_id: userId, joined_at: new Date().toISOString() });
-            joined = true;
-            // Re-check presence after tracking: the initial presence sync may have
-            // happened before joined became true, leaving one side without an offer.
-            const present = channel.presenceState();
-            Object.values(present).flat().forEach(entry => {
-              const remoteId = entry?.user_id;
-              if (remoteId && remoteId !== userId) {
-                offerTo(remoteId).catch(error => status('تعذّر بدء الاتصال مع أحد المشاركين: ' + error.message));
-              }
-            });
-            await send('*', 'hello');
-            status('الميكروفون يعمل، جارٍ ربط المشاركين', true);
-            resolve();
-          } catch (error) {
-            clearTimeout(timeout);
-            reject(error);
-          }
-        } else if (state === 'CHANNEL_ERROR' || state === 'TIMED_OUT' || state === 'CLOSED') {
-          clearTimeout(timeout);
-          reject(new Error('تعذّر الاتصال بقناة الصوت. تحققي من إعدادات Realtime في Supabase.'));
-        }
-      });
-    });
+    })();
+    try { await joining; }
+    finally { joining = null; }
   }
 
   function toggleMute() {
@@ -206,10 +250,11 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
       localStream = null;
     }
     muted = false;
+    audioUnlocked = false;
     const root = document.getElementById('voice-audio');
     if (root) root.innerHTML = '';
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, get muted() { return muted; } };
+  return { join, leave, toggleMute, enableAudio, get muted() { return muted; } };
 }
