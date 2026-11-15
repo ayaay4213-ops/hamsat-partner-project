@@ -1,11 +1,12 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
 import { api } from './api.js';
+import { createVoiceRoom } from './voice-room.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null, voiceRoom: null };
 
 const COLORS = ['#7c3aed', '#9d174d', '#0f766e', '#b45309', '#1d4ed8', '#6d28d9', '#be123c', '#047857'];
 const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تقنية', 'رياضة', 'تعارف', 'ألعاب'];
@@ -67,7 +68,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet() { if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
 async function signOut() {
@@ -422,7 +423,8 @@ async function openRoom(r) {
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
-      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>المقاعد تفاعلية حاليًا. البث الصوتي المباشر يحتاج ربط خدمة الصوت.</span></div>
+      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>الصوت المباشر التجريبي يحتاج إذن الميكروفون واتصالاً مستقراً.</span></div>
+      <div class="hs-live-audio-controls"><p id="voice-status" role="status">الصوت غير متصل</p><div><button type="button" id="voice-start" class="btn-gold">تشغيل الميكروفون</button><button type="button" id="voice-mute" class="btn-ghost" disabled>كتم الميكروفون</button><button type="button" id="voice-leave" class="btn-ghost" hidden>إيقاف الصوت</button></div><div id="voice-audio" class="sr-only" aria-hidden="true"></div></div>
     </section>
     <section class="hs-room-people">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">IN THE ROOM</span><h3>الحاضرون</h3></div><span class="hs-room-people-live"><i></i> الآن</span></div>
@@ -438,6 +440,10 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
+    const voiceStatus=sheet.querySelector('#voice-status'), voiceStart=sheet.querySelector('#voice-start'), voiceMute=sheet.querySelector('#voice-mute'), voiceLeave=sheet.querySelector('#voice-leave');
+    voiceStart.onclick=async()=>{voiceStart.disabled=true;voiceStatus.textContent='جارٍ طلب إذن الميكروفون...';try{const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:s=>{if(voiceStatus.isConnected)voiceStatus.textContent=s.message;if(voiceMute.isConnected)voiceMute.textContent=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';}});state.voiceRoom=controller;await controller.join();voiceMute.disabled=false;voiceLeave.hidden=false;voiceStart.textContent='الصوت متصل';}catch(e){if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;voiceStart.disabled=false;}};
+    voiceMute.onclick=()=>{if(!state.voiceRoom)return;const muted=state.voiceRoom.toggleMute();voiceMute.textContent=muted?'تشغيل الميكروفون':'كتم الميكروفون';};
+    voiceLeave.onclick=async()=>{const controller=state.voiceRoom;state.voiceRoom=null;if(controller)await controller.leave();voiceMute.disabled=true;voiceLeave.hidden=true;voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';voiceStatus.textContent='تم إيقاف الصوت';};
     const drawMessages=async()=>{
       const {messages}=await api.roomMessages(r.id); if(!chat.isConnected)return;
       chat.innerHTML=messages.length?messages.map(m=>`<div class="hs-room-message ${m.userId===state.profile?.uuid?'mine':''}">${avatar({displayName:m.displayName,color:m.color},30)}<div><b>${esc(m.displayName)}</b><p>${esc(m.body)}</p><small>${timeAgo(m.createdAt)}</small></div></div>`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
