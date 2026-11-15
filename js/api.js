@@ -38,6 +38,16 @@ export const api = {
     const { data, error } = await client().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     fail(error); return data;
   },
+  sendPasswordReset: async (email) => {
+    const { data, error } = await client().auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: location.origin + location.pathname
+    });
+    fail(error); return data;
+  },
+  updatePassword: async (password) => {
+    const { data, error } = await client().auth.updateUser({ password });
+    fail(error); return data;
+  },
   signUpWithEmail: async (email, password) => {
     const { data, error } = await client().auth.signUp({
       email: email.trim().toLowerCase(), password,
