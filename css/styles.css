@@ -621,3 +621,24 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-seat.empty .hs-seat-mic{animation:hsMicPulse 2.4s ease-in-out infinite}
 .hs-room-seat.occupied .hs-seat-mic{background:linear-gradient(145deg,#d4af3740,#d4af3710);border-color:#f0d77e}
 @keyframes hsMicPulse{0%,100%{box-shadow:0 0 0 4px #d4af370a,0 0 12px #d4af3715}50%{box-shadow:0 0 0 8px #d4af3718,0 0 25px #d4af3744}}
+
+
+/* Hamsat voice stage: circular avatar seats with a clear microphone badge */
+.hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px 9px}
+.hs-room-seat{position:relative;min-height:132px;padding:10px 3px 9px;border:0!important;background:transparent!important;box-shadow:none!important;gap:7px}
+.hs-room-seat:before{content:"";position:absolute;top:3px;left:50%;width:76px;height:76px;transform:translateX(-50%);border-radius:50%;border:1px solid rgba(226,190,83,.42);background:radial-gradient(circle,rgba(216,179,72,.12),rgba(17,18,22,.9) 70%);box-shadow:0 0 0 5px rgba(212,175,55,.045),inset 0 0 18px rgba(212,175,55,.09)}
+.hs-seat-ring{position:relative;z-index:1;width:66px;height:66px;display:grid;place-items:center;border-radius:50%;border:2px solid #d9b957;padding:3px;background:#111216;box-shadow:0 0 13px #d4af3733}
+.hs-seat-ring>.avatar,.hs-seat-ring>div:not(.hs-seat-mic){width:100%!important;height:100%!important;border-radius:50%!important;overflow:hidden}
+.hs-seat-ring img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.hs-seat-ring .hs-seat-mic{width:100%;height:100%;border:0;background:linear-gradient(145deg,#29231a,#121318);font-size:22px}
+.hs-room-seat.empty .hs-seat-ring{border:1px dashed #c6a64e;background:#1a1916}
+.hs-room-seat.empty .hs-seat-mic{color:#e8c96d;animation:hsMicPulse 2.4s ease-in-out infinite}
+.hs-seat-live-mic{position:absolute;right:-3px;bottom:0;width:23px;height:23px;padding:4px;border-radius:50%;background:linear-gradient(145deg,#f4dc8d,#b38a2e);color:#17130a;border:2px solid #111216;box-shadow:0 2px 9px #0008}
+.hs-seat-live-mic svg{width:13px;height:13px;stroke-width:2.5}
+.hs-room-seat b{position:relative;z-index:1;max-width:100%;font-size:10px;color:#f4e7c1}
+.hs-room-seat small{position:relative;z-index:1;font-size:9px;color:#b6a985}
+.hs-seat-number{position:absolute;top:1px;left:calc(50% + 42px);z-index:2;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#2a2418;border:1px solid #c9a64b;color:#e9d17d;font-size:9px}
+.hs-room-seat em{top:4px;right:3px;z-index:3;font-size:8px;background:#e8c65d;color:#17130a;border-radius:8px;padding:3px 5px}
+.hs-room-seat.occupied .hs-seat-ring{border-color:#f0d77e;box-shadow:0 0 0 4px #d4af3710,0 0 20px #d4af3744}
+.hs-room-seat.mine .hs-seat-ring{border-color:#fff0a7;box-shadow:0 0 0 5px #e6c65c20,0 0 24px #d4af3766}
+@media(max-width:380px){.hs-room-seat{min-height:124px}.hs-seat-ring{width:60px;height:60px}.hs-room-seat:before{width:70px;height:70px}}
