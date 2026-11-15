@@ -608,3 +608,16 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .password-tools button[data-password-copy]{inset-inline-end:5px}
 .password-tools button svg{width:17px;height:17px}
 .password-tools button:active{background:#45391e}
+
+/* Owner room settings, personalized room identity and expressive mic stage */
+.hs-room-title-emoji{display:inline-grid;place-items:center;width:30px;height:30px;margin-left:4px;border-radius:10px;background:#d4af3722;border:1px solid #d4af3755;font-size:19px;vertical-align:middle}
+.hs-room-settings{margin:0 14px 14px;padding:16px;border:1px solid #d4af3755;border-radius:20px;background:linear-gradient(145deg,rgba(38,31,22,.96),rgba(12,13,17,.96));box-shadow:0 12px 35px #0007}
+.hs-room-settings h3{font-size:15px;font-weight:800;color:#f6e7b5}
+.hs-room-emoji-pick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:9px}
+.hs-room-emoji-pick button{height:43px;border:1px solid #d4af3738;border-radius:12px;background:#ffffff08;font-size:22px}
+.hs-room-emoji-pick button.active{border-color:#f0d77e;background:#d4af3730;box-shadow:0 0 0 2px #d4af371c}
+.room-background-picker{margin-top:8px;min-height:54px}
+.hs-room-seat .hs-seat-mic{width:50px;height:50px;box-shadow:0 0 0 5px #d4af370c,0 0 22px #d4af3725}
+.hs-room-seat.empty .hs-seat-mic{animation:hsMicPulse 2.4s ease-in-out infinite}
+.hs-room-seat.occupied .hs-seat-mic{background:linear-gradient(145deg,#d4af3740,#d4af3710);border-color:#f0d77e}
+@keyframes hsMicPulse{0%,100%{box-shadow:0 0 0 4px #d4af370a,0 0 12px #d4af3715}50%{box-shadow:0 0 0 8px #d4af3718,0 0 25px #d4af3744}}
