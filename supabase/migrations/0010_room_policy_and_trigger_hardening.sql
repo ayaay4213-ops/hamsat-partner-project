@@ -124,7 +124,7 @@ begin
 
   return jsonb_build_object('success', true, 'room_id', p_room_id, 'seat_no', p_seat_no);
 end;
-$;
+$$;
 
 revoke all on function public.request_room_seat(uuid, integer) from public;
 grant execute on function public.request_room_seat(uuid, integer) to authenticated;
