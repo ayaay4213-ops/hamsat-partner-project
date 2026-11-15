@@ -56,6 +56,7 @@ if (fs.existsSync(hardeningMigrationPath)) {
     'create or replace function public.is_room_member',
     'public.is_room_member(room_messages.room_id)',
     'alter publication supabase_realtime add table public.room_members',
+    'revoke truncate, references, trigger on all tables in schema public from anon, authenticated',
     'revoke all on function public.handle_new_user() from public, anon, authenticated',
     'revoke all on function public.rls_auto_enable() from public, anon, authenticated'
   ]) {
