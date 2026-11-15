@@ -15,6 +15,7 @@ const required = [
   'supabase/functions/livekit-token/index.ts',
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
+  'supabase/migrations/0012_room_security_and_lifecycle.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -72,6 +73,27 @@ if (fs.existsSync(hardeningMigrationPath)) {
     'revoke all on function public.rls_auto_enable() from public, anon, authenticated'
   ]) {
     if (!sql.includes(token.toLowerCase())) errors.push(`Missing security hardening SQL: ${token}`);
+  }
+}
+
+const roomLifecycleMigrationPath = path.join(root, 'supabase/migrations/0012_room_security_and_lifecycle.sql');
+if (fs.existsSync(roomLifecycleMigrationPath)) {
+  const sql = fs.readFileSync(roomLifecycleMigrationPath, 'utf8').toLowerCase();
+  const dollarQuotes = sql.match(/\$\$/g) || [];
+  if (dollarQuotes.length % 2 !== 0) errors.push('Invalid SQL dollar-quote delimiters in room lifecycle migration');
+  for (const token of [
+    'create schema if not exists private',
+    'create or replace function private.is_room_member',
+    'private.is_room_member(room_members.room_id)',
+    'private.is_room_member(room_messages.room_id)',
+    'private.is_room_member(room_seats.room_id)',
+    'create or replace function public.request_room_seat',
+    'p_seat_no = 1 and v_owner <> v_user',
+    'create trigger room_member_release_seat',
+    'alter publication supabase_realtime add table public.room_members',
+    'revoke insert, update, delete on public.room_seats from anon, authenticated'
+  ]) {
+    if (!sql.includes(token.toLowerCase())) errors.push(`Missing room lifecycle SQL: ${token}`);
   }
 }
 
