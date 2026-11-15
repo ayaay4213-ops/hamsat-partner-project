@@ -20,7 +20,16 @@ Deno.serve(async (req: Request) => {
   const livekitApiKey = Deno.env.get("LIVEKIT_API_KEY");
   const livekitApiSecret = Deno.env.get("LIVEKIT_API_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const publishableKeyNames = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
+  let mappedPublishableKey = "";
+  if (publishableKeyNames) {
+    try {
+      const keyNames = JSON.parse(publishableKeyNames);
+      const defaultKeyName = keyNames?.default;
+      if (typeof defaultKeyName === "string") mappedPublishableKey = Deno.env.get(defaultKeyName) || "";
+    } catch (_) {}
+  }
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || mappedPublishableKey || Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
 
   if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !supabaseUrl || !supabaseAnonKey) {
     return json(503, { error: "خدمة الصوت غير مهيأة بعد على الخادم." });
