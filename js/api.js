@@ -5,6 +5,9 @@ function client() {
   return supabase;
 }
 function fail(error) { if (error) throw new Error(error.message || 'حدث خطأ في الاتصال بقاعدة البيانات'); }
+
+// Keep auth callbacks on the current Hamsat preview instead of an older deployment/domain.
+const AUTH_REDIRECT_URL = 'https://hamsat-preview-git-build-hamsat-complete-app-hamsat.vercel.app/';
 function mapProfile(p) {
   if (!p) return null;
   return {
@@ -41,7 +44,7 @@ export const api = {
   },
   sendPasswordReset: async (email) => {
     const { data, error } = await client().auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: location.origin + location.pathname
+      redirectTo: AUTH_REDIRECT_URL
     });
     fail(error); return data;
   },
@@ -52,7 +55,7 @@ export const api = {
   signUpWithEmail: async (email, password) => {
     const { data, error } = await client().auth.signUp({
       email: email.trim().toLowerCase(), password,
-      options: { emailRedirectTo: location.origin + location.pathname }
+      options: { emailRedirectTo: AUTH_REDIRECT_URL }
     });
     fail(error); return data;
   },
