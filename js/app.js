@@ -565,17 +565,36 @@ async function openRoom(r) {
         return `<button type="button" data-seat="${n}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}>${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>${esc(m?.displayName||'عضو')}</b><small>${own?'اضغطي للنزول':'على المايك'}</small>${isHost?'<em>HOST</em>':''}</button>`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
+        const leaving=b.dataset.own==='true';
         try{
-          if(b.dataset.own==='true') await api.leaveRoomSeat(r.id);
+          b.disabled=true;
+          if(leaving) await api.leaveRoomSeat(r.id);
           else await api.requestRoomSeat(r.id,Number(b.dataset.seat));
-          if(state.voiceRoom && state.voiceRoom.canPublish===false && b.dataset.own!=='true'){
-            const listener=state.voiceRoom;state.voiceRoom=null;await listener.leave();
-            voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';
+
+          // LiveKit permissions are embedded in the token. Reconnect whenever
+          // seat ownership changes so leaving a seat removes publish permission.
+          const currentVoice=state.voiceRoom;
+          const shouldPublish=!leaving;
+          if(currentVoice && currentVoice.canPublish!==shouldPublish){
+            state.voiceRoom=null;
+            await currentVoice.leave();
+            voiceMute.disabled=true;
+            voiceAudioEnable.disabled=true;
+            voiceAudioEnable.textContent='سماع الآخرين';
+            voiceLeave.hidden=true;
+            voiceStart.disabled=false;
+            voiceStart.textContent='دخول الغرفة الصوتية';
+            await voiceStart.onclick();
+          }else if(!currentVoice && !leaving){
+            await voiceStart.onclick();
           }
+
           await drawMembers();
-          toast(b.dataset.own==='true'?'غادرتِ المايك':'تم حجز المقعد');
-          if(!state.voiceRoom && b.dataset.own!=='true') await voiceStart.onclick();
-        } catch(e){toast(e.message,'error');}
+          toast(leaving?'غادرتِ المايك':'تم حجز المقعد');
+        }catch(e){
+          toast(e.message,'error');
+          await drawMembers().catch(()=>{});
+        }
       });
       icons_();
     };
