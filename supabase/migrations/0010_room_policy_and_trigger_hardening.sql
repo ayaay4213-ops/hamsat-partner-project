@@ -65,10 +65,11 @@ end
 $;
 
 -- Serialize microphone seat allocation per room and reserve seat 1 for its owner.
--- Keep the existing smallint signature to match the currently deployed RPC.
+-- Normalize the legacy smallint RPC to the integer signature used by migration 0009.
+drop function if exists public.request_room_seat(uuid, smallint);
 create or replace function public.request_room_seat(
   p_room_id uuid,
-  p_seat_no smallint
+  p_seat_no integer
 )
 returns jsonb
 language plpgsql
@@ -123,8 +124,8 @@ begin
 end;
 $;
 
-revoke all on function public.request_room_seat(uuid, smallint) from public;
-grant execute on function public.request_room_seat(uuid, smallint) to authenticated;
+revoke all on function public.request_room_seat(uuid, integer) from public;
+grant execute on function public.request_room_seat(uuid, integer) to authenticated;
 
 
 -- RLS does not protect TRUNCATE. Client roles do not need schema-level
