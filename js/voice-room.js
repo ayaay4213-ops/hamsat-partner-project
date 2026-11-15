@@ -12,6 +12,7 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
   let muted = false;
   const peers = new Map();
   const audioNodes = new Map();
+  const pendingIce = new Map();
 
   const status = (message, connected = false) => onState({ message, connected, muted });
 
@@ -64,6 +65,14 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
     await send(remoteId, 'offer', { description: pc.localDescription.toJSON() });
   }
 
+  async function flushIce(remoteId, pc) {
+    const queued = pendingIce.get(remoteId) || [];
+    pendingIce.delete(remoteId);
+    for (const candidate of queued) {
+      try { await pc.addIceCandidate(candidate); } catch (_) {}
+    }
+  }
+
   async function handleSignal(payload) {
     if (!payload || (payload.to !== userId && payload.to !== '*') || payload.from === userId) return;
     const remoteId = payload.from;
@@ -78,13 +87,23 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
     const pc = makePeer(remoteId);
     if (payload.kind === 'offer') {
       await pc.setRemoteDescription(payload.description);
+      await flushIce(remoteId, pc);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       await send(remoteId, 'answer', { description: pc.localDescription.toJSON() });
     } else if (payload.kind === 'answer') {
-      if (pc.signalingState === 'have-local-offer') await pc.setRemoteDescription(payload.description);
+      if (pc.signalingState === 'have-local-offer') {
+        await pc.setRemoteDescription(payload.description);
+        await flushIce(remoteId, pc);
+      }
     } else if (payload.kind === 'ice' && payload.candidate) {
-      try { await pc.addIceCandidate(payload.candidate); } catch (_) {}
+      if (pc.remoteDescription) {
+        try { await pc.addIceCandidate(payload.candidate); } catch (_) {}
+      } else {
+        const queued = pendingIce.get(remoteId) || [];
+        queued.push(payload.candidate);
+        pendingIce.set(remoteId, queued);
+      }
     }
   }
 
@@ -96,6 +115,7 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
       pc.close();
       peers.delete(remoteId);
     }
+    pendingIce.delete(remoteId);
     const audio = audioNodes.get(remoteId);
     if (audio) {
       audio.pause();
