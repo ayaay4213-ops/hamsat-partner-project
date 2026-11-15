@@ -231,7 +231,7 @@ export const api = {
   },
   inventory: async () => {
     const user=await currentUser();
-    const {data,error}=await client().from('user_inventory').select('item_id,purchased_at,shop_items(id,name,item_type,price,rarity,visual_key)').eq('user_id',user.id).order('purchased_at',{ascending:false});
+    const {data,error}=await client().from('user_inventory').select('item_id,purchased_at,shop_items(id,name,item_type,price,rarity,visual_key,image_url,description)').eq('user_id',user.id).order('purchased_at',{ascending:false});
     fail(error); return {items:data.map(x=>({...x.shop_items,purchasedAt:x.purchased_at}))};
   },
   purchaseShopItem: async (itemId) => {
