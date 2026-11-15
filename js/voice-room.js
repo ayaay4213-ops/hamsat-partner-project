@@ -1,10 +1,12 @@
 import { supabase } from './supabase-auth.js';
+import { AUDIO_PROVIDER } from '../supabase/config.js';
+import { createLiveKitVoiceRoom } from './livekit-room.js';
 
 // STUN is sufficient for some peer-to-peer networks. Reliable mobile/carrier
 // connectivity still requires a TURN relay or an SFU with server credentials.
 const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 
-export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
+function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   if (!supabase) throw new Error('إعداد Supabase غير مكتمل.');
   if (!roomId || !userId) throw new Error('تعذّر تحديد الغرفة أو حساب المستخدم.');
   if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
@@ -257,4 +259,11 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
   }
 
   return { join, leave, toggleMute, enableAudio, get muted() { return muted; } };
+}
+
+
+// Switch to the SFU only after LiveKit credentials and the token function are deployed.
+export function createVoiceRoom(options) {
+  if (AUDIO_PROVIDER === 'livekit') return createLiveKitVoiceRoom(options);
+  return createPeerVoiceRoom(options);
 }
