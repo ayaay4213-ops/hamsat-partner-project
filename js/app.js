@@ -402,17 +402,17 @@ function bindRoomCards(root, rooms) {
 
 async function openRoom(r) {
   if (!r) return;
-  openSheet(\`
+  openSheet(`
     <div class="hs-room-head">
-      <div class="hs-room-cover" style="\${r.coverUrl ? \`background-image:linear-gradient(180deg,#08090a22,#08090add),url(\${JSON.stringify(r.coverUrl)})\` : ''}">
+      <div class="hs-room-cover" style="${r.coverUrl ? `background-image:linear-gradient(180deg,#08090a22,#08090add),url(${JSON.stringify(r.coverUrl)})` : ''}">
         <div class="hs-room-head-row">
           <button type="button" class="hs-room-close" data-close aria-label="إغلاق"><i data-lucide="arrow-right"></i></button>
           <span class="hs-room-state"><i></i> غرفة اجتماعية</span>
           <button type="button" id="refresh-room" class="hs-room-close" aria-label="تحديث"><i data-lucide="refresh-cw"></i></button>
         </div>
         <div class="hs-room-title-row">
-          <div class="hs-room-owner">\${avatar({displayName:r.ownerName,color:r.ownerColor},52)}</div>
-          <div class="min-w-0 flex-1"><h2>\${esc(r.title)}</h2><p>\${esc(r.topic)} · بواسطة \${esc(r.ownerName||'عضو')}</p></div>
+          <div class="hs-room-owner">${avatar({displayName:r.ownerName,color:r.ownerColor},52)}</div>
+          <div class="min-w-0 flex-1"><h2>${esc(r.title)}</h2><p>${esc(r.topic)} · بواسطة ${esc(r.ownerName||'عضو')}</p></div>
           <span class="hs-room-owner-tag">المضيف</span>
         </div>
       </div>
@@ -431,27 +431,27 @@ async function openRoom(r) {
     <section class="hs-room-chat-area">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">COMMUNITY CHAT</span><h3>المحادثة</h3></div><span class="text-xs text-[#b7b2a5]">رسائل الغرفة</span></div>
       <div id="room-chat" class="hs-room-chat"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
-      <div id="room-emoji-bar" class="hs-room-emojis">\${(state.profile?.equippedEmojiPackId === "emoji_love" ? ["💖","💗","💕","💞","😘","😍","🌹"] : state.profile?.equippedEmojiPackId === "emoji_luxe" ? ["👑","💎","✨","🥂","🪞","💍","🌟"] : state.profile?.equippedEmojiPackId === "emoji_moon" ? ["🌙","⭐","🌟","☄️","🪐","🌌","✨"] : ["💖","🌹","😂","😍","👏","✨","🌙"]).map(e=>\`<button type="button" data-emoji="\${e}">\${e}</button>\`).join("")}</div>
+      <div id="room-emoji-bar" class="hs-room-emojis">${(state.profile?.equippedEmojiPackId === "emoji_love" ? ["💖","💗","💕","💞","😘","😍","🌹"] : state.profile?.equippedEmojiPackId === "emoji_luxe" ? ["👑","💎","✨","🥂","🪞","💍","🌟"] : state.profile?.equippedEmojiPackId === "emoji_moon" ? ["🌙","⭐","🌟","☄️","🪐","🌌","✨"] : ["💖","🌹","😂","😍","👏","✨","🌙"]).map(e=>`<button type="button" data-emoji="${e}">${e}</button>`).join("")}</div>
       <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
     </section>
-    \${r.ownerUuid === state.profile?.uuid ? \`<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>\` : ''}
-  \`, async (sheet) => {
+    ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>` : ''}
+  `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
     const drawMessages=async()=>{
       const {messages}=await api.roomMessages(r.id); if(!chat.isConnected)return;
-      chat.innerHTML=messages.length?messages.map(m=>\`<div class="hs-room-message \${m.userId===state.profile?.uuid?'mine':''}">\${avatar({displayName:m.displayName,color:m.color},30)}<div><b>\${esc(m.displayName)}</b><p>\${esc(m.body)}</p><small>\${timeAgo(m.createdAt)}</small></div></div>\`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
+      chat.innerHTML=messages.length?messages.map(m=>`<div class="hs-room-message ${m.userId===state.profile?.uuid?'mine':''}">${avatar({displayName:m.displayName,color:m.color},30)}<div><b>${esc(m.displayName)}</b><p>${esc(m.body)}</p><small>${timeAgo(m.createdAt)}</small></div></div>`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
       chat.scrollTop=chat.scrollHeight;
     };
     const drawMembers=async()=>{
       const {members}=await api.roomMembers(r.id); if(!membersEl.isConnected)return;
       countEl.textContent=num(members.length);
-      membersEl.innerHTML=members.length?members.map(m=>\`<div class="hs-room-person">\${avatar(m,34)}<span>\${esc(m.displayName)}</span></div>\`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span></div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       const {seats}=await api.roomSeats(r.id), bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
       seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
-        if(!seat)return \`<button type="button" data-seat="\${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>\${isHost?'مقعد المضيف':'مايك '+n}</b><small>\${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>\`;
-        return \`<button type="button" data-seat="\${n}" data-own="\${own}" class="hs-room-seat occupied \${own?'mine':''}" \${own?'':'disabled'}>\${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>\${esc(m?.displayName||'عضو')}</b><small>\${own?'اضغطي للنزول':'على المايك'}</small>\${isHost?'<em>HOST</em>':''}</button>\`;
+        if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>${isHost?'مقعد المضيف':'مايك '+n}</b><small>${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>`;
+        return `<button type="button" data-seat="${n}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}>${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>${esc(m?.displayName||'عضو')}</b><small>${own?'اضغطي للنزول':'على المايك'}</small>${isHost?'<em>HOST</em>':''}</button>`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
         try{if(b.dataset.own==='true')await api.leaveRoomSeat(r.id);else await api.requestRoomSeat(r.id,Number(b.dataset.seat));await drawMembers();toast(b.dataset.own==='true'?'غادرتِ المايك':'تم حجز المقعد');}
@@ -465,7 +465,7 @@ async function openRoom(r) {
     form.onsubmit=async e=>{e.preventDefault();const input=form.elements.message,button=form.querySelector('button'),value=input.value.trim();if(!value)return;button.disabled=true;try{await api.sendRoomMessage(r.id,value);input.value='';await drawMessages();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
     sheet.querySelectorAll('#room-emoji-bar [data-emoji]').forEach(b=>b.onclick=()=>{form.elements.message.value+=b.dataset.emoji;form.elements.message.focus();});
     const giftPanel=sheet.querySelector('#room-gift-panel'),giftForm=sheet.querySelector('#room-gift-form');
-    sheet.querySelector('#room-send-gift').onclick=async()=>{try{const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);state.gifts=giftData.gifts;const others=members.filter(m=>m.userId!==state.profile?.uuid);if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}giftForm.elements.recipient.innerHTML=others.map(m=>\`<option value="\${esc(m.userId)}">\${esc(m.displayName)}</option>\`).join('');giftForm.elements.gift.innerHTML=state.gifts.map(g=>\`<option value="\${esc(g.id)}">\${esc(g.name)} — \${num(g.price)} عملة</option>\`).join('');giftPanel.classList.toggle('hidden');}catch(e){toast(e.message,'error');}};
+    sheet.querySelector('#room-send-gift').onclick=async()=>{try{const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);state.gifts=giftData.gifts;const others=members.filter(m=>m.userId!==state.profile?.uuid);if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}giftForm.elements.recipient.innerHTML=others.map(m=>`<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join('');giftForm.elements.gift.innerHTML=state.gifts.map(g=>`<option value="${esc(g.id)}">${esc(g.name)} — ${num(g.price)} عملة</option>`).join('');giftPanel.classList.toggle('hidden');}catch(e){toast(e.message,'error');}};
     giftForm.onsubmit=async e=>{e.preventDefault();const b=giftForm.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendGift(v.recipient,v.gift,1);state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
     const del=sheet.querySelector('#del-room');if(del)del.onclick=async()=>{if(!confirm('هل تريد حذف هذه الغرفة؟'))return;del.disabled=true;try{await api.deleteRoom(r.id);closeSheet();toast('تم حذف الغرفة');render();}catch(e){toast(e.message,'error');del.disabled=false;}};
   });
