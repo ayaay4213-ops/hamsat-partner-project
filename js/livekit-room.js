@@ -12,6 +12,8 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let canPublish = false;
   let joining = null;
   let disposed = false;
+  let seatChannel = null;
+  let permissionRefreshing = false;
   const audioElements = new Map();
 
   const status = (message, connected = joined) => {
@@ -30,6 +32,35 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       throw new Error(data?.error || 'خادم الصوت لم يُرجع بيانات اتصال صالحة.');
     }
     return data;
+  }
+
+  async function refreshPermissions() {
+    if (!room || !joined || disposed || permissionRefreshing) return;
+    permissionRefreshing = true;
+    try {
+      const credentials = await requestToken();
+      const nextCanPublish = Boolean(credentials.can_publish);
+      if (nextCanPublish === canPublish) return;
+
+      // LiveKit publish permission is fixed by the access token. Reconnect with
+      // a fresh server-issued token whenever this participant gains or loses a seat.
+      try { await room.localParticipant.setMicrophoneEnabled(false); } catch (_) {}
+      await room.disconnect();
+      joined = false;
+      await room.connect(credentials.url, credentials.token);
+      canPublish = nextCanPublish;
+      muted = false;
+      if (canPublish) await room.localParticipant.setMicrophoneEnabled(true);
+      joined = true;
+      status(canPublish
+        ? 'تم تفعيل المايك بعد حجز المقعد'
+        : 'تم إيقاف المايك. ما زلتِ تستمعين للغرفة',
+        true);
+    } catch (error) {
+      status('تعذّر تحديث صلاحية المايك: ' + error.message, true);
+    } finally {
+      permissionRefreshing = false;
+    }
   }
 
   async function join() {
@@ -70,7 +101,10 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       });
 
       room.on(RoomEvent.Reconnecting, () => status('انقطع الاتصال مؤقتاً، جارٍ إعادة الربط...', false));
-      room.on(RoomEvent.Reconnected, () => status('عاد الاتصال الصوتي', true));
+      room.on(RoomEvent.Reconnected, () => {
+        status('عاد الاتصال الصوتي', true);
+        refreshPermissions().catch(error => status('تعذّر تحديث صلاحية المايك: ' + error.message, true));
+      });
       room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
         if (room && !room.canPlaybackAudio) {
           status('اضغطي «سماع الآخرين» للسماح بتشغيل الصوت', true);
@@ -89,6 +123,16 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       }
       joined = true;
       muted = false;
+      seatChannel = supabase.channel('hamsat-seat-permissions-' + roomId)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'room_seats',
+          filter: 'room_id=eq.' + roomId
+        }, () => {
+          refreshPermissions().catch(error => status('تعذّر تحديث صلاحية المايك: ' + error.message, true));
+        })
+        .subscribe();
       status(canPublish
         ? 'اتصلتِ بالغرفة والميكروفون يعمل'
         : 'دخلتِ الغرفة كمستمعة. احجزي مقعداً للتحدث',
@@ -130,6 +174,10 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   async function leave() {
     disposed = true;
     joined = false;
+    if (seatChannel) {
+      try { await supabase.removeChannel(seatChannel); } catch (_) {}
+      seatChannel = null;
+    }
     if (room) {
       try { await room.disconnect(); } catch (_) {}
       room = null;
@@ -146,5 +194,5 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false });
   }
 
-  return { join, leave, toggleMute, enableAudio, get muted() { return muted; }, get canPublish() { return canPublish; } };
+  return { join, leave, toggleMute, enableAudio, refreshPermissions, get muted() { return muted; }, get canPublish() { return canPublish; } };
 }
