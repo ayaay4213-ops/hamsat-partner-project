@@ -434,51 +434,41 @@ function onboardingScreen() {
 
 async function homeScreen() {
   const p = state.profile;
-  screen.innerHTML = `
-  <header class="px-5 pt-6 pb-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">${menuButton()}<a href="#/me">${avatar(p, 44)}</a>
-      <div><p class="text-xs text-[#a993c8]">مرحبًا بعودتك</p><p class="font-bold text-[17px]">${esc(p.displayName)}</p></div>
-    </div>
-    <a href="#/wallet" class="flex items-center gap-1.5 bg-ink-800 border border-ink-600 rounded-full ps-2 pe-3 py-1.5">${coin(20)}<span class="font-bold text-gold-300 text-sm">${num(state.wallet?.balance)}</span></a>
-  </header>
-  <div class="px-5 space-y-6 pb-6 fade-in">
-    <div class="card ornament p-5 border-gold-600/30 home-hero-card">
-      <img src="assets/hamsat-hero.svg" alt="زخارف همسات الذهبية مع قطة بيضاء" class="home-hero-art">
-      <p class="text-gold-400 text-sm font-medium mb-1">همسات</p>
-      <h2 class="text-xl font-bold mb-2 leading-8">أنشئ غرفتك وابدأ الحديث</h2>
-      <p class="text-[13px] text-[#bba9d6] leading-6 mb-4">اختاري موضوع غرفتك وادعي الأصدقاء. عند الإنشاء تصبحين المضيفة ويُحجز لك المقعد الأول.</p>
-      <a href="#/rooms?new=1" class="btn-gold text-sm py-2.5"><i data-lucide="plus" class="w-4 h-4"></i>غرفة جديدة</a>
-    </div>
-    <div class="grid grid-cols-4 gap-3">
-      ${[['mic', 'الغرف', '#/rooms'], ['gift', 'الهدايا', '#/gifts'], ['calendar-check', 'المكافأة', '#/wallet'], ['pen-line', 'ملفي', '#/me']].map(([i, t, h]) => `
-        <a href="${h}" class="flex flex-col items-center gap-2"><span class="w-14 h-14 rounded-2xl bg-ink-800 border border-ink-700 flex items-center justify-center"><i data-lucide="${i}" class="w-6 h-6 text-gold-400"></i></span><span class="text-xs text-[#cbb9e6]">${t}</span></a>`).join('')}
-    </div>
-    <section>
-      <div class="flex items-center justify-between mb-3"><h3 class="font-bold">أحدث الغرف</h3><a href="#/rooms" class="text-xs text-gold-400">عرض الكل</a></div>
-      <div id="home-rooms" class="space-y-3"><div class="skeleton h-20"></div><div class="skeleton h-20"></div></div>
-    </section>
-    <section>
-      <div class="flex items-center justify-between mb-3"><h3 class="font-bold">أعضاء جدد</h3><span id="members-count" class="text-xs text-[#8a76a8]"></span></div>
-      <div id="home-users" class="flex gap-4 overflow-x-auto no-scrollbar pb-1"><div class="skeleton w-16 h-20 shrink-0"></div><div class="skeleton w-16 h-20 shrink-0"></div></div>
-    </section>
-  </div>`;
+  screen.innerHTML = '<div class="hs-home fade-in">' +
+    '<header class="hs-home-top"><div class="hs-home-brand">' +
+    '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' +
+    '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
+    '<div><span>أهلًا بكِ في همسات</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
+    '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
+    '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
+    '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
+    '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
+    '<div class="hs-home-hero-art"><img src="assets/hamsat-hero.svg" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
+    '<section class="hs-home-shortcuts">' +
+    '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
+    '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
+    '<a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b><small>زيني حسابك</small></a>' +
+    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a></section>' +
+    '<section class="hs-home-section"><div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>' +
+    '<div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></section>' +
+    '<section class="hs-home-members"><div class="hs-home-section-head"><div><span>NEW FRIENDS</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>' +
+    '<div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div><div class="skeleton w-16 h-20 shrink-0"></div></div></section>' +
+    '<div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div></div>';
   icons_();
   const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
   const hr = $('#home-rooms'); if (!hr) return;
   if (rooms.status === 'fulfilled') {
     const list = rooms.value.rooms.slice(0, 3);
-    hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'كن أول من ينشئ غرفة في همسات');
+    hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
     bindRoomCards(hr, rooms.value.rooms);
   } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason.message);
   const hu = $('#home-users');
   if (users.status === 'fulfilled') {
-    $('#members-count').textContent = `${num(users.value.total)} عضو`;
-    hu.innerHTML = users.value.users.map(u => `
-      <a href="#/u/${esc(u.handle)}" class="flex flex-col items-center gap-1.5 w-16 shrink-0">${avatar(u, 56)}<span class="text-[11px] text-[#cbb9e6] truncate w-full text-center">${esc(u.displayName)}</span></a>`).join('');
-  } else hu.innerHTML = `<p class="text-sm text-[#8a76a8]">تعذّر تحميل الأعضاء</p>`;
+    $('#members-count').textContent = num(users.value.total) + ' عضو';
+    hu.innerHTML = users.value.users.slice(0,12).map(u => '<a href="#/u/' + esc(u.handle) + '" class="hs-home-user">' + avatar(u,56) + '<span>' + esc(u.displayName) + '</span></a>').join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
+  } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
   icons_();
 }
-
 function emptyBox(icon, title, sub = '') {
   return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
 }
