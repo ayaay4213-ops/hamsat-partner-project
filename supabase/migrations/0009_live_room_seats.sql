@@ -20,14 +20,14 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
       from public.room_members m
      where m.room_id = p_room_id
        and m.user_id = p_user_id
   );
-$;
+$$;
 
 revoke all on function public.is_room_member(uuid, uuid) from public;
 grant execute on function public.is_room_member(uuid, uuid) to authenticated;
