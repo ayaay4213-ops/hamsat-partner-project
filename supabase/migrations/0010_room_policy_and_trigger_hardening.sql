@@ -126,6 +126,13 @@ $;
 revoke all on function public.request_room_seat(uuid, smallint) from public;
 grant execute on function public.request_room_seat(uuid, smallint) to authenticated;
 
+
+-- RLS does not protect TRUNCATE. Client roles do not need schema-level
+-- maintenance privileges such as TRUNCATE, REFERENCES, or TRIGGER.
+revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke truncate, references, trigger on tables from anon, authenticated;
+
 -- These functions are invoked by database triggers, not by client RPC calls.
 -- Remove direct client execution while leaving the existing triggers installed.
 revoke all on function public.handle_new_user() from public, anon, authenticated;
