@@ -76,3 +76,30 @@ drop policy if exists "Active shop items are visible" on public.shop_items;
 create policy "Active shop items are visible"
   on public.shop_items for select to anon, authenticated
   using (active = true or public.is_admin());
+
+
+-- Defense in depth: never let a signed-in user assign or change their own role.
+-- SQL Editor/service-role maintenance (where auth.uid() is NULL) remains available.
+create or replace function public.guard_profile_role()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is not null then
+    if tg_op = 'INSERT' then
+      new.role := 'user';
+    elsif not public.is_admin() then
+      new.role := old.role;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function public.guard_profile_role() from public, anon, authenticated;
+drop trigger if exists profiles_guard_role on public.profiles;
+create trigger profiles_guard_role
+before insert or update of role on public.profiles
+for each row execute function public.guard_profile_role();
