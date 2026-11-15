@@ -78,7 +78,7 @@ function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a></nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
