@@ -47,6 +47,9 @@ create policy "Room members can view microphone seats"
   for select to authenticated
   using (public.is_room_member(room_seats.room_id));
 
+-- Remove the legacy two-argument helper from migration 0009 after its policies are replaced.
+drop function if exists public.is_room_member(uuid, uuid);
+
 
 
 -- Presence and seat changes are consumed by the room UI through Postgres Changes.
