@@ -572,8 +572,8 @@ async function openRoom(r) {
       const {seats}=await api.roomSeats(r.id), bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
       seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
-        if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>${isHost?'مقعد المضيف':'مايك '+n}</b><small>${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>`;
-        return `<button type="button" data-seat="${n}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}>${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>${esc(m?.displayName||'عضو')}</b><small>${own?'اضغطي للنزول':'على المايك'}</small>${isHost?'<em>HOST</em>':''}</button>`;
+        if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-mic"><i data-lucide="mic"></i></span></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
+        return `<button type="button" data-seat="${n}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
         const leaving=b.dataset.own==='true';
