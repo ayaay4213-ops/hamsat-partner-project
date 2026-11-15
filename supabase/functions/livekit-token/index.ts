@@ -35,6 +35,12 @@ Deno.serve(async (req: Request) => {
     return json(503, { error: "خدمة الصوت غير مهيأة بعد على الخادم." });
   }
 
+  try {
+    if (new URL(livekitUrl).protocol !== "wss:") return json(503, { error: "عنوان خادم الصوت يجب أن يستخدم اتصالاً آمناً." });
+  } catch {
+    return json(503, { error: "عنوان خادم الصوت غير صالح." });
+  }
+
   const authorization = req.headers.get("Authorization") || "";
   const accessToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   if (!accessToken) return json(401, { error: "يجب تسجيل الدخول أولاً." });
@@ -98,7 +104,7 @@ Deno.serve(async (req: Request) => {
     room: roomId,
     canSubscribe: true,
     canPublish: Boolean(seat),
-    canPublishData: true,
+    canPublishData: false,
   });
 
   return json(200, {
