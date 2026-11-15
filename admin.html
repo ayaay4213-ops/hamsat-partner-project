@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090a0d"><title>إدارة همسات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{color-scheme:dark;--gold:#d4af37}*{box-sizing:border-box}body{margin:0;background:#090a0d;color:#f7f2e8;font-family:Tajawal,system-ui}.wrap{max-width:900px;margin:auto;padding:18px}.panel{background:#12151b;border:1px solid #292d35;border-radius:18px;padding:18px}.field{width:100%;background:#090a0d;border:1px solid #393e48;border-radius:11px;padding:12px;color:white}.field:focus{outline:1px solid var(--gold)}.btn{background:var(--gold);color:#17140b;border-radius:11px;padding:11px 16px;font-weight:800}.ghost{border:1px solid #414650;border-radius:11px;padding:10px 14px}.muted{color:#a6a09a}.tab{padding:10px 14px;border-radius:10px;border:1px solid #343943}.tab.active{background:#302713;border-color:var(--gold);color:#f5df9a}.item{border:1px solid #303640;border-radius:13px;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between}.hidden{display:none!important}
+</style>
+</head>
+<body><div class="wrap space-y-4">
+<header class="flex items-center justify-between gap-3 py-3"><div><div class="text-amber-300 tracking-[.3em] text-xs">H A M S A T</div><h1 class="text-2xl font-extrabold mt-1">لوحة إدارة همسات</h1><p class="muted text-sm">إدارة الإطارات والألعاب والمحتوى</p></div><button id="logout" class="ghost">تسجيل الخروج</button></header>
+<div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
+<main id="admin" class="hidden space-y-4">
+<nav class="flex flex-wrap gap-2"><button class="tab active" data-tab="frames">الإطارات والمقتنيات</button><button class="tab" data-tab="games">الألعاب</button></nav>
+<section id="frames" class="panel space-y-4"><div><h2 class="text-xl font-bold">إضافة إطار جديد</h2><p class="muted text-sm">الإطار سيظهر في متجر المقتنيات بعد تفعيله.</p></div>
+<form id="frame-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">معرّف الإطار<input class="field mt-1" name="id" placeholder="frame_royal_gold" pattern="[a-zA-Z0-9_-]+" required></label>
+<label class="text-sm">اسم الإطار<input class="field mt-1" name="name" required maxlength="60" placeholder="الإطار الملكي"></label>
+<label class="text-sm">السعر بالعملات<input class="field mt-1" name="price" type="number" min="0" step="1" value="100" required></label>
+<label class="text-sm">الندرة<select class="field mt-1" name="rarity"><option value="common">عادي</option><option value="rare">نادر</option><option value="epic">ملحمي</option><option value="legendary">أسطوري</option></select></label>
+<label class="text-sm sm:col-span-2">وصف الإطار<textarea class="field mt-1" name="description" rows="2"></textarea></label>
+<label class="text-sm sm:col-span-2">صورة الإطار<input class="field mt-1" name="image" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> نشره في المتجر</label>
+<button class="btn sm:col-span-2" type="submit">حفظ الإطار</button></form>
+<div><h3 class="font-bold mb-2">الإطارات الموجودة</h3><div id="frame-list" class="space-y-2"></div></div></section>
+<section id="games" class="panel space-y-4 hidden"><div><h2 class="text-xl font-bold">إضافة لعبة</h2><p class="muted text-sm">تحفظ هذه المرحلة تعريف اللعبة وإعداداتها؛ تشغيل اللعب الجماعي ومحرك النقاط يحتاج ربطاً برمجياً مستقلاً.</p></div>
+<form id="game-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">معرّف اللعبة<input class="field mt-1" name="id" pattern="[a-zA-Z0-9_-]+" required placeholder="quick_quiz"></label>
+<label class="text-sm">اسم اللعبة<input class="field mt-1" name="name" required maxlength="60"></label>
+<label class="text-sm">النوع<select class="field mt-1" name="game_type"><option value="quiz">أسئلة سريعة</option><option value="guess">خمن</option><option value="challenge">تحدي</option><option value="trivia">معلومات عامة</option><option value="custom">مخصصة</option></select></label>
+<label class="text-sm">الأيقونة<input class="field mt-1" name="icon" value="🎮" maxlength="8"></label>
+<label class="text-sm sm:col-span-2">الوصف<textarea class="field mt-1" name="description" rows="2"></textarea></label>
+<label class="text-sm sm:col-span-2">إعدادات اللعبة بصيغة JSON<textarea class="field mt-1" name="config" rows="3">{}</textarea></label>
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active"> نشر اللعبة</label>
+<button class="btn sm:col-span-2" type="submit">حفظ اللعبة</button></form>
+<div><h3 class="font-bold mb-2">الألعاب المسجلة</h3><div id="game-list" class="space-y-2"></div></div></section></main></div>
+<script type="module" src="js/admin.js?v=20261115-admin-v1"></script></body></html>
