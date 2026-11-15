@@ -700,7 +700,7 @@ async function shopScreen() {
     const list=mode==='owned'?owned:items;
     $('#shop-grid').innerHTML=list.length?list.map(it=>{
       const has=owned.some(o=>o.id===it.id);
-      const visual=it.item_type==='frame'?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
+      const visual=it.image_url?'<div class="cosmetic-preview"><img src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:12px"></div>':it.item_type==='frame'?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
         '<div class="cosmetic-preview emoji-preview">'+(it.visual_key==='love'?'💖 💗 💕':it.visual_key==='luxe'?'👑 💎 ✨':'🌙 ⭐ 🌟')+'</div>';
       return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?'مملوك لديك':num(it.price)+' عملة'}</p>
         <button class="btn-${has?'ghost':'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-owned="${has}">${has?'تجهيز':'شراء'}</button></article>`;
