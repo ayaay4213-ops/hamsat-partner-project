@@ -3,8 +3,7 @@
 
 -- A single helper keeps room-membership checks consistent and avoids recursive RLS.
 create or replace function public.is_room_member(
-  p_room_id uuid,
-  p_user_id uuid default auth.uid()
+  p_room_id uuid
 )
 returns boolean
 language sql
@@ -16,11 +15,11 @@ as $$
     select 1
     from public.room_members m
     where m.room_id = p_room_id
-      and m.user_id = p_user_id
+      and m.user_id = auth.uid()
   );
 $$;
 
-revoke all on function public.is_room_member(uuid, uuid) from public;
+revoke all on function public.is_room_member(uuid) from public;
 grant execute on function public.is_room_member(uuid, uuid) to authenticated;
 
 -- Members may only see the occupants of rooms they have joined.
@@ -97,7 +96,7 @@ begin
     raise exception 'الغرفة غير موجودة';
   end if;
 
-  if not public.is_room_member(p_room_id, v_user) then
+  if not public.is_room_member(p_room_id) then
     raise exception 'انضمي إلى الغرفة أولاً قبل حجز المايك';
   end if;
 
