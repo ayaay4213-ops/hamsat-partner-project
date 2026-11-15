@@ -58,11 +58,16 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
   }
 
   async function offerTo(remoteId) {
-    if (!joined || userId.localeCompare(remoteId) >= 0 || peers.has(remoteId)) return;
+    if (!joined || !remoteId || userId.localeCompare(remoteId) >= 0 || peers.has(remoteId)) return;
     const pc = makePeer(remoteId);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    await send(remoteId, 'offer', { description: pc.localDescription.toJSON() });
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await send(remoteId, 'offer', { description: pc.localDescription.toJSON() });
+    } catch (error) {
+      dropPeer(remoteId);
+      throw error;
+    }
   }
 
   async function flushIce(remoteId, pc) {
@@ -155,6 +160,15 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
           try {
             await channel.track({ user_id: userId, joined_at: new Date().toISOString() });
             joined = true;
+            // Re-check presence after tracking: the initial presence sync may have
+            // happened before joined became true, leaving one side without an offer.
+            const present = channel.presenceState();
+            Object.values(present).flat().forEach(entry => {
+              const remoteId = entry?.user_id;
+              if (remoteId && remoteId !== userId) {
+                offerTo(remoteId).catch(error => status('تعذّر بدء الاتصال مع أحد المشاركين: ' + error.message));
+              }
+            });
             await send('*', 'hello');
             status('الميكروفون يعمل، جارٍ ربط المشاركين', true);
             resolve();
