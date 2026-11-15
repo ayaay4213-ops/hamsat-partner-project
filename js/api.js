@@ -34,6 +34,7 @@ export const api = {
   getSession: async () => {
     const { data, error } = await client().auth.getSession(); fail(error); return data.session;
   },
+  onAuthStateChange: (callback) => client().auth.onAuthStateChange(callback),
   signInWithEmail: async (email, password) => {
     const { data, error } = await client().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     fail(error); return data;
