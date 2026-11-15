@@ -176,17 +176,16 @@ function welcomeScreen() {
   tabbar.classList.add('hidden');
   screen.className = 'flex-1 flex flex-col';
   screen.innerHTML = `
-  <div class="auth-page flex-1 flex flex-col fade-in">
-    <div class="auth-brand text-center px-7 pt-8">
-      <img src="assets/hamsat-hero.svg" alt="امرأة أنيقة وقط أبيض بزخارف ذهبية" class="auth-art">
-      <p class="text-gold-400 text-xs tracking-[.35em] mb-1">WELCOME TO</p>
-      <h1 class="text-4xl font-extrabold text-gold-300 mb-1">همسات</h1>
-      <p class="text-xs tracking-[.3em] text-gold-600">H A M S A T</p>
-      <p class="text-sm text-[#cbb9a6] leading-7 mt-3">مساحتك الخاصة للحديث، والتعارف، وصناعة لحظات جميلة.</p>
-    </div>
-    <div class="auth-panel mx-5 mt-5 mb-8 p-5 rounded-3xl">
-      <h2 class="text-xl font-bold mb-1">أهلًا بكِ من جديد</h2>
-      <p class="text-sm text-[#b7b2a5] mb-5">سجّلي الدخول للانتقال إلى الصفحة الرئيسية</p>
+  <div class="hs-welcome fade-in">
+    <div class="hs-welcome-glow"></div>
+    <header class="hs-welcome-head"><span class="hs-welcome-mark">✦</span><span>H A M S A T</span><span class="hs-welcome-mark">✦</span></header>
+    <section class="hs-welcome-visual">
+      <img src="assets/hamsat-hero.svg" alt="همسات">
+      <div class="hs-welcome-title"><span>مساحة من الألفة والجمال</span><h1>همسات</h1><small>حيث تلتقي الأرواح بالصوت</small></div>
+    </section>
+    <div class="hs-welcome-intro"><span class="hs-welcome-line"></span><p>أصدقاء جدد، غرف صوتية، ولحظات تبقى في القلب</p><span class="hs-welcome-line"></span></div>
+    <div class="auth-panel hs-welcome-panel">
+      <div class="hs-welcome-panel-head"><span>✧</span><div><h2>مرحبًا بعودتكِ</h2><p>سجّلي الدخول وعودي إلى مجتمع همسات</p></div><span>✧</span></div>
       <div class="grid grid-cols-2 gap-2 mb-4" id="auth-methods">
         <button type="button" data-method="email" class="auth-method active">البريد الإلكتروني</button>
         <button type="button" data-method="phone" class="auth-method" disabled title="تفعيل SMS مطلوب">الهاتف قريبًا</button>
@@ -196,16 +195,15 @@ function welcomeScreen() {
         <input id="auth-identity" class="field" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com" required>
         <label class="label">كلمة المرور</label>
         <div class="password-tools" data-password-tools><input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
-        <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">
-          لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !
-        </div>
-        <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول</button>
+        <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !</div>
+        <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>دخول إلى همسات</button>
       </form>
       <button id="auth-forgot" type="button" class="text-sm text-gold-300 underline underline-offset-4 mt-3 w-full text-center">نسيت كلمة المرور؟</button>
       <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
-      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">بعد إنشاء الحساب، يتم الدخول مباشرة عند إيقاف تأكيد البريد من إعدادات Supabase. تسجيل الهاتف سيُفعّل لاحقًا بعد إعداد مزود رسائل SMS.</p>
+      <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">بيانات حسابك محمية، ويمكنك العودة إلى همسات في أي وقت.</p>
     </div>
+    <footer class="hs-welcome-footer">صُنعت بحبّ لتجمعنا <span>✦</span></footer>
   </div>`;
   let authMode = 'signin';
   const form = $('#auth-preview-form');
