@@ -446,7 +446,7 @@ async function homeScreen() {
       <img src="assets/hamsat-hero.svg" alt="زخارف همسات الذهبية مع قطة بيضاء" class="home-hero-art">
       <p class="text-gold-400 text-sm font-medium mb-1">همسات</p>
       <h2 class="text-xl font-bold mb-2 leading-8">أنشئ غرفتك وابدأ الحديث</h2>
-      <p class="text-[13px] text-[#bba9d6] leading-6 mb-4">اختر موضوعًا وادعُ أصدقاءك. ميزة البث الصوتي المباشر قيد التطوير حاليًا.</p>
+      <p class="text-[13px] text-[#bba9d6] leading-6 mb-4">اختاري موضوع غرفتك وادعي الأصدقاء. عند الإنشاء تصبحين المضيفة ويُحجز لك المقعد الأول.</p>
       <a href="#/rooms?new=1" class="btn-gold text-sm py-2.5"><i data-lucide="plus" class="w-4 h-4"></i>غرفة جديدة</a>
     </div>
     <div class="grid grid-cols-4 gap-3">
@@ -527,7 +527,7 @@ async function openRoom(r) {
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
-      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>ادخلي الغرفة الصوتية للاستماع، واحجزي مقعداً إذا أردتِ التحدث على المايك.</span></div>
+      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>المضيفة تشغل المقعد الأول، ويمكن للأعضاء حجز المقاعد المتاحة للتحدث والاستماع مباشرة.</span></div>
       <div class="hs-live-audio-controls"><p id="voice-status" role="status">الصوت غير متصل</p><div><button type="button" id="voice-start" class="btn-gold">دخول الغرفة الصوتية</button><button type="button" id="voice-audio-enable" class="btn-ghost" disabled>سماع الآخرين</button><button type="button" id="voice-mute" class="btn-ghost" disabled>كتم الميكروفون</button><button type="button" id="voice-leave" class="btn-ghost" hidden>إيقاف الصوت</button></div><div id="voice-audio" class="sr-only" aria-hidden="true"></div></div>
     </section>
     <section class="hs-room-people">
