@@ -642,3 +642,20 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-seat.occupied .hs-seat-ring{border-color:#f0d77e;box-shadow:0 0 0 4px #d4af3710,0 0 20px #d4af3744}
 .hs-room-seat.mine .hs-seat-ring{border-color:#fff0a7;box-shadow:0 0 0 5px #e6c65c20,0 0 24px #d4af3766}
 @media(max-width:380px){.hs-room-seat{min-height:124px}.hs-seat-ring{width:60px;height:60px}.hs-room-seat:before{width:70px;height:70px}}
+
+
+/* Refined voice-seat: a small royal chair in the center, mic as a discreet badge */
+.hs-room-seats{gap:16px 10px}
+.hs-room-seat{min-height:138px;gap:8px}
+.hs-room-seat:before{width:82px;height:82px;top:0;border-color:rgba(224,190,105,.38);background:radial-gradient(circle at 50% 35%,rgba(224,190,105,.16),rgba(16,17,21,.96) 72%);box-shadow:0 0 0 6px rgba(212,175,55,.035),inset 0 0 24px rgba(212,175,55,.1)}
+.hs-seat-ring{width:72px;height:72px;border:1px solid rgba(234,207,133,.8);background:linear-gradient(145deg,#292218,#111216);box-shadow:0 7px 22px #0008,inset 0 0 16px #d4af3714}
+.hs-seat-chair{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(221,185,94,.16),rgba(20,19,17,.96) 72%);color:#f0d58a}
+.hs-seat-chair svg{width:34px;height:34px;stroke-width:1.55;filter:drop-shadow(0 2px 6px #d4af374d)}
+.hs-seat-center-mic{position:absolute;right:-2px;bottom:1px;width:23px;height:23px;padding:4px;border-radius:50%;background:linear-gradient(145deg,#f4df9e,#b88d36);color:#17130a;border:2px solid #111216;box-shadow:0 2px 9px #0009}
+.hs-seat-center-mic svg{width:12px;height:12px;stroke-width:2.4}
+.hs-room-seat.empty .hs-seat-ring{border:1px solid #e0c16d}
+.hs-room-seat.empty .hs-seat-chair{animation:hsChairGlow 3s ease-in-out infinite}
+.hs-room-seat.empty .hs-seat-center-mic{animation:hsMicPulse 2.4s ease-in-out infinite}
+.hs-room-seat.occupied .hs-seat-ring{border-width:2px}
+@keyframes hsChairGlow{0%,100%{filter:brightness(.95)}50%{filter:brightness(1.2)}}
+@media(max-width:380px){.hs-room-seat{min-height:130px}.hs-seat-ring{width:64px;height:64px}.hs-room-seat:before{width:74px;height:74px}}
