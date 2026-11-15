@@ -65,7 +65,7 @@ export function createVoiceRoom({ roomId, userId, onState = () => {} }) {
   }
 
   async function handleSignal(payload) {
-    if (!payload || payload.to !== userId || payload.from === userId) return;
+    if (!payload || (payload.to !== userId && payload.to !== '*') || payload.from === userId) return;
     const remoteId = payload.from;
     if (payload.kind === 'leave') {
       dropPeer(remoteId);
