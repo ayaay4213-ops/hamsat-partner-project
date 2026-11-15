@@ -148,9 +148,16 @@ export const api = {
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
-    const payload = { cover_url: settings.coverUrl || null, room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8) };
-    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,cover_url,room_emoji').single();
-    fail(error); return { coverUrl: data.cover_url, roomEmoji: data.room_emoji };
+    const payload = {
+      title: String(settings.title || '').trim().slice(0, 60),
+      topic: String(settings.topic || 'عام').trim().slice(0, 40),
+      description: String(settings.description || '').trim().slice(0, 240),
+      cover_url: settings.coverUrl || null,
+      room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8)
+    };
+    if (!payload.title) throw new Error('اسم الغرفة مطلوب');
+    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,room_emoji').single();
+    fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, roomEmoji: data.room_emoji };
   },
 
   leaveRoom: async (roomId) => {
