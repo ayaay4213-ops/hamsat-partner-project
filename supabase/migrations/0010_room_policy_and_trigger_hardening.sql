@@ -128,6 +128,15 @@ revoke all on function public.request_room_seat(uuid, integer) from public;
 grant execute on function public.request_room_seat(uuid, integer) to authenticated;
 
 
+
+-- Cosmetic ownership is server-enforced: clients may edit public profile fields,
+-- but cannot write equipped item IDs directly or bypass the inventory RPC.
+revoke insert, update on public.profiles from authenticated;
+grant insert (id, handle, display_name, bio, country, color, avatar_url, cover_url, background_url)
+  on public.profiles to authenticated;
+grant update (handle, display_name, bio, country, color, avatar_url, cover_url, background_url)
+  on public.profiles to authenticated;
+
 -- RLS does not protect TRUNCATE. Client roles do not need schema-level
 -- maintenance privileges such as TRUNCATE, REFERENCES, or TRIGGER.
 revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
