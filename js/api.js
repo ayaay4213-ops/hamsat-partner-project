@@ -134,6 +134,9 @@ export const api = {
 
   leaveRoom: async (roomId) => {
     const user = await currentUser();
+    // Free the speaker seat as well as the room membership so abandoned rooms
+    // never keep a microphone seat locked for a user who has already left.
+    await api.leaveRoomSeat(roomId);
     const { error } = await client().from('room_members').delete().eq('room_id', roomId).eq('user_id', user.id);
     fail(error); return { success: true };
   },
@@ -196,6 +199,7 @@ export const api = {
   subscribeRoomMessages: (roomId, callback) => client().channel('room-chat-' + roomId)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_seats', filter: 'room_id=eq.' + roomId }, callback)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members', filter: 'room_id=eq.' + roomId }, callback)
     .subscribe(),
   unsubscribeRoomChannel: async (channel) => { if (channel) await client().removeChannel(channel); },
   deleteRoom: async (id) => {
