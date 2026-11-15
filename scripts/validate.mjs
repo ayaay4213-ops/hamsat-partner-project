@@ -11,6 +11,8 @@ const required = [
   'js/app.js',
   'js/api.js',
   'js/voice-room.js',
+  'supabase/migrations/0009_live_room_seats.sql',
+  'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
 ];
@@ -46,6 +48,20 @@ for (const ref of localRefs) {
   if (clean && !fs.existsSync(path.join(root, clean))) errors.push(`Broken local reference in index.html: ${ref}`);
 }
 
+const seatMigrationPath = path.join(root, 'supabase/migrations/0009_live_room_seats.sql');
+if (fs.existsSync(seatMigrationPath)) {
+  const sql = fs.readFileSync(seatMigrationPath, 'utf8');
+  for (const token of [
+    'create table if not exists public.room_seats',
+    'create or replace function public.request_room_seat',
+    'create or replace function public.leave_room_seat',
+    'alter publication supabase_realtime add table public.room_seats',
+    'alter publication supabase_realtime add table public.room_members'
+  ]) {
+    if (!sql.toLowerCase().includes(token.toLowerCase())) errors.push(`Missing required audio-room SQL: ${token}`);
+  }
+}
+
 for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
@@ -57,4 +73,4 @@ if (errors.length) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Hamsat validation passed: required files, PWA manifest, local references, and JavaScript syntax.');
+console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
