@@ -559,7 +559,6 @@ async function openRoom(r) {
       countEl.textContent=num(members.length);
       membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span></div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       const {seats}=await api.roomSeats(r.id), bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
-      if(state.voiceRoom&&!seats.some(x=>x.user_id===state.profile?.uuid)){const voice=state.voiceRoom;state.voiceRoom=null;voice.leave().catch(()=>{});}
       seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>${isHost?'مقعد المضيف':'مايك '+n}</b><small>${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>`;
