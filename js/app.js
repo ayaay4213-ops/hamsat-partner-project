@@ -87,6 +87,55 @@ async function loadMe() {
 }
 
 /* ---------- screens ---------- */
+function resetPasswordScreen() {
+  tabbar.classList.add('hidden');
+  screen.className = 'flex-1 flex flex-col';
+  screen.innerHTML = `
+    <div class="auth-page flex-1 flex flex-col justify-center px-5 py-10 fade-in">
+      <div class="auth-panel p-5 rounded-3xl max-w-md w-full mx-auto">
+        <div class="text-center mb-5"><p class="text-gold-400 text-xs tracking-[.3em]">H A M S A T</p><h1 class="text-2xl font-extrabold text-gold-300 mt-2">إعادة تعيين كلمة المرور</h1><p class="text-sm text-[#b7b2a5] mt-2">اختاري كلمة مرور جديدة لحسابك</p></div>
+        <form id="password-reset-form" class="space-y-3">
+          <label class="label" for="reset-new-password">كلمة المرور الجديدة</label>
+          <input id="reset-new-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="8 أحرف على الأقل">
+          <label class="label" for="reset-confirm-password">تأكيد كلمة المرور</label>
+          <input id="reset-confirm-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="أعيدي كتابة كلمة المرور">
+          <p id="reset-feedback" class="hidden text-xs leading-6 rounded-xl p-3" role="status" aria-live="polite"></p>
+          <button type="submit" class="btn-gold w-full">حفظ كلمة المرور الجديدة</button>
+        </form>
+      </div>
+    </div>`;
+  const form = $('#password-reset-form');
+  const feedback = $('#reset-feedback');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const password = $('#reset-new-password').value;
+    const confirm = $('#reset-confirm-password').value;
+    if (password.length < 8) {
+      feedback.textContent = 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+      return;
+    }
+    if (password !== confirm) {
+      feedback.textContent = 'كلمتا المرور غير متطابقتين.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+      return;
+    }
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = true;
+    try {
+      await api.updatePassword(password);
+      history.replaceState(null, '', location.pathname + location.search);
+      toast('تم تغيير كلمة المرور بنجاح. سجّلي الدخول بكلمتك الجديدة.');
+      await api.signOut();
+      state.account = state.profile = state.wallet = null;
+      welcomeScreen();
+    } catch (err) {
+      feedback.textContent = err.message || 'تعذّر تغيير كلمة المرور. افتحي رابط الاستعادة الأحدث من بريدك.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+    } finally { button.disabled = false; }
+  };
+}
+
 function welcomeScreen() {
   tabbar.classList.add('hidden');
   screen.className = 'flex-1 flex flex-col';
@@ -116,6 +165,7 @@ function welcomeScreen() {
         </div>
         <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول</button>
       </form>
+      <button id="auth-forgot" type="button" class="text-sm text-gold-300 underline underline-offset-4 mt-3 w-full text-center">نسيت كلمة المرور؟</button>
       <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
       <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">بعد إنشاء الحساب، يتم الدخول مباشرة عند إيقاف تأكيد البريد من إعدادات Supabase. تسجيل الهاتف سيُفعّل لاحقًا بعد إعداد مزود رسائل SMS.</p>
@@ -129,6 +179,7 @@ function welcomeScreen() {
   const passwordInput = $('#auth-password');
   const rules = $('#auth-password-rules');
   const feedback = $('#auth-feedback');
+  const forgot = $('#auth-forgot');
   screen.querySelector('[data-method="phone"]').disabled = true;
   const showFeedback = (message, isError = false) => {
     feedback.textContent = message;
@@ -145,12 +196,28 @@ function welcomeScreen() {
     passwordInput.autocomplete = signingUp ? 'new-password' : 'current-password';
     passwordInput.setAttribute('aria-describedby', signingUp ? 'auth-password-rules' : '');
     rules.classList.toggle('hidden', !signingUp);
+    forgot.classList.toggle('hidden', signingUp);
     clearFeedback();
     icons_();
   };
   create.onclick = () => {
     authMode = authMode === 'signin' ? 'signup' : 'signin';
     syncAuthMode();
+  };
+  forgot.onclick = async () => {
+    const email = identity.value.trim();
+    if (!email) {
+      showFeedback('اكتبي بريدك الإلكتروني أولًا، ثم اضغطي «نسيت كلمة المرور؟».', true);
+      identity.focus();
+      return;
+    }
+    forgot.disabled = true;
+    try {
+      await api.sendPasswordReset(email);
+      showFeedback('إذا كان البريد مسجلًا، فسيصلك رابط استعادة كلمة المرور. افحصي الوارد والرسائل غير المرغوب فيها.');
+    } catch (err) {
+      showFeedback(err.message || 'تعذّر إرسال رابط الاستعادة. حاولي لاحقًا.', true);
+    } finally { forgot.disabled = false; }
   };
   passwordInput.addEventListener('input', clearFeedback);
   identity.addEventListener('input', clearFeedback);
@@ -764,6 +831,11 @@ async function boot() {
   screen.innerHTML = loading();
   try {
     const session = await api.getSession();
+    const recovery = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery';
+    if (recovery && session) {
+      resetPasswordScreen();
+      return;
+    }
     if (!session) {
       state.account = state.profile = state.wallet = null;
       return render();
