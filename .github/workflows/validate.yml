@@ -3,7 +3,8 @@ name: Validate Hamsat
 on:
   push:
     branches:
-      - repair/unify-zip-github
+      - 'build/**'
+      - 'feature/**'
   pull_request:
     branches:
       - main
