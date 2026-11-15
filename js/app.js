@@ -18,6 +18,36 @@ const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تق
 /* ---------- helpers ---------- */
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function icons_() { createIcons({ icons }); }
+
+function wirePasswordTools(root = document) {
+  root.querySelectorAll('[data-password-tools]').forEach(group => {
+    const input = group.querySelector('input');
+    const toggle = group.querySelector('[data-password-toggle]');
+    const copy = group.querySelector('[data-password-copy]');
+    if (!input || group.dataset.passwordToolsReady) return;
+    group.dataset.passwordToolsReady = '1';
+    toggle?.addEventListener('click', () => {
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      toggle.innerHTML = reveal ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
+      toggle.setAttribute('aria-label', reveal ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+      toggle.setAttribute('title', reveal ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+      icons_();
+    });
+    copy?.addEventListener('click', async () => {
+      if (!input.value) { toast('اكتبي كلمة المرور أولًا لنسخها.', 'error'); input.focus(); return; }
+      try {
+        await navigator.clipboard.writeText(input.value);
+        toast('تم نسخ كلمة المرور.');
+      } catch {
+        input.focus(); input.select();
+        const copied = document.execCommand('copy');
+        toast(copied ? 'تم نسخ كلمة المرور.' : 'تعذّر النسخ؛ حددي كلمة المرور وانسخيها يدويًا.', copied ? '' : 'error');
+      }
+    });
+  });
+}
+
 function initial(name) { return esc((name || '؟').trim().charAt(0)); }
 function avatar(p, size = 44) {
   const style = `width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px`;
@@ -100,9 +130,9 @@ function resetPasswordScreen() {
         <div class="text-center mb-5"><p class="text-gold-400 text-xs tracking-[.3em]">H A M S A T</p><h1 class="text-2xl font-extrabold text-gold-300 mt-2">إعادة تعيين كلمة المرور</h1><p class="text-sm text-[#b7b2a5] mt-2">اختاري كلمة مرور جديدة لحسابك</p></div>
         <form id="password-reset-form" class="space-y-3">
           <label class="label" for="reset-new-password">كلمة المرور الجديدة</label>
-          <input id="reset-new-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="8 أحرف على الأقل">
+          <div class="password-tools" data-password-tools><input id="reset-new-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="8 أحرف على الأقل"><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
           <label class="label" for="reset-confirm-password">تأكيد كلمة المرور</label>
-          <input id="reset-confirm-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="أعيدي كتابة كلمة المرور">
+          <div class="password-tools" data-password-tools><input id="reset-confirm-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="أعيدي كتابة كلمة المرور"><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
           <p id="reset-feedback" class="hidden text-xs leading-6 rounded-xl p-3" role="status" aria-live="polite"></p>
           <button type="submit" class="btn-gold w-full">حفظ كلمة المرور الجديدة</button>
         </form>
@@ -110,6 +140,7 @@ function resetPasswordScreen() {
     </div>`;
   const form = $('#password-reset-form');
   const feedback = $('#reset-feedback');
+  wirePasswordTools(screen);
   form.onsubmit = async (e) => {
     e.preventDefault();
     const password = $('#reset-new-password').value;
@@ -164,7 +195,7 @@ function welcomeScreen() {
         <label class="label" id="auth-id-label">البريد الإلكتروني</label>
         <input id="auth-identity" class="field" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com" required>
         <label class="label">كلمة المرور</label>
-        <input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required>
+        <div class="password-tools" data-password-tools><input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
         <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">
           لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !
         </div>
@@ -184,6 +215,7 @@ function welcomeScreen() {
   const passwordInput = $('#auth-password');
   const rules = $('#auth-password-rules');
   const feedback = $('#auth-feedback');
+  wirePasswordTools(screen);
   const forgot = $('#auth-forgot');
   screen.querySelector('[data-method="phone"]').disabled = true;
   const showFeedback = (message, isError = false) => {
