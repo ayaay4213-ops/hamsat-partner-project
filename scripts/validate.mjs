@@ -55,6 +55,9 @@ if (fs.existsSync(seatMigrationPath)) {
     'create table if not exists public.room_seats',
     'create or replace function public.request_room_seat',
     'create or replace function public.leave_room_seat',
+    'create or replace function public.is_room_member',
+    'public.is_room_member(room_members.room_id)',
+    'public.is_room_member(room_messages.room_id)',
     'alter publication supabase_realtime add table public.room_seats',
     'alter publication supabase_realtime add table public.room_members'
   ]) {
