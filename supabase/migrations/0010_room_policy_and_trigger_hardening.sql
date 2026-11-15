@@ -51,7 +51,7 @@ create policy "Room members can view microphone seats"
 
 
 -- Presence and seat changes are consumed by the room UI through Postgres Changes.
-do $
+do $$
 begin
   if not exists (
     select 1 from pg_publication_tables
@@ -62,7 +62,7 @@ begin
     alter publication supabase_realtime add table public.room_members;
   end if;
 end
-$;
+$$;
 
 -- Serialize microphone seat allocation per room and reserve seat 1 for its owner.
 -- Normalize the legacy smallint RPC to the integer signature used by migration 0009.
@@ -75,7 +75,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_user uuid := auth.uid();
   v_owner uuid;
