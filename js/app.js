@@ -545,7 +545,7 @@ async function openRoom(r) {
     sheet.classList.add('room-sheet');
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
     const voiceStatus=sheet.querySelector('#voice-status'), voiceStart=sheet.querySelector('#voice-start'), voiceAudioEnable=sheet.querySelector('#voice-audio-enable'), voiceMute=sheet.querySelector('#voice-mute'), voiceLeave=sheet.querySelector('#voice-leave');
-    voiceStart.onclick=async()=>{voiceStart.disabled=true;voiceStatus.textContent='جارٍ التحقق من مقعد المايك...';try{const {seats}=await api.roomSeats(r.id);if(!seats.some(x=>x.user_id===state.profile.uuid)){toast('احجزي مقعد مايك أولاً حتى تتحدثي');voiceStart.disabled=false;voiceStatus.textContent='احجزي مقعداً لتشغيل الميكروفون';return;}voiceStatus.textContent='جارٍ طلب إذن الميكروفون...';const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:s=>{if(voiceStatus.isConnected)voiceStatus.textContent=s.message;if(voiceMute.isConnected)voiceMute.textContent=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';}});state.voiceRoom=controller;await controller.join();voiceMute.disabled=false;voiceAudioEnable.disabled=false;voiceLeave.hidden=false;voiceStart.textContent='الميكروفون متصل';voiceStatus.textContent='تم تشغيل الميكروفون. اضغطي «سماع الآخرين» إذا لم يعمل الصوت تلقائياً.';}catch(e){if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;voiceStart.disabled=false;}};
+    voiceStart.onclick=async()=>{voiceStart.disabled=true;voiceStatus.textContent='جارٍ الاتصال بالغرفة الصوتية...';try{const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:s=>{if(voiceStatus.isConnected)voiceStatus.textContent=s.message;if(voiceMute.isConnected)voiceMute.textContent=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';}});state.voiceRoom=controller;await controller.join();voiceMute.disabled=!controller.canPublish;voiceAudioEnable.disabled=false;voiceLeave.hidden=false;voiceStart.textContent=controller.canPublish?'الميكروفون متصل':'دخلتِ للاستماع';voiceStatus.textContent=controller.canPublish?'أنتِ متصلة ويمكنك التحدث.':'أنتِ متصلة وتسمعين الغرفة. احجزي مقعداً للتحدث.';}catch(e){if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;voiceStart.disabled=false;}};
     voiceAudioEnable.onclick=async()=>{if(!state.voiceRoom)return;voiceAudioEnable.disabled=true;try{await state.voiceRoom.enableAudio();voiceStatus.textContent='تم تفعيل سماع أصوات المشاركين';voiceAudioEnable.textContent='الصوت مفعّل ✓';}catch(e){voiceStatus.textContent='تعذّر تشغيل صوت الآخرين: '+e.message;voiceAudioEnable.disabled=false;}};
     voiceMute.onclick=()=>{if(!state.voiceRoom)return;const muted=state.voiceRoom.toggleMute();voiceMute.textContent=muted?'تشغيل الميكروفون':'كتم الميكروفون';};
     voiceLeave.onclick=async()=>{const controller=state.voiceRoom;state.voiceRoom=null;if(controller)await controller.leave();voiceMute.disabled=true;voiceAudioEnable.disabled=true;voiceAudioEnable.textContent='سماع الآخرين';voiceLeave.hidden=true;voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';voiceStatus.textContent='تم إيقاف الصوت';};
@@ -566,8 +566,17 @@ async function openRoom(r) {
         return `<button type="button" data-seat="${n}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}>${m?avatar(m,43):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<b>${esc(m?.displayName||'عضو')}</b><small>${own?'اضغطي للنزول':'على المايك'}</small>${isHost?'<em>HOST</em>':''}</button>`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
-        try{if(b.dataset.own==='true')await api.leaveRoomSeat(r.id);else await api.requestRoomSeat(r.id,Number(b.dataset.seat));await drawMembers();toast(b.dataset.own==='true'?'غادرتِ المايك':'تم حجز المقعد');}
-        catch(e){toast(e.message,'error');}
+        try{
+          if(b.dataset.own==='true') await api.leaveRoomSeat(r.id);
+          else await api.requestRoomSeat(r.id,Number(b.dataset.seat));
+          if(state.voiceRoom && state.voiceRoom.canPublish===false && b.dataset.own!=='true'){
+            const listener=state.voiceRoom;state.voiceRoom=null;await listener.leave();
+            voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';
+          }
+          await drawMembers();
+          toast(b.dataset.own==='true'?'غادرتِ المايك':'تم حجز المقعد');
+          if(!state.voiceRoom && b.dataset.own!=='true') await voiceStart.onclick();
+        } catch(e){toast(e.message,'error');}
       });
       icons_();
     };
