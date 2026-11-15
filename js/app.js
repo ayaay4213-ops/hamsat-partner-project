@@ -527,8 +527,8 @@ async function openRoom(r) {
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
-      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>الصوت المباشر التجريبي يحتاج إذن الميكروفون واتصالاً مستقراً.</span></div>
-      <div class="hs-live-audio-controls"><p id="voice-status" role="status">الصوت غير متصل</p><div><button type="button" id="voice-start" class="btn-gold">تشغيل الميكروفون</button><button type="button" id="voice-audio-enable" class="btn-ghost" disabled>سماع الآخرين</button><button type="button" id="voice-mute" class="btn-ghost" disabled>كتم الميكروفون</button><button type="button" id="voice-leave" class="btn-ghost" hidden>إيقاف الصوت</button></div><div id="voice-audio" class="sr-only" aria-hidden="true"></div></div>
+      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>ادخلي الغرفة الصوتية للاستماع، واحجزي مقعداً إذا أردتِ التحدث على المايك.</span></div>
+      <div class="hs-live-audio-controls"><p id="voice-status" role="status">الصوت غير متصل</p><div><button type="button" id="voice-start" class="btn-gold">دخول الغرفة الصوتية</button><button type="button" id="voice-audio-enable" class="btn-ghost" disabled>سماع الآخرين</button><button type="button" id="voice-mute" class="btn-ghost" disabled>كتم الميكروفون</button><button type="button" id="voice-leave" class="btn-ghost" hidden>إيقاف الصوت</button></div><div id="voice-audio" class="sr-only" aria-hidden="true"></div></div>
     </section>
     <section class="hs-room-people">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">IN THE ROOM</span><h3>الحاضرون</h3></div><span class="hs-room-people-live"><i></i> الآن</span></div>
