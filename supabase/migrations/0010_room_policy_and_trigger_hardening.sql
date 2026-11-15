@@ -20,7 +20,7 @@ as $$
 $$;
 
 revoke all on function public.is_room_member(uuid) from public;
-grant execute on function public.is_room_member(uuid, uuid) to authenticated;
+grant execute on function public.is_room_member(uuid) to authenticated;
 
 -- Members may only see the occupants of rooms they have joined.
 drop policy if exists "Room members can view occupants" on public.room_members;
