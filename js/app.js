@@ -8,6 +8,10 @@ const tabbar = $('#tabbar');
 
 const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null, voiceRoom: null };
 
+// A recovery callback must own the screen until the new password is saved.
+let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
+  || new URLSearchParams(location.search).get('type') === 'recovery';
+
 const COLORS = ['#7c3aed', '#9d174d', '#0f766e', '#b45309', '#1d4ed8', '#6d28d9', '#be123c', '#047857'];
 const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تقنية', 'رياضة', 'تعارف', 'ألعاب'];
 
@@ -124,6 +128,7 @@ function resetPasswordScreen() {
     button.disabled = true;
     try {
       await api.updatePassword(password);
+      passwordRecoveryActive = false;
       history.replaceState(null, '', location.pathname + location.search);
       toast('تم تغيير كلمة المرور بنجاح. سجّلي الدخول بكلمتك الجديدة.');
       await api.signOut();
@@ -841,12 +846,16 @@ async function render() {
 
 async function boot() {
   icons_();
+  if (passwordRecoveryActive) {
+    resetPasswordScreen();
+    return;
+  }
   screen.innerHTML = loading();
   try {
     const session = await api.getSession();
-    const recovery = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
-      || new URLSearchParams(location.search).get('type') === 'recovery';
-    if (recovery && session) {
+    // Supabase can complete the recovery exchange while getSession/loadMe is pending.
+    // Never let the normal authenticated router replace the password form.
+    if (passwordRecoveryActive) {
       resetPasswordScreen();
       return;
     }
@@ -855,6 +864,10 @@ async function boot() {
       return render();
     }
     await loadMe();
+    if (passwordRecoveryActive) {
+      resetPasswordScreen();
+      return;
+    }
     await render();
   } catch (e) {
     state.account = state.profile = state.wallet = null;
@@ -863,9 +876,12 @@ async function boot() {
   }
 }
 
-window.addEventListener('hashchange', () => { if (state.account) render(); });
+window.addEventListener('hashchange', () => { if (!passwordRecoveryActive && state.account) render(); });
 // Supabase may finish the email recovery callback after the initial page boot.
 api.onAuthStateChange((event, session) => {
-  if (event === 'PASSWORD_RECOVERY' && session) resetPasswordScreen();
+  if (event === 'PASSWORD_RECOVERY' && session) {
+    passwordRecoveryActive = true;
+    resetPasswordScreen();
+  }
 });
 boot();
