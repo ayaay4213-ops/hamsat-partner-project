@@ -130,7 +130,7 @@ export const api = {
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
       return { id: r.id, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
-        description: r.description, coverUrl: r.cover_url || null, createdAt: new Date(r.created_at).getTime(),
+        description: r.description, coverUrl: r.cover_url || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
         ownerColor: p.color || '#7c3aed' };
     }) };
@@ -145,6 +145,12 @@ export const api = {
     });
     fail(error);
     return data;
+  },
+  updateRoomSettings: async (roomId, settings) => {
+    const user = await currentUser();
+    const payload = { cover_url: settings.coverUrl || null, room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8) };
+    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,cover_url,room_emoji').single();
+    fail(error); return { coverUrl: data.cover_url, roomEmoji: data.room_emoji };
   },
 
   leaveRoom: async (roomId) => {
