@@ -598,3 +598,13 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 @keyframes giftFloat { to { transform:translateY(-8px) rotate(5deg); } }
 @keyframes giftTwinkle { to { opacity:.25;transform:scale(.65) rotate(35deg); } }
 @media (prefers-reduced-motion: reduce) { .gift-celebration-card,.gift-celebration-icon,.gift-celebration-spark { animation:none;transition:none; } }
+
+
+/* Password visibility and copy controls */
+.password-tools{position:relative;display:flex;align-items:center;gap:5px}
+.password-tools input.field{flex:1;min-width:0;padding-inline-end:82px!important}
+.password-tools button{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:36px;display:grid;place-items:center;border:1px solid rgba(212,175,55,.22);border-radius:10px;background:#24211b;color:#e8cf82;z-index:2}
+.password-tools button[data-password-toggle]{inset-inline-end:43px}
+.password-tools button[data-password-copy]{inset-inline-end:5px}
+.password-tools button svg{width:17px;height:17px}
+.password-tools button:active{background:#45391e}
