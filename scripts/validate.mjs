@@ -12,6 +12,7 @@ const required = [
   'js/api.js',
   'js/voice-room.js',
   'supabase/migrations/0009_live_room_seats.sql',
+  'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -46,6 +47,19 @@ const localRefs = [...html.matchAll(/(?:src|href)=["']([^"'#]+)["']/gi)]
 for (const ref of localRefs) {
   const clean = decodeURIComponent(ref.split(/[?#]/)[0]);
   if (clean && !fs.existsSync(path.join(root, clean))) errors.push(`Broken local reference in index.html: ${ref}`);
+}
+
+const hardeningMigrationPath = path.join(root, 'supabase/migrations/0010_room_policy_and_trigger_hardening.sql');
+if (fs.existsSync(hardeningMigrationPath)) {
+  const sql = fs.readFileSync(hardeningMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function public.is_room_member',
+    'public.is_room_member(room_messages.room_id)',
+    'revoke all on function public.handle_new_user() from public, anon, authenticated',
+    'revoke all on function public.rls_auto_enable() from public, anon, authenticated'
+  ]) {
+    if (!sql.includes(token.toLowerCase())) errors.push(`Missing security hardening SQL: ${token}`);
+  }
 }
 
 const seatMigrationPath = path.join(root, 'supabase/migrations/0009_live_room_seats.sql');
