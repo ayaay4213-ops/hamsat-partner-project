@@ -1,11 +1,12 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
 import { api } from './api.js';
+import { createVoiceRoom } from './voice-room.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null, voiceRoom: null };
 
 const COLORS = ['#7c3aed', '#9d174d', '#0f766e', '#b45309', '#1d4ed8', '#6d28d9', '#be123c', '#047857'];
 const TOPICS = ['عام', 'دردشة', 'شعر وأدب', 'موسيقى', 'تقنية', 'رياضة', 'تعارف', 'ألعاب'];
@@ -67,7 +68,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet() { if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
 async function signOut() {
@@ -86,6 +87,55 @@ async function loadMe() {
 }
 
 /* ---------- screens ---------- */
+function resetPasswordScreen() {
+  tabbar.classList.add('hidden');
+  screen.className = 'flex-1 flex flex-col';
+  screen.innerHTML = `
+    <div class="auth-page flex-1 flex flex-col justify-center px-5 py-10 fade-in">
+      <div class="auth-panel p-5 rounded-3xl max-w-md w-full mx-auto">
+        <div class="text-center mb-5"><p class="text-gold-400 text-xs tracking-[.3em]">H A M S A T</p><h1 class="text-2xl font-extrabold text-gold-300 mt-2">إعادة تعيين كلمة المرور</h1><p class="text-sm text-[#b7b2a5] mt-2">اختاري كلمة مرور جديدة لحسابك</p></div>
+        <form id="password-reset-form" class="space-y-3">
+          <label class="label" for="reset-new-password">كلمة المرور الجديدة</label>
+          <input id="reset-new-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="8 أحرف على الأقل">
+          <label class="label" for="reset-confirm-password">تأكيد كلمة المرور</label>
+          <input id="reset-confirm-password" class="field" type="password" minlength="8" autocomplete="new-password" required placeholder="أعيدي كتابة كلمة المرور">
+          <p id="reset-feedback" class="hidden text-xs leading-6 rounded-xl p-3" role="status" aria-live="polite"></p>
+          <button type="submit" class="btn-gold w-full">حفظ كلمة المرور الجديدة</button>
+        </form>
+      </div>
+    </div>`;
+  const form = $('#password-reset-form');
+  const feedback = $('#reset-feedback');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const password = $('#reset-new-password').value;
+    const confirm = $('#reset-confirm-password').value;
+    if (password.length < 8) {
+      feedback.textContent = 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+      return;
+    }
+    if (password !== confirm) {
+      feedback.textContent = 'كلمتا المرور غير متطابقتين.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+      return;
+    }
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = true;
+    try {
+      await api.updatePassword(password);
+      history.replaceState(null, '', location.pathname + location.search);
+      toast('تم تغيير كلمة المرور بنجاح. سجّلي الدخول بكلمتك الجديدة.');
+      await api.signOut();
+      state.account = state.profile = state.wallet = null;
+      welcomeScreen();
+    } catch (err) {
+      feedback.textContent = err.message || 'تعذّر تغيير كلمة المرور. افتحي رابط الاستعادة الأحدث من بريدك.';
+      feedback.className = 'text-xs leading-6 rounded-xl p-3 border border-red-500/30 bg-red-950/30 text-red-200';
+    } finally { button.disabled = false; }
+  };
+}
+
 function welcomeScreen() {
   tabbar.classList.add('hidden');
   screen.className = 'flex-1 flex flex-col';
@@ -115,6 +165,7 @@ function welcomeScreen() {
         </div>
         <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول</button>
       </form>
+      <button id="auth-forgot" type="button" class="text-sm text-gold-300 underline underline-offset-4 mt-3 w-full text-center">نسيت كلمة المرور؟</button>
       <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
       <button id="auth-create" class="btn-ghost w-full mt-3">إنشاء حساب جديد</button>
       <p class="text-[11px] text-center text-[#9c9686] leading-5 mt-4">بعد إنشاء الحساب، يتم الدخول مباشرة عند إيقاف تأكيد البريد من إعدادات Supabase. تسجيل الهاتف سيُفعّل لاحقًا بعد إعداد مزود رسائل SMS.</p>
@@ -128,6 +179,7 @@ function welcomeScreen() {
   const passwordInput = $('#auth-password');
   const rules = $('#auth-password-rules');
   const feedback = $('#auth-feedback');
+  const forgot = $('#auth-forgot');
   screen.querySelector('[data-method="phone"]').disabled = true;
   const showFeedback = (message, isError = false) => {
     feedback.textContent = message;
@@ -144,12 +196,28 @@ function welcomeScreen() {
     passwordInput.autocomplete = signingUp ? 'new-password' : 'current-password';
     passwordInput.setAttribute('aria-describedby', signingUp ? 'auth-password-rules' : '');
     rules.classList.toggle('hidden', !signingUp);
+    forgot.classList.toggle('hidden', signingUp);
     clearFeedback();
     icons_();
   };
   create.onclick = () => {
     authMode = authMode === 'signin' ? 'signup' : 'signin';
     syncAuthMode();
+  };
+  forgot.onclick = async () => {
+    const email = identity.value.trim();
+    if (!email) {
+      showFeedback('اكتبي بريدك الإلكتروني أولًا، ثم اضغطي «نسيت كلمة المرور؟».', true);
+      identity.focus();
+      return;
+    }
+    forgot.disabled = true;
+    try {
+      await api.sendPasswordReset(email);
+      showFeedback('إذا كان البريد مسجلًا، فسيصلك رابط استعادة كلمة المرور. افحصي الوارد والرسائل غير المرغوب فيها.');
+    } catch (err) {
+      showFeedback(err.message || 'تعذّر إرسال رابط الاستعادة. حاولي لاحقًا.', true);
+    } finally { forgot.disabled = false; }
   };
   passwordInput.addEventListener('input', clearFeedback);
   identity.addEventListener('input', clearFeedback);
@@ -422,7 +490,8 @@ async function openRoom(r) {
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
-      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>المقاعد تفاعلية حاليًا. البث الصوتي المباشر يحتاج ربط خدمة الصوت.</span></div>
+      <div class="hs-room-stage-note"><i data-lucide="info"></i><span>الصوت المباشر التجريبي يحتاج إذن الميكروفون واتصالاً مستقراً.</span></div>
+      <div class="hs-live-audio-controls"><p id="voice-status" role="status">الصوت غير متصل</p><div><button type="button" id="voice-start" class="btn-gold">تشغيل الميكروفون</button><button type="button" id="voice-audio-enable" class="btn-ghost" disabled>سماع الآخرين</button><button type="button" id="voice-mute" class="btn-ghost" disabled>كتم الميكروفون</button><button type="button" id="voice-leave" class="btn-ghost" hidden>إيقاف الصوت</button></div><div id="voice-audio" class="sr-only" aria-hidden="true"></div></div>
     </section>
     <section class="hs-room-people">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">IN THE ROOM</span><h3>الحاضرون</h3></div><span class="hs-room-people-live"><i></i> الآن</span></div>
@@ -438,6 +507,11 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
+    const voiceStatus=sheet.querySelector('#voice-status'), voiceStart=sheet.querySelector('#voice-start'), voiceAudioEnable=sheet.querySelector('#voice-audio-enable'), voiceMute=sheet.querySelector('#voice-mute'), voiceLeave=sheet.querySelector('#voice-leave');
+    voiceStart.onclick=async()=>{voiceStart.disabled=true;voiceStatus.textContent='جارٍ التحقق من مقعد المايك...';try{const {seats}=await api.roomSeats(r.id);if(!seats.some(x=>x.user_id===state.profile.uuid)){toast('احجزي مقعد مايك أولاً حتى تتحدثي');voiceStart.disabled=false;voiceStatus.textContent='احجزي مقعداً لتشغيل الميكروفون';return;}voiceStatus.textContent='جارٍ طلب إذن الميكروفون...';const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:s=>{if(voiceStatus.isConnected)voiceStatus.textContent=s.message;if(voiceMute.isConnected)voiceMute.textContent=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';}});state.voiceRoom=controller;await controller.join();voiceMute.disabled=false;voiceAudioEnable.disabled=false;voiceLeave.hidden=false;voiceStart.textContent='الميكروفون متصل';voiceStatus.textContent='تم تشغيل الميكروفون. اضغطي «سماع الآخرين» إذا لم يعمل الصوت تلقائياً.';}catch(e){if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;voiceStart.disabled=false;}};
+    voiceAudioEnable.onclick=async()=>{if(!state.voiceRoom)return;voiceAudioEnable.disabled=true;try{await state.voiceRoom.enableAudio();voiceStatus.textContent='تم تفعيل سماع أصوات المشاركين';voiceAudioEnable.textContent='الصوت مفعّل ✓';}catch(e){voiceStatus.textContent='تعذّر تشغيل صوت الآخرين: '+e.message;voiceAudioEnable.disabled=false;}};
+    voiceMute.onclick=()=>{if(!state.voiceRoom)return;const muted=state.voiceRoom.toggleMute();voiceMute.textContent=muted?'تشغيل الميكروفون':'كتم الميكروفون';};
+    voiceLeave.onclick=async()=>{const controller=state.voiceRoom;state.voiceRoom=null;if(controller)await controller.leave();voiceMute.disabled=true;voiceAudioEnable.disabled=true;voiceAudioEnable.textContent='سماع الآخرين';voiceLeave.hidden=true;voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';voiceStatus.textContent='تم إيقاف الصوت';};
     const drawMessages=async()=>{
       const {messages}=await api.roomMessages(r.id); if(!chat.isConnected)return;
       chat.innerHTML=messages.length?messages.map(m=>`<div class="hs-room-message ${m.userId===state.profile?.uuid?'mine':''}">${avatar({displayName:m.displayName,color:m.color},30)}<div><b>${esc(m.displayName)}</b><p>${esc(m.body)}</p><small>${timeAgo(m.createdAt)}</small></div></div>`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
@@ -448,6 +522,7 @@ async function openRoom(r) {
       countEl.textContent=num(members.length);
       membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span></div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       const {seats}=await api.roomSeats(r.id), bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
+      if(state.voiceRoom&&!seats.some(x=>x.user_id===state.profile?.uuid)){const voice=state.voiceRoom;state.voiceRoom=null;voice.leave().catch(()=>{});}
       seatsEl.innerHTML=Array.from({length:8},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty"><span class="hs-seat-mic"><i data-lucide="mic"></i></span><b>${isHost?'مقعد المضيف':'مايك '+n}</b><small>${isHost?'مقعدك في الغرفة':'اضغطي لطلب المايك'}</small></button>`;
@@ -756,6 +831,12 @@ async function boot() {
   screen.innerHTML = loading();
   try {
     const session = await api.getSession();
+    const recovery = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
+      || new URLSearchParams(location.search).get('type') === 'recovery';
+    if (recovery && session) {
+      resetPasswordScreen();
+      return;
+    }
     if (!session) {
       state.account = state.profile = state.wallet = null;
       return render();
@@ -770,4 +851,8 @@ async function boot() {
 }
 
 window.addEventListener('hashchange', () => { if (state.account) render(); });
+// Supabase may finish the email recovery callback after the initial page boot.
+api.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY' && session) resetPasswordScreen();
+});
 boot();

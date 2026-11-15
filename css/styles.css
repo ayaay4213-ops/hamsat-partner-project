@@ -568,3 +568,11 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-compose button{width:46px;flex:none;border-radius:13px;background:linear-gradient(145deg,#f0d77e,#b58b2e);color:#16130a;display:grid;place-items:center}
 .hs-room-compose button svg{width:19px;height:19px}
 @media(max-width:380px){.hs-room-stage,.hs-room-people,.hs-room-chat-area{margin-inline:10px;padding:12px}.hs-room-seats{gap:7px}.hs-room-seat{min-height:100px}.hs-room-title-row h2{font-size:17px}}
+
+
+/* LIVE AUDIO CONTROLS */
+.hs-live-audio-controls { margin-top: 14px; padding: 14px; border: 1px solid rgba(212,175,55,.24); border-radius: 16px; background: rgba(255,255,255,.025); }
+.hs-live-audio-controls p { color: #d9cda9; font-size: 12px; margin-bottom: 10px; }
+.hs-live-audio-controls > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.hs-live-audio-controls button { min-height: 40px; padding: 9px 13px; font-size: 12px; }
+.hs-live-audio-controls button:disabled { opacity: .45; }
