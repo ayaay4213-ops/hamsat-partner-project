@@ -52,6 +52,8 @@ create policy "Room members can view microphone seats"
   for select to authenticated
   using (private.is_room_member(room_seats.room_id));
 
+drop function if exists public.is_room_member(uuid);
+
 drop policy if exists "Members can leave their own seats" on public.room_seats;
 revoke insert, update, delete on public.room_seats from anon, authenticated;
 grant select on public.room_seats to authenticated;
