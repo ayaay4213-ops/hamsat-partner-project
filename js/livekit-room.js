@@ -57,7 +57,10 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
         : 'تم إيقاف المايك. ما زلتِ تستمعين للغرفة',
         true);
     } catch (error) {
-      status('تعذّر تحديث صلاحية المايك: ' + error.message, true);
+      // A failed permission refresh happens after disconnecting the old session.
+      // Never report the room as connected when the SFU connection is down.
+      joined = Boolean(room?.state === 'connected');
+      status('تعذّر تحديث صلاحية المايك: ' + error.message, joined);
     } finally {
       permissionRefreshing = false;
     }
