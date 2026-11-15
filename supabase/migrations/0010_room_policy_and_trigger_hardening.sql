@@ -142,6 +142,9 @@ grant update (handle, display_name, bio, country, color, avatar_url, cover_url, 
 -- RLS does not protect TRUNCATE. Client roles do not need schema-level
 -- maintenance privileges such as TRUNCATE, REFERENCES, or TRIGGER.
 revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
+-- Seat mutations must go through the authenticated, serialized RPC functions.
+revoke insert, update, delete on public.room_seats from anon, authenticated;
+grant select on public.room_seats to authenticated;
 alter default privileges for role postgres in schema public
   revoke truncate, references, trigger on tables from anon, authenticated;
 
