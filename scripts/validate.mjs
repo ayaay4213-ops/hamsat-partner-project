@@ -58,7 +58,7 @@ if (fs.existsSync(hardeningMigrationPath)) {
     'alter publication supabase_realtime add table public.room_members',
     'revoke truncate, references, trigger on all tables in schema public from anon, authenticated',
     'revoke insert, update on public.profiles from authenticated',
-    'grant update (handle, display_name, bio, country, color, avatar_url, cover_url, background_url)');
+    'grant update (handle, display_name, bio, country, color, avatar_url, cover_url, background_url)',
     'revoke all on function public.handle_new_user() from public, anon, authenticated',
     'revoke all on function public.rls_auto_enable() from public, anon, authenticated'
   ]) {
