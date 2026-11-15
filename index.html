@@ -2,9 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
 <script>
-window.onerror=function(msg,src,line,col,err){window.parent.postMessage({type:'app-error',message:msg,source:src,lineno:line,colno:col,stack:err&&err.stack||''},'*');};
-window.onunhandledrejection=function(e){window.parent.postMessage({type:'app-error',message:'Unhandled promise rejection: '+(e.reason&&e.reason.message||e.reason||'unknown'),stack:e.reason&&e.reason.stack||''},'*');};
-window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t!==window&&t.tagName==='SCRIPT'){var u=t.src||'';window.parent.postMessage({type:'app-error',message:'Failed to load script'+(u?': '+u:' (inline module)'),source:u},'*');}},true);
+var hamsatStartupError='';
+function showHamsatStartupError(message){
+  hamsatStartupError=String(message||'تعذّر تحميل ملفات التطبيق');
+  function paint(){
+    var screen=document.getElementById('screen');
+    if(!screen)return;
+    if(screen.dataset.appStarted==='1')return;
+    screen.innerHTML='<div dir="rtl" style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:#08090c;color:#f7f4eb;font-family:system-ui,sans-serif;text-align:center"><div style="max-width:420px"><div style="font-size:42px;color:#e7c65a">همسات ✦</div><h2 style="font-size:20px;margin:18px 0 8px">تعذّر تشغيل التطبيق</h2><p style="color:#c9c2b1;line-height:1.9">لم يتم تحميل أحد ملفات التشغيل. تحققي من اتصال الإنترنت ثم أعيدي المحاولة.</p><p dir="ltr" style="font-size:11px;color:#9b9588;overflow-wrap:anywhere;margin:12px 0">'+hamsatStartupError.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];})+'</p><button onclick="location.reload()" style="background:#d4af37;color:#17140b;border:0;border-radius:12px;padding:12px 22px;font-weight:bold">إعادة المحاولة</button></div></div>';
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',paint,{once:true});else paint();
+}
+window.onerror=function(msg,src,line,col,err){window.parent.postMessage({type:'app-error',message:msg,source:src,lineno:line,colno:col,stack:err&&err.stack||''},'*');showHamsatStartupError(msg+' — '+(src||''));};
+window.onunhandledrejection=function(e){var m='Unhandled promise rejection: '+(e.reason&&e.reason.message||e.reason||'unknown');window.parent.postMessage({type:'app-error',message:m,stack:e.reason&&e.reason.stack||''},'*');};
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t!==window&&t.tagName==='SCRIPT'){var u=t.src||'';var m='Failed to load script'+(u?': '+u:' (inline module)');window.parent.postMessage({type:'app-error',message:m,source:u},'*');showHamsatStartupError(m);}},true);
 (function(){var _f=window.fetch;window.fetch=function(){var a=arguments,u=typeof a[0]==='string'?a[0]:(a[0]&&a[0].url)||'';var p=_f.apply(this,a);p.then(function(r){if(r.status===500){r.clone().text().then(function(b){window.parent.postMessage({type:'fetch-error',url:u,status:500,body:b},'*');}).catch(function(){window.parent.postMessage({type:'fetch-error',url:u,status:500,body:''},'*');});}}).catch(function(e){window.parent.postMessage({type:'fetch-error',url:u,status:0,body:e.message||'fetch failed'},'*');});return p;};})();
 </script>
 <script src="https://builder.puter.com/runtime.js" defer></script>
