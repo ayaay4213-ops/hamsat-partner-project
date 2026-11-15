@@ -136,14 +136,15 @@ export const api = {
     }) };
   },
   createRoom: async (r) => {
-    const user = await currentUser();
-    const payload = {
-      owner_id: user.id, title: String(r.title || '').trim(),
-      topic: r.topic || 'عام', description: r.description || ''
-    };
-    if (r.coverUrl) payload.cover_url = r.coverUrl;
-    const { data, error } = await client().from('rooms').insert(payload).select('*').single();
-    fail(error); return data;
+    await currentUser();
+    const { data, error } = await client().rpc('create_owned_room', {
+      p_title: String(r.title || '').trim(),
+      p_topic: r.topic || 'عام',
+      p_description: r.description || '',
+      p_cover_url: r.coverUrl || null
+    });
+    fail(error);
+    return data;
   },
 
   leaveRoom: async (roomId) => {
