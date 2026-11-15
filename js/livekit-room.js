@@ -9,6 +9,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let room = null;
   let joined = false;
   let muted = false;
+  let canPublish = false;
   let joining = null;
   let disposed = false;
   const audioElements = new Map();
@@ -82,10 +83,16 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
 
       const credentials = await requestToken();
       await room.connect(credentials.url, credentials.token);
-      await room.localParticipant.setMicrophoneEnabled(true);
+      canPublish = Boolean(credentials.can_publish);
+      if (canPublish) {
+        await room.localParticipant.setMicrophoneEnabled(true);
+      }
       joined = true;
       muted = false;
-      status('اتصلت الغرفة الصوتية عبر الخادم', true);
+      status(canPublish
+        ? 'اتصلتِ بالغرفة والميكروفون يعمل'
+        : 'دخلتِ الغرفة كمستمعة. احجزي مقعداً للتحدث',
+        true);
     })();
 
     try {
@@ -110,7 +117,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   }
 
   function toggleMute() {
-    if (!room || !joined) return muted;
+    if (!room || !joined || !canPublish) return muted;
     muted = !muted;
     room.localParticipant.setMicrophoneEnabled(!muted).catch((error) => {
       muted = !muted;
@@ -133,10 +140,11 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     }
     audioElements.clear();
     muted = false;
+    canPublish = false;
     const root = document.getElementById('voice-audio');
     if (root) root.querySelectorAll('[data-livekit-participant]').forEach(el => el.remove());
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false });
   }
 
-  return { join, leave, toggleMute, enableAudio, get muted() { return muted; } };
+  return { join, leave, toggleMute, enableAudio, get muted() { return muted; }, get canPublish() { return canPublish; } };
 }
