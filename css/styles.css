@@ -576,3 +576,25 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-live-audio-controls > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .hs-live-audio-controls button { min-height: 40px; padding: 9px 13px; font-size: 12px; }
 .hs-live-audio-controls button:disabled { opacity: .45; }
+
+
+/* Premium gift gallery and send celebration */
+.gift-card { position:relative; overflow:hidden; min-height:154px; border-color:rgba(212,175,55,.2); background:radial-gradient(circle at 50% 0%,rgba(212,175,55,.13),transparent 58%),linear-gradient(145deg,#211a19,#111216); }
+.gift-card:after { content:""; position:absolute; inset:8px; border:1px solid rgba(212,175,55,.09); border-radius:13px; pointer-events:none; }
+.gift-art-luxe { width:66px; height:66px; display:grid; place-items:center; position:relative; border-radius:22px; margin-bottom:10px; color:#f3d77d; background:radial-gradient(circle,rgba(212,175,55,.22),rgba(212,175,55,.035) 70%); border:1px solid rgba(212,175,55,.25); box-shadow:0 0 24px rgba(212,175,55,.08),inset 0 0 18px rgba(212,175,55,.08); }
+.gift-art-luxe svg { width:31px; height:31px; stroke-width:1.45; filter:drop-shadow(0 0 8px rgba(245,226,160,.45)); }
+.gift-art-luxe span { position:absolute; top:5px; right:8px; color:#fff0b0; font-size:12px; }
+.gift-card-note { color:#8f8060; font-size:10px; margin-top:5px; letter-spacing:.08em; }
+.gift-celebration { position:fixed; inset:0; z-index:100; display:grid; place-items:center; pointer-events:none; opacity:0; background:radial-gradient(circle,rgba(8,9,12,.72),rgba(8,9,12,.16) 62%,transparent 80%); transition:opacity .25s ease; }
+.gift-celebration.show { opacity:1; }
+.gift-celebration-card { position:relative; display:flex; flex-direction:column; align-items:center; gap:9px; min-width:190px; padding:25px 34px; border:1px solid rgba(245,226,160,.65); border-radius:26px; background:linear-gradient(145deg,#28211a,#0d0e12); box-shadow:0 0 55px rgba(212,175,55,.25),inset 0 0 30px rgba(212,175,55,.08); color:#f7e6ae; transform:scale(.72) translateY(20px); transition:transform .35s cubic-bezier(.2,.8,.2,1); }
+.gift-celebration.show .gift-celebration-card { transform:scale(1) translateY(0); }
+.gift-celebration-icon { width:86px;height:86px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,rgba(245,226,160,.25),rgba(212,175,55,.04));border:1px solid rgba(245,226,160,.4);animation:giftFloat 1.2s ease-in-out infinite alternate; }
+.gift-celebration-icon svg { width:43px;height:43px;stroke-width:1.4;filter:drop-shadow(0 0 12px rgba(245,226,160,.65)); }
+.gift-celebration-card strong { font-size:20px; }
+.gift-celebration-card small { color:#c8b77e; }
+.gift-celebration-spark { position:absolute;top:17px;left:22px;color:#fff0b0;font-size:22px;animation:giftTwinkle .8s ease-in-out infinite alternate; }
+.gift-celebration-spark.second { top:auto;left:auto;right:20px;bottom:28px; }
+@keyframes giftFloat { to { transform:translateY(-8px) rotate(5deg); } }
+@keyframes giftTwinkle { to { opacity:.25;transform:scale(.65) rotate(35deg); } }
+@media (prefers-reduced-motion: reduce) { .gift-celebration-card,.gift-celebration-icon,.gift-celebration-spark { animation:none;transition:none; } }
