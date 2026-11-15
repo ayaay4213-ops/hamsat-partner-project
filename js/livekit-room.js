@@ -116,7 +116,18 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       });
 
       const credentials = await requestToken();
-      await room.connect(credentials.url, credentials.token);
+      try {
+        await room.connect(credentials.url, credentials.token);
+      } catch (connectError) {
+        const detail = String(connectError?.message || connectError || '');
+        if (/invalid token|could not establish signal connection|unauthoriz|401/i.test(detail)) {
+          throw new Error('رفض خادم LiveKit رمز الدخول. يجب أن تكون LIVEKIT_URL وLIVEKIT_API_KEY وLIVEKIT_API_SECRET من المشروع نفسه في LiveKit Cloud، ثم إعادة نشر دالة livekit-token. لم يتم تشغيل صوت وهمي بديل.');
+        }
+        if (/websocket|network|failed to fetch|timeout|connection/i.test(detail)) {
+          throw new Error('تعذّر الوصول إلى خادم الصوت. تحققي من اتصال الإنترنت ومن عنوان LIVEKIT_URL في أسرار Supabase.');
+        }
+        throw new Error('فشل الاتصال بخادم الصوت: ' + detail);
+      }
       canPublish = Boolean(credentials.can_publish);
       if (canPublish) {
         await room.localParticipant.setMicrophoneEnabled(true);
