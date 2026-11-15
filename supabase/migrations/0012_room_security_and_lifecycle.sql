@@ -2,7 +2,11 @@
 -- This migration was applied directly to the production project on 2026-11-15.
 -- Keep this file in source control so fresh environments can reproduce the same schema.
 
-create or replace function public.is_room_member(p_room_id uuid)
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+
+create or replace function private.is_room_member(p_room_id uuid)
 returns boolean
 language sql
 stable
@@ -17,20 +21,20 @@ as $$
   );
 $$;
 
-revoke all on function public.is_room_member(uuid) from public, anon;
-grant execute on function public.is_room_member(uuid) to authenticated;
+revoke all on function private.is_room_member(uuid) from public, anon;
+grant execute on function private.is_room_member(uuid) to authenticated;
 
 drop policy if exists "Room members can view occupants" on public.room_members;
 create policy "Room members can view occupants"
   on public.room_members
   for select to authenticated
-  using (public.is_room_member(room_members.room_id));
+  using (private.is_room_member(room_members.room_id));
 
 drop policy if exists "Room members read room messages" on public.room_messages;
 create policy "Room members read room messages"
   on public.room_messages
   for select to authenticated
-  using (public.is_room_member(room_messages.room_id));
+  using (private.is_room_member(room_messages.room_id));
 
 drop policy if exists "Room members send their own messages" on public.room_messages;
 create policy "Room members send their own messages"
@@ -38,7 +42,7 @@ create policy "Room members send their own messages"
   for insert to authenticated
   with check (
     auth.uid() = user_id
-    and public.is_room_member(room_messages.room_id)
+    and private.is_room_member(room_messages.room_id)
   );
 
 drop policy if exists "Members can view room seats" on public.room_seats;
@@ -46,7 +50,7 @@ drop policy if exists "Room members can view microphone seats" on public.room_se
 create policy "Room members can view microphone seats"
   on public.room_seats
   for select to authenticated
-  using (public.is_room_member(room_seats.room_id));
+  using (private.is_room_member(room_seats.room_id));
 
 drop policy if exists "Members can leave their own seats" on public.room_seats;
 revoke insert, update, delete on public.room_seats from anon, authenticated;
@@ -79,7 +83,7 @@ begin
   if not found then
     raise exception 'الغرفة غير موجودة';
   end if;
-  if not public.is_room_member(p_room_id) then
+  if not private.is_room_member(p_room_id) then
     raise exception 'انضمي إلى الغرفة أولاً قبل حجز المايك';
   end if;
   if p_seat_no = 1 and v_owner <> v_user then
@@ -160,3 +164,7 @@ begin
   end if;
 end
 $$;
+
+-- These functions are trigger/internal helpers, not client RPC endpoints.
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+revoke all on function public.rls_auto_enable() from public, anon, authenticated;
