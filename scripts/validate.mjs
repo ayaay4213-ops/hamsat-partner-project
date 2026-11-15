@@ -10,6 +10,7 @@ const required = [
   'css/styles.css',
   'js/app.js',
   'js/api.js',
+  'js/voice-room.js',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
 ];
@@ -45,7 +46,7 @@ for (const ref of localRefs) {
   if (clean && !fs.existsSync(path.join(root, clean))) errors.push(`Broken local reference in index.html: ${ref}`);
 }
 
-for (const file of ['js/app.js', 'js/api.js', 'workers/hamsat-api.js']) {
+for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
