@@ -11,6 +11,8 @@ const required = [
   'js/app.js',
   'js/api.js',
   'js/voice-room.js',
+  'js/livekit-room.js',
+  'supabase/functions/livekit-token/index.ts',
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/SETUP-AR.md',
@@ -90,7 +92,7 @@ if (fs.existsSync(seatMigrationPath)) {
   }
 }
 
-for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'workers/hamsat-api.js']) {
+for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
