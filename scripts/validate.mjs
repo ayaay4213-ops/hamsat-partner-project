@@ -52,8 +52,14 @@ for (const ref of localRefs) {
 const hardeningMigrationPath = path.join(root, 'supabase/migrations/0010_room_policy_and_trigger_hardening.sql');
 if (fs.existsSync(hardeningMigrationPath)) {
   const sql = fs.readFileSync(hardeningMigrationPath, 'utf8').toLowerCase();
+  const dollarQuotes = sql.match(/\$\$/g) || [];
+  if (dollarQuotes.length % 2 !== 0 || /\b(?:do|as)\s+\$(?!\$)/i.test(sql)) {
+    errors.push('Invalid SQL dollar-quote delimiters in room hardening migration');
+  }
   for (const token of [
     'create or replace function public.is_room_member',
+    'grant execute on function public.is_room_member(uuid) to authenticated',
+    'drop function if exists public.is_room_member(uuid, uuid)',
     'public.is_room_member(room_messages.room_id)',
     'alter publication supabase_realtime add table public.room_members',
     'revoke truncate, references, trigger on all tables in schema public from anon, authenticated',
