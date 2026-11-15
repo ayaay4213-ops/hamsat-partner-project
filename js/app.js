@@ -831,7 +831,8 @@ async function boot() {
   screen.innerHTML = loading();
   try {
     const session = await api.getSession();
-    const recovery = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery';
+    const recovery = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
+      || new URLSearchParams(location.search).get('type') === 'recovery';
     if (recovery && session) {
       resetPasswordScreen();
       return;
@@ -850,4 +851,8 @@ async function boot() {
 }
 
 window.addEventListener('hashchange', () => { if (state.account) render(); });
+// Supabase may finish the email recovery callback after the initial page boot.
+api.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY' && session) resetPasswordScreen();
+});
 boot();
