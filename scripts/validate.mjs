@@ -115,6 +115,29 @@ if (fs.existsSync(seatMigrationPath)) {
   }
 }
 
+const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
+if (fs.existsSync(liveKitRoomPath)) {
+  const js = fs.readFileSync(liveKitRoomPath, 'utf8');
+  for (const token of [
+    'async function refreshPermissions()',
+    "table: 'room_seats'",
+    'supabase.removeChannel(seatChannel)',
+    'refreshPermissions, get muted()'
+  ]) {
+    if (!js.includes(token)) errors.push(`Missing LiveKit seat-sync behavior: ${token}`);
+  }
+}
+const appRoomPath = path.join(root, 'js/app.js');
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  for (const token of [
+    'state.voiceRoom.refreshPermissions()',
+    'voiceMute.disabled=!controller.canPublish'
+  ]) {
+    if (!js.includes(token)) errors.push(`Missing room microphone UI behavior: ${token}`);
+  }
+}
+
 for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
