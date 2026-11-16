@@ -48,7 +48,7 @@ async function loadUsers(term=''){
  let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).limit(200);
  if(clean){
   const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
-  const isId=/^\\d+$/.test(numeric);
+  const isId=/^\d+$/.test(numeric);
   q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
  }
  const {data,error}=await q;if(error)throw error;
