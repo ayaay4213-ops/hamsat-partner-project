@@ -1030,6 +1030,7 @@ async function userScreen(handle) {
   let profile;
   try {
     ({ profile } = await api.user(handle));
+    if (profile?.uuid === state.profile?.uuid) { location.hash = '#/me'; return; }
     $('#user-body').innerHTML = `<div class="fade-in">${profileView(profile, false)}
       <div class="px-5 py-5 space-y-3">
         <div id="friend-actions" class="grid grid-cols-2 gap-2"><button id="friend-action" class="btn-ghost w-full">إضافة صديق</button><button id="follow-action" class="btn-gold w-full">متابعة</button></div>
