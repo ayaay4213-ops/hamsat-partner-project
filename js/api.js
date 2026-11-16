@@ -109,7 +109,7 @@ export const api = {
     if(q.length<2) return {users:[]};
     const user=await currentUser();
     const publicNumber=q.toUpperCase().replace(/^HAMSAT-?/, '').replace(/^#/, '');
-    const isPublicId=/^\\d+$/.test(publicNumber);
+    const isPublicId=/^\d+$/.test(publicNumber);
     const filter=isPublicId?'handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%,public_id.eq.'+Number(publicNumber):'handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%';
     const {data,error}=await client().from('profiles').select('*').or(filter).neq('id',user.id).limit(30);
     fail(error); return {users:(data||[]).map(mapProfile)};
