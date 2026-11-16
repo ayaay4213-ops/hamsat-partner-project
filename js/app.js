@@ -1001,8 +1001,17 @@ async function directMessageScreen(conversationId) {
   }
 }
 
+function dismissHamsatSplash() {
+  const splash = document.getElementById('hamsat-splash');
+  if (!splash || splash.dataset.dismissed) return;
+  splash.dataset.dismissed = '1';
+  splash.classList.add('splash-hide');
+  window.setTimeout(() => splash.remove(), 750);
+}
+
 async function boot() {
   icons_();
+  window.setTimeout(dismissHamsatSplash, 2300);
   if (passwordRecoveryActive) {
     resetPasswordScreen();
     return;
