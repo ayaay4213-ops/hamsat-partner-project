@@ -78,7 +78,7 @@ export const api = {
     ]);
     fail(pr.error); fail(wr.error);
     if (!wr.data) throw new Error('لم تُنشأ محفظة الحساب بعد. راجعي إعداد trigger في Supabase.');
-    return { account: { id: user.id, email: user.email || '', username: user.email || user.phone || 'عضو' },
+    return { account: { id: user.id, username: pr.data?.handle || user.user_metadata?.username || 'عضو' },
       profile: mapProfile(pr.data), wallet: mapWallet(wr.data) };
   },
   saveProfile: async (p) => {
