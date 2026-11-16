@@ -256,7 +256,7 @@ export const api = {
       description: String(settings.description || '').trim().slice(0, 240),
       cover_url: settings.coverUrl || null,
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
-      seat_limit: [4,6,8].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8
+      seat_limit: [4,6,8,10].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8
     };
     if (!payload.title) throw new Error('اسم الغرفة مطلوب');
     const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,room_emoji,seat_limit').single();
