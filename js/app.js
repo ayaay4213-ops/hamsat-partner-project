@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261116-cosmic-room-v1';
+import { api } from './api.js?v=20261116-member-profile-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -927,10 +927,10 @@ function drawWallet() {
 function profileStatsMarkup() {
   return `
     <div class="hs-profile-stats" aria-label="إحصائيات الحساب">
-      <div><b data-profile-stat="friends">—</b><span>الأصدقاء</span></div>
-      <div><b data-profile-stat="followers">—</b><span>المتابعون</span></div>
-      <div><b data-profile-stat="visitors">—</b><span>الزوار</span></div>
-      <div><b data-profile-stat="giftsReceived">—</b><span>الهدايا</span></div>
+      <button type="button" data-profile-stat-go="friends"><b data-profile-stat="friends">—</b><span>الأصدقاء</span></button>
+      <button type="button" data-profile-stat-go="followers"><b data-profile-stat="followers">—</b><span>المتابعون</span></button>
+      <button type="button" data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>المتابَعون</span></button>
+      <button type="button" data-profile-stat-go="visitors"><b data-profile-stat="visitors">—</b><span>الزوار</span></button>
     </div>`;
 }
 function profileRewardsMarkup() {
@@ -1024,20 +1024,29 @@ function meScreen() {
   const p = state.profile;
   const menuGroups = [
     [
-      {icon:'wallet',label:'المحفظة',sub:'رصيدكِ وسجل معاملاتك',href:'#/wallet',tone:'gold'},
-      {icon:'gem',label:'المتجر والمقتنيات',sub:'الإطارات والزينة والهدايا',href:'#/shop',tone:'pink'},
-      {icon:'users',label:'الأصدقاء والمتابعة',sub:'أصدقاؤكِ والأعضاء الذين تتابعينهم',href:'#/friends',tone:'violet'}
+      {icon:'wallet',label:'المحفظة',sub:'رصيد العملات وسجل المعاملات',href:'#/wallet',tone:'gold'},
+      {icon:'shopping-bag',label:'المتجر',sub:'الإطارات والهدايا والزينة',href:'#/shop',tone:'pink'},
+      {icon:'crown',label:'الأرستقراطية VIP',sub:'العضويات والمزايا الحصرية',href:'#/aristocracy',tone:'gold',soon:true},
+      {icon:'calendar-check',label:'تسجيل الوصول اليومي',sub:'احصلي على مكافأتك اليومية',href:'#/wallet',tone:'violet'},
+      {icon:'user-plus',label:'دعوة الأصدقاء',sub:'شاركي رابط حسابك',href:'#/invite',tone:'violet',soon:true}
     ],
     [
-      {icon:'gift',label:'الهدايا',sub:'اكتشفي الهدايا وأرسليها',href:'#/gifts',tone:'pink'},
-      {icon:'gamepad-2',label:'الألعاب',sub:'مساحة الترفيه والتحديات',href:'#/games',tone:'violet'},
-      {icon:'bell',label:'الإشعارات',sub:'آخر التنبيهات والتحديثات',href:'#/notifications',tone:'gold'}
+      {icon:'target',label:'المهام',sub:'تحديات يومية وأسبوعية',href:'#/tasks',tone:'pink',soon:true},
+      {icon:'chart-no-axes-column-increasing',label:'مستواي',sub:'نقاط الخبرة والتقدم',href:'#/me#level',tone:'gold'},
+      {icon:'award',label:'الشارات والأوسمة',sub:'إنجازاتك ومقتنياتك',href:'#/me#badges',tone:'violet'},
+      {icon:'building-2',label:'مركز الوكالة',sub:'إدارة المضيفين والتقارير',href:'#/agency',tone:'gold',soon:true},
+      {icon:'users-round',label:'العائلة',sub:'مجتمعك ومجموعتك',href:'#/family',tone:'pink',soon:true}
+    ],
+    [
+      {icon:'users',label:'الأصدقاء والمتابعة',sub:'إدارة علاقاتك في همسات',href:'#/friends',tone:'violet'},
+      {icon:'message-circle',label:'الرسائل الخاصة',sub:'محادثاتك مع الأصدقاء',href:'#/inbox',tone:'gold'},
+      {icon:'bell',label:'الإشعارات',sub:'آخر التنبيهات والتحديثات',href:'#/notifications',tone:'pink'}
     ]
   ];
   const menu = menuGroups.map(group => `
     <div class="hs-account-group">
       ${group.map(item => `
-        <a href="${item.href}" class="hs-account-row">
+        <a href="${item.href}" class="hs-account-row" ${item.soon?'data-coming-soon="1"':""}>
           <span class="hs-account-icon ${item.tone}"><i data-lucide="${item.icon}"></i></span>
           <span class="hs-account-copy"><b>${item.label}</b><small>${item.sub}</small></span>
           <i data-lucide="chevron-left" class="hs-account-chevron"></i>
@@ -1045,14 +1054,14 @@ function meScreen() {
     </div>`).join('');
   screen.innerHTML = `
     <div class="hs-me-screen fade-in">
-      <div class="hs-me-topbar"><span>H A M S A T</span><span class="hs-me-topbar-mark">✦</span></div>
+      <div class="hs-me-topbar"><span>H A M S A T</span><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div>
       ${profileView(p, true)}
       <div class="hs-me-content">
         <div class="hs-me-balance">
           <div><small>محفظتي</small><b>${coin(18)} ${num(state.wallet?.balance)}</b></div>
           <a href="#/wallet">عرض المحفظة <i data-lucide="arrow-left"></i></a>
         </div>
-        <div class="hs-me-section-title"><span>مساحتي</span><small>إدارة حسابكِ ومقتنياتك</small></div>
+        <div class="hs-me-section-title"><span>الخدمات والمزايا</span><small>كل عالم همسات في مكان واحد</small></div>
         ${menu}
         <button id="edit-profile" class="hs-account-row hs-edit-row">
           <span class="hs-account-icon gold"><i data-lucide="user-round-pen"></i></span>
@@ -1072,14 +1081,23 @@ function meScreen() {
   loadProfileRewards(p.uuid,p);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
+  const editProfileAction = () => openSheet(`<h2 class="text-lg font-bold mb-2">تعديل الملف الشخصي</h2>${profileForm(p, false)}`, (s) => {
+    bindProfileForm(s, () => { closeSheet(); toast('تم حفظ التغييرات'); render(); });
+  });
+  $('#edit-profile-inline')?.addEventListener('click',editProfileAction);
+  document.querySelectorAll('[data-profile-stat-go]').forEach(button=>button.addEventListener('click',()=>{
+    const key=button.dataset.profileStatGo;
+    if(key==='visitors'){toast('قائمة الزوار التفصيلية قيد التجهيز');return;}
+    location.hash='#/friends';
+  }));
+  document.querySelectorAll('[data-coming-soon]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();toast('هذه الخدمة قيد التجهيز وستُفعّل لاحقاً');}));
+  $('#switch-account').onclick = () => openSheet(`<h2 class="text-lg font-bold mb-2">تبديل الحساب</h2><p class="text-sm text-[#bba9d6] mb-5">سيتم تسجيل خروجكِ لتتمكني من الدخول بحساب آخر. لن تُحذف بيانات حسابك.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-switch" class="btn-gold">متابعة</button></div>`,s=>s.querySelector('#confirm-switch').onclick=signOut);
   $('#logout').onclick = () => openSheet(`
     <h2 class="text-lg font-bold mb-2">تسجيل الخروج</h2>
     <p class="text-sm text-[#bba9d6] mb-5">هل أنت متأكد أنك تريد تسجيل الخروج من همسات؟ بياناتك محفوظة.</p>
     <div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-out" class="btn-danger">تسجيل الخروج</button></div>`,
     (s) => s.querySelector('#confirm-out').onclick = signOut);
-  $('#edit-profile').onclick = () => openSheet(`<h2 class="text-lg font-bold mb-2">تعديل الملف الشخصي</h2>${profileForm(p, false)}`, (s) => {
-    bindProfileForm(s, () => { closeSheet(); toast('تم حفظ التغييرات'); render(); });
-  });
+  $('#edit-profile').onclick = editProfileAction;
   $('#share-profile').onclick = async () => {
     try { await navigator.clipboard.writeText('@' + p.handle); toast('تم النسخ'); } catch (e) { toast('@' + p.handle); }
   };
@@ -1205,6 +1223,12 @@ async function friendsScreen(){
 }
 
 /* ---------- router ---------- */
+function comingSoonScreen(route) {
+  const pages={moments:['لحظة','مساحة الصور واليوميات ومشاركة اللحظات مع المجتمع','images'],aristocracy:['الأرستقراطية VIP','عضويات كبار الشخصيات ومزاياها الحصرية','crown'],tasks:['المهام','التحديات اليومية والأسبوعية ومكافآت النشاط','target'],agency:['مركز الوكالة','إدارة المضيفين والوكلاء والتقارير','building-2'],family:['العائلة','مجتمعك ومجموعتك داخل همسات','users-round'],invite:['دعوة الأصدقاء','شاركي رابط ملفك وادعي أصدقاءك إلى همسات','user-plus']};
+  const [title,description,icon]=pages[route]||['قريباً','هذه الميزة قيد التجهيز','sparkles'];
+  screen.innerHTML=header(title)+`<section class="hs-coming-soon"><span><i data-lucide="${icon}"></i></span><h2>${title}</h2><p>${description}</p><small>نعمل على تجهيزها لتكون جزءاً من تجربة HAMSAT</small><a href="#/me" class="btn-gold">العودة إلى حسابي</a></section>`;
+  icons_();
+}
 async function render() {
   closeSheet();
   if (!state.account) return welcomeScreen();
@@ -1284,6 +1308,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
+    else if (['moments','aristocracy','tasks','agency','family','invite'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
     else await homeScreen();
   } catch (e) {
