@@ -118,6 +118,15 @@ export const api = {
     const {data,error}=await client().from('profiles').select('*').or(filter).neq('id',user.id).limit(30);
     fail(error); return {users:(data||[]).map(mapProfile)};
   },
+  profileStats: async (profileId, recordVisit = false) => {
+    if (recordVisit) {
+      const visit = await client().rpc('record_profile_visit', { p_profile_id: profileId });
+      fail(visit.error);
+    }
+    const { data, error } = await client().rpc('get_profile_stats', { p_profile_id: profileId });
+    fail(error);
+    return data || { friends: 0, followers: 0, following: 0, visitors: 0, giftsReceived: 0 };
+  },
   friends: async () => {
     const user=await currentUser();
     const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','accepted').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
