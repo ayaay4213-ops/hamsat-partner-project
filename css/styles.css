@@ -1255,3 +1255,8 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 @media(max-width:380px){.hs-room-games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hs-room-game-center{min-height:420px}}
 
 .hs-gift-all{padding:6px 14px;border:1px solid rgba(45,174,100,.5);border-radius:999px;background:linear-gradient(120deg,#168a4a,#0d6337);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;margin-bottom:6px}
+
+.hs-room-gift-categories{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.hs-room-gift-categories::-webkit-scrollbar{display:none}
+.hs-room-gift-categories button{flex:none;padding:7px 11px;border-radius:999px;border:1px solid rgba(220,190,110,.2);background:#ffffff08;color:#c9c0ad;font-size:10px}
+.hs-room-gift-categories button.active{background:linear-gradient(135deg,#e6c96f,#b18b37);border-color:#e6c96f;color:#17140b;font-weight:800}
