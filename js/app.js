@@ -826,10 +826,16 @@ async function userScreen(handle) {
     const { profile } = await api.user(handle);
     $('#user-body').innerHTML = `<div class="fade-in">${profileView(profile, false)}
       <div class="px-5 py-5 space-y-3">
+        <button id="send-message" class="btn-ghost w-full"><i data-lucide="message-circle" class="w-5 h-5"></i>إرسال رسالة</button>
         <button id="send-gift" class="btn-gold w-full"><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية</button>
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
+  const messageButton = $('#send-message');
+  if (messageButton) messageButton.onclick = async () => {
+    try { const result = await api.startConversation(profile.uuid); location.hash = '#/dm/' + result.conversationId; }
+    catch (err) { toast(err.message, 'error'); }
+  };
   const giftButton = $('#send-gift');
   if (giftButton) giftButton.onclick = async () => {
     try {
@@ -885,7 +891,36 @@ async function render() {
   window.scrollTo(0, 0);
 
   try {
-    if (route === 'rooms') await roomsScreen(params);
+
+async function inboxScreen() {
+  screen.innerHTML = header('الرسائل') + `<div class="p-4 space-y-3" id="inbox-list">${loading()}</div>`;
+  icons_();
+  const { conversations } = await api.conversations();
+  const root = $('#inbox-list');
+  root.innerHTML = conversations.length ? conversations.map(c => `
+    <a href="#/dm/${encodeURIComponent(c.id)}" class="card p-3 flex items-center gap-3">
+      ${avatar(c.other,46)}
+      <div class="min-w-0 flex-1"><div class="font-bold">${esc(c.other.displayName || c.other.handle)}</div>
+      <div class="text-sm text-[#bba9d6] truncate">${esc(c.lastMessage || 'ابدئي المحادثة')}</div></div>
+      ${c.unread ? `<span class="rounded-full bg-amber-400 text-black text-xs px-2 py-1">${num(c.unread)}</span>` : ''}
+    </a>`).join('') : emptyBox('message-circle','لا توجد رسائل بعد','افتحي ملف أي عضو واضغطي إرسال رسالة لبدء محادثة.');
+  icons_();
+}
+async function directMessageScreen(conversationId) {
+  screen.innerHTML = header('المحادثة') + `<div class="flex-1 flex flex-col p-4 gap-3"><div id="dm-messages" class="flex-1 space-y-3 overflow-y-auto">${loading()}</div>
+    <form id="dm-form" class="flex gap-2"><input name="body" class="field flex-1" maxlength="2000" placeholder="اكتبي رسالتك..." required><button class="btn-gold px-4" type="submit"><i data-lucide="send"></i></button></form></div>`;
+  icons_();
+  const root=$('#dm-messages'), form=$('#dm-form');
+  const draw=async()=>{const {messages}=await api.directMessages(conversationId);root.innerHTML=messages.map(m=>`<div class="flex ${m.sender_id===state.account.id?'justify-start':'justify-end'}"><div class="max-w-[85%] rounded-2xl px-4 py-3 ${m.sender_id===state.account.id?'bg-[#33264a]':'bg-[#242832]'}">${esc(m.body)}<div class="text-[10px] opacity-60 mt-1">${timeAgo(new Date(m.created_at).getTime())}</div></div></div>`).join('')||'<p class="text-center text-sm text-[#a993c8]">ابدئي أول رسالة بينكما</p>';root.scrollTop=root.scrollHeight;};
+  await draw();
+  const channel=api.subscribeDirectMessages(conversationId,()=>draw().catch(e=>toast(e.message,'error')));
+  form.onsubmit=async e=>{e.preventDefault();const input=form.elements.body,button=form.querySelector('button');button.disabled=true;try{await api.sendDirectMessage(conversationId,input.value);input.value='';await draw();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
+  window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+}
+
+    if (route === 'inbox') await inboxScreen();
+    else if (route === 'dm' && parts[1]) await directMessageScreen(decodeURIComponent(parts[1]));
+    else if (route === 'rooms') await roomsScreen(params);
     else if (route === 'gifts') await giftsScreen();
     else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
