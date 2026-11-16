@@ -902,35 +902,86 @@ function drawWallet() {
 }
 
 function profileView(p, own) {
-  return `
-    <div class="profile-hero border-b border-ink-700 pb-6 flex flex-col items-center text-center" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.18),rgba(5,6,8,.94)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
-      <div class="profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(5,6,8,.05),rgba(5,6,8,.55)),url(${JSON.stringify(p.coverUrl)})` : ''}"></div>
-      <div class="profile-avatar-overlap">${avatar(p, 92)}</div>
-      <h2 class="text-xl font-extrabold mt-4">${esc(p.displayName)}</h2>
-      <p class="text-sm text-gold-400 mt-0.5" dir="ltr">@${esc(p.handle)}</p>
-      ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="mt-2 inline-flex items-center gap-2 rounded-full border border-gold-500/40 px-3 py-1.5 text-xs text-gold-300" dir="ltr"><i data-lucide="copy" class="w-3.5 h-3.5"></i>${esc(p.publicId)} · نسخ ID</button>` : ""}
-      ${p.bio ? `<p class="text-sm text-[#cbb9e6] leading-7 mt-3 max-w-xs">${esc(p.bio)}</p>` : own ? `<p class="text-sm text-[#8a76a8] mt-3">لم تضف نبذة بعد</p>` : ''}
-      <div class="flex items-center gap-4 mt-4 text-xs text-[#a993c8]">
-        ${p.country ? `<span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>${esc(p.country)}</span>` : ''}
-        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i>انضم ${dateAr(p.createdAt)}</span>
-      </div>
+  const avatarFrame = `
+    <div class="hs-profile-frame">
+      <div class="hs-profile-frame-glow"></div>
+      <div class="hs-profile-avatar">${avatar(p, 104)}</div>
+      <span class="hs-frame-spark hs-frame-spark-a">✦</span><span class="hs-frame-spark hs-frame-spark-b">✧</span>
     </div>`;
+  return `
+    <section class="hs-profile-page">
+      <div class="hs-profile-cover" style="${p.coverUrl || p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl || p.backgroundUrl)})` : ''}">
+        <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span>
+      </div>
+      <div class="hs-profile-main">
+        ${avatarFrame}
+        <div class="hs-profile-identity">
+          <h2>${esc(p.displayName)}</h2>
+          <p dir="ltr">@${esc(p.handle)}</p>
+          ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id" dir="ltr"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button>` : ''}
+          ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
+          <div class="hs-profile-tags">
+            ${p.country ? `<span>⌖ ${esc(p.country)}</span>` : ''}
+            <span>✦ عضو في همسات</span>
+            ${p.createdAt ? `<span>منذ ${dateAr(p.createdAt)}</span>` : ''}
+          </div>
+        </div>
+        ${!own ? '' : '<div class="hs-profile-edit-hint">ملفكِ الشخصي</div>'}
+      </div>
+      ${own ? `
+        <div class="hs-profile-ribbon">
+          <span>✧</span><b>H A M S A T</b><span>♡</span>
+        </div>` : ''}
+    </section>`;
 }
 
 function meScreen() {
   const p = state.profile;
-  screen.innerHTML = header('حسابي') + `<div class="fade-in">${profileView(p, true)}
-    <div class="px-5 py-5 space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <a href="#/wallet" class="card p-4"><p class="text-xs text-[#a993c8] mb-1">الرصيد</p><p class="flex items-center gap-1.5 font-bold text-gold-300 text-lg">${coin(18)}${num(state.wallet?.balance)}</p></a>
-        <div class="card p-4"><p class="text-xs text-[#a993c8] mb-1">البريد الإلكتروني</p><p class="font-bold text-sm truncate" dir="ltr">${esc(state.account?.email)}</p></div>
+  const menuGroups = [
+    [
+      {icon:'wallet',label:'المحفظة',sub:'رصيدكِ وسجل معاملاتك',href:'#/wallet',tone:'gold'},
+      {icon:'gem',label:'المتجر والمقتنيات',sub:'الإطارات والزينة والهدايا',href:'#/shop',tone:'pink'},
+      {icon:'users',label:'الأصدقاء والمتابعة',sub:'أصدقاؤكِ والأعضاء الذين تتابعينهم',href:'#/friends',tone:'violet'}
+    ],
+    [
+      {icon:'gift',label:'الهدايا',sub:'اكتشفي الهدايا وأرسليها',href:'#/gifts',tone:'pink'},
+      {icon:'gamepad-2',label:'الألعاب',sub:'مساحة الترفيه والتحديات',href:'#/games',tone:'violet'},
+      {icon:'bell',label:'الإشعارات',sub:'آخر التنبيهات والتحديثات',href:'#/notifications',tone:'gold'}
+    ]
+  ];
+  const menu = menuGroups.map(group => `
+    <div class="hs-account-group">
+      ${group.map(item => `
+        <a href="${item.href}" class="hs-account-row">
+          <span class="hs-account-icon ${item.tone}"><i data-lucide="${item.icon}"></i></span>
+          <span class="hs-account-copy"><b>${item.label}</b><small>${item.sub}</small></span>
+          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
+        </a>`).join('')}
+    </div>`).join('');
+  screen.innerHTML = `
+    <div class="hs-me-screen fade-in">
+      <div class="hs-me-topbar"><span>H A M S A T</span><span class="hs-me-topbar-mark">✦</span></div>
+      ${profileView(p, true)}
+      <div class="hs-me-content">
+        <div class="hs-me-balance">
+          <div><small>محفظتي</small><b>${coin(18)} ${num(state.wallet?.balance)}</b></div>
+          <a href="#/wallet">عرض المحفظة <i data-lucide="arrow-left"></i></a>
+        </div>
+        <div class="hs-me-section-title"><span>مساحتي</span><small>إدارة حسابكِ ومقتنياتك</small></div>
+        ${menu}
+        <button id="edit-profile" class="hs-account-row hs-edit-row">
+          <span class="hs-account-icon gold"><i data-lucide="user-round-pen"></i></span>
+          <span class="hs-account-copy"><b>تعديل الملف الشخصي</b><small>الصورة والاسم والنبذة والبيانات</small></span>
+          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
+        </button>
+        <button id="share-profile" class="hs-account-row hs-edit-row">
+          <span class="hs-account-icon violet"><i data-lucide="share-2"></i></span>
+          <span class="hs-account-copy"><b>مشاركة حسابي</b><small>انسخي اسم المستخدم لمشاركته</small></span>
+          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
+        </button>
+        <button id="logout" class="hs-logout"><i data-lucide="log-out"></i> تسجيل الخروج</button>
       </div>
-      <a href="#/friends" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="users" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">الأصدقاء والمتابعة</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></a>
-      <button id="edit-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="pen-line" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">تعديل الملف الشخصي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
-      <a href="#/shop" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="gem" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">إطاراتي ومقتنياتي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></a>
-      <button id="share-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="share-2" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">نسخ اسم المستخدم</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
-      <button id="logout" class="btn-danger w-full mt-4"><i data-lucide="log-out" class="w-5 h-5"></i>تسجيل الخروج</button>
-    </div></div>`;
+    </div>`;
   icons_();
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
