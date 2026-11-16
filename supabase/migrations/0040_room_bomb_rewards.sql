@@ -233,3 +233,34 @@ begin
   end if;
 end
 $$;
+
+create or replace function public.refresh_room_bomb(p_room_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'يجب تسجيل الدخول أولاً';
+  end if;
+  if p_room_id is null or not private.is_room_member(p_room_id) then
+    raise exception 'انضمي إلى الغرفة أولاً';
+  end if;
+
+  update public.room_bombs
+     set level = 1, progress = 0, started_at = now(),
+         ends_at = now() + interval '24 hours', updated_at = now()
+   where room_id = p_room_id
+     and ends_at <= now();
+
+  if found then
+    delete from public.room_bomb_contributions where room_id = p_room_id;
+    return true;
+  end if;
+  return false;
+end;
+$$;
+
+revoke all on function public.refresh_room_bomb(uuid) from public, anon;
+grant execute on function public.refresh_room_bomb(uuid) to authenticated;
