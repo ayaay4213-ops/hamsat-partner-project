@@ -117,6 +117,31 @@ if (fs.existsSync(seatMigrationPath)) {
   }
 }
 
+const expandedSeatsPath = path.join(root, 'supabase/migrations/0037_room_twelve_seats.sql');
+if (fs.existsSync(expandedSeatsPath)) {
+  const sql = fs.readFileSync(expandedSeatsPath, 'utf8').toLowerCase();
+  for (const token of [
+    'seat_no between 1 and 12',
+    'seat_limit = any (array[4,6,8,10,12])',
+    'if p_seat_no > v_limit then',
+    'grant execute on function public.request_room_seat(uuid, integer) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing twelve-seat support SQL: ${token}`);
+  }
+}
+const roomActivityPath = path.join(root, 'supabase/migrations/0038_room_activity_events.sql');
+if (fs.existsSync(roomActivityPath)) {
+  const sql = fs.readFileSync(roomActivityPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.room_activity_events',
+    'private.is_room_member(room_activity_events.room_id)',
+    'create or replace function public.send_room_emoji',
+    'create or replace function public.send_room_gift',
+    'can be sent to mic seats only'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing secure room activity SQL: ${token}`);
+  }
+}
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
 if (fs.existsSync(liveKitRoomPath)) {
   const js = fs.readFileSync(liveKitRoomPath, 'utf8');
@@ -135,12 +160,24 @@ if (fs.existsSync(appRoomPath)) {
   const js = fs.readFileSync(appRoomPath, 'utf8');
   for (const token of [
     'state.voiceRoom.refreshPermissions()',
-    'voiceMute.disabled=!controller.canPublish'
+    'voiceMute.disabled=!controller.canPublish',
+    'room-game-center-toggle',
+    'room-emoji-panel',
+    'data-chat-filter="gifts"',
+    'api.sendRoomEmoji',
+    'api.sendRoomGift'
   ]) {
-    if (!js.includes(token)) errors.push(`Missing room microphone UI behavior: ${token}`);
+    if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
   }
 }
 
+const apiFilePath = path.join(root, 'js/api.js');
+if (fs.existsSync(apiFilePath)) {
+  const js = fs.readFileSync(apiFilePath, 'utf8');
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async']) {
+    if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
+  }
+}
 for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
