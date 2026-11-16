@@ -137,7 +137,7 @@ if (fs.existsSync(roomActivityPath)) {
     'private.is_room_member(room_activity_events.room_id)',
     'create or replace function public.send_room_emoji',
     'create or replace function public.send_room_gift',
-    'can be sent to mic seats only'
+    'public.send_gift(p_recipient, p_gift_id, p_quantity)'
   ]) {
     if (!sql.includes(token)) errors.push(`Missing secure room activity SQL: ${token}`);
   }
