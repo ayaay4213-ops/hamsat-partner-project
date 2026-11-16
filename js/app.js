@@ -719,7 +719,7 @@ async function openRoom(r) {
       emojiGrid.innerHTML=emojiSet.slice(start,start+15).map(e=>'<button type="button" data-room-emoji="'+e+'" aria-label="إرسال '+e+'">'+e+'</button>').join('');
       emojiPagination.innerHTML=Array.from({length:pages},(_,i)=>'<button type="button" data-emoji-page="'+i+'" class="'+(i===emojiPage?'active':'')+'" aria-label="صفحة '+(i+1)+'"></button>').join('');
       emojiPagination.querySelectorAll('[data-emoji-page]').forEach(b=>b.onclick=()=>{emojiPage=Number(b.dataset.emojiPage);drawEmojiPage();});
-      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.roomEmoji);emojiPanel.classList.add('hidden');}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
+      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.roomEmoji);emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
     };
     drawEmojiPage();
     let emojiTouchStartX=0;emojiGrid.addEventListener('touchstart',e=>{emojiTouchStartX=e.changedTouches[0].clientX;},{passive:true});emojiGrid.addEventListener('touchend',e=>{const delta=e.changedTouches[0].clientX-emojiTouchStartX;if(Math.abs(delta)>45){emojiPage=Math.max(0,Math.min(Math.ceil(emojiSet.length/15)-1,emojiPage+(delta<0?1:-1)));drawEmojiPage();}},{passive:true});
@@ -743,7 +743,7 @@ async function openRoom(r) {
       }catch(e){toast(e.message,'error');}
     };
     sheet.querySelector('#room-gift-close').onclick=()=>{giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');};sheet.querySelector('#room-gift-backdrop').onclick=()=>{giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');};
-    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendRoomGift(r.id,v.recipient,v.gift,Number(v.quantity||1));state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendRoomGift(r.id,v.recipient,v.gift,Number(v.quantity||1));state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
     const del=sheet.querySelector('#del-room');if(del)del.onclick=async()=>{if(!confirm('هل تريد حذف هذه الغرفة؟'))return;del.disabled=true;try{await api.deleteRoom(r.id);closeSheet();toast('تم حذف الغرفة');render();}catch(e){toast(e.message,'error');del.disabled=false;}};
   });
 }
