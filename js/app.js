@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261116-room-controls-v3';
+import { api } from './api.js?v=20261116-social-search-v4';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -1023,7 +1023,7 @@ async function userScreen(handle) {
 async function friendsScreen(){
   screen.innerHTML=header('الأصدقاء والمتابعة')+`
     <div class="p-4 space-y-4 fade-in">
-      <div class="card p-4"><h2 class="font-bold text-gold-300 mb-2">ابحثي عن الأعضاء</h2><input id="friend-search" class="field" placeholder="اكتبي الاسم أو اسم المستخدم..." autocomplete="off"><div id="friend-search-results" class="space-y-2 mt-3"></div></div>
+      <div class="card p-4"><h2 class="font-bold text-gold-300 mb-2">ابحثي عن الأعضاء</h2><input id="friend-search" class="field" placeholder="الاسم أو اسم المستخدم أو HAMSAT-ID..." autocomplete="off"><div id="friend-search-results" class="space-y-2 mt-3"></div></div>
       <section><div class="flex justify-between items-center mb-2"><h3 class="font-bold">طلبات الصداقة</h3><span id="friend-request-count" class="text-xs text-gold-300"></span></div><div id="friend-requests" class="space-y-2">${loading()}</div></section>
       <section><h3 class="font-bold mb-2">أصدقائي</h3><div id="friends-list" class="space-y-2">${loading()}</div></section>
     </div>`;
