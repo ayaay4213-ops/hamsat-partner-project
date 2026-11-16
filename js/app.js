@@ -78,7 +78,7 @@ function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -892,6 +892,22 @@ async function render() {
 
   try {
 
+
+async function notificationsScreen() {
+  screen.innerHTML = header('الإشعارات', '<button id="read-all" class="text-xs text-amber-300">تحديد الكل كمقروء</button>') + `<div class="p-4 space-y-3" id="notifications-list">${loading()}</div>`;
+  icons_();
+  const {notifications}=await api.notifications(), root=$('#notifications-list');
+  root.innerHTML=notifications.length?notifications.map(n=>`
+    <a href="${esc(n.target_url||'#/home')}" data-notification="${esc(n.id)}" class="card p-3 flex gap-3 items-start ${n.read_at?'opacity-70':'border border-amber-400/40'}">
+      <span class="w-10 h-10 rounded-full bg-[#302713] text-amber-300 flex items-center justify-center"><i data-lucide="${n.type==='gift'?'gift':n.type==='message'?'message-circle':'bell'}"></i></span>
+      <span class="flex-1 min-w-0"><b class="block">${esc(n.title)}</b><span class="block text-sm text-[#bba9d6]">${esc(n.body||'')}</span><small class="text-[10px] opacity-60">${timeAgo(new Date(n.created_at).getTime())}</small></span>
+      ${n.read_at?'':'<span class="w-2 h-2 rounded-full bg-amber-400 mt-2"></span>'}
+    </a>`).join(''):emptyBox('bell','لا توجد إشعارات','ستظهر هنا رسائل الأعضاء والهدايا الجديدة.');
+  root.querySelectorAll('[data-notification]').forEach(el=>el.addEventListener('click',()=>api.markNotificationRead(el.dataset.notification).catch(()=>{})));
+  $('#read-all').onclick=async()=>{try{await api.markAllNotificationsRead();await notificationsScreen();}catch(e){toast(e.message,'error');}};
+  icons_();
+}
+
 async function inboxScreen() {
   screen.innerHTML = header('الرسائل') + `<div class="p-4 space-y-3" id="inbox-list">${loading()}</div>`;
   icons_();
@@ -918,7 +934,8 @@ async function directMessageScreen(conversationId) {
   window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
 }
 
-    if (route === 'inbox') await inboxScreen();
+    if (route === 'notifications') await notificationsScreen();
+    else if (route === 'inbox') await inboxScreen();
     else if (route === 'dm' && parts[1]) await directMessageScreen(decodeURIComponent(parts[1]));
     else if (route === 'rooms') await roomsScreen(params);
     else if (route === 'gifts') await giftsScreen();
