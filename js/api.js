@@ -447,6 +447,8 @@ export const api = {
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
   roomBombState: async (roomId) => {
+    const { error: refreshError } = await client().rpc('refresh_room_bomb', { p_room_id: roomId });
+    fail(refreshError);
     const [bombResult, levelResult, contributionResult] = await Promise.all([
       client().from('room_bombs').select('*').eq('room_id', roomId).maybeSingle(),
       client().from('room_bomb_levels').select('*').order('level'),
