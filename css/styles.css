@@ -1145,3 +1145,35 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .room-sheet #room-gift-panel{background:linear-gradient(145deg,#191a2d,#0c0e18)!important;border-color:#c7a65a55!important}
 .room-sheet #room-settings-panel{background:#0d1020!important;border-color:#9583dc44!important}
 @media(max-width:380px){.room-sheet .hs-seat-ring{width:47px!important;height:47px!important}.room-sheet .hs-room-seats{gap:13px 3px!important}.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:31px;height:36px}.room-sheet .hs-room-tools-row{gap:4px!important}}
+
+
+/* HAMSAT MEMBER CENTER refresh */
+.hs-me-screen{background:radial-gradient(ellipse at 50% 0%,rgba(195,157,72,.14),transparent 34%),#080a10}
+.hs-me-topbar{height:54px;background:#0b0d15d9;position:sticky;top:0;z-index:4;backdrop-filter:blur(16px)}
+.hs-switch-account{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #c9a64b55;border-radius:999px;background:#c9a64b12;color:#e9d79e;font-size:10px;letter-spacing:0}
+.hs-switch-account svg{width:14px;height:14px}
+.hs-profile-cover{height:160px;background:radial-gradient(ellipse at 50% 10%,rgba(115,94,180,.36),transparent 55%),linear-gradient(135deg,#161a2c,#0b0d16 62%,#251d2a)}
+.hs-profile-frame{background:conic-gradient(from 15deg,#fff0bd,#c9a64b,#7763a9,#f7e5a6,#b78b45,#fff0bd);box-shadow:0 0 0 5px #10121b,0 0 28px rgba(201,166,75,.28)}
+.hs-profile-frame:before{border-color:#dfc477}
+.hs-bio-edit{display:inline-flex;align-items:center;gap:6px;cursor:pointer;border:0;background:transparent}
+.hs-bio-edit svg{width:12px;height:12px}
+.hs-profile-tags span{border-color:#9c8bce30;background:#151727;color:#c9c2df}
+.hs-profile-stats{gap:2px;margin:16px 14px 0;padding:12px 5px;border-color:#c9a64b35;background:linear-gradient(135deg,#171827,#10121b)}
+.hs-profile-stats>button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:transparent;color:inherit;padding:2px;cursor:pointer}
+.hs-profile-stats>button:active{transform:scale(.96)}
+.hs-profile-stats span{font-size:9px}
+.hs-me-content{padding:15px 13px 28px}
+.hs-me-section-title{margin-top:21px}
+.hs-account-group{border-color:#8e7db52b;background:linear-gradient(145deg,#151827,#0e111a);box-shadow:0 8px 24px #0003}
+.hs-account-row{min-height:62px}
+.hs-account-icon.gold{background:#c9a64b17;color:#e5c875}
+.hs-account-icon.pink{background:#a75b8c20;color:#e6a9d1}
+.hs-account-icon.violet{background:#7564b321;color:#c5b4f1}
+.hs-me-balance{border-color:#c9a64b55;background:linear-gradient(110deg,#c9a64b18,#171927)}
+.hs-coming-soon{min-height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 25px;color:#f4eddf}
+.hs-coming-soon>span{width:78px;height:78px;border:1px solid #c9a64b66;border-radius:25px;background:#c9a64b16;display:grid;place-items:center;color:#e4c675;box-shadow:0 0 35px #c9a64b18}
+.hs-coming-soon>span svg{width:35px;height:35px}
+.hs-coming-soon h2{font-size:23px;font-weight:900;margin-top:18px}
+.hs-coming-soon p{font-size:13px;color:#c3bad4;margin-top:8px;line-height:1.8}
+.hs-coming-soon small{font-size:10px;color:#9188a8;margin-top:12px}
+.hs-coming-soon .btn-gold{margin-top:24px;padding:11px 28px;border-radius:13px}
