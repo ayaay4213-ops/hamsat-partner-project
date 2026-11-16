@@ -93,6 +93,8 @@ create table if not exists public.external_topup_orders (
   user_id uuid not null references auth.users(id) on delete cascade,
   package_id text not null references public.topup_packages(id),
   payment_provider text not null,
+  coins bigint not null default 0,
+  price_dzd bigint not null default 0,
   provider_reference text,
   status text not null default 'pending' check (status in ('pending','paid','failed','cancelled')),
   created_at timestamptz not null default now(),
@@ -187,7 +189,7 @@ as $$
 declare v_actor uuid := (select auth.uid()); v_target uuid; v_actor_role text;
 begin
   select member_role into v_actor_role from public.agency_members where agency_id=p_agency_id and user_id=v_actor and status='active';
-  if v_actor_role not in ('owner','manager') then raise exception 'لا تملكين صلاحية إدارة أعضاء الوكالة'; end if;
+  if coalesce(v_actor_role,'') not in ('owner','manager') then raise exception 'لا تملكين صلاحية إدارة أعضاء الوكالة'; end if;
   if p_role not in ('manager','agent','host','support') or (v_actor_role='manager' and p_role='manager') then raise exception 'الدور المطلوب غير مسموح'; end if;
   select id into v_target from public.profiles where public_id=p_member_public_id;
   if v_target is null then raise exception 'لم يتم العثور على المستخدم'; end if;
@@ -242,8 +244,9 @@ begin
    where m.agency_id=p_agency_id and m.user_id=v_actor and m.status='active'
      and a.status='active' and a.agency_type in ('recharge','both');
 
-  if v_role not in ('owner','manager','agent') then raise exception 'هذا الحساب ليس وكيلاً نشطاً للشحن'; end if;
+  if coalesce(v_role,'') not in ('owner','manager','agent') then raise exception 'هذا الحساب ليس وكيلاً نشطاً للشحن'; end if;
   if length(btrim(coalesce(p_payment_method,'')))<2 then raise exception 'حددي طريقة استلام الدفع'; end if;
+  if length(btrim(coalesce(p_payment_reference,'')))<4 then raise exception 'رقم مرجع العملية مطلوب لمنع تكرار الشحن'; end if;
 
   select id into v_target from public.profiles where public_id=p_target_public_id;
   if v_target is null then raise exception 'لم يتم العثور على اللاعب بهذا المعرّف'; end if;
@@ -261,7 +264,7 @@ begin
   values(v_target,v_package.coins,'agency_topup','شحن عبر وكالة همسات');
 
   insert into public.agency_recharges(agency_id,agent_id,target_user_id,package_id,coins,price_dzd,total_commission_dzd,agent_commission_dzd,agency_commission_dzd,payment_method,payment_reference)
-  values(p_agency_id,v_actor,v_target,p_package_id,v_package.coins,v_package.price_dzd,v_total_commission,v_agent_commission,v_agency_commission,btrim(p_payment_method),nullif(btrim(coalesce(p_payment_reference,'')),''))
+  values(p_agency_id,v_actor,v_target,p_package_id,v_package.coins,v_package.price_dzd,v_total_commission,v_agent_commission,v_agency_commission,btrim(p_payment_method),btrim(p_payment_reference))
   returning id into v_recharge_id;
 
   update public.agency_wallets set balance_dzd=balance_dzd+v_agency_commission,updated_at=now() where agency_id=p_agency_id;
@@ -303,3 +306,65 @@ revoke all on function public.agent_recharge_user(uuid,bigint,text,text,text) fr
 grant execute on function public.agent_recharge_user(uuid,bigint,text,text,text) to authenticated;
 revoke all on function public.create_external_topup_order(text,text) from public,anon;
 grant execute on function public.create_external_topup_order(text,text) to authenticated;
+
+
+-- SECURITY DEFINER membership helper avoids recursive RLS policies on agency_members.
+create or replace function private.is_agency_member(p_agency_id uuid,p_roles text[] default null)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select exists(
+    select 1 from public.agency_members m
+     where m.agency_id=p_agency_id
+       and m.user_id=auth.uid()
+       and m.status='active'
+       and (p_roles is null or m.member_role=any(p_roles))
+  );
+$$;
+revoke all on function private.is_agency_member(uuid,text[]) from public,anon;
+grant execute on function private.is_agency_member(uuid,text[]) to authenticated;
+
+drop policy if exists "Agency members read their agencies" on public.agencies;
+create policy "Agency members read their agencies" on public.agencies
+for select to authenticated using (public.is_admin() or private.is_agency_member(id,null));
+
+drop policy if exists "Users read their agency memberships" on public.agency_members;
+create policy "Users read their agency memberships" on public.agency_members
+for select to authenticated using (public.is_admin() or user_id=auth.uid() or private.is_agency_member(agency_id,array['owner','manager']));
+
+drop policy if exists "Agency owners read agency wallets" on public.agency_wallets;
+create policy "Agency owners read agency wallets" on public.agency_wallets
+for select to authenticated using (public.is_admin() or private.is_agency_member(agency_id,array['owner','manager']));
+
+drop policy if exists "Agency members read recharge records" on public.agency_recharges;
+create policy "Agency members read recharge records" on public.agency_recharges
+for select to authenticated using (public.is_admin() or target_user_id=auth.uid() or private.is_agency_member(agency_id,array['owner','manager','agent']));
+
+drop policy if exists "Agency owners read agency commission ledger" on public.agency_commission_ledger;
+create policy "Agency owners read agency commission ledger" on public.agency_commission_ledger
+for select to authenticated using (public.is_admin() or private.is_agency_member(agency_id,array['owner','manager']));
+
+drop policy if exists "Agency owners read audit logs" on public.agency_audit_logs;
+create policy "Agency owners read audit logs" on public.agency_audit_logs
+for select to authenticated using (public.is_admin() or private.is_agency_member(agency_id,array['owner','manager']));
+
+create or replace function public.create_external_topup_order(p_package_id text,p_payment_provider text)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_user uuid := (select auth.uid()); v_order uuid; v_package public.topup_packages%rowtype;
+begin
+  if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+  if length(btrim(coalesce(p_payment_provider,'')))<2 then raise exception 'مزود الدفع غير محدد'; end if;
+  select * into v_package from public.topup_packages where id=p_package_id and active=true;
+  if not found then raise exception 'باقة الشحن غير متاحة'; end if;
+  insert into public.external_topup_orders(user_id,package_id,payment_provider,coins,price_dzd)
+  values(v_user,p_package_id,btrim(p_payment_provider),v_package.coins,v_package.price_dzd)
+  returning id into v_order;
+  return v_order;
+end;
+$$;
