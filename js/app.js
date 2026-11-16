@@ -901,6 +901,29 @@ function drawWallet() {
   };
 }
 
+function profileStatsMarkup() {
+  return `
+    <div class="hs-profile-stats" aria-label="إحصائيات الحساب">
+      <div><b data-profile-stat="friends">—</b><span>الأصدقاء</span></div>
+      <div><b data-profile-stat="followers">—</b><span>المتابعون</span></div>
+      <div><b data-profile-stat="visitors">—</b><span>الزوار</span></div>
+      <div><b data-profile-stat="giftsReceived">—</b><span>الهدايا</span></div>
+    </div>`;
+}
+async function loadProfileStats(profileId, recordVisit = false) {
+  if (!profileId) return;
+  try {
+    const stats = await api.profileStats(profileId, recordVisit);
+    document.querySelectorAll('[data-profile-stat]').forEach(node => {
+      const key = node.getAttribute('data-profile-stat');
+      node.textContent = num(stats[key] || 0);
+    });
+  } catch (error) {
+    document.querySelectorAll('[data-profile-stat]').forEach(node => node.textContent = '—');
+    console.warn('تعذر تحميل إحصائيات الملف الشخصي:', error);
+  }
+}
+
 function profileView(p, own) {
   const avatarFrame = `
     <div class="hs-profile-frame">
@@ -932,6 +955,7 @@ function profileView(p, own) {
         <div class="hs-profile-ribbon">
           <span>✧</span><b>H A M S A T</b><span>♡</span>
         </div>` : ''}
+      ${profileStatsMarkup()}
     </section>`;
 }
 
@@ -983,6 +1007,7 @@ function meScreen() {
       </div>
     </div>`;
   icons_();
+  loadProfileStats(p.uuid, false);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   $('#logout').onclick = () => openSheet(`
@@ -1013,6 +1038,7 @@ async function userScreen(handle) {
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
+  if (profile) loadProfileStats(profile.uuid, true);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(profile.publicId);toast('تم نسخ ID المستخدم');}catch(e){toast(profile.publicId);}};
 
