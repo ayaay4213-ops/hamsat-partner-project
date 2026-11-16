@@ -815,7 +815,7 @@ async function giftsScreen() {
     el.innerHTML=state.gifts.map(g=>`<article class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art gift-art-luxe"><i data-lucide="${esc(g.icon || 'gift')}"></i><span>✦</span></div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p><small class="gift-card-note">هدية همسات</small></article>`).join('');
     icons_();
     const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
-    members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${esc(u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
+    members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
     icons_();
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
@@ -972,7 +972,7 @@ async function userScreen(handle) {
       if(req?.status==='accepted') friendBtn.textContent='✓ صديق';
       else if(req?.status==='pending'&&req.sender_id===state.profile.uuid){friendBtn.textContent='تم إرسال الطلب';friendBtn.disabled=true;}
       else if(req?.status==='pending'&&req.receiver_id===state.profile.uuid){friendBtn.textContent='قبول طلب الصداقة';friendBtn.onclick=async()=>{try{await api.respondFriendRequest(req.id,true);toast('أصبحتم أصدقاء');userScreen(handle);}catch(e){toast(e.message,'error');}};}
-      else friendBtn.onclick=async()=>{try{await api.sendFriendRequest(profile.uuid);friendBtn.textContent='تم إرسال الطلب';friendBtn.disabled=true;toast('تم إرسال طلب الصداقة');}catch(e){toast(e.message,'error');}};
+      else friendBtn.onclick=async()=>{friendBtn.disabled=true;try{await api.sendFriendRequest(profile.uuid);friendBtn.textContent='تم إرسال الطلب';toast('تم إرسال طلب الصداقة');}catch(e){toast(e.message,'error');friendBtn.disabled=false;}};
       followBtn.textContent=status.following?'إلغاء المتابعة':'متابعة';
       followBtn.onclick=async()=>{try{if(status.following)await api.unfollowUser(profile.uuid);else await api.followUser(profile.uuid);toast(status.following?'تم إلغاء المتابعة':'بدأتِ متابعة هذا المستخدم');userScreen(handle);}catch(e){toast(e.message,'error');}};
     }catch(e){toast(e.message,'error');}
@@ -1035,7 +1035,7 @@ async function friendsScreen(){
     requestsRoot.innerHTML=requests.incoming.length?requests.incoming.map(x=>`<div class="card p-3 flex items-center gap-2">${avatar(x.user,42)}<div class="flex-1 min-w-0"><b>${esc(x.user.displayName)}</b><small class="block text-xs opacity-70">@${esc(x.user.handle)} · ${esc(x.user.publicId || "")}</small></div><button class="btn-gold px-3 py-2 text-xs" data-accept="${esc(x.id)}">قبول</button><button class="btn-ghost px-3 py-2 text-xs" data-reject="${esc(x.id)}">رفض</button></div>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد طلبات جديدة.</p>';
     requestsRoot.querySelectorAll('[data-accept]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.accept,true);toast('تمت إضافة الصديق');friendsScreen();}catch(e){toast(e.message,'error');}});
     requestsRoot.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.reject,false);toast('تم رفض الطلب');friendsScreen();}catch(e){toast(e.message,'error');}});
-    friendsRoot.innerHTML=friends.friends.length?friends.friends.map(u=>`<a href="#/u/${esc(u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لم تضيفي أصدقاء بعد. ابحثي عن شخص وابدئي بإرسال طلب.</p>';
+    friendsRoot.innerHTML=friends.friends.length?friends.friends.map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لم تضيفي أصدقاء بعد. ابحثي عن شخص وابدئي بإرسال طلب.</p>';
   }catch(e){requestsRoot.innerHTML=emptyBox('wifi-off','تعذّر تحميل الطلبات',e.message);friendsRoot.innerHTML='';}
   let searchTimer;
   $('#friend-search').oninput=()=>{
@@ -1044,7 +1044,7 @@ async function friendsScreen(){
     searchTimer=setTimeout(async()=>{
       try{
         const {users}=await api.searchUsers(term);
-        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${esc(u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)} · ${esc(u.publicId || "")}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
+        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${encodeURIComponent(u.publicId || u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)} · ${esc(u.publicId || "")}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.publicId || u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
         searchRoot.querySelectorAll('[data-add-friend]').forEach(b=>b.onclick=()=>location.hash='#/u/'+encodeURIComponent(b.dataset.addFriend));
       }catch(e){searchRoot.innerHTML='<p class="text-xs text-red-300">'+esc(e.message)+'</p>';}
     },250);
