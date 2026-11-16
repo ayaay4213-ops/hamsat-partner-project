@@ -927,9 +927,9 @@ function drawWallet() {
 function profileStatsMarkup() {
   return `
     <div class="hs-profile-stats" aria-label="إحصائيات الحساب">
-      <button type="button" data-profile-stat-go="friends"><b data-profile-stat="friends">—</b><span>الأصدقاء</span></button>
+      <button type="button" data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>يتابع</span></button>
       <button type="button" data-profile-stat-go="followers"><b data-profile-stat="followers">—</b><span>المتابعون</span></button>
-      <button type="button" data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>المتابَعون</span></button>
+      <button type="button" data-profile-stat-go="friends"><b data-profile-stat="friends">—</b><span>الأصدقاء</span></button>
       <button type="button" data-profile-stat-go="visitors"><b data-profile-stat="visitors">—</b><span>الزوار</span></button>
     </div>`;
 }
