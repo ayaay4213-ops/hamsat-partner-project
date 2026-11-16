@@ -1292,3 +1292,8 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-bomb-contributor span{flex:1}
 .hs-room-bomb-contributor strong{color:#e7c66f;font-variant-numeric:tabular-nums}
 .hs-room-bomb-top p{font-size:10px;color:#9d9587;text-align:center;padding:14px}
+
+.hs-shop-category-tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.hs-shop-category-tabs::-webkit-scrollbar{display:none}
+.hs-shop-category-tabs button{flex:none;padding:8px 13px;border-radius:999px;border:1px solid rgba(220,190,110,.2);background:#ffffff08;color:#c9c0ad;font-size:10px}
+.hs-shop-category-tabs button.active{background:linear-gradient(135deg,#e6c96f,#b18b37);border-color:#e6c96f;color:#17140b;font-weight:800}
