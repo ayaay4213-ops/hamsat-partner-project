@@ -71,6 +71,8 @@ export const api = {
     return {url:publicData.publicUrl,path:data.path};
   },
   me: async () => {
+    const { error: expiryError } = await client().rpc('refresh_cosmetic_expirations');
+    if (expiryError && !/Could not find the function|does not exist/i.test(expiryError.message || '')) fail(expiryError);
     const user = await currentUser();
     const [pr, wr] = await Promise.all([
       client().from('profiles').select('*').eq('id', user.id).maybeSingle(),
