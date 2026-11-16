@@ -1,6 +1,6 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js';
-import { createVoiceRoom } from './voice-room.js';
+import { api } from './api.js?v=20261116-room-controls-v3';
+import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
@@ -594,11 +594,13 @@ async function openRoom(r) {
     };
     const mutedRoomUsers=new Set();
     const remotelyMutedUsers=new Set();
+    let muteStateLoaded=false;
     const drawMembers=async()=>{
       const [{members},{seats}]=await Promise.all([api.roomMembers(r.id),api.roomSeats(r.id)]);
       if(!membersEl.isConnected)return;
       countEl.textContent=num(members.length);
       const host=r.ownerUuid===state.profile?.uuid;
+      if(host&&!muteStateLoaded){const savedMutes=await api.roomMutedUsers(r.id);savedMutes.userIds.forEach(id=>remotelyMutedUsers.add(id));muteStateLoaded=true;}
       const seatedUsers=new Set(seats.map(x=>x.user_id));
       membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
@@ -611,7 +613,7 @@ async function openRoom(r) {
       membersEl.querySelectorAll('[data-host-mute]').forEach(b=>b.onclick=async()=>{
         const uid=b.dataset.hostMute,muted=!remotelyMutedUsers.has(uid);
         b.disabled=true;
-        try{await api.moderateRoomParticipant(r.id,uid,muted);if(muted)remotelyMutedUsers.add(uid);else remotelyMutedUsers.delete(uid);b.textContent=muted?'إلغاء كتم المايك':'كتم المايك';toast(muted?'تم كتم مايك العضو في الغرفة':'تم إرسال طلب إلغاء الكتم');}
+        try{await api.moderateRoomParticipant(r.id,uid,muted);await api.setRoomParticipantMuteState(r.id,uid,muted);if(muted)remotelyMutedUsers.add(uid);else remotelyMutedUsers.delete(uid);b.textContent=muted?'إلغاء كتم المايك':'كتم المايك';toast(muted?'تم كتم مايك العضو في الغرفة':'تم إرسال طلب إلغاء الكتم');}
         catch(e){toast(e.message,'error');}
         finally{b.disabled=false;}
       });
