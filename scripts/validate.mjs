@@ -163,6 +163,21 @@ if (fs.existsSync(roomBombPath)) {
     if (!sql.includes(token)) errors.push(`Missing room bomb SQL: ${token}`);
   }
 }
+const cosmeticsPath = path.join(root, 'supabase/migrations/0041_cosmetic_slots_and_expiry.sql');
+if (fs.existsSync(cosmeticsPath)) {
+  const sql = fs.readFileSync(cosmeticsPath, 'utf8').toLowerCase();
+  for (const token of [
+    'equipped_entrance_id',
+    'equipped_bubble_id',
+    'equipped_special_id',
+    'duration_days',
+    'expires_at',
+    'create or replace function public.unequip_shop_item',
+    'create or replace function public.refresh_cosmetic_expirations'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing cosmetic inventory SQL: ${token}`);
+  }
+}
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
 if (fs.existsSync(liveKitRoomPath)) {
   const js = fs.readFileSync(liveKitRoomPath, 'utf8');
@@ -188,7 +203,9 @@ if (fs.existsSync(appRoomPath)) {
     'api.sendRoomEmoji',
     'api.sendRoomGift',
     'room-bomb-floating',
-    'api.roomBombState'
+    'api.roomBombState',
+    'data-shop-category="profile_frame"',
+    'api.unequipShopItem'
   ]) {
     if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
   }
@@ -197,7 +214,7 @@ if (fs.existsSync(appRoomPath)) {
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async']) {
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async']) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
