@@ -235,6 +235,10 @@ export const api = {
     const { error } = await client().from('rooms').delete().eq('id', id).eq('owner_id', user.id);
     fail(error); return { success: true };
   },
+  games: async () => {
+    const {data,error}=await client().from('games').select('id,name,description,game_type,icon,config').eq('active',true).order('sort_order').order('created_at',{ascending:false});
+    fail(error); return {games:data||[]};
+  },
   gifts: async () => {
     const { data, error } = await client().from('gifts').select('id,name,price,icon').eq('active', true).order('price');
     fail(error); return { gifts: data };
