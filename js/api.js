@@ -11,7 +11,7 @@ const AUTH_REDIRECT_URL = 'https://hamsat-preview-git-build-hamsat-complete-app-
 function mapProfile(p) {
   if (!p) return null;
   return {
-    uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: p.handle || '', displayName: p.display_name || '',
+    uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: p.handle || '', displayName: p.display_name || 'عضو جديد',
     bio: p.bio || '', country: p.country || '', color: p.color || '#7c3aed',
     avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
@@ -96,7 +96,7 @@ export const api = {
     return { profile: mapProfile(data), wallet: mapWallet(wallet) };
   },
   users: async () => {
-    const { data, error, count } = await client().from('profiles').select('*', { count: 'exact' }).not('handle', 'is', null).order('created_at', { ascending: false }).limit(30);
+    const { data, error, count } = await client().from('profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(100);
     fail(error);
     return { total: count ?? data.length, users: data.map(mapProfile) };
   },
@@ -112,11 +112,15 @@ export const api = {
     const q=String(term||'').trim().replace(/[,%()]/g,'');
     if(q.length<2) return {users:[]};
     const user=await currentUser();
-    const publicNumber=q.toUpperCase().replace(/^HAMSAT-?/, '').replace(/^#/, '');
-    const isPublicId=/^\d+$/.test(publicNumber);
-    const filter=isPublicId?'handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%,public_id.eq.'+Number(publicNumber):'handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%';
-    const {data,error}=await client().from('profiles').select('*').or(filter).neq('id',user.id).limit(30);
-    fail(error); return {users:(data||[]).map(mapProfile)};
+    const idText=q.toUpperCase().replace(/^HAMSAT-?/, '').replace(/^#/, '');
+    const isPublicId=/^\d+$/.test(idText);
+    const requests=[client().from('profiles').select('*').or('handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%').neq('id',user.id).limit(30)];
+    if(isPublicId) requests.push(client().from('profiles').select('*').eq('public_id',Number(idText)).neq('id',user.id).limit(1));
+    const results=await Promise.all(requests);
+    for(const result of results) fail(result.error);
+    const byId=new Map();
+    for(const result of results) for(const profile of (result.data||[])) byId.set(profile.id,profile);
+    return {users:[...byId.values()].map(mapProfile).slice(0,30)};
   },
   profileStats: async (profileId, recordVisit = false) => {
     if (recordVisit) {
