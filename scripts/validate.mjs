@@ -103,7 +103,7 @@ if (fs.existsSync(roomLifecycleMigrationPath)) {
     'private.is_room_member(room_members.room_id)',
     'private.is_room_member(room_messages.room_id)',
     'private.is_room_member(room_seats.room_id)',
-    'create or replace function public.request_room_seat',
+    'create function public.request_room_seat',
     'p_seat_no = 1 and v_owner <> v_user',
     'create trigger room_member_release_seat',
     'alter publication supabase_realtime add table public.room_members',
