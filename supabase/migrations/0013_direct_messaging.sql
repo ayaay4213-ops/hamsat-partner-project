@@ -40,6 +40,10 @@ for insert to authenticated with check (
     and (c.user_a=auth.uid() or c.user_b=auth.uid())
   )
 );
+-- Limit client updates to the read receipt column only.
+revoke update on public.dm_messages from anon, authenticated;
+grant update (read_at) on public.dm_messages to authenticated;
+
 drop policy if exists "Recipients mark direct messages read" on public.dm_messages;
 create policy "Recipients mark direct messages read" on public.dm_messages
 for update to authenticated using (
