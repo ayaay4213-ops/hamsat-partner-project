@@ -910,6 +910,43 @@ function profileStatsMarkup() {
       <div><b data-profile-stat="giftsReceived">—</b><span>الهدايا</span></div>
     </div>`;
 }
+function profileRewardsMarkup() {
+  return `
+    <section class="hs-rewards" data-profile-rewards>
+      <div class="hs-rewards-loading">جارٍ تحميل المستوى والشارات والمقتنيات…</div>
+    </section>`;
+}
+function xpThreshold(level) {
+  return [0,100,250,500,900,1400,2000,2800,3800,5000][Math.max(0,Math.min(9,level-1))] || 0;
+}
+function renderProfileRewards(host, rewards, profile) {
+  if(!host) return;
+  const xp=Number(rewards.progress?.xp||0), level=Number(rewards.progress?.level||1);
+  const start=xpThreshold(level), next=level>=10?xp:xpThreshold(level+1);
+  const percent=level>=10?100:Math.max(0,Math.min(100,((xp-start)/Math.max(1,next-start))*100));
+  const badges=rewards.badges||[], items=rewards.items||[];
+  const typeNames={frame:'إطار',emoji_pack:'زينة',entrance:'دخولية',sound_frame:'إطار صوتي',voice_wave:'موجة صوت'};
+  host.innerHTML=`
+    <div class="hs-level-card">
+      <div class="hs-level-top"><span class="hs-level-emblem">✦</span><div><small>مستوى العضو</small><b>المستوى ${num(level)}</b></div><strong>${num(xp)} XP</strong></div>
+      <div class="hs-level-track"><span style="width:${percent}%"></span></div>
+      <div class="hs-level-foot"><span>${level>=10?'وصلتِ إلى أعلى مستوى حالياً':num(xp-start)+' نقطة في هذا المستوى'}</span><span>${level>=10?'MAX':num(next-xp)+' XP للمستوى التالي'}</span></div>
+    </div>
+    <div class="hs-reward-section">
+      <div class="hs-reward-heading"><b>الشارات والإنجازات</b><small>${num(badges.length)} شارة</small></div>
+      ${badges.length?'<div class="hs-badge-grid">'+badges.map(b=>`<div class="hs-badge-chip" title="${esc(b.description||'')}"><span>${esc(b.icon||'✦')}</span><b>${esc(b.name)}</b><small>${esc(b.rarity||'')}</small></div>`).join('')+'</div>':'<p class="hs-reward-empty">إنجازاتك الأولى بانتظارك — شاركي في الغرف وكوني صداقات.</p>'}
+    </div>
+    <div class="hs-reward-section">
+      <div class="hs-reward-heading"><b>المقتنيات</b><small>${num(items.length)} عنصر</small></div>
+      ${items.length?'<div class="hs-collection-grid">'+items.slice(0,8).map(item=>`<div class="hs-collection-item">${item.image_url?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="hs-collection-symbol">✧</span>'}<b>${esc(item.name)}</b><small>${esc(typeNames[item.item_type]||'عنصر')} · ${esc(item.rarity||'عادي')}</small>${profile.equippedFrameId===item.id?'<em>مجهز</em>':''}</div>`).join('')+'</div>':'<p class="hs-reward-empty">لا توجد مقتنيات بعد. اكتشفي المتجر لإضافة أول زينة إلى حسابك.</p>'}
+    </div>`;
+}
+async function loadProfileRewards(profileId) {
+  const host=document.querySelector('[data-profile-rewards]');
+  if(!host||!profileId)return;
+  try{const rewards=await api.profileRewards(profileId);renderProfileRewards(host,rewards,state.profile?.uuid===profileId?state.profile:({equippedFrameId:null}));}
+  catch(error){host.innerHTML='<p class="hs-reward-empty">تعذر تحميل المستوى والشارات حالياً.</p>';console.warn('تعذر تحميل إنجازات الملف:',error);}
+}
 async function loadProfileStats(profileId, recordVisit = false) {
   if (!profileId) return;
   try {
@@ -956,6 +993,7 @@ function profileView(p, own) {
           <span>✧</span><b>H A M S A T</b><span>♡</span>
         </div>` : ''}
       ${profileStatsMarkup()}
+      ${profileRewardsMarkup()}
     </section>`;
 }
 
@@ -1008,6 +1046,7 @@ function meScreen() {
     </div>`;
   icons_();
   loadProfileStats(p.uuid, false);
+  loadProfileRewards(p.uuid);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   $('#logout').onclick = () => openSheet(`
@@ -1039,7 +1078,7 @@ async function userScreen(handle) {
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
-  if (profile) loadProfileStats(profile.uuid, true);
+  if (profile) { loadProfileStats(profile.uuid, true); loadProfileRewards(profile.uuid); }
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(profile.publicId);toast('تم نسخ ID المستخدم');}catch(e){toast(profile.publicId);}};
 
