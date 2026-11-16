@@ -182,7 +182,7 @@ begin
     values (new.room_id, v_member.user_id, v_bomb.level, v_reward);
 
     v_rewards := v_rewards || jsonb_build_array(
-      jsonb_build_object('user_id', v_member.user_id, 'amount', v_reward, 'rank', v_rank)
+      jsonb_build_object('amount', v_reward, 'rank', v_rank)
     );
   end loop;
 
