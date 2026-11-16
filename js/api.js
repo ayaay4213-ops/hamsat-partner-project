@@ -13,7 +13,7 @@ function mapProfile(p) {
   return {
     uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: p.handle || '', displayName: p.display_name || 'عضو جديد',
     bio: p.bio || '', country: p.country || '', age: p.age == null ? null : Number(p.age), gender: p.gender || '', role: p.role || 'user', vipLevel: Number(p.vip_level || 0), wealthLevel: Number(p.wealth_level || 1), charismaLevel: Number(p.charisma_level || 1), color: p.color || '#7c3aed',
-    avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
+    avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, equippedEntranceId: p.equipped_entrance_id || null, equippedBubbleId: p.equipped_bubble_id || null, equippedSpecialId: p.equipped_special_id || null, equippedProfileFrameId: p.equipped_profile_frame_id || null, equippedSoundFrameId: p.equipped_sound_frame_id || null, equippedVoiceWaveId: p.equipped_voice_wave_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
 }
 function mapWallet(w, tx = []) {
@@ -381,8 +381,8 @@ export const api = {
   },
   inventory: async () => {
     const user=await currentUser();
-    const {data,error}=await client().from('user_inventory').select('item_id,purchased_at,shop_items(id,name,item_type,price,rarity,visual_key,image_url,description)').eq('user_id',user.id).order('purchased_at',{ascending:false});
-    fail(error); return {items:data.map(x=>({...x.shop_items,purchasedAt:x.purchased_at}))};
+    const {data,error}=await client().from('user_inventory').select('item_id,purchased_at,expires_at,shop_items(id,name,item_type,price,rarity,visual_key,image_url,animation_url,description,duration_days)').eq('user_id',user.id).order('purchased_at',{ascending:false});
+    fail(error); return {items:data.map(x=>({...x.shop_items,purchasedAt:x.purchased_at,expiresAt:x.expires_at}))};
   },
   purchaseShopItem: async (itemId) => {
     const {data,error}=await client().rpc('purchase_shop_item',{p_item_id:itemId});
