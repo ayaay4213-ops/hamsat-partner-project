@@ -17,7 +17,7 @@ create index if not exists agency_host_sessions_agency_started_idx
 create table if not exists public.agency_host_daily_stats (
   agency_id uuid not null references public.agencies(id) on delete cascade,
   host_id uuid not null references auth.users(id) on delete cascade,
-  stat_date date not null default current_date,
+  stat_date date not null default (now() at time zone 'Africa/Algiers')::date,
   live_seconds bigint not null default 0 check (live_seconds >= 0),
   gift_coins bigint not null default 0 check (gift_coins >= 0),
   session_count integer not null default 0 check (session_count >= 0),
@@ -70,7 +70,7 @@ begin
       v_seconds := greatest(0,floor(extract(epoch from (v_old.last_heartbeat_at-v_old.started_at)))::bigint);
       update public.agency_host_sessions set ended_at=now(),duration_seconds=v_seconds where id=v_old.id;
       insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,live_seconds,session_count)
-      values(v_old.agency_id,v_old.host_id,current_date,v_seconds,1)
+      values(v_old.agency_id,v_old.host_id,(now() at time zone 'Africa/Algiers')::date,v_seconds,1)
       on conflict(agency_id,host_id,stat_date) do update
         set live_seconds=public.agency_host_daily_stats.live_seconds+excluded.live_seconds,
             session_count=public.agency_host_daily_stats.session_count+1,updated_at=now();
@@ -117,7 +117,7 @@ begin
   update public.agency_host_sessions set ended_at=now(),duration_seconds=v_seconds,last_heartbeat_at=now()
    where id=p_session_id;
   insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,live_seconds,session_count)
-  values(v_session.agency_id,v_session.host_id,current_date,v_seconds,1)
+  values(v_session.agency_id,v_session.host_id,(now() at time zone 'Africa/Algiers')::date,v_seconds,1)
   on conflict(agency_id,host_id,stat_date) do update
     set live_seconds=public.agency_host_daily_stats.live_seconds+excluded.live_seconds,
         session_count=public.agency_host_daily_stats.session_count+1,updated_at=now();
@@ -140,7 +140,7 @@ begin
        and a.status='active' and a.agency_type in ('hosts','both')
   loop
     insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,gift_coins)
-    values(v_member.agency_id,new.target_user_id,current_date,v_amount)
+    values(v_member.agency_id,new.target_user_id,(now() at time zone 'Africa/Algiers')::date,v_amount)
     on conflict(agency_id,host_id,stat_date) do update
       set gift_coins=public.agency_host_daily_stats.gift_coins+excluded.gift_coins,updated_at=now();
   end loop;
