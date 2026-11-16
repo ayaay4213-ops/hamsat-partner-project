@@ -33,7 +33,7 @@ const migrationDir = path.join(root, 'supabase/migrations');
 if (fs.existsSync(migrationDir)) {
   const versions = new Map();
   for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
-    const version = file.match(/^(\\d+)_/);
+    const version = file.match(/^(\d+)_/);
     if (!version) continue;
     const previous = versions.get(version[1]);
     if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
