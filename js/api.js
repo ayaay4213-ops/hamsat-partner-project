@@ -474,6 +474,12 @@ export const api = {
     });
     fail(error); return data;
   },
+  sendRoomGiftToAll: async (roomId, giftId, quantity = 1) => {
+    const { data, error } = await client().rpc('send_room_gift_to_all', {
+      p_room_id: roomId, p_gift_id: giftId, p_quantity: quantity
+    });
+    fail(error); return data;
+  },
   sendGift: async (recipientId, giftId, quantity = 1) => {
     const { data, error } = await client().rpc('send_gift', {
       p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity
