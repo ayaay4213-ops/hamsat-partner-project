@@ -104,6 +104,61 @@ export const api = {
     const { data, error } = await client().from('profiles').select('*').eq('handle', handle.toLowerCase()).single();
     fail(error); return { profile: mapProfile(data) };
   },
+  searchUsers: async (term) => {
+    const q=String(term||'').trim().replace(/[,%()]/g,'');
+    if(q.length<2) return {users:[]};
+    const user=await currentUser();
+    const {data,error}=await client().from('profiles').select('*').or('handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%').neq('id',user.id).limit(30);
+    fail(error); return {users:(data||[]).map(mapProfile)};
+  },
+  friends: async () => {
+    const user=await currentUser();
+    const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','accepted').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
+    fail(error);
+    const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
+    if(!ids.length)return {friends:[]};
+    const res=await client().from('profiles').select('*').in('id',ids);fail(res.error);
+    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    return {friends:data.map(x=>byId[x.sender_id===user.id?x.receiver_id:x.sender_id]).filter(Boolean)};
+  },
+  friendRequests: async () => {
+    const user=await currentUser();
+    const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','pending').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
+    fail(error);
+    const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
+    const res=ids.length?await client().from('profiles').select('*').in('id',ids):{data:[],error:null};fail(res.error);
+    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    return {incoming:data.filter(x=>x.receiver_id===user.id).map(x=>({id:x.id,user:byId[x.sender_id]})).filter(x=>x.user),
+      outgoing:data.filter(x=>x.sender_id===user.id).map(x=>({id:x.id,user:byId[x.receiver_id]})).filter(x=>x.user)};
+  },
+  friendState: async (otherId) => {
+    const user=await currentUser();
+    const [fr,fo]=await Promise.all([
+      client().from('friend_requests').select('id,sender_id,receiver_id,status').or('and(sender_id.eq.'+user.id+',receiver_id.eq.'+otherId+'),and(sender_id.eq.'+otherId+',receiver_id.eq.'+user.id+')').maybeSingle(),
+      client().from('user_follows').select('follower_id').eq('follower_id',user.id).eq('followed_id',otherId).maybeSingle()
+    ]);
+    fail(fr.error);fail(fo.error);
+    return {request:fr.data||null,following:!!fo.data};
+  },
+  sendFriendRequest: async (otherId) => {
+    const user=await currentUser();
+    const {data,error}=await client().from('friend_requests').insert({sender_id:user.id,receiver_id:otherId}).select('id').single();
+    fail(error);return data;
+  },
+  respondFriendRequest: async (requestId,accept) => {
+    const {error}=await client().from('friend_requests').update({status:accept?'accepted':'rejected',responded_at:new Date().toISOString()}).eq('id',requestId);
+    fail(error);return {success:true};
+  },
+  followUser: async (otherId) => {
+    const user=await currentUser();
+    const {error}=await client().from('user_follows').insert({follower_id:user.id,followed_id:otherId});
+    if(error&&error.code!=='23505')fail(error);return {success:true};
+  },
+  unfollowUser: async (otherId) => {
+    const user=await currentUser();
+    const {error}=await client().from('user_follows').delete().eq('follower_id',user.id).eq('followed_id',otherId);
+    fail(error);return {success:true};
+  },
   wallet: async () => {
     const user = await currentUser();
     const [wr, tr] = await Promise.all([
