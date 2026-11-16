@@ -67,7 +67,7 @@ begin
    for update;
   if found then
     if v_old.last_heartbeat_at < now()-interval '90 seconds' then
-      v_seconds := greatest(0,floor(extract(epoch from (now()-v_old.started_at)))::bigint);
+      v_seconds := greatest(0,floor(extract(epoch from (v_old.last_heartbeat_at-v_old.started_at)))::bigint);
       update public.agency_host_sessions set ended_at=now(),duration_seconds=v_seconds where id=v_old.id;
       insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,live_seconds,session_count)
       values(v_old.agency_id,v_old.host_id,current_date,v_seconds,1)
