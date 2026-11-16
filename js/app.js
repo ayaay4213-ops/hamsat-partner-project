@@ -543,7 +543,7 @@ async function openRoom(r) {
         if(invitePanel.dataset.loaded)return;
         try{
           const {friends}=await api.friends();
-          inviteList.innerHTML=friends.length?friends.map(u=>`<button type="button" data-invite-user="${esc(u.uuid)}" class="card w-full p-3 flex items-center gap-3 text-right">${avatar(u,38)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><i data-lucide="send" class="text-gold-300"></i></button>`).join(''):'<p class="text-sm opacity-70">لا توجد أسماء في قائمة أصدقائك بعد. أضيفي أصدقاء من قسم حسابي.</p>';
+          inviteList.innerHTML=friends.length?friends.map(u=>`<button type="button" data-invite-user="${esc(u.uuid)}" class="card w-full p-3 flex items-center gap-3 text-right">${avatar(u,38)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)} · ${esc(u.publicId || "")}</small></span><i data-lucide="send" class="text-gold-300"></i></button>`).join(''):'<p class="text-sm opacity-70">لا توجد أسماء في قائمة أصدقائك بعد. أضيفي أصدقاء من قسم حسابي.</p>';
           invitePanel.dataset.loaded='1';icons_();
           inviteList.querySelectorAll('[data-invite-user]').forEach(b=>b.onclick=async()=>{
             b.disabled=true;
@@ -867,6 +867,7 @@ function profileView(p, own) {
       <div class="profile-avatar-overlap">${avatar(p, 92)}</div>
       <h2 class="text-xl font-extrabold mt-4">${esc(p.displayName)}</h2>
       <p class="text-sm text-gold-400 mt-0.5" dir="ltr">@${esc(p.handle)}</p>
+      ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="mt-2 inline-flex items-center gap-2 rounded-full border border-gold-500/40 px-3 py-1.5 text-xs text-gold-300" dir="ltr"><i data-lucide="copy" class="w-3.5 h-3.5"></i>${esc(p.publicId)} · نسخ ID</button>` : ""}
       ${p.bio ? `<p class="text-sm text-[#cbb9e6] leading-7 mt-3 max-w-xs">${esc(p.bio)}</p>` : own ? `<p class="text-sm text-[#8a76a8] mt-3">لم تضف نبذة بعد</p>` : ''}
       <div class="flex items-center gap-4 mt-4 text-xs text-[#a993c8]">
         ${p.country ? `<span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>${esc(p.country)}</span>` : ''}
@@ -890,6 +891,8 @@ function meScreen() {
       <button id="logout" class="btn-danger w-full mt-4"><i data-lucide="log-out" class="w-5 h-5"></i>تسجيل الخروج</button>
     </div></div>`;
   icons_();
+  const idCopy=$('[data-copy-public-id]');
+  if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   $('#logout').onclick = () => openSheet(`
     <h2 class="text-lg font-bold mb-2">تسجيل الخروج</h2>
     <p class="text-sm text-[#bba9d6] mb-5">هل أنت متأكد أنك تريد تسجيل الخروج من همسات؟ بياناتك محفوظة.</p>
@@ -918,6 +921,8 @@ async function userScreen(handle) {
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
+  const idCopy=$('[data-copy-public-id]');
+  if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(profile.publicId);toast('تم نسخ ID المستخدم');}catch(e){toast(profile.publicId);}};
 
   if(profile){
     try{
@@ -986,7 +991,7 @@ async function friendsScreen(){
   try{
     const [requests,friends]=await Promise.all([api.friendRequests(),api.friends()]);
     $('#friend-request-count').textContent=requests.incoming.length+' واردة';
-    requestsRoot.innerHTML=requests.incoming.length?requests.incoming.map(x=>`<div class="card p-3 flex items-center gap-2">${avatar(x.user,42)}<div class="flex-1 min-w-0"><b>${esc(x.user.displayName)}</b><small class="block text-xs opacity-70">@${esc(x.user.handle)}</small></div><button class="btn-gold px-3 py-2 text-xs" data-accept="${esc(x.id)}">قبول</button><button class="btn-ghost px-3 py-2 text-xs" data-reject="${esc(x.id)}">رفض</button></div>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد طلبات جديدة.</p>';
+    requestsRoot.innerHTML=requests.incoming.length?requests.incoming.map(x=>`<div class="card p-3 flex items-center gap-2">${avatar(x.user,42)}<div class="flex-1 min-w-0"><b>${esc(x.user.displayName)}</b><small class="block text-xs opacity-70">@${esc(x.user.handle)} · ${esc(x.user.publicId || "")}</small></div><button class="btn-gold px-3 py-2 text-xs" data-accept="${esc(x.id)}">قبول</button><button class="btn-ghost px-3 py-2 text-xs" data-reject="${esc(x.id)}">رفض</button></div>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد طلبات جديدة.</p>';
     requestsRoot.querySelectorAll('[data-accept]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.accept,true);toast('تمت إضافة الصديق');friendsScreen();}catch(e){toast(e.message,'error');}});
     requestsRoot.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.reject,false);toast('تم رفض الطلب');friendsScreen();}catch(e){toast(e.message,'error');}});
     friendsRoot.innerHTML=friends.friends.length?friends.friends.map(u=>`<a href="#/u/${esc(u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لم تضيفي أصدقاء بعد. ابحثي عن شخص وابدئي بإرسال طلب.</p>';
@@ -998,7 +1003,7 @@ async function friendsScreen(){
     searchTimer=setTimeout(async()=>{
       try{
         const {users}=await api.searchUsers(term);
-        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${esc(u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
+        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${esc(u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)} · ${esc(u.publicId || "")}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
         searchRoot.querySelectorAll('[data-add-friend]').forEach(b=>b.onclick=()=>location.hash='#/u/'+encodeURIComponent(b.dataset.addFriend));
       }catch(e){searchRoot.innerHTML='<p class="text-xs text-red-300">'+esc(e.message)+'</p>';}
     },250);
