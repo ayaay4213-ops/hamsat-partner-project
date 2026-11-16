@@ -1122,8 +1122,21 @@ async function friendsScreen(){
     searchTimer=setTimeout(async()=>{
       try{
         const {users}=await api.searchUsers(term);
-        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${encodeURIComponent(u.publicId || u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)} · ${esc(u.publicId || "")}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.publicId || u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
-        searchRoot.querySelectorAll('[data-add-friend]').forEach(b=>b.onclick=()=>location.hash='#/u/'+encodeURIComponent(b.dataset.addFriend));
+        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-3 border-b border-white/5"><a class="flex items-center gap-3 flex-1 min-w-0 text-right" href="#/u/${encodeURIComponent(u.publicId || u.handle)}">${avatar(u,44)}<span class="min-w-0"><b class="block truncate">${esc(u.displayName || 'عضو جديد')}</b><small class="opacity-70 block truncate">${u.handle?'@'+esc(u.handle)+' · ':''}${esc(u.publicId || '')}</small><small class="text-gold-300">عرض الحساب</small></span></a><button class="btn-gold px-3 py-2 text-xs shrink-0" data-quick-add="${esc(u.uuid)}">إضافة صديق</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم أو الرقم.</p>';
+        searchRoot.querySelectorAll('[data-quick-add]').forEach(b=>b.onclick=async()=>{
+          const targetId=b.dataset.quickAdd;
+          b.disabled=true;
+          try{
+            const status=await api.friendState(targetId), req=status.request;
+            if(req?.status==='accepted'){b.textContent='✓ صديق';return;}
+            if(req?.status==='pending'&&req.sender_id===state.profile.uuid){b.textContent='تم الإرسال';return;}
+            if(req?.status==='pending'&&req.receiver_id===state.profile.uuid){
+              await api.respondFriendRequest(req.id,true);b.textContent='✓ صديق';toast('تم قبول طلب الصداقة');
+            }else{
+              await api.sendFriendRequest(targetId);b.textContent='تم إرسال الطلب';toast('تم إرسال طلب الصداقة');
+            }
+          }catch(e){toast(e.message,'error');b.disabled=false;}
+        });
       }catch(e){searchRoot.innerHTML='<p class="text-xs text-red-300">'+esc(e.message)+'</p>';}
     },250);
   };
