@@ -1159,7 +1159,7 @@ function meScreen() {
       {icon:'target',label:'المهام',sub:'تحديات يومية وأسبوعية',href:'#/tasks',tone:'pink',soon:true},
       {icon:'chart-no-axes-column-increasing',label:'مستواي',sub:'نقاط الخبرة والتقدم',href:'#/me',tone:'gold'},
       {icon:'award',label:'الشارات والأوسمة',sub:'إنجازاتك ومقتنياتك',href:'#/me',tone:'violet'},
-      {icon:'building-2',label:'مركز الوكالة',sub:'إدارة المضيفين والتقارير',href:'#/agency',tone:'gold',soon:true},
+      {icon:'building-2',label:'مركز الوكالة',sub:'إدارة الوكالة والشحن والعمولات',href:'#/agency',tone:'gold'},
       {icon:'users-round',label:'العائلة',sub:'مجتمعك ومجموعتك',href:'#/family',tone:'pink',soon:true}
     ],
     [
@@ -1381,6 +1381,28 @@ async function render() {
   try {
 
 
+async function agencyScreen(){
+  screen.innerHTML=header('مركز الوكالة')+'<div class="p-4" id="agency-root">'+loading()+'</div>';icons_();
+  const root=$('#agency-root');
+  try{
+    const {agencies}=await api.myAgencies();
+    if(!agencies.length){root.innerHTML=emptyBox('building-2','لا توجد وكالة مرتبطة بحسابك','إذا كنتِ صاحبة وكالة أو وكيلة، يجب أن تضيف الإدارة حسابك إلى الوكالة أولاً.');return;}
+    const agency=agencies[0],role=agency.memberRole,canManage=role==='owner'||role==='manager',canRecharge=['owner','manager','agent'].includes(role)&&['recharge','both'].includes(agency.agency_type);
+    const [finance,rechargeData,packageData,memberData]=await Promise.all([api.agencyFinance(agency.id,canManage),api.agencyRecharges(agency.id),api.topupPackages(),canManage?api.agencyMembers(agency.id):Promise.resolve({members:[]})]);
+    const packages=packageData.packages||[],recharges=rechargeData.recharges||[],members=memberData.members||[];
+    root.innerHTML='<div class="space-y-4">'+
+      '<section class="card p-4"><div class="flex items-center justify-between gap-3"><div><small class="text-amber-300">HAMSAT AGENCY</small><h2 class="text-xl font-bold mt-1">'+esc(agency.name)+'</h2><p class="text-xs opacity-70 mt-1">'+(agency.agency_type==='recharge'?'وكالة شحن':agency.agency_type==='hosts'?'وكالة مضيفين':'وكالة شحن ومضيفين')+' · '+(role==='owner'?'المالكة':role==='manager'?'مديرة':role==='agent'?'وكيلة':'مضيفة')+'</p></div><span class="pill">'+esc(agency.status)+'</span></div></section>'+
+      '<div class="grid grid-cols-2 gap-3">'+(canManage?'<div class="card p-3"><small>رصيد الوكالة</small><b class="block text-lg text-amber-300 mt-1">'+num(finance.agencyBalance||0)+' دج</b></div>':'')+'<div class="card p-3"><small>عمولتي</small><b class="block text-lg text-amber-300 mt-1">'+num(finance.agentBalance||0)+' دج</b></div></div>'+
+      (canRecharge?'<section class="card p-4"><h3 class="font-bold mb-3">شحن لاعب عبر الوكالة</h3><form id="agency-recharge-form" class="space-y-3"><label class="block text-sm">المعرّف العام للاعب<input class="field mt-1" name="public_id" type="number" required placeholder="أدخلي ID اللاعب"></label><label class="block text-sm">باقة الشحن<select class="field mt-1" name="package_id" required>'+packages.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' · '+num(p.coins)+' عملة · '+num(p.price_dzd)+' دج</option>').join('')+'</select></label><label class="block text-sm">طريقة استلام الدفع<input class="field mt-1" name="payment_method" required placeholder="نقداً أو طريقة الدفع المتفق عليها"></label><label class="block text-sm">مرجع/رقم الإيصال<input class="field mt-1" name="payment_reference" required minlength="4" placeholder="رقم الإيصال لمنع التكرار"></label><button class="btn-gold w-full" type="submit" '+(!packages.length?'disabled':'')+'>تأكيد الشحن وإضافة العملات</button><p class="text-[10px] opacity-60">لا تؤكدي العملية إلا بعد استلام المبلغ فعلياً. سيتم تسجيلها في سجل الوكالة ومحفظة اللاعب.</p></form></section>':'')+
+      (canManage?'<section class="card p-4"><h3 class="font-bold mb-3">إضافة وكيل أو مضيف</h3><form id="agency-add-member-form" class="space-y-3"><label class="block text-sm">المعرّف العام للمستخدم<input class="field mt-1" name="public_id" type="number" required></label><label class="block text-sm">الدور<select class="field mt-1" name="role"><option value="agent">وكيل شحن</option><option value="host">مضيف</option><option value="support">دعم</option><option value="manager">مدير</option></select></label><button class="btn w-full" type="submit">إضافة العضو</button></form><div class="mt-3 space-y-2">'+members.map(m=>'<div class="item"><div><b>'+esc(m.profile?.display_name||m.profile?.handle||'عضو')+'</b><p class="text-xs opacity-60">#'+esc(m.profile?.public_id||'—')+' · '+esc(m.member_role)+'</p></div>'+(m.member_role==='owner'?'':'<button type="button" class="ghost text-xs" data-agency-remove="'+esc(m.profile?.public_id||'')+'">إزالة</button>')+'</div>').join('')+'</div></section>':'')+
+      '<section class="card p-4"><h3 class="font-bold mb-3">آخر عمليات الشحن</h3><div class="space-y-2">'+(recharges.length?recharges.map(x=>'<div class="item"><div><b>'+num(x.coins)+' عملة</b><p class="text-xs opacity-70">اللاعب #'+esc(x.target?.public_id||'—')+' · '+num(x.price_dzd)+' دج · '+esc(x.payment_method)+'</p><small class="opacity-50">'+timeAgo(x.created_at)+'</small></div><span class="pill">مكتملة</span></div>').join(''):'<p class="text-xs opacity-60">لا توجد عمليات شحن بعد.</p>')+'</div></section>'+
+      (agency.agency_type==='hosts'||agency.agency_type==='both'?'<section class="card p-4"><h3 class="font-bold">إدارة المضيفين</h3><p class="text-xs opacity-70 mt-2">تم تجهيز عضوية المضيفين داخل الوكالة. متابعة ساعات البث والأرباح الأسبوعية ستُربط بعد استكمال تسجيل جلسات الصوت واختبارها.</p></section>':'')+
+      '</div>';
+    const rechargeForm=$('#agency-recharge-form');if(rechargeForm)rechargeForm.onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const result=await api.agentRechargeUser(agency.id,Number(f.elements.public_id.value),f.elements.package_id.value,f.elements.payment_method.value.trim(),f.elements.payment_reference.value.trim());toast('تم شحن '+num(result.coins)+' عملة بنجاح');await agencyScreen();}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    const memberForm=$('#agency-add-member-form');if(memberForm)memberForm.onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{await api.agencyAddMember(agency.id,Number(f.elements.public_id.value),f.elements.role.value);toast('تمت إضافة العضو');await agencyScreen();}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    root.querySelectorAll('[data-agency-remove]').forEach(b=>b.onclick=async()=>{if(!confirm('هل تريدين إزالة هذا العضو من الوكالة؟'))return;try{await api.agencyRemoveMember(agency.id,Number(b.dataset.agencyRemove));toast('تمت إزالة العضو');await agencyScreen();}catch(err){toast(err.message,'error');}});
+  }catch(e){root.innerHTML=emptyBox('triangle-alert','تعذّر تحميل مركز الوكالة',e.message);}
+}
 async function notificationsScreen() {
   screen.innerHTML = header('الإشعارات', '<button id="read-all" class="text-xs text-amber-300">تحديد الكل كمقروء</button>') + `<div class="p-4 space-y-3" id="notifications-list">${loading()}</div>`;
   icons_();
@@ -1443,7 +1465,8 @@ async function directMessageScreen(conversationId) {
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
     else if (route === 'moments') { meScreen(); document.querySelector('[data-profile-tab="moments"]')?.click(); }
-    else if (['aristocracy','tasks','agency','family'].includes(route)) comingSoonScreen(route);
+    else if (route === 'agency') await agencyScreen();
+    else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
     else await homeScreen();
   } catch (e) {
