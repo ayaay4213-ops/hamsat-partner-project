@@ -59,6 +59,8 @@ begin
   if v_target is null then raise exception 'المستخدم غير موجود'; end if;
   if v_target=v_user then raise exception 'لا يمكنك حظر حسابك'; end if;
   insert into public.user_blocks(blocker_id,blocked_id) values(v_user,v_target) on conflict do nothing;
+  delete from public.user_follows where (follower_id=v_user and followed_id=v_target) or (follower_id=v_target and followed_id=v_user);
+  update public.friend_requests set status='rejected' where status='pending' and ((sender_id=v_user and receiver_id=v_target) or (sender_id=v_target and receiver_id=v_user));
   return true;
 end;
 $$;
