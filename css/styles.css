@@ -163,7 +163,7 @@ body {
 #screen .card { border-radius:20px; }
 #screen .home-hero-card { padding:16px !important; }
 #screen .home-hero-art { max-height:132px; object-fit:cover; object-position:center 42%; margin-bottom:13px; }
-#screen .grid.grid-cols-4 { grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px !important; }
+#screen .grid.grid-cols-4 { grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px !important; }
 #screen .grid.grid-cols-4 a { min-width:0; padding:9px 2px; border-radius:16px; background:rgba(255,255,255,.018); border:1px solid rgba(212,175,55,.09); }
 #screen .grid.grid-cols-4 a > span:first-child { width:48px !important; height:48px !important; border-radius:16px !important; background:linear-gradient(145deg,rgba(212,175,55,.10),rgba(255,255,255,.025)) !important; border-color:rgba(212,175,55,.19) !important; }
 #screen .grid.grid-cols-4 a > span:last-child { font-size:11px; white-space:nowrap; }
@@ -485,7 +485,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .sheet.room-sheet>.w-10{display:none!important}
 .sheet-backdrop:has(+.room-sheet){background:#050608!important}
 .room-sheet .room-status{border:1px solid rgba(212,175,55,.25);border-radius:99px;padding:5px 9px;color:#e7c65a;font-size:10px}
-.room-sheet #room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+.room-sheet #room-seats{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:10px!important}
 .room-sheet .room-seat{min-height:112px!important;border-radius:18px!important;background:linear-gradient(145deg,rgba(42,38,29,.72),rgba(17,18,22,.9))!important;border:1px solid rgba(212,175,55,.23)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important}
 .room-sheet .room-seat-own{border-color:#e7c65a!important;box-shadow:0 0 18px rgba(212,175,55,.15)!important}
 .room-sheet .seat-empty{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(212,175,55,.10);border:1px dashed rgba(212,175,55,.42);color:#e7c65a}
@@ -536,7 +536,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-eyebrow{font-size:8px;letter-spacing:2px;color:#b89543;display:block;margin-bottom:3px}
 .hs-room-section-title h3{font-size:15px;font-weight:800;color:#f6f0df}
 .hs-room-seat-count{font-size:10px;color:#bdb29a;background:#ffffff09;padding:6px 9px;border-radius:9px}
-.hs-room-seats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.hs-room-seats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
 .hs-room-seat{position:relative;min-width:0;min-height:111px;padding:9px 3px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:16px;border:1px solid #d4af3740;background:linear-gradient(145deg,#29251c,#15161b);color:#eee4c9}
 .hs-room-seat.empty{border-style:dashed;background:linear-gradient(145deg,#1b1b1d,#111216)}
 .hs-room-seat:disabled{opacity:1;cursor:default}
@@ -624,7 +624,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 
 
 /* Hamsat voice stage: circular avatar seats with a clear microphone badge */
-.hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr));gap:13px 9px}
+.hs-room-seats{grid-template-columns:repeat(5,minmax(0,1fr));gap:13px 9px}
 .hs-room-seat{position:relative;min-height:132px;padding:10px 3px 9px;border:0!important;background:transparent!important;box-shadow:none!important;gap:7px}
 .hs-room-seat:before{content:"";position:absolute;top:3px;left:50%;width:76px;height:76px;transform:translateX(-50%);border-radius:50%;border:1px solid rgba(226,190,83,.42);background:radial-gradient(circle,rgba(216,179,72,.12),rgba(17,18,22,.9) 70%);box-shadow:0 0 0 5px rgba(212,175,55,.045),inset 0 0 18px rgba(212,175,55,.09)}
 .hs-seat-ring{position:relative;z-index:1;width:66px;height:66px;display:grid;place-items:center;border-radius:50%;border:2px solid #d9b957;padding:3px;background:#111216;box-shadow:0 0 13px #d4af3733}
@@ -685,7 +685,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-home-orbit{position:absolute;z-index:0;border:1px solid #d4af3728;border-radius:50%;pointer-events:none}
 .hs-home-hero .orbit-one{width:180px;height:180px;left:-40px;top:20px}
 .hs-home-hero .orbit-two{width:230px;height:230px;left:-65px;top:-5px}
-.hs-home-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 15px;margin-bottom:26px}
+.hs-home-shortcuts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:0 15px;margin-bottom:26px}
 .hs-home-shortcuts a{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:12px 4px;border-radius:17px;border:1px solid #d4af3725;background:linear-gradient(155deg,#1b1a17,#111216);text-align:center}
 .hs-home-shortcuts .shortcut-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:#d4af3719;color:#edcf79;border:1px solid #d4af3733}
 .hs-home-shortcuts svg{width:21px;height:21px;stroke-width:1.7}
@@ -776,7 +776,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-section-title h3 { color:#f4e5b5;font-size:16px;font-weight:900;margin-top:2px; }
 .hs-room-eyebrow { color:#c9a945;font-size:9px;letter-spacing:.22em;font-weight:800; }
 .hs-room-seat-count { border:1px solid #d4af374d;color:#f0d77c;border-radius:99px;padding:6px 10px;font-size:10px;background:#d4af3710; }
-.hs-room-seats { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px 7px;padding:8px 0 12px; }
+.hs-room-seats { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:15px 7px;padding:8px 0 12px; }
 .hs-room-seat { min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;color:#eee7d5;text-align:center;background:transparent;border:0;padding:0 1px; }
 .hs-seat-ring { width:58px;height:58px;border-radius:50%;display:grid;place-items:center;position:relative;border:1px solid #d4af3770;background:radial-gradient(circle,#332a16 0%,#17150f 60%,#0c0d0f 100%);box-shadow:0 0 0 4px #d4af3710,0 0 18px #d4af371c; }
 .hs-seat-chair,.hs-seat-mic { display:grid;place-items:center;color:#d6b957; }
@@ -848,7 +848,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-home-orbit { position:absolute;z-index:0;border:1px solid #d4af372c;border-radius:50%;pointer-events:none; }
 .hs-home-orbit.orbit-one { width:180px;height:180px;left:-45px;top:-60px; }
 .hs-home-orbit.orbit-two { width:125px;height:125px;left:-18px;top:-32px; }
-.hs-home-shortcuts { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 23px; }
+.hs-home-shortcuts { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 23px; }
 .hs-home-shortcuts a { min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px 10px;border-radius:17px;border:1px solid #d4af372e;background:linear-gradient(155deg,#211e16,#111215);box-shadow:inset 0 1px #fff1; }
 .hs-home-shortcuts .shortcut-icon { width:37px;height:37px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#4a3a18,#211b0e);border:1px solid #d4af375c;color:#f0d77c; }
 .hs-home-shortcuts .shortcut-icon svg { width:19px;height:19px; }
