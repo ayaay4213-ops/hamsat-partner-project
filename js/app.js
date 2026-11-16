@@ -725,9 +725,24 @@ async function openRoom(r) {
     sheet.querySelector('#room-emoji-toggle')?.addEventListener('click',()=>emojiPanel.classList.toggle('hidden'));
     sheet.querySelector('#room-emoji-close')?.addEventListener('click',()=>emojiPanel.classList.add('hidden'));
     const giftPanel=sheet.querySelector('#room-gift-panel'),giftForm=sheet.querySelector('#room-gift-form'),giftGrid=sheet.querySelector('#room-gift-grid'),giftSubmit=giftForm.querySelector('[type="submit"]');
-    sheet.querySelector('#room-send-gift').onclick=async()=>{try{const [{members},giftData]=await Promise.all([api.roomMembers(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);state.gifts=giftData.gifts;const others=members.filter(m=>m.userId!==state.profile?.uuid);if(!others.length){toast('لا يوجد أعضاء آخرون لإرسال هدية لهم');return;}giftForm.elements.recipient.innerHTML=others.map(m=>`<option value="${esc(m.userId)}">${esc(m.displayName)}</option>`).join('');giftForm.elements.gift.value='';giftSubmit.disabled=true;sheet.querySelector('#room-gift-selection').textContent='اختاري هدية للمتابعة';giftGrid.innerHTML=state.gifts.map(g=>`<button type="button" class="hs-gift-choice" data-gift="${esc(g.id)}"><span class="hs-gift-choice-art"><i data-lucide="${esc(g.icon||'gift')}"></i></span><b>${esc(g.name)}</b><small>${num(g.price)} عملة</small></button>`).join('')||'<p class="text-xs opacity-70">لا توجد هدايا متاحة حالياً</p>';giftGrid.querySelectorAll('[data-gift]').forEach(b=>b.onclick=()=>{giftForm.elements.gift.value=b.dataset.gift;giftGrid.querySelectorAll('.hs-gift-choice').forEach(x=>x.classList.toggle('selected',x===b));const chosen=state.gifts.find(g=>g.id===b.dataset.gift);sheet.querySelector('#room-gift-selection').textContent='الهدية المختارة: '+chosen.name+' · '+num(chosen.price)+' عملة';giftSubmit.disabled=false;});giftPanel.classList.remove('hidden');icons_();}catch(e){toast(e.message,'error');}};
+    sheet.querySelector('#room-send-gift').onclick=async()=>{
+      try{
+        const [{members},{seats},giftData]=await Promise.all([api.roomMembers(r.id),api.roomSeats(r.id),state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts()]);
+        state.gifts=giftData.gifts;
+        const seatedIds=new Set(seats.map(x=>x.user_id));
+        const recipients=members.filter(m=>m.userId!==state.profile?.uuid&&seatedIds.has(m.userId));
+        if(!recipients.length){toast('لا يوجد أعضاء آخرون على مقاعد المايك حالياً');return;}
+        const seatNumbers=Object.fromEntries(seats.map(x=>[x.user_id,x.seat_no]));
+        giftForm.elements.recipient.innerHTML=recipients.map(m=>'<option value="'+esc(m.userId)+'">'+esc(m.displayName)+' · مقعد '+num(seatNumbers[m.userId])+'</option>').join('');
+        giftForm.elements.gift.value='';giftSubmit.disabled=true;
+        sheet.querySelector('#room-gift-selection').textContent='اختاري هدية للمتابعة';
+        giftGrid.innerHTML=state.gifts.map(g=>'<button type="button" class="hs-gift-choice" data-gift="'+esc(g.id)+'"><span class="hs-gift-choice-art"><i data-lucide="'+esc(g.icon||'gift')+'"></i></span><b>'+esc(g.name)+'</b><small>'+num(g.price)+' عملة</small></button>').join('')||'<p class="text-xs opacity-70">لا توجد هدايا متاحة حالياً</p>';
+        giftGrid.querySelectorAll('[data-gift]').forEach(b=>b.onclick=()=>{giftForm.elements.gift.value=b.dataset.gift;giftGrid.querySelectorAll('.hs-gift-choice').forEach(x=>x.classList.toggle('selected',x===b));const chosen=state.gifts.find(g=>g.id===b.dataset.gift);sheet.querySelector('#room-gift-selection').textContent='الهدية المختارة: '+chosen.name+' · '+num(chosen.price)+' عملة';giftSubmit.disabled=false;});
+        giftPanel.classList.remove('hidden');icons_();
+      }catch(e){toast(e.message,'error');}
+    };
     sheet.querySelector('#room-gift-close').onclick=()=>giftPanel.classList.add('hidden');
-    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendGift(v.recipient,v.gift,1);state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');const sentGift=state.gifts.find(g=>g.id===v.gift);showGiftCelebration(sentGift);toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));await api.sendRoomGift(r.id,v.recipient,v.gift,Number(v.quantity||1));state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');toast('تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
     const del=sheet.querySelector('#del-room');if(del)del.onclick=async()=>{if(!confirm('هل تريد حذف هذه الغرفة؟'))return;del.disabled=true;try{await api.deleteRoom(r.id);closeSheet();toast('تم حذف الغرفة');render();}catch(e){toast(e.message,'error');del.disabled=false;}};
   });
 }
