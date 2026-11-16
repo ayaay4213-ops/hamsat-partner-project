@@ -446,6 +446,26 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  roomBombState: async (roomId) => {
+    const [bombResult, levelResult, contributionResult] = await Promise.all([
+      client().from('room_bombs').select('*').eq('room_id', roomId).maybeSingle(),
+      client().from('room_bomb_levels').select('*').order('level'),
+      client().from('room_bomb_contributions').select('user_id,points').eq('room_id', roomId).order('points', { ascending: false }).limit(3)
+    ]);
+    fail(bombResult.error); fail(levelResult.error); fail(contributionResult.error);
+    const ids = (contributionResult.data || []).map(x => x.user_id);
+    let profiles = [];
+    if (ids.length) {
+      const result = await client().from('profiles').select('*').in('id', ids);
+      fail(result.error); profiles = result.data || [];
+    }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    return {
+      bomb: bombResult.data || { room_id: roomId, level: 1, progress: 0, ends_at: null },
+      levels: levelResult.data || [],
+      contributors: (contributionResult.data || []).map(x => ({ ...x, profile: byId[x.user_id] || null }))
+    };
+  },
   roomEvents: async (roomId) => {
     const { data, error } = await client().from('room_activity_events')
       .select('id,room_id,actor_id,target_user_id,event_type,payload,created_at')
