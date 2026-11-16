@@ -624,7 +624,7 @@ async function openRoom(r) {
       if(event.event_type==='emoji'){
         const seat=[...sheet.querySelectorAll('#room-seats .hs-room-seat[data-user-id]')].find(el=>el.dataset.userId===event.actor_id);
         if(seat){const effect=document.createElement('span');effect.className='hs-seat-emoji-effect';effect.textContent=event.payload?.emoji||'✨';seat.appendChild(effect);window.setTimeout(()=>effect.remove(),3600);}
-      } else if(event.event_type==='gift'){showGiftCelebration({name:event.payload?.gift_name||'هدية',icon:'gift'},Number(event.payload?.quantity||1));}
+      } else if(event.event_type==='gift'){showGiftCelebration({name:event.payload?.gift_name||'هدية',icon:'gift'},Number(event.payload?.quantity||1));}else if(event.event_type==='bomb'){toast('💣 اكتمل مستوى قنبلة الغرفة وتم توزيع الجوائز!');}
     };
     const drawMessages=async()=>{
       const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
@@ -638,7 +638,7 @@ async function openRoom(r) {
       if(roomChatFilter!=='chat'){events.filter(e=>!wanted||e.event_type===wanted).forEach(e=>{
         if(e.event_type==='gift'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity gift"><span class="hs-room-activity-icon">🎁</span><span><b>'+esc(e.actor?.displayName||'عضو')+'</b> أرسل هدية إلى <b>'+esc(e.target?.displayName||'عضو')+'</b> · '+esc(e.payload?.gift_name||'هدية')+' <small>×'+num(e.payload?.quantity||1)+'</small></span></div>'});}
         else if(e.event_type==='emoji'&&roomChatFilter==='all'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity"><span class="hs-room-activity-icon">'+esc(e.payload?.emoji||'✨')+'</span><span><b>'+esc(e.actor?.displayName||'عضو')+'</b> أرسل تفاعلاً</span></div>'});}
-        else if(e.event_type==='game'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity"><span class="hs-room-activity-icon">🎮</span><span>'+esc(e.payload?.message||'نشاط لعبة في الغرفة')+'</span></div>'});}
+        else if(e.event_type==='game'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity"><span class="hs-room-activity-icon">🎮</span><span>'+esc(e.payload?.message||'نشاط لعبة في الغرفة')+'</span></div>'});}else if(e.event_type==='bomb'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity gift"><span class="hs-room-activity-icon">💣</span><span>انفجرت قنبلة الغرفة · تم توزيع العملات على الأعضاء</span></div>'});}
       });}
       items.sort((a,b)=>a.at-b.at);
       chat.innerHTML=items.length?items.map(x=>x.html).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">لا توجد عناصر في هذا التصنيف بعد 🌙</p>';
