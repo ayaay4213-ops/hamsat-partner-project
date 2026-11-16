@@ -224,6 +224,7 @@ if (fs.existsSync(compatibilityPath)) {
   const sql = fs.readFileSync(compatibilityPath, 'utf8').toLowerCase();
   for (const token of [
     'room_bomb_reward',
+    'agency_topup',
     'wallet_transactions_transaction_type_check',
     'profile_frame',
     'chat_bubble',
