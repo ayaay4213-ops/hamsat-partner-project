@@ -178,6 +178,47 @@ if (fs.existsSync(cosmeticsPath)) {
     if (!sql.includes(token)) errors.push(`Missing cosmetic inventory SQL: ${token}`);
   }
 }
+const agencyPath = path.join(root, 'supabase/migrations/0042_agencies_and_agent_recharge.sql');
+if (fs.existsSync(agencyPath)) {
+  const sql = fs.readFileSync(agencyPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.agencies',
+    'create table if not exists public.agency_members',
+    'private.is_agency_member',
+    'create or replace function public.agent_recharge_user',
+    'create or replace function public.create_external_topup_order'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing agency and recharge SQL: ${token}`);
+  }
+}
+const hostAgencyPath = path.join(root, 'supabase/migrations/0043_host_agency_metrics.sql');
+if (fs.existsSync(hostAgencyPath)) {
+  const sql = fs.readFileSync(hostAgencyPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.agency_host_sessions',
+    'create table if not exists public.agency_host_daily_stats',
+    'create or replace function public.host_start_session',
+    'create or replace function public.host_heartbeat_session',
+    'create or replace function public.host_end_session',
+    'private.record_agency_host_gift'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing host agency metrics SQL: ${token}`);
+  }
+}
+const safetyPath = path.join(root, 'supabase/migrations/0044_user_safety_and_reports.sql');
+if (fs.existsSync(safetyPath)) {
+  const sql = fs.readFileSync(safetyPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.user_blocks',
+    'create table if not exists public.user_reports',
+    'create or replace function public.block_user',
+    'create or replace function public.report_user',
+    'create or replace function public.report_room',
+    'private.is_user_blocked'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing user safety SQL: ${token}`);
+  }
+}
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
 if (fs.existsSync(liveKitRoomPath)) {
   const js = fs.readFileSync(liveKitRoomPath, 'utf8');
@@ -205,7 +246,12 @@ if (fs.existsSync(appRoomPath)) {
     'room-bomb-floating',
     'api.roomBombState',
     'data-shop-category="profile_frame"',
-    'api.unequipShopItem'
+    'api.unequipShopItem',
+    'async function agencyScreen',
+    'api.agentRechargeUser',
+    'api.hostStartSession',
+    'api.blockUser',
+    'api.reportRoom'
   ]) {
     if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
   }
@@ -214,7 +260,7 @@ if (fs.existsSync(appRoomPath)) {
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async']) {
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async', 'agentRechargeUser: async', 'hostStartSession: async', 'blockUser: async', 'reportUser: async', 'reportRoom: async']) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
