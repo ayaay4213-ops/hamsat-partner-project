@@ -534,6 +534,7 @@ async function openRoom(r) {
         <div class="hs-room-tools-row">
           <button type="button" id="voice-start" class="hs-tool-mic" aria-label="الاتصال بالصوت"><i data-lucide="mic"></i></button>
           <button type="button" id="voice-mute" class="hs-tool-icon" aria-label="كتم الميكروفون" disabled><i data-lucide="mic-off"></i></button>
+          <button type="button" id="voice-audio-enable" class="hs-tool-icon" aria-label="سماع المشاركين" disabled><i data-lucide="volume-2"></i></button>
           <button type="button" id="room-emoji-toggle" class="hs-tool-icon" aria-label="الرموز التعبيرية"><i data-lucide="smile"></i></button>
           <a href="#/games" class="hs-tool-icon" aria-label="الألعاب"><i data-lucide="gamepad-2"></i></a>
           <a href="#/shop" class="hs-tool-icon" aria-label="العروض"><i data-lucide="tags"></i></a>
@@ -545,7 +546,7 @@ async function openRoom(r) {
           <div id="room-emoji-bar" class="hs-room-emojis hidden">${(state.profile?.equippedEmojiPackId === "emoji_love" ? ["💖","💗","💕","💞","😘","😍","🌹","🥰","💋","🩷","❤️","💘","💝","🫶","🌷","🦋","✨","👏","😂","🤣","🔥","🎉","🎶","👑","💎","🌙","⭐","🥂","☕","🎤"] : state.profile?.equippedEmojiPackId === "emoji_luxe" ? ["👑","💎","✨","🥂","🪞","💍","🌟","🎀","🦢","🌹","💫","🪄","🩷","🫶","🌸","🔥","👏","🎉","🎤","🎧"] : state.profile?.equippedEmojiPackId === "emoji_moon" ? ["🌙","⭐","🌟","☄️","🪐","🌌","✨","🌠","🌃","🦋","🌷","💜","🩵","🫶","🎶","🎧","☕","🌸","👏","🎤"] : ["💖","🌹","😂","😍","👏","✨","🌙","🥰","🫶","🎉","🔥","💎","👑","🦋","🎶","🎤","💜","🩷","🌸","🥂"]).map(e=>`<button type="button" data-emoji="${e}">${e}</button>`).join("")}</div>
           <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
         </div>
-        <div class="sr-only"><button type="button" id="voice-audio-enable" disabled>سماع الآخرين</button><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
+        <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
       </div>
     </section>
     ${r.ownerUuid === state.profile?.uuid ? `<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>` : ''}
