@@ -393,3 +393,9 @@ end;
 $$;
 revoke all on function public.admin_update_agency(uuid,text,numeric,numeric) from public,anon;
 grant execute on function public.admin_update_agency(uuid,text,numeric,numeric) to authenticated;
+
+drop policy if exists "Agents read own commission ledger" on public.agent_commission_ledger;
+create policy "Agents and agency owners read commission ledger" on public.agent_commission_ledger
+for select to authenticated using (
+  public.is_admin() or user_id=auth.uid() or private.is_agency_member(agency_id,array['owner','manager'])
+);
