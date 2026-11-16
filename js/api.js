@@ -100,9 +100,13 @@ export const api = {
     fail(error);
     return { total: count ?? data.length, users: data.map(mapProfile) };
   },
-  user: async (handle) => {
-    const { data, error } = await client().from('profiles').select('*').eq('handle', handle.toLowerCase()).single();
-    fail(error); return { profile: mapProfile(data) };
+  user: async (identifier) => {
+    const value=String(identifier||'').trim();
+    const publicMatch=value.toUpperCase().match(/^HAMSAT-?0*(\\d+)$/)||value.match(/^\\d+$/);
+    const query=client().from('profiles').select('*');
+    const publicId=publicMatch?Number(publicMatch[1]||publicMatch[0]):null;
+    const {data,error}=publicId!==null?await query.eq('public_id',publicId).single():await query.eq('handle',value.toLowerCase()).single();
+    fail(error); return {profile:mapProfile(data)};
   },
   searchUsers: async (term) => {
     const q=String(term||'').trim().replace(/[,%()]/g,'');
