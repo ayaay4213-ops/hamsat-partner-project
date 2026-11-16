@@ -266,6 +266,20 @@ export const api = {
     const {data,error}=await client().rpc('leave_room_seat',{p_room_id:roomId});
     fail(error);return data;
   },
+  roomMutedUsers: async (roomId) => {
+    const {data,error}=await client().from('room_participant_mutes').select('user_id').eq('room_id',roomId).eq('muted',true);
+    fail(error);return {userIds:(data||[]).map(x=>x.user_id)};
+  },
+  setRoomParticipantMuteState: async (roomId,userId,muted) => {
+    if(muted){
+      const {error}=await client().from('room_participant_mutes').upsert({room_id:roomId,user_id:userId,muted:true,updated_at:new Date().toISOString()},{onConflict:'room_id,user_id'});
+      fail(error);
+    }else{
+      const {error}=await client().from('room_participant_mutes').delete().eq('room_id',roomId).eq('user_id',userId);
+      fail(error);
+    }
+    return {success:true};
+  },
   moderateRoomParticipant: async (roomId,userId,muted) => {
     const {data,error}=await client().functions.invoke('livekit-moderate',{body:{room_id:roomId,participant_id:userId,muted:Boolean(muted)}});
     fail(error);if(data?.error)throw new Error(data.error);return data;
