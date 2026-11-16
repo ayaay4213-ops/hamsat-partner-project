@@ -257,6 +257,19 @@ export const api = {
     fail(error); return data;
   },
 
+
+  notifications: async () => {
+    const {data,error}=await client().from('notifications').select('id,type,title,body,actor_id,target_url,created_at,read_at').order('created_at',{ascending:false}).limit(60);
+    fail(error); return {notifications:data};
+  },
+  markNotificationRead: async (id) => {
+    const {error}=await client().from('notifications').update({read_at:new Date().toISOString()}).eq('id',id);
+    fail(error); return {success:true};
+  },
+  markAllNotificationsRead: async () => {
+    const {error}=await client().from('notifications').update({read_at:new Date().toISOString()}).is('read_at',null);
+    fail(error); return {success:true};
+  },
   startConversation: async (otherUserId) => {
     const { data, error } = await client().rpc('get_or_create_conversation', { p_other_user: otherUserId });
     fail(error); return { conversationId: data };
