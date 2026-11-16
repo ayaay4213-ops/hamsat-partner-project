@@ -114,3 +114,38 @@ revoke all on function public.purchase_shop_item(text) from public, anon;
 grant execute on function public.purchase_shop_item(text) to authenticated;
 revoke all on function public.equip_shop_item(text) from public, anon;
 grant execute on function public.equip_shop_item(text) to authenticated;
+
+create or replace function public.unequip_shop_item(p_item_type text)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_user uuid := (select auth.uid());
+begin
+  if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+  if p_item_type='frame' then
+    update public.profiles set equipped_frame_id=null where id=v_user;
+  elsif p_item_type='profile_frame' then
+    update public.profiles set equipped_profile_frame_id=null where id=v_user;
+  elsif p_item_type='entrance' then
+    update public.profiles set equipped_entrance_id=null where id=v_user;
+  elsif p_item_type='chat_bubble' then
+    update public.profiles set equipped_bubble_id=null where id=v_user;
+  elsif p_item_type='special_id' then
+    update public.profiles set equipped_special_id=null where id=v_user;
+  elsif p_item_type='sound_frame' then
+    update public.profiles set equipped_sound_frame_id=null where id=v_user;
+  elsif p_item_type='voice_wave' then
+    update public.profiles set equipped_voice_wave_id=null where id=v_user;
+  elsif p_item_type='emoji_pack' then
+    update public.profiles set equipped_emoji_pack_id=null where id=v_user;
+  else
+    raise exception 'نوع العنصر غير معروف';
+  end if;
+  return true;
+end;
+$$;
+
+revoke all on function public.unequip_shop_item(text) from public, anon;
+grant execute on function public.unequip_shop_item(text) to authenticated;
