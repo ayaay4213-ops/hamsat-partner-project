@@ -1032,8 +1032,8 @@ function meScreen() {
     ],
     [
       {icon:'target',label:'المهام',sub:'تحديات يومية وأسبوعية',href:'#/tasks',tone:'pink',soon:true},
-      {icon:'chart-no-axes-column-increasing',label:'مستواي',sub:'نقاط الخبرة والتقدم',href:'#/me#level',tone:'gold'},
-      {icon:'award',label:'الشارات والأوسمة',sub:'إنجازاتك ومقتنياتك',href:'#/me#badges',tone:'violet'},
+      {icon:'chart-no-axes-column-increasing',label:'مستواي',sub:'نقاط الخبرة والتقدم',href:'#/me',tone:'gold'},
+      {icon:'award',label:'الشارات والأوسمة',sub:'إنجازاتك ومقتنياتك',href:'#/me',tone:'violet'},
       {icon:'building-2',label:'مركز الوكالة',sub:'إدارة المضيفين والتقارير',href:'#/agency',tone:'gold',soon:true},
       {icon:'users-round',label:'العائلة',sub:'مجتمعك ومجموعتك',href:'#/family',tone:'pink',soon:true}
     ],
@@ -1223,6 +1223,12 @@ async function friendsScreen(){
 }
 
 /* ---------- router ---------- */
+async function inviteScreen() {
+  const inviteUrl=location.origin+location.pathname+'#/u/'+encodeURIComponent(state.profile?.handle||'');
+  screen.innerHTML=header('دعوة الأصدقاء')+`<section class="hs-coming-soon"><span><i data-lucide="user-plus"></i></span><h2>ادعي أصدقاءك إلى همسات</h2><p>شاركي رابط ملفك الشخصي حتى يتمكن أصدقاؤك من العثور عليك والانضمام إلى مجتمع HAMSAT.</p><button type="button" id="copy-invite-link" class="btn-gold">نسخ رابط الدعوة</button><small>نظام مكافآت الإحالة غير مفعّل حالياً.</small></section>`;
+  icons_();
+  $('#copy-invite-link').onclick=async()=>{try{await navigator.clipboard.writeText(inviteUrl);toast('تم نسخ رابط ملفك لمشاركته');}catch(e){toast(inviteUrl);}};
+}
 function comingSoonScreen(route) {
   const pages={moments:['لحظة','مساحة الصور واليوميات ومشاركة اللحظات مع المجتمع','images'],aristocracy:['الأرستقراطية VIP','عضويات كبار الشخصيات ومزاياها الحصرية','crown'],tasks:['المهام','التحديات اليومية والأسبوعية ومكافآت النشاط','target'],agency:['مركز الوكالة','إدارة المضيفين والوكلاء والتقارير','building-2'],family:['العائلة','مجتمعك ومجموعتك داخل همسات','users-round'],invite:['دعوة الأصدقاء','شاركي رابط ملفك وادعي أصدقاءك إلى همسات','user-plus']};
   const [title,description,icon]=pages[route]||['قريباً','هذه الميزة قيد التجهيز','sparkles'];
@@ -1308,7 +1314,8 @@ async function directMessageScreen(conversationId) {
     else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
-    else if (['moments','aristocracy','tasks','agency','family','invite'].includes(route)) comingSoonScreen(route);
+    else if (route === 'invite') await inviteScreen();
+    else if (['moments','aristocracy','tasks','agency','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
     else await homeScreen();
   } catch (e) {
