@@ -142,6 +142,27 @@ if (fs.existsSync(roomActivityPath)) {
     if (!sql.includes(token)) errors.push(`Missing secure room activity SQL: ${token}`);
   }
 }
+const giftCategoriesPath = path.join(root, 'supabase/migrations/0039_gift_categories.sql');
+if (fs.existsSync(giftCategoriesPath)) {
+  const sql = fs.readFileSync(giftCategoriesPath, 'utf8').toLowerCase();
+  for (const token of ["category text not null default 'app'", "gifts_category_check", "'event'", "'lucky'", "'special'"]) {
+    if (!sql.includes(token)) errors.push(`Missing gift category SQL: ${token}`);
+  }
+}
+const roomBombPath = path.join(root, 'supabase/migrations/0040_room_bomb_rewards.sql');
+if (fs.existsSync(roomBombPath)) {
+  const sql = fs.readFileSync(roomBombPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.room_bomb_levels',
+    'create table if not exists public.room_bombs',
+    'create table if not exists public.room_bomb_contributions',
+    'private.apply_room_bomb_contribution',
+    'create trigger room_gift_updates_bomb',
+    'create or replace function public.refresh_room_bomb'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing room bomb SQL: ${token}`);
+  }
+}
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
 if (fs.existsSync(liveKitRoomPath)) {
   const js = fs.readFileSync(liveKitRoomPath, 'utf8');
@@ -165,7 +186,9 @@ if (fs.existsSync(appRoomPath)) {
     'room-emoji-panel',
     'data-chat-filter="gifts"',
     'api.sendRoomEmoji',
-    'api.sendRoomGift'
+    'api.sendRoomGift',
+    'room-bomb-floating',
+    'api.roomBombState'
   ]) {
     if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
   }
@@ -174,7 +197,7 @@ if (fs.existsSync(appRoomPath)) {
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async']) {
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async']) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
