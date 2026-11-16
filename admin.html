@@ -24,7 +24,7 @@
 <button class="tab" data-tab="gifts">الهدايا</button>
 <button class="tab" data-tab="users">الأعضاء وID</button>
 <button class="tab" data-tab="rooms">الغرف</button>
-<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button>
+<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button>
 </nav>
 <section id="catalog" class="panel space-y-4">
 <div><h2 class="text-xl font-bold">إدارة المقتنيات والتأثيرات</h2><p class="muted text-sm">إضافة عناصر المتجر وتحديد السعر والنوع وإظهارها أو إخفاؤها.</p></div>
@@ -90,5 +90,34 @@
 </form>
 <div><h3 class="font-bold mb-2">المستويات الحالية</h3><div id="bomb-level-list" class="space-y-2"></div></div>
 </section>
+<section id="agencies" class="panel space-y-5 hidden">
+<div><h2 class="text-xl font-bold">الوكالات والشحن</h2><p class="muted text-sm">إنشاء وكالات الشحن وإدارة الوكلاء وباقات العملات. عمليات الوكلاء تُسجّل في سجل مالي منفصل.</p></div>
+<form id="agency-create-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">اسم الوكالة<input class="field mt-1" name="name" required minlength="2"></label>
+<label class="text-sm">نوع الوكالة<select class="field mt-1" name="agency_type"><option value="recharge">شحن</option><option value="hosts">مضيفون</option><option value="both">شحن ومضيفون</option></select></label>
+<label class="text-sm">المعرّف العام للمالك<input class="field mt-1" name="owner_public_id" type="number" required></label>
+<label class="text-sm">عمولة الوكالة %<input class="field mt-1" name="commission_percent" type="number" min="0" max="100" step="0.01" value="0" required></label>
+<label class="text-sm">حصة الوكيل من العمولة %<input class="field mt-1" name="agent_commission_percent" type="number" min="0" max="100" step="0.01" value="0" required></label>
+<button class="btn sm:col-span-2" type="submit">إنشاء الوكالة</button>
+</form>
+<div><h3 class="font-bold mb-2">الوكالات الحالية</h3><div id="agency-list" class="space-y-2"></div></div>
+<div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-3">إضافة عضو إلى وكالة</h3>
+<form id="agency-member-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">الوكالة<select class="field mt-1" name="agency_id" id="agency-select" required></select></label>
+<label class="text-sm">المعرّف العام للعضو<input class="field mt-1" name="public_id" type="number" required></label>
+<label class="text-sm">الصلاحية<select class="field mt-1" name="role"><option value="manager">مدير</option><option value="agent">وكيل شحن</option><option value="host">مضيف</option><option value="support">دعم</option></select></label>
+<button class="btn" type="submit">إضافة العضو</button>
+</form></div>
+<div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-3">باقات الشحن</h3>
+<form id="topup-package-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">رمز الباقة<input class="field mt-1" name="id" required></label>
+<label class="text-sm">اسم الباقة<input class="field mt-1" name="name" required></label>
+<label class="text-sm">العملات<input class="field mt-1" name="coins" type="number" min="1" required></label>
+<label class="text-sm">السعر بالدينار<input class="field mt-1" name="price_dzd" type="number" min="1" required></label>
+<label class="text-sm">ترتيب العرض<input class="field mt-1" name="sort_order" type="number" value="0"></label>
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> باقة نشطة</label>
+<button class="btn sm:col-span-2" type="submit">حفظ الباقة</button>
+</form><div id="topup-package-list" class="space-y-2 mt-3"></div></div>
+</section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261116-superadmin-v4"></script></body></html>
+<script type="module" src="js/admin.js?v=20261116-superadmin-v5"></script></body></html>
