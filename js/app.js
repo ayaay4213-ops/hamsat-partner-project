@@ -509,8 +509,8 @@ async function openRoom(r) {
           <span class="hs-room-owner-tag">المضيف</span>
         ${'</div>'}
       </div>
-      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr">ID: <b>${esc(r.publicId || "ROOM")}</b> <button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><button type="button" id="room-copy-link"><i data-lucide="link"></i> نسخ الرابط</button>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle"><i data-lucide="settings-2"></i> إعدادات</button>' : ''}<button type="button" id="room-share"><i data-lucide="users"></i> مشاركة الأصدقاء</button><button type="button" id="room-send-gift"><i data-lucide="gift"></i> هدية</button></div>
-    ${r.ownerUuid === state.profile?.uuid ? '<section id="room-settings-panel" class="hs-room-settings hidden"><div class="flex items-center justify-between mb-3"><h3>إعدادات غرفتك</h3><button type="button" id="room-settings-close" class="hs-room-close" aria-label="إغلاق"><i data-lucide="x"></i></button></div><label class="label">خلفية الغرفة</label><label class="photo-picker room-background-picker"><i data-lucide="image-plus"></i><span>اختاري خلفية من هاتفك</span><input id="room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" id="room-background-reset" class="btn-ghost w-full mt-2">إزالة الخلفية الحالية</button><div class="mt-4"><label class="label">عدد كراسي المتحدثين</label><select id="room-seat-limit" class="field mt-2"><option value="4" ${(r.seatLimit||8)===4?"selected":""}>4 كراسي</option><option value="6" ${(r.seatLimit||8)===6?"selected":""}>6 كراسي</option><option value="8" ${(r.seatLimit||8)===8?"selected":""}>8 كراسي</option></select><p class="text-xs opacity-70 mt-1">لا يمكن تقليل العدد إذا كانت الكراسي المراد حذفها مشغولة.</p></div><div class="mt-4"><label class="label">رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${[\'🎙️\',\'👑\',\'🌙\',\'💎\',\'🌹\',\'🦋\',\'✨\',\'🎶\',\'💕\',\'🔥\',\'☕\',\'🎧\',\'🪄\',\'🥂\',\'🩷\',\'💜\',\'⭐\',\'🌸\',\'🦄\',\'🎤\'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||\'🎙️\')===e?\'active\':\'\'}">${e}</button>`).join(\'\')}</div></div><button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button></section>' : ''}
+      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr">ID: <b>${esc(r.publicId || "ROOM")}</b> <button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><button type="button" id="room-copy-link"><i data-lucide="link"></i> نسخ الرابط</button>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-expanded="false"><i data-lucide="settings-2"></i> إعدادات الغرفة</button>' : ''}<button type="button" id="room-share"><i data-lucide="users"></i> مشاركة الأصدقاء</button><button type="button" id="room-send-gift"><i data-lucide="gift"></i> هدية</button></div>
+    ${r.ownerUuid === state.profile?.uuid ? '<section id="room-settings-panel" class="hs-room-settings hidden"><div class="flex items-center justify-between mb-3"><h3>إعدادات غرفتك</h3><button type="button" id="room-settings-close" class="hs-room-close" aria-label="إغلاق"><i data-lucide="x"></i></button></div><label class="label">خلفية الغرفة</label><label class="photo-picker room-background-picker"><i data-lucide="image-plus"></i><span>اختاري خلفية من هاتفك</span><input id="room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" id="room-background-reset" class="btn-ghost w-full mt-2">إزالة الخلفية الحالية</button><div class="mt-4"><label class="label">عدد كراسي المتحدثين</label><select id="room-seat-limit" class="field mt-2"><option value="4" ${(r.seatLimit||8)===4?"selected":""}>4 كراسي</option><option value="6" ${(r.seatLimit||8)===6?"selected":""}>6 كراسي</option><option value="8" ${(r.seatLimit||8)===8?"selected":""}>8 كراسي</option></select><p class="text-xs opacity-70 mt-1">لا يمكن تقليل العدد إذا كانت الكراسي المراد حذفها مشغولة.</p></div><div class="mt-4 rounded-xl border border-gold-600/30 p-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="shield-check" class="text-gold-300"></i><b class="text-gold-300">إدارة الأعضاء داخل الغرفة</b></div><p class="text-xs opacity-70 mb-3">من هنا يمكنك كتم مايك المتحدث أو إنزاله من كرسي المايك. تظهر الأزرار بجانب الأعضاء الجالسين.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div><div class="mt-4"><label class="label">رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${[\'🎙️\',\'👑\',\'🌙\',\'💎\',\'🌹\',\'🦋\',\'✨\',\'🎶\',\'💕\',\'🔥\',\'☕\',\'🎧\',\'🪄\',\'🥂\',\'🩷\',\'💜\',\'⭐\',\'🌸\',\'🦄\',\'🎤\'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||\'🎙️\')===e?\'active\':\'\'}">${e}</button>`).join(\'\')}</div></div><button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button></section>' : ''}
     </div>
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
     <div id="room-gift-panel" class="card p-3 mb-3 hidden"><form id="room-gift-form" class="space-y-3"><select name="recipient" class="field"></select><select name="gift" class="field"></select><button type="submit" class="btn-gold w-full">إرسال الهدية</button></form></div>
@@ -567,8 +567,14 @@ async function openRoom(r) {
     const settingsToggle=sheet.querySelector('#room-settings-toggle');
     if(settingsToggle){
       const panel=sheet.querySelector('#room-settings-panel');let chosenEmoji=r.roomEmoji||'🎙️',chosenCover=r.coverUrl||null;
+      settingsToggle.setAttribute('aria-expanded','false');
       settingsToggle.onclick=()=>{
-        panel.classList.toggle('hidden');
+        const opening=panel.classList.contains('hidden');
+        panel.classList.toggle('hidden',!opening);
+        panel.style.display=opening?'block':'none';
+        settingsToggle.setAttribute('aria-expanded',String(opening));
+        settingsToggle.innerHTML=opening?'<i data-lucide="x"></i> إغلاق الإعدادات':'<i data-lucide="settings-2"></i> إعدادات الغرفة';
+        icons_();
         if(!panel.querySelector('#room-edit-title')){
           const editor=document.createElement('div');
           editor.className='hs-room-settings-fields';
@@ -603,7 +609,31 @@ async function openRoom(r) {
       const host=r.ownerUuid===state.profile?.uuid;
       if(host&&!muteStateLoaded){const savedMutes=await api.roomMutedUsers(r.id);savedMutes.userIds.forEach(id=>remotelyMutedUsers.add(id));muteStateLoaded=true;}
       const seatedUsers=new Set(seats.map(x=>x.user_id));
-      membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      const adminMembersEl=sheet.querySelector('#room-admin-members');
+      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      membersEl.innerHTML=renderMemberRows();
+      if(adminMembersEl)adminMembersEl.innerHTML=renderMemberRows();
+      const actionRoots=[membersEl,adminMembersEl].filter(Boolean);
+      actionRoots.forEach(root=>root.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
+        const uid=b.dataset.localMute,muted=!mutedRoomUsers.has(uid);
+        if(muted)mutedRoomUsers.add(uid);else mutedRoomUsers.delete(uid);
+        state.voiceRoom?.setParticipantMuted?.(uid,muted);
+        b.textContent=muted?'إلغاء الكتم':'كتم صوته لدي';
+        toast(muted?'تم كتم صوت العضو على جهازك':'تم إلغاء كتم الصوت');
+      }));
+      actionRoots.forEach(root=>root.querySelectorAll('[data-host-mute]').forEach(b=>b.onclick=async()=>{
+        const uid=b.dataset.hostMute,muted=!remotelyMutedUsers.has(uid);
+        b.disabled=true;
+        try{await api.moderateRoomParticipant(r.id,uid,muted);await api.setRoomParticipantMuteState(r.id,uid,muted);if(muted)remotelyMutedUsers.add(uid);else remotelyMutedUsers.delete(uid);toast(muted?'تم كتم مايك العضو في الغرفة':'تم إرسال طلب إلغاء الكتم');await drawMembers();}
+        catch(e){toast(e.message,'error');}
+        finally{b.disabled=false;}
+      }));
+      actionRoots.forEach(root=>root.querySelectorAll('[data-remove-seat]').forEach(b=>b.onclick=async()=>{
+        b.disabled=true;
+        try{await api.hostRemoveRoomSeat(r.id,b.dataset.removeSeat);if(state.voiceRoom)await state.voiceRoom.refreshPermissions();await drawMembers();toast('تم إنزال العضو من كرسي المايك');}
+        catch(e){toast(e.message,'error');b.disabled=false;}
+      }));
+      /* original action handlers are delegated to both visible member lists */
       membersEl.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
         const uid=b.dataset.localMute,muted=!mutedRoomUsers.has(uid);
         if(muted)mutedRoomUsers.add(uid);else mutedRoomUsers.delete(uid);
