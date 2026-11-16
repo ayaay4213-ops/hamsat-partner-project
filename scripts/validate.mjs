@@ -16,6 +16,10 @@ const required = [
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
+  'supabase/migrations/0015_direct_messaging.sql',
+  'supabase/migrations/0016_notifications.sql',
+  'supabase/migrations/0017_social_data_api_grants.sql',
+  'supabase/migrations/0018_private_dm_conversation_rpc.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -23,6 +27,20 @@ const required = [
 
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
+}
+
+// Supabase migration versions must be unique. Duplicate numeric prefixes make
+// migration history ambiguous and can stop a clean project setup.
+const migrationDir = path.join(root, 'supabase/migrations');
+if (fs.existsSync(migrationDir)) {
+  const versions = new Map();
+  for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
+    const version = file.match(/^(\d+)_/);
+    if (!version) continue;
+    const previous = versions.get(version[1]);
+    if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
+    else versions.set(version[1], file);
+  }
 }
 
 let manifest;
@@ -87,7 +105,7 @@ if (fs.existsSync(roomLifecycleMigrationPath)) {
     'private.is_room_member(room_members.room_id)',
     'private.is_room_member(room_messages.room_id)',
     'private.is_room_member(room_seats.room_id)',
-    'create or replace function public.request_room_seat',
+    'create function public.request_room_seat',
     'p_seat_no = 1 and v_owner <> v_user',
     'create trigger room_member_release_seat',
     'alter publication supabase_realtime add table public.room_members',
@@ -112,6 +130,38 @@ if (fs.existsSync(seatMigrationPath)) {
     'alter publication supabase_realtime add table public.room_members'
   ]) {
     if (!sql.toLowerCase().includes(token.toLowerCase())) errors.push(`Missing required audio-room SQL: ${token}`);
+  }
+}
+
+const dmMigrationPath = path.join(root, 'supabase/migrations/0015_direct_messaging.sql');
+if (fs.existsSync(dmMigrationPath)) {
+  const sql = fs.readFileSync(dmMigrationPath, 'utf8').toLowerCase();
+  for (const token of ['create table if not exists public.dm_conversations', 'create table if not exists public.dm_messages', 'create or replace function public.get_or_create_conversation', 'alter publication supabase_realtime add table public.dm_messages']) {
+    if (!sql.includes(token)) errors.push(`Missing direct-message SQL: ${token}`);
+  }
+}
+
+const notificationsMigrationPath = path.join(root, 'supabase/migrations/0016_notifications.sql');
+if (fs.existsSync(notificationsMigrationPath)) {
+  const sql = fs.readFileSync(notificationsMigrationPath, 'utf8').toLowerCase();
+  for (const token of ['create table if not exists public.notifications', 'create or replace function public.notify_dm_recipient', 'create or replace function public.notify_gift_recipient', 'alter publication supabase_realtime add table public.notifications']) {
+    if (!sql.includes(token)) errors.push(`Missing notification SQL: ${token}`);
+  }
+}
+
+const socialGrantsPath = path.join(root, 'supabase/migrations/0017_social_data_api_grants.sql');
+if (fs.existsSync(socialGrantsPath)) {
+  const sql = fs.readFileSync(socialGrantsPath, 'utf8').toLowerCase();
+  for (const token of ['revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon', 'grant select on table public.dm_conversations to authenticated', 'grant select, insert on table public.dm_messages to authenticated', 'grant update (read_at) on table public.dm_messages to authenticated', 'grant select on table public.notifications to authenticated', 'grant update (read_at) on table public.notifications to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing social Data API grant: ${token}`);
+  }
+}
+
+const privateDmRpcPath = path.join(root, 'supabase/migrations/0018_private_dm_conversation_rpc.sql');
+if (fs.existsSync(privateDmRpcPath)) {
+  const sql = fs.readFileSync(privateDmRpcPath, 'utf8').toLowerCase();
+  for (const token of ['create or replace function private.get_or_create_conversation', 'security definer', 'create or replace function public.get_or_create_conversation', 'security invoker', 'grant execute on function public.get_or_create_conversation(uuid) to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing private DM RPC hardening: ${token}`);
   }
 }
 
