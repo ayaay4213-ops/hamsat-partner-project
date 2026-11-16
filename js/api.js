@@ -266,6 +266,10 @@ export const api = {
     const {data,error}=await client().rpc('leave_room_seat',{p_room_id:roomId});
     fail(error);return data;
   },
+  moderateRoomParticipant: async (roomId,userId,muted) => {
+    const {data,error}=await client().functions.invoke('livekit-moderate',{body:{room_id:roomId,participant_id:userId,muted:Boolean(muted)}});
+    fail(error);if(data?.error)throw new Error(data.error);return data;
+  },
   hostRemoveRoomSeat: async (roomId,userId) => {
     const {data,error}=await client().rpc('host_remove_room_seat',{p_room_id:roomId,p_target_user:userId});
     fail(error);return data;
