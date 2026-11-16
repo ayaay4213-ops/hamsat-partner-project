@@ -12,7 +12,7 @@ function mapProfile(p) {
   if (!p) return null;
   return {
     uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: p.handle || '', displayName: p.display_name || 'عضو جديد',
-    bio: p.bio || '', country: p.country || '', color: p.color || '#7c3aed',
+    bio: p.bio || '', country: p.country || '', age: p.age == null ? null : Number(p.age), gender: p.gender || '', role: p.role || 'user', vipLevel: Number(p.vip_level || 0), wealthLevel: Number(p.wealth_level || 1), charismaLevel: Number(p.charisma_level || 1), color: p.color || '#7c3aed',
     avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
 }
@@ -86,7 +86,7 @@ export const api = {
     const payload = {
       id: user.id, handle: String(p.handle || '').trim().toLowerCase(),
       display_name: String(p.displayName || '').trim(), bio: String(p.bio || ''),
-      country: String(p.country || ''), color: String(p.color || '#7c3aed'),
+      country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null, color: String(p.color || '#7c3aed'),
       avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
     };
     const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select('*').single();
@@ -144,6 +144,13 @@ export const api = {
       items:(inventory.data||[]).map(x=>({...x.item,purchasedAt:x.purchased_at})).filter(x=>x.id)
     };
   },
+  moments: async (profileId) => { const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);return {moments:data||[]}; },
+  createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
+  deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
+  coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select('*').eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:mapProfile(partner)}; },
+  inviteCouple: async (partnerId) => { const user=await currentUser();const {data,error}=await client().from('couple_spaces').insert({owner_id:user.id,partner_id:partnerId,status:'pending'}).select('*').single();fail(error);return data; },
+  respondCoupleSpace: async (spaceId,accept) => { const {error}=await client().from('couple_spaces').update({status:accept?'active':'rejected',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
+  endCoupleSpace: async (spaceId) => { const {error}=await client().from('couple_spaces').update({status:'ended',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
   friends: async () => {
     const user=await currentUser();
     const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','accepted').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
