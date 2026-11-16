@@ -917,3 +917,16 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-person>span{flex:1;min-width:50px}
 #room-seat-limit{color:#f7f0df;background:#111216;border:1px solid rgba(212,175,55,.28);border-radius:12px;padding:11px}
 @media(max-width:390px){.hs-room-meta{gap:7px}.hs-room-person{padding:6px}.hs-room-member-action{font-size:8px;padding:5px 6px}.hs-room-id-chip{font-size:9px}}
+
+/* Room settings entry point and reliable visibility on mobile */
+.hs-room-meta #room-settings-toggle.hs-room-settings-launch{
+  order:-1;flex:1 1 100%;justify-content:center;min-height:48px;margin:0 4px 7px;
+  border:1px solid rgba(240,215,126,.72);border-radius:14px;
+  background:linear-gradient(135deg,rgba(212,175,55,.28),rgba(212,175,55,.08));
+  color:#ffe69a;font-size:14px;font-weight:900;box-shadow:0 5px 20px rgba(212,175,55,.12)
+}
+.hs-room-settings.hidden{display:none!important}
+.hs-room-settings:not(.hidden){display:block!important}
+#room-admin-members .hs-room-person{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:9px;border:1px solid rgba(212,175,55,.16);border-radius:13px;background:#ffffff08}
+#room-admin-members .hs-room-member-action{font-size:11px;padding:7px 9px}
+#room-admin-members .hs-room-member-action.danger{color:#ffb6a9}
