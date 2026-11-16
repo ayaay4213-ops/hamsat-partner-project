@@ -1004,12 +1004,12 @@ function profileView(p, own) {
           ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id" dir="ltr"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button>` : ''}
           ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
           <div class="hs-profile-tags">
-            ${p.country ? `<span>⌖ ${esc(p.country)}</span>` : ''}
+            ${p.country ? `<span>${/الجزائر|algeria/i.test(p.country) ? '🇩🇿' : '⌖'} ${esc(p.country)}</span>` : ''}
             <span>✦ عضو في همسات</span>
             ${p.createdAt ? `<span>منذ ${dateAr(p.createdAt)}</span>` : ''}
           </div>
         </div>
-        ${!own ? '' : '<div class="hs-profile-edit-hint">ملفكِ الشخصي</div>'}
+        ${!own ? '' : '<button type="button" class="hs-profile-edit-hint hs-bio-edit" id="edit-profile-inline"><i data-lucide="pencil"></i> تعديل النبذة والملف</button>'}
       </div>
       ${own ? `
         <div class="hs-profile-ribbon">
@@ -1242,7 +1242,7 @@ async function render() {
   closeSideMenu();
   tabbar.classList.remove('hidden');
   screen.className = 'flex-1 flex flex-col has-tabbar';
-  tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === route));
+  tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === (route === 'inbox' ? 'chat' : route)));
   window.scrollTo(0, 0);
 
   try {
