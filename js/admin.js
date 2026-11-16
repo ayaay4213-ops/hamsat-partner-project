@@ -8,9 +8,10 @@ async function boot(){
  if(error||!session){message('سجّلي الدخول أولاً من تطبيق HAMSAT، ثم افتحي لوحة الإدارة في المتصفح نفسه.',true);return;}
  const {data:profile,error:e}=await supabase.from('profiles').select('role,display_name').eq('id',session.user.id).single();
  if(e){message('تعذّر التحقق من صلاحية الإدارة. تأكدي من ترحيل صلاحيات لوحة الإدارة.',true);return;}
- if(profile?.role!=='admin'){message('هذا الحساب لا يملك صلاحية Super Admin. الوصول محمي.',true);return;}
+ const {data:isOwner,error:ownerError}=await supabase.rpc('is_admin');
+ if(ownerError||isOwner!==true){message('هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
  admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
- await Promise.all([loadStats(),loadItems(),loadGifts(),loadGames(),loadRooms()]);
+ await Promise.all([loadStats(),loadItems(),loadGifts(),loadGames(),loadRooms(),loadUsers()]);
 }
 async function upload(file,folder){
  if(!file)return null;
@@ -42,6 +43,29 @@ async function loadGames(){
  $('#game-list').innerHTML=data.length?data.map(x=>row(x.icon+' '+x.name,x.id+' · '+x.game_type,x.id,x.active,'game')).join(''):'<p class="muted">لا توجد ألعاب مسجلة بعد.</p>';
  bindToggles('#game-list',data,'game');
 }
+async function loadUsers(term=''){
+ const clean=String(term||'').trim().replace(/[,%()]/g,'');
+ let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).limit(200);
+ if(clean){
+  const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
+  const isId=/^\\d+$/.test(numeric);
+  q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
+ }
+ const {data,error}=await q;if(error)throw error;
+ const out=$('#user-results');
+ out.innerHTML=data.length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>').join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
+ out.querySelectorAll('[data-moderate-user]').forEach(b=>b.onclick=async()=>{
+  const next=b.dataset.banned!=='true';
+  if(next&&!confirm('هل تريدين حظر هذا الحساب من HAMSAT؟'))return;
+  b.disabled=true;
+  try{
+   const {data,error}=await supabase.functions.invoke('admin-user-moderate',{body:{user_id:b.dataset.moderateUser,banned:next,reason:next?'إجراء إداري من لوحة HAMSAT':''}});
+   if(error)throw error;if(data?.error)throw new Error(data.error);
+   message(next?'تم حظر الحساب.':'تم فك الحظر.');
+   await Promise.all([loadUsers(clean),loadStats()]);
+  }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
+ });
+}
 async function loadRooms(){
  const {data,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).limit(100);if(error)throw error;
  const ids=[...new Set(data.map(x=>x.owner_id))],p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};if(p.error)throw p.error;
@@ -50,7 +74,7 @@ async function loadRooms(){
 }
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const image_url=await upload(f.elements.image.files[0],'catalog');const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),item_type:f.elements.item_type.value,price:Number(f.elements.price.value),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 $('#gift-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),description:f.elements.description.value.trim(),image_url:f.elements.image_url.value.trim()||null,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية في الكتالوج.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-$('#user-search').onsubmit=async e=>{e.preventDefault();const term=e.currentTarget.elements.term.value.trim(),out=$('#user-results');out.innerHTML='<p class="muted">جارٍ البحث...</p>';try{const numeric=term.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,''),isId=/^\d+$/.test(numeric);let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at').limit(30);q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+term.replace(/[,%()]/g,'')+'%,handle.ilike.%'+term.replace(/[,%()]/g,'')+'%');const {data,error}=await q;if(error)throw error;out.innerHTML=data.length?data.map(x=>'<div class="item"><div><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+'</p></div><span class="pill">ID '+esc(x.public_id)+'</span></div>').join(''):'<p class="muted">لم نعثر على عضو بهذا البحث.</p>';}catch(err){out.innerHTML='<p class="text-red-300">'+esc(err.message)+'</p>';}}
+$('#user-search').onsubmit=async e=>{e.preventDefault();try{await loadUsers(e.currentTarget.elements.term.value);}catch(err){$('#user-results').innerHTML='<p class="text-red-300">'+esc(err.message)+'</p>';}};
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
