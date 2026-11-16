@@ -1,12 +1,12 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261116-real-profile-v2';
+import { api } from './api.js?v=20261116-hamsat-update-v3';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, activeRoomId: null, voiceRoom: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, activeRoomId: null, voiceRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -102,7 +102,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet() { if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 /* ---------- auth ---------- */
 async function signOut() {
@@ -517,7 +517,7 @@ async function openRoom(r) {
     ${r.ownerUuid === state.profile?.uuid ? '<section id="room-settings-panel" class="hs-room-settings hidden"><div class="flex items-center justify-between mb-3"><h3>إعدادات غرفتك</h3><button type="button" id="room-settings-close" class="hs-room-close" aria-label="إغلاق"><i data-lucide="x"></i></button></div><label class="label">خلفية الغرفة</label><label class="photo-picker room-background-picker"><i data-lucide="image-plus"></i><span>اختاري خلفية من هاتفك</span><input id="room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" id="room-background-reset" class="btn-ghost w-full mt-2">إزالة الخلفية الحالية</button><div class="mt-4"><label class="label">عدد كراسي المتحدثين</label><select id="room-seat-limit" class="field mt-2"><option value="4" ${(r.seatLimit||8)===4?"selected":""}>4 كراسي</option><option value="6" ${(r.seatLimit||8)===6?"selected":""}>6 كراسي</option><option value="8" ${(r.seatLimit||8)===8?"selected":""}>8 كراسي</option><option value="10" ${(r.seatLimit||8)===10?"selected":""}>10 مقاعد</option><option value="12" ${(r.seatLimit||8)===12?"selected":""}>12 مقعدًا</option></select><p class="text-xs opacity-70 mt-1">لا يمكن تقليل العدد إذا كانت الكراسي المراد حذفها مشغولة.</p></div><div class="mt-4 rounded-xl border border-gold-600/30 p-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="shield-check" class="text-gold-300"></i><b class="text-gold-300">إدارة الأعضاء داخل الغرفة</b></div><p class="text-xs opacity-70 mb-3">من هنا يمكنك كتم مايك المتحدث أو إنزاله من كرسي المايك. تظهر الأزرار بجانب الأعضاء الجالسين.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div><div class="mt-4"><label class="label">رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${[\'🎙️\',\'👑\',\'🌙\',\'💎\',\'🌹\',\'🦋\',\'✨\',\'🎶\',\'💕\',\'🔥\',\'☕\',\'🎧\',\'🪄\',\'🥂\',\'🩷\',\'💜\',\'⭐\',\'🌸\',\'🦄\',\'🎤\'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||\'🎙️\')===e?\'active\':\'\'}">${e}</button>`).join(\'\')}</div></div><button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button></section>' : ''}
     </div>
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
-    <div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><form id="room-gift-form" class="space-y-3"><label class="label">إلى</label><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-grid" class="hs-gift-grid"></div><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
+    <div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><form id="room-gift-form" class="space-y-3"><label class="label">إلى أحد الجالسين على المايك</label><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">${r.seatLimit||8} مقاعد</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
@@ -529,7 +529,7 @@ async function openRoom(r) {
       <div id="room-members" class="hs-room-members"><span class="text-xs">جارٍ تحميل الأعضاء...</span></div>
     </section>
     <section class="hs-room-chat-area">
-      <div class="hs-room-chat-heading"><div><span class="hs-room-eyebrow">LIVE COMMUNITY</span><h3>الدردشة المباشرة</h3></div><span class="hs-room-people-live"><i></i> متصلون الآن</span></div>
+      <div class="hs-room-chat-heading"><div><span class="hs-room-eyebrow">LIVE COMMUNITY</span><h3>الدردشة المباشرة</h3></div><span class="hs-room-people-live"><i></i> متصلون الآن</span></div><div id="room-chat-tabs" class="hs-room-chat-tabs"><button type="button" data-chat-filter="all" class="active">الكل</button><button type="button" data-chat-filter="chat">الدردشة</button><button type="button" data-chat-filter="gifts">الهدايا</button><button type="button" data-chat-filter="games">الألعاب</button></div>
       <div class="hs-room-welcome"><span>✦ إعلان الغرفة</span><p>أهلاً وسهلاً بكم في ${esc(r.title)}، نتمنى لكم وقتاً جميلاً في همسات 💛</p></div>
       <div id="room-chat" class="hs-room-chat"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
       <div class="hs-room-bottom-bar">
