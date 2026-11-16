@@ -149,3 +149,47 @@ $$;
 
 revoke all on function public.unequip_shop_item(text) from public, anon;
 grant execute on function public.unequip_shop_item(text) to authenticated;
+
+create or replace function public.refresh_cosmetic_expirations()
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_user uuid := (select auth.uid());
+begin
+  if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+
+  update public.profiles p set
+    equipped_frame_id = case when p.equipped_frame_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_frame_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_frame_id end,
+    equipped_profile_frame_id = case when p.equipped_profile_frame_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_profile_frame_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_profile_frame_id end,
+    equipped_entrance_id = case when p.equipped_entrance_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_entrance_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_entrance_id end,
+    equipped_bubble_id = case when p.equipped_bubble_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_bubble_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_bubble_id end,
+    equipped_special_id = case when p.equipped_special_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_special_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_special_id end,
+    equipped_sound_frame_id = case when p.equipped_sound_frame_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_sound_frame_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_sound_frame_id end,
+    equipped_voice_wave_id = case when p.equipped_voice_wave_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_voice_wave_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_voice_wave_id end,
+    equipped_emoji_pack_id = case when p.equipped_emoji_pack_id is not null and not exists (
+      select 1 from public.user_inventory i where i.user_id=v_user and i.item_id=p.equipped_emoji_pack_id and (i.expires_at is null or i.expires_at>now())
+    ) then null else p.equipped_emoji_pack_id end
+  where p.id=v_user;
+
+  return true;
+end;
+$$;
+
+revoke all on function public.refresh_cosmetic_expirations() from public, anon;
+grant execute on function public.refresh_cosmetic_expirations() to authenticated;
