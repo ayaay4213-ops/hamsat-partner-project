@@ -446,6 +446,34 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  roomEvents: async (roomId) => {
+    const { data, error } = await client().from('room_activity_events')
+      .select('id,room_id,actor_id,target_user_id,event_type,payload,created_at')
+      .eq('room_id', roomId).order('created_at', { ascending: true }).limit(120);
+    fail(error);
+    const ids = [...new Set((data || []).flatMap(e => [e.actor_id, e.target_user_id]).filter(Boolean))];
+    let profiles = [];
+    if (ids.length) {
+      const result = await client().from('profiles').select('*').in('id', ids);
+      fail(result.error);
+      profiles = result.data || [];
+    }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    return { events: (data || []).map(e => ({ ...e, actor: byId[e.actor_id] || null, target: byId[e.target_user_id] || null })) };
+  },
+  subscribeRoomEvents: (roomId, callback) => client().channel('room-events-' + roomId)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_activity_events', filter: 'room_id=eq.' + roomId }, callback)
+    .subscribe(),
+  sendRoomEmoji: async (roomId, emoji) => {
+    const { data, error } = await client().rpc('send_room_emoji', { p_room_id: roomId, p_emoji: emoji });
+    fail(error); return data;
+  },
+  sendRoomGift: async (roomId, recipientId, giftId, quantity = 1) => {
+    const { data, error } = await client().rpc('send_room_gift', {
+      p_room_id: roomId, p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity
+    });
+    fail(error); return data;
+  },
   sendGift: async (recipientId, giftId, quantity = 1) => {
     const { data, error } = await client().rpc('send_gift', {
       p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity
