@@ -953,7 +953,7 @@ async function shopScreen() {
   screen.innerHTML = header('المتجر والمقتنيات', `<a href="#/wallet" class="text-sm text-gold-300">${coin(18)} ${num(state.wallet?.balance)}</a>`) + `
     <div class="px-5 pt-4 pb-8 fade-in">
       <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">متجر همسات الملكي</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">امتلكي إطارات لحسابك وحزم إيموجي للدردشة. العناصر التي تشترينها تبقى محفوظة في مقتنياتك.</p></div>
-      <div class="flex gap-2 mb-4"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div>
+      <div class="flex gap-2 mb-3"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div><div id="shop-category-tabs" class="hs-shop-category-tabs"><button type="button" class="active" data-shop-category="all">الكل</button><button type="button" data-shop-category="frame">إطارات</button><button type="button" data-shop-category="entrance">دخول</button><button type="button" data-shop-category="chat_bubble">فقاعات الدردشة</button><button type="button" data-shop-category="special_id">معرّف خاص</button><button type="button" data-shop-category="profile_frame">إطار الملف</button></div>
       <div id="shop-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
     </div>`;
   icons_();
@@ -962,26 +962,30 @@ async function shopScreen() {
     const [catalog,inventory]=await Promise.all([api.shopItems(),api.inventory()]);
     items=catalog.items;owned=inventory.items;
   } catch(e) { $('#shop-grid').innerHTML=emptyBox('wifi-off','تعذّر تحميل المتجر',e.message);return; }
-  let mode='all';
+  let mode='all',category='all';
   const draw=()=>{
-    const list=mode==='owned'?owned:items;
+    const baseList=mode==='owned'?owned:items;const list=baseList.filter(it=>category==='all'||it.item_type===category);
     $('#shop-grid').innerHTML=list.length?list.map(it=>{
       const has=owned.some(o=>o.id===it.id);
-      const visual=it.image_url?'<div class="cosmetic-preview"><img src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:12px"></div>':it.item_type==='frame'?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
+      const visual=it.image_url?'<div class="cosmetic-preview"><img src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:12px"></div>':['frame','profile_frame','sound_frame'].includes(it.item_type)?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
         '<div class="cosmetic-preview emoji-preview">'+(it.visual_key==='love'?'💖 💗 💕':it.visual_key==='luxe'?'👑 💎 ✨':'🌙 ⭐ 🌟')+'</div>';
-      return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?'مملوك لديك':num(it.price)+' عملة'}</p>
-        <button class="btn-${has?'ghost':'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-owned="${has}">${has?'تجهيز':'شراء'}</button></article>`;
+      const equippedId=({frame:state.profile?.equippedFrameId,profile_frame:state.profile?.equippedProfileFrameId,entrance:state.profile?.equippedEntranceId,chat_bubble:state.profile?.equippedBubbleId,special_id:state.profile?.equippedSpecialId,sound_frame:state.profile?.equippedSoundFrameId,voice_wave:state.profile?.equippedVoiceWaveId,emoji_pack:state.profile?.equippedEmojiPackId})[it.item_type];
+      const equipped=has&&equippedId===it.id;
+      const expiry=it.expiresAt?'ينتهي '+new Date(it.expiresAt).toLocaleDateString('ar-DZ'):'دائم';
+      return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?expiry:num(it.price)+' عملة'}</p>
+        <button class="btn-${has?(equipped?'ghost':'gold'):'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-type="${esc(it.item_type)}" data-owned="${has}" data-equipped="${equipped}">${has?(equipped?'إلغاء الاستخدام':'استخدام'):'شراء'}</button></article>`;
     }).join(''):emptyBox('package-open','لا توجد مقتنيات بعد','تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي');
     $('#shop-grid').querySelectorAll('[data-item]').forEach(b=>b.onclick=async()=>{
       b.disabled=true;
       try{
-        if(b.dataset.owned==='true'){await api.equipShopItem(b.dataset.item);if(b.dataset.item.startsWith('frame_'))state.profile.equippedFrameId=b.dataset.item;else state.profile.equippedEmojiPackId=b.dataset.item;toast('تم تجهيز العنصر في حسابك');}
+        if(b.dataset.owned==='true'){if(b.dataset.equipped==='true'){await api.unequipShopItem(b.dataset.type);toast('تم إلغاء استخدام العنصر');}else{await api.equipShopItem(b.dataset.item);toast('تم تجهيز العنصر في حسابك');}state.profile=(await api.me()).profile;}
         else{await api.purchaseShopItem(b.dataset.item);state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;toast('تم الشراء وإضافة العنصر إلى مقتنياتك');}
         draw();
       }catch(e){toast(e.message,'error');b.disabled=false;}
     });
     icons_();
   };
+  screen.querySelectorAll('[data-shop-category]').forEach(b=>b.onclick=()=>{category=b.dataset.shopCategory;screen.querySelectorAll('[data-shop-category]').forEach(x=>x.classList.toggle('active',x===b));draw();});
   screen.querySelectorAll('[data-shop-tab]').forEach(b=>b.onclick=()=>{
     mode=b.dataset.shopTab;
     screen.querySelectorAll('[data-shop-tab]').forEach(x=>x.classList.toggle('active',x===b));
