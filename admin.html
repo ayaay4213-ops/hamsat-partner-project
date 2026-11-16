@@ -24,7 +24,7 @@
 <button class="tab" data-tab="gifts">الهدايا</button>
 <button class="tab" data-tab="users">الأعضاء وID</button>
 <button class="tab" data-tab="rooms">الغرف</button>
-<button class="tab" data-tab="games">الألعاب</button>
+<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button>
 </nav>
 <section id="catalog" class="panel space-y-4">
 <div><h2 class="text-xl font-bold">إدارة المقتنيات والتأثيرات</h2><p class="muted text-sm">إضافة عناصر المتجر وتحديد السعر والنوع وإظهارها أو إخفاؤها.</p></div>
@@ -78,5 +78,17 @@
 <button class="btn sm:col-span-2" type="submit">حفظ اللعبة</button></form>
 <div><h3 class="font-bold mb-2">الألعاب المسجلة</h3><div id="game-list" class="space-y-2"></div></div>
 </section>
+<section id="bomb" class="panel space-y-4 hidden">
+<div><h2 class="text-xl font-bold">إعدادات قنبلة الغرفة</h2><p class="muted text-sm">حددي نقاط اكتمال كل مستوى ومجال مكافآت العملات. التوزيع يتم آلياً من الخادم عند اكتمال المستوى.</p></div>
+<form id="bomb-level-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">المستوى<select class="field mt-1" name="level"><option value="1">LV.1</option><option value="2">LV.2</option><option value="3">LV.3</option><option value="4">LV.4</option><option value="5">LV.5</option></select></label>
+<label class="text-sm">نقاط الوصول<input class="field mt-1" name="threshold" type="number" min="1" required></label>
+<label class="text-sm">أقل مكافأة عملات<input class="field mt-1" name="reward_min" type="number" min="0" required></label>
+<label class="text-sm">أعلى مكافأة عملات<input class="field mt-1" name="reward_max" type="number" min="0" required></label>
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> تفعيل المستوى</label>
+<button class="btn sm:col-span-2" type="submit">حفظ إعدادات المستوى</button>
+</form>
+<div><h3 class="font-bold mb-2">المستويات الحالية</h3><div id="bomb-level-list" class="space-y-2"></div></div>
+</section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261116-superadmin-v2"></script></body></html>
+<script type="module" src="js/admin.js?v=20261116-superadmin-v3"></script></body></html>
