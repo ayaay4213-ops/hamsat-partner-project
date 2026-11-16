@@ -19,6 +19,7 @@ const required = [
   'supabase/migrations/0015_direct_messaging.sql',
   'supabase/migrations/0016_notifications.sql',
   'supabase/migrations/0017_social_data_api_grants.sql',
+  'supabase/migrations/0018_private_dm_conversation_rpc.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -153,6 +154,14 @@ if (fs.existsSync(socialGrantsPath)) {
   const sql = fs.readFileSync(socialGrantsPath, 'utf8').toLowerCase();
   for (const token of ['revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon', 'grant select on table public.dm_conversations to authenticated', 'grant select, insert on table public.dm_messages to authenticated', 'grant update (read_at) on table public.dm_messages to authenticated', 'grant select on table public.notifications to authenticated', 'grant update (read_at) on table public.notifications to authenticated']) {
     if (!sql.includes(token)) errors.push(`Missing social Data API grant: ${token}`);
+  }
+}
+
+const privateDmRpcPath = path.join(root, 'supabase/migrations/0018_private_dm_conversation_rpc.sql');
+if (fs.existsSync(privateDmRpcPath)) {
+  const sql = fs.readFileSync(privateDmRpcPath, 'utf8').toLowerCase();
+  for (const token of ['create or replace function private.get_or_create_conversation', 'security definer', 'create or replace function public.get_or_create_conversation', 'security invoker', 'grant execute on function public.get_or_create_conversation(uuid) to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing private DM RPC hardening: ${token}`);
   }
 }
 
