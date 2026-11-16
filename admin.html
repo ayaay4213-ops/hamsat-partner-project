@@ -32,7 +32,7 @@
 <label class="text-sm">النوع<select class="field mt-1" name="game_type"><option value="quiz">أسئلة سريعة</option><option value="guess">خمن</option><option value="challenge">تحدي</option><option value="trivia">معلومات عامة</option><option value="custom">مخصصة</option></select></label>
 <label class="text-sm">الأيقونة<input class="field mt-1" name="icon" value="🎮" maxlength="8"></label>
 <label class="text-sm sm:col-span-2">الوصف<textarea class="field mt-1" name="description" rows="2"></textarea></label>
-<label class="text-sm sm:col-span-2">إعدادات اللعبة بصيغة JSON<textarea class="field mt-1" name="config" rows="3">{}</textarea></label>
+<label class="text-sm sm:col-span-2">إعدادات اللعبة بصيغة JSON<textarea class="field mt-1" name="config" rows="5">{"questions":[{"question":"ما عاصمة الجزائر؟","options":["الجزائر","وهران","قسنطينة"],"answer":0,"explanation":"الجزائر العاصمة هي عاصمة البلاد."}]}</textarea><small class="muted">لكل سؤال: question نص السؤال، options مصفوفة اختيارات، answer رقم الاختيار الصحيح بدءًا من 0، وexplanation شرح اختياري.</small></label>
 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active"> نشر اللعبة</label>
 <button class="btn sm:col-span-2" type="submit">حفظ اللعبة</button></form>
 <div><h3 class="font-bold mb-2">الألعاب المسجلة</h3><div id="game-list" class="space-y-2"></div></div></section></main></div>
