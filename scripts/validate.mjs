@@ -81,7 +81,7 @@ if (fs.existsSync(roomLifecycleMigrationPath)) {
   const sql = fs.readFileSync(roomLifecycleMigrationPath, 'utf8').toLowerCase();
   const dollarQuotes = sql.match(/\$\$/g) || [];
   if (dollarQuotes.length % 2 !== 0) errors.push('Invalid SQL dollar-quote delimiters in room lifecycle migration');
-  if (!/create(?:\\s+or\\s+replace)?\\s+function public\\.request_room_seat/i.test(sql)) {
+  if (!/create(?:\s+or\s+replace)?\s+function public\.request_room_seat/i.test(sql)) {
     errors.push('Missing room lifecycle SQL: public.request_room_seat function');
   }
   for (const token of [
