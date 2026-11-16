@@ -1253,3 +1253,5 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-game-result strong{display:block;color:#fff;font-size:28px}
 .hs-room-game-result p{font-size:11px;color:#bba98a;margin-top:5px}
 @media(max-width:380px){.hs-room-games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hs-room-game-center{min-height:420px}}
+
+.hs-gift-all{padding:6px 14px;border:1px solid rgba(45,174,100,.5);border-radius:999px;background:linear-gradient(120deg,#168a4a,#0d6337);color:#fff;font-size:10px;font-weight:900;letter-spacing:.4px;margin-bottom:6px}
