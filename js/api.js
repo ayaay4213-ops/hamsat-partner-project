@@ -452,6 +452,30 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  hostStartSession: async (roomId) => {
+    const { data, error } = await client().rpc('host_start_session', { p_room_id: roomId });
+    if (error && /Could not find the function|does not exist/i.test(error.message || '')) return null;
+    fail(error); return data;
+  },
+  hostHeartbeatSession: async (sessionId) => {
+    const { data, error } = await client().rpc('host_heartbeat_session', { p_session_id: sessionId });
+    fail(error); return data;
+  },
+  hostEndSession: async (sessionId) => {
+    const { data, error } = await client().rpc('host_end_session', { p_session_id: sessionId });
+    if (error && /Could not find the function|does not exist/i.test(error.message || '')) return false;
+    fail(error); return data;
+  },
+  agencyHostStats: async (agencyId) => {
+    const { data, error } = await client().from('agency_host_daily_stats').select('*')
+      .eq('agency_id', agencyId).order('stat_date', { ascending: false }).limit(120);
+    fail(error);
+    const ids = [...new Set((data || []).map(x => x.host_id))];
+    let profiles = [];
+    if (ids.length) { const r = await client().from('profiles').select('id,public_id,display_name,handle').in('id', ids); fail(r.error); profiles = r.data || []; }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, p]));
+    return { stats: (data || []).map(x => ({ ...x, profile: byId[x.host_id] || null })) };
+  },
   myAgencies: async () => {
     const user = await currentUser();
     const { data, error } = await client().from('agency_members')
