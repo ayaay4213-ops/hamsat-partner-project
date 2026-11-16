@@ -857,17 +857,25 @@ function newRoomSheet() {
   });
 }
 
+const giftCelebrationQueue=[];
+let giftCelebrationActive=false;
 function showGiftCelebration(gift, quantity = 1) {
-  const root = document.createElement('div');
-  root.className = 'gift-celebration';
-  root.setAttribute('role', 'status');
-  root.innerHTML = `<div class="gift-celebration-card"><span class="gift-celebration-spark">✦</span><div class="gift-celebration-icon"><i data-lucide="${esc(gift?.icon || 'gift')}"></i></div><strong>${esc(gift?.name || 'هدية')}</strong><small>${quantity > 1 ? '× ' + num(quantity) : 'هدية من القلب'}</small><span class="gift-celebration-spark second">✧</span></div>`;
-  document.body.appendChild(root);
-  icons_();
-  requestAnimationFrame(() => root.classList.add('show'));
-  window.setTimeout(() => { root.classList.remove('show'); window.setTimeout(() => root.remove(), 350); }, 2100);
+  giftCelebrationQueue.push({gift,quantity});
+  if(giftCelebrationActive)return;
+  const playNext=()=>{
+    const next=giftCelebrationQueue.shift();
+    if(!next){giftCelebrationActive=false;return;}
+    giftCelebrationActive=true;
+    const root=document.createElement('div');
+    root.className='gift-celebration';
+    root.setAttribute('role','status');
+    root.innerHTML='<div class="gift-celebration-card"><span class="gift-celebration-spark">✦</span><div class="gift-celebration-icon"><i data-lucide="'+esc(next.gift?.icon||'gift')+'"></i></div><strong>'+esc(next.gift?.name||'هدية')+'</strong><small>'+(next.quantity>1?'× '+num(next.quantity):'هدية من القلب')+'</small><span class="gift-celebration-spark second">✧</span></div>';
+    document.body.appendChild(root);icons_();
+    requestAnimationFrame(()=>root.classList.add('show'));
+    window.setTimeout(()=>{root.classList.remove('show');window.setTimeout(()=>{root.remove();giftCelebrationActive=false;playNext();},350);},2100);
+  };
+  playNext();
 }
-
 async function gamesScreen() {
   screen.innerHTML = header('الألعاب') + `
     <div class="px-5 pt-4 pb-8 fade-in">
