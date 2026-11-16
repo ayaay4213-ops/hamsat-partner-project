@@ -593,19 +593,27 @@ async function openRoom(r) {
       chat.scrollTop=chat.scrollHeight;
     };
     const mutedRoomUsers=new Set();
+    const remotelyMutedUsers=new Set();
     const drawMembers=async()=>{
       const [{members},{seats}]=await Promise.all([api.roomMembers(r.id),api.roomSeats(r.id)]);
       if(!membersEl.isConnected)return;
       countEl.textContent=num(members.length);
       const host=r.ownerUuid===state.profile?.uuid;
       const seatedUsers=new Set(seats.map(x=>x.user_id));
-      membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      membersEl.innerHTML=members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
         const uid=b.dataset.localMute,muted=!mutedRoomUsers.has(uid);
         if(muted)mutedRoomUsers.add(uid);else mutedRoomUsers.delete(uid);
         state.voiceRoom?.setParticipantMuted?.(uid,muted);
         b.textContent=muted?'إلغاء الكتم':'كتم صوته لدي';
         toast(muted?'تم كتم صوت العضو على جهازك':'تم إلغاء كتم الصوت');
+      });
+      membersEl.querySelectorAll('[data-host-mute]').forEach(b=>b.onclick=async()=>{
+        const uid=b.dataset.hostMute,muted=!remotelyMutedUsers.has(uid);
+        b.disabled=true;
+        try{await api.moderateRoomParticipant(r.id,uid,muted);if(muted)remotelyMutedUsers.add(uid);else remotelyMutedUsers.delete(uid);b.textContent=muted?'إلغاء كتم المايك':'كتم المايك';toast(muted?'تم كتم مايك العضو في الغرفة':'تم إرسال طلب إلغاء الكتم');}
+        catch(e){toast(e.message,'error');}
+        finally{b.disabled=false;}
       });
       membersEl.querySelectorAll('[data-remove-seat]').forEach(b=>b.onclick=async()=>{
         b.disabled=true;
