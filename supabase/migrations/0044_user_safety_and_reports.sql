@@ -201,3 +201,25 @@ grant execute on function private.get_or_create_conversation(uuid) to authentica
 -- Recipients may update only read_at, never rewrite another person's message body.
 revoke update on public.dm_messages from authenticated;
 grant update(read_at) on public.dm_messages to authenticated;
+
+drop policy if exists "Users can send friend requests" on public.friend_requests;
+create policy "Users can send friend requests" on public.friend_requests
+for insert to authenticated with check (
+  auth.uid()=sender_id and status='pending'
+  and not private.is_user_blocked(sender_id,receiver_id)
+);
+drop policy if exists "Receivers can respond to friend requests" on public.friend_requests;
+create policy "Receivers can respond to friend requests" on public.friend_requests
+for update to authenticated using (
+  auth.uid()=receiver_id and status='pending'
+  and not private.is_user_blocked(sender_id,receiver_id)
+) with check (
+  auth.uid()=receiver_id and status in ('accepted','rejected')
+  and not private.is_user_blocked(sender_id,receiver_id)
+);
+drop policy if exists "Users can follow as themselves" on public.user_follows;
+create policy "Users can follow as themselves" on public.user_follows
+for insert to authenticated with check (
+  auth.uid()=follower_id
+  and not private.is_user_blocked(follower_id,followed_id)
+);
