@@ -135,3 +135,75 @@ begin
   end if;
 end
 $$;
+
+create or replace function public.send_room_gift_to_all(
+  p_room_id uuid,
+  p_gift_id text,
+  p_quantity integer default 1
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user uuid := (select auth.uid());
+  v_recipient uuid;
+  v_result jsonb;
+  v_event_id bigint;
+  v_count integer := 0;
+  v_total bigint := 0;
+begin
+  if v_user is null then
+    raise exception 'يجب تسجيل الدخول أولاً';
+  end if;
+  if p_room_id is null or p_quantity is null or p_quantity not in (1, 10, 99) then
+    raise exception 'بيانات الهدية أو الكمية غير صالحة';
+  end if;
+  if not private.is_room_member(p_room_id) then
+    raise exception 'انضمي إلى الغرفة أولاً';
+  end if;
+
+  for v_recipient in
+    select distinct s.user_id
+      from public.room_seats s
+     where s.room_id = p_room_id
+       and s.user_id <> v_user
+     order by s.user_id
+  loop
+    v_result := public.send_gift(v_recipient, p_gift_id, p_quantity);
+    v_total := v_total + (v_result->>'total_price')::bigint;
+
+    insert into public.room_activity_events(room_id, actor_id, target_user_id, event_type, payload)
+    values (
+      p_room_id,
+      v_user,
+      v_recipient,
+      'gift',
+      jsonb_build_object(
+        'gift_id', p_gift_id,
+        'gift_name', v_result->>'gift_name',
+        'quantity', p_quantity,
+        'total_price', (v_result->>'total_price')::bigint,
+        'all_recipients', true
+      )
+    )
+    returning id into v_event_id;
+    v_count := v_count + 1;
+  end loop;
+
+  if v_count = 0 then
+    raise exception 'لا يوجد أعضاء آخرون على مقاعد المايك';
+  end if;
+
+  return jsonb_build_object(
+    'success', true,
+    'recipients_count', v_count,
+    'total_price', v_total,
+    'quantity', p_quantity
+  );
+end;
+$$;
+
+revoke all on function public.send_room_gift_to_all(uuid, text, integer) from public, anon;
+grant execute on function public.send_room_gift_to_all(uuid, text, integer) to authenticated;
