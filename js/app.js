@@ -1241,7 +1241,7 @@ async function userScreen(handle) {
       <div class="px-5 py-5 space-y-3">
         <div id="friend-actions" class="grid grid-cols-2 gap-2"><button id="friend-action" class="btn-ghost w-full">إضافة صديق</button><button id="follow-action" class="btn-gold w-full">متابعة</button></div>
         <button id="send-message" class="btn-ghost w-full"><i data-lucide="message-circle" class="w-5 h-5"></i>إرسال رسالة</button>
-        <button id="send-gift" class="btn-gold w-full"><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية</button>
+        <button id="send-gift" class="btn-gold w-full"><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية</button><div class="grid grid-cols-2 gap-2"><button id="block-user" class="btn-ghost w-full">حظر المستخدم</button><button id="report-user" class="btn-ghost w-full">إبلاغ</button></div>
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
@@ -1251,6 +1251,9 @@ async function userScreen(handle) {
 
   if(profile){
     try{
+      const blockState=await api.blockState(profile.uuid),blockBtn=$('#block-user');
+      if(blockBtn){blockBtn.textContent=blockState.blocked?'إلغاء الحظر':'حظر المستخدم';blockBtn.onclick=async()=>{try{if(blockState.blocked){await api.unblockUser(profile.publicId);toast('تم إلغاء الحظر');}else{if(!confirm('هل تريدين حظر هذا المستخدم؟ لن تتمكني من مراسلته ما دام الحظر مفعلاً.'))return;await api.blockUser(profile.publicId);toast('تم حظر المستخدم');}userScreen(handle);}catch(e){toast(e.message,'error');}};}
+      const reportBtn=$('#report-user');if(reportBtn)reportBtn.onclick=()=>openSheet('<h2 class="text-lg font-bold mb-3">الإبلاغ عن حساب</h2><form id="report-user-form" class="space-y-3"><label class="label">سبب البلاغ<select class="field" name="reason"><option>إساءة أو مضايقة</option><option>انتحال شخصية</option><option>محتوى غير مناسب</option><option>احتيال أو طلب أموال</option><option>رسائل مزعجة</option><option>سبب آخر</option></select></label><label class="label">تفاصيل إضافية<textarea class="field" name="details" rows="3" maxlength="2000" placeholder="اكتبي ما حدث باختصار"></textarea></label><button class="btn-gold w-full" type="submit">إرسال البلاغ</button></form>',sheet=>{sheet.querySelector('#report-user-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button');b.disabled=true;try{await api.reportUser(profile.publicId,f.elements.reason.value,f.elements.details.value);closeSheet();toast('تم إرسال البلاغ إلى الإدارة');}catch(err){toast(err.message,'error');b.disabled=false;}};});
       const status=await api.friendState(profile.uuid), req=status.request;
       const friendBtn=$('#friend-action'), followBtn=$('#follow-action');
       if(req?.status==='accepted') friendBtn.textContent='✓ صديق';
