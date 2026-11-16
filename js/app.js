@@ -617,11 +617,33 @@ async function openRoom(r) {
     voiceAudioEnable.onclick=async()=>{if(!state.voiceRoom)return;voiceAudioEnable.disabled=true;try{await state.voiceRoom.enableAudio();voiceStatus.textContent='تم تفعيل سماع أصوات المشاركين';voiceAudioEnable.textContent='الصوت مفعّل ✓';}catch(e){voiceStatus.textContent='تعذّر تشغيل صوت الآخرين: '+e.message;voiceAudioEnable.disabled=false;}};
     voiceMute.onclick=()=>{if(!state.voiceRoom)return;const muted=state.voiceRoom.toggleMute();voiceMute.textContent=muted?'تشغيل الميكروفون':'كتم الميكروفون';};
     voiceLeave.onclick=async()=>{const controller=state.voiceRoom;state.voiceRoom=null;if(controller)await controller.leave();voiceMute.disabled=true;voiceAudioEnable.disabled=true;voiceAudioEnable.textContent='سماع الآخرين';voiceLeave.hidden=true;voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';voiceStatus.textContent='تم إيقاف الصوت';};
+    let roomChatFilter='all', roomEventsLoaded=false;
+    const seenRoomEventIds=new Set();
+    const animateRoomEvent=(event)=>{
+      if(event.event_type==='emoji'){
+        const seat=[...sheet.querySelectorAll('#room-seats .hs-room-seat[data-user-id]')].find(el=>el.dataset.userId===event.actor_id);
+        if(seat){const effect=document.createElement('span');effect.className='hs-seat-emoji-effect';effect.textContent=event.payload?.emoji||'✨';seat.appendChild(effect);window.setTimeout(()=>effect.remove(),3600);}
+      } else if(event.event_type==='gift'){showGiftCelebration({name:event.payload?.gift_name||'هدية',icon:'gift'},Number(event.payload?.quantity||1));}
+    };
     const drawMessages=async()=>{
-      const {messages}=await api.roomMessages(r.id); if(!chat.isConnected)return;
-      chat.innerHTML=messages.length?messages.map(m=>`<div class="hs-room-message ${m.userId===state.profile?.uuid?'mine':''}">${avatar({displayName:m.displayName,color:m.color},30)}<div><b>${esc(m.displayName)}</b><p>${esc(m.body)}</p><small>${timeAgo(m.createdAt)}</small></div></div>`).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">ابدؤوا الحديث واصنعوا لحظة جميلة 🌙</p>';
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
+      if(!chat.isConnected)return;
+      const messages=messageData.messages||[],events=eventData.events||[];
+      if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
+      else{events.forEach(event=>seenRoomEventIds.add(event.id));roomEventsLoaded=true;}
+      const items=[];
+      if(roomChatFilter==='all'||roomChatFilter==='chat'){messages.forEach(m=>items.push({at:m.createdAt,html:'<div class="hs-room-message '+(m.userId===state.profile?.uuid?'mine':'')+'">'+avatar({displayName:m.displayName,color:m.color},30)+'<div><b>'+esc(m.displayName)+'</b><p>'+esc(m.body)+'</p><small>'+timeAgo(m.createdAt)+'</small></div></div>'}));}
+      const wanted=roomChatFilter==='gifts'?'gift':roomChatFilter==='games'?'game':null;
+      if(roomChatFilter!=='chat'){events.filter(e=>!wanted||e.event_type===wanted).forEach(e=>{
+        if(e.event_type==='gift'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity gift"><span class="hs-room-activity-icon">🎁</span><span><b>'+esc(e.actor?.displayName||'عضو')+'</b> أرسل هدية إلى <b>'+esc(e.target?.displayName||'عضو')+'</b> · '+esc(e.payload?.gift_name||'هدية')+' <small>×'+num(e.payload?.quantity||1)+'</small></span></div>'});}
+        else if(e.event_type==='emoji'&&roomChatFilter==='all'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity"><span class="hs-room-activity-icon">'+esc(e.payload?.emoji||'✨')+'</span><span><b>'+esc(e.actor?.displayName||'عضو')+'</b> أرسل تفاعلاً</span></div>'});}
+        else if(e.event_type==='game'){items.push({at:new Date(e.created_at).getTime(),html:'<div class="hs-room-activity"><span class="hs-room-activity-icon">🎮</span><span>'+esc(e.payload?.message||'نشاط لعبة في الغرفة')+'</span></div>'});}
+      });}
+      items.sort((a,b)=>a.at-b.at);
+      chat.innerHTML=items.length?items.map(x=>x.html).join(''):'<p class="text-xs text-[#8a76a8] text-center py-10">لا توجد عناصر في هذا التصنيف بعد 🌙</p>';
       chat.scrollTop=chat.scrollHeight;
     };
+    sheet.querySelectorAll('#room-chat-tabs [data-chat-filter]').forEach(button=>button.onclick=()=>{roomChatFilter=button.dataset.chatFilter;sheet.querySelectorAll('#room-chat-tabs [data-chat-filter]').forEach(x=>x.classList.toggle('active',x===button));drawMessages().catch(e=>toast(e.message,'error'));});
     const mutedRoomUsers=new Set();
     const remotelyMutedUsers=new Set();
     let muteStateLoaded=false;
