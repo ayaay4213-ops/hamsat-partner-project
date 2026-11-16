@@ -452,6 +452,28 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  blockState: async (targetId) => {
+    const user = await currentUser();
+    const { data, error } = await client().from('user_blocks').select('blocked_id')
+      .eq('blocker_id', user.id).eq('blocked_id', targetId).maybeSingle();
+    fail(error); return { blocked: !!data };
+  },
+  blockUser: async (publicId) => {
+    const { data, error } = await client().rpc('block_user', { p_target_public_id: publicId });
+    fail(error); return data;
+  },
+  unblockUser: async (publicId) => {
+    const { data, error } = await client().rpc('unblock_user', { p_target_public_id: publicId });
+    fail(error); return data;
+  },
+  reportUser: async (publicId, reason, details = '') => {
+    const { data, error } = await client().rpc('report_user', { p_target_public_id: publicId, p_reason: reason, p_details: details });
+    fail(error); return data;
+  },
+  reportRoom: async (roomId, reason, details = '') => {
+    const { data, error } = await client().rpc('report_room', { p_room_id: roomId, p_reason: reason, p_details: details });
+    fail(error); return data;
+  },
   hostStartSession: async (roomId) => {
     const { data, error } = await client().rpc('host_start_session', { p_room_id: roomId });
     if (error && /Could not find the function|does not exist/i.test(error.message || '')) return null;
