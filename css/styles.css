@@ -1216,3 +1216,40 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-panel-backdrop{position:fixed;inset:0;z-index:83;background:rgba(0,0,0,.48);border:0;padding:0}
 .room-sheet #room-emoji-panel{z-index:85}
 .room-sheet #room-gift-panel{z-index:85}
+
+.hs-room-game-center{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:85;width:min(100%,520px);height:75dvh;max-height:760px;min-height:460px;overflow-y:auto;padding:12px 16px calc(20px + env(safe-area-inset-bottom));border:1px solid rgba(226,196,111,.25);border-bottom:0;border-radius:24px 24px 0 0;background:radial-gradient(circle at 85% 10%,rgba(214,174,70,.16),transparent 30%),radial-gradient(circle at 10% 30%,rgba(125,91,185,.13),transparent 32%),linear-gradient(155deg,#211f1b,#090b10 72%);box-shadow:0 -18px 55px #0009;backdrop-filter:blur(22px)}
+.hs-room-game-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hs-room-game-head span{font-size:8px;letter-spacing:3px;color:#c8a64e}
+.hs-room-game-head h3{font-size:19px;font-weight:900;color:#f5e2a0;margin-top:3px}
+.hs-room-game-head>button{width:32px;height:32px;border-radius:50%;background:#ffffff10;color:#e8d8b5;font-size:22px}
+.hs-room-game-balance{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:13px;background:linear-gradient(100deg,#332a17,#171714);border:1px solid #d4af3740;color:#d9cda9;font-size:11px;margin-bottom:12px}
+.hs-room-game-balance b{color:#f4d77c;font-variant-numeric:tabular-nums}
+.hs-room-game-balance button{width:28px;height:28px;border-radius:50%;background:#d4af3720;color:#f3d67b;font-size:20px}
+.hs-room-game-banners{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:14px}
+.hs-room-game-banner{min-height:64px;padding:10px;border:1px solid #d4af3735;border-radius:14px;background:linear-gradient(120deg,#382d19,#191820);display:flex;flex-direction:column;justify-content:center;gap:4px}
+.hs-room-game-banner b{font-size:11px;color:#f0d78b}
+.hs-room-game-banner small{font-size:9px;color:#b8ad96}
+.hs-room-games-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.hs-room-game-card{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 5px;border:1px solid #ffffff13;border-radius:15px;background:linear-gradient(150deg,#24232a,#14151a);text-align:center}
+.hs-room-game-card>span{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:#d4af371b;border:1px solid #d4af3740;font-size:25px}
+.hs-room-game-card b{font-size:10px;color:#f1e5c7;line-height:1.4}
+.hs-room-game-card small{font-size:8px;color:#aaa18f;line-height:1.4;min-height:24px}
+.hs-room-game-card button{width:100%;padding:6px 3px;border-radius:9px;background:linear-gradient(120deg,#ead28a,#b48a32);color:#19150b;font-size:9px;font-weight:900}
+.hs-room-game-stage{padding:12px;border:1px solid #d4af3733;border-radius:16px;background:#101116}
+.hs-room-game-progress{display:flex;justify-content:space-between;gap:8px;color:#e9d18b;font-size:11px}
+.hs-room-game-track{height:5px;border-radius:99px;background:#ffffff12;margin:10px 0 16px;overflow:hidden}
+.hs-room-game-track i{display:block;height:100%;background:#d8b95c;border-radius:99px}
+.hs-room-game-stage h4{font-size:15px;line-height:1.7;color:#f4ead1;margin-bottom:12px}
+.hs-room-game-options{display:grid;gap:8px}
+.hs-room-game-options button{padding:10px;border:1px solid #ffffff18;border-radius:11px;background:#ffffff08;color:#e7ddc9;text-align:right;font-size:11px}
+.hs-room-game-options button.correct{border-color:#3ba56a;color:#8ee0ae}
+.hs-room-game-options button.wrong{border-color:#bb5362;color:#f4a2ad}
+.hs-room-game-stage>p{font-size:10px;color:#cdbb8a;margin-top:10px;min-height:20px}
+.hs-room-game-stage>#room-game-next,.hs-room-game-result button{width:100%;padding:11px;border-radius:11px;background:#d4af37;color:#17140b;font-size:11px;font-weight:900;margin-top:10px}
+.hs-room-game-stage>#room-game-next:disabled{opacity:.45}
+.hs-room-game-result{text-align:center;padding:22px 5px}
+.hs-room-game-result>div{font-size:42px}
+.hs-room-game-result h4{color:#f0d78b;font-size:17px;margin:10px 0}
+.hs-room-game-result strong{display:block;color:#fff;font-size:28px}
+.hs-room-game-result p{font-size:11px;color:#bba98a;margin-top:5px}
+@media(max-width:380px){.hs-room-games-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.hs-room-game-center{min-height:420px}}
