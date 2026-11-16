@@ -180,7 +180,7 @@ function welcomeScreen() {
     <div class="hs-welcome-glow"></div>
     <header class="hs-welcome-head"><span class="hs-welcome-mark">✦</span><span>H A M S A T</span><span class="hs-welcome-mark">✦</span></header>
     <section class="hs-welcome-visual">
-      <img src="assets/hamsat-hero.svg" alt="همسات">
+      <img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات">
       <div class="hs-welcome-title"><span>مساحة من الألفة والجمال</span><h1>همسات</h1><small>حيث تلتقي الأرواح بالصوت</small></div>
     </section>
     <div class="hs-welcome-intro"><span class="hs-welcome-line"></span><p>أصدقاء جدد، غرف صوتية، ولحظات تبقى في القلب</p><span class="hs-welcome-line"></span></div>
@@ -441,7 +441,7 @@ async function homeScreen() {
     '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
     '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
     '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
-    '<div class="hs-home-hero-art"><img src="assets/hamsat-hero.svg" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
+    '<div class="hs-home-hero-art"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
     '<section class="hs-home-shortcuts">' +
     '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
     '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
