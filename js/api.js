@@ -212,8 +212,16 @@ export const api = {
     return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
-    const { data, error } = await client().from('rooms').select('*').order('created_at', { ascending: false }).limit(100);
-    fail(error);
+    // Load every public room in pages instead of silently stopping at the first 100.
+    const data = [];
+    const pageSize = 500;
+    for (let from = 0; ; from += pageSize) {
+      const { data: page, error } = await client().from('rooms').select('*')
+        .order('created_at', { ascending: false }).range(from, from + pageSize - 1);
+      fail(error);
+      data.push(...(page || []));
+      if (!page || page.length < pageSize) break;
+    }
     const ids = [...new Set(data.map(r => r.owner_id))];
     let owners = [];
     if (ids.length) {
