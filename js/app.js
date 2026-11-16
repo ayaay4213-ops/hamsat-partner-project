@@ -509,9 +509,10 @@ async function openRoom(r) {
           <span class="hs-room-owner-tag">المضيف</span>
         ${'</div>'}
       </div>
-      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span><i data-lucide="shield-check"></i> مجتمع همسات</span>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle"><i data-lucide="settings-2"></i> إعدادات</button>' : ''}<button type="button" id="room-send-gift"><i data-lucide="gift"></i> هدية</button></div>
+      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span><i data-lucide="shield-check"></i> مجتمع همسات</span>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle"><i data-lucide="settings-2"></i> إعدادات</button>' : ''}<button type="button" id="room-share"><i data-lucide="share-2"></i> دعوة صديق</button><button type="button" id="room-send-gift"><i data-lucide="gift"></i> هدية</button></div>
     ${r.ownerUuid === state.profile?.uuid ? '<section id="room-settings-panel" class="hs-room-settings hidden"><div class="flex items-center justify-between mb-3"><h3>إعدادات غرفتك</h3><button type="button" id="room-settings-close" class="hs-room-close" aria-label="إغلاق"><i data-lucide="x"></i></button></div><label class="label">خلفية الغرفة</label><label class="photo-picker room-background-picker"><i data-lucide="image-plus"></i><span>اختاري خلفية من هاتفك</span><input id="room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><div class="mt-4"><label class="label">رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${[\'🎙️\',\'👑\',\'🌙\',\'💎\',\'🌹\',\'🦋\',\'✨\',\'🎶\',\'💕\',\'🔥\',\'☕\',\'🎧\',\'🪄\',\'🥂\',\'🩷\',\'💜\',\'⭐\',\'🌸\',\'🦄\',\'🎤\'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||\'🎙️\')===e?\'active\':\'\'}">${e}</button>`).join(\'\')}</div></div><button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button></section>' : ''}
     </div>
+    <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
     <div id="room-gift-panel" class="card p-3 mb-3 hidden"><form id="room-gift-form" class="space-y-3"><select name="recipient" class="field"></select><select name="gift" class="field"></select><button type="submit" class="btn-gold w-full">إرسال الهدية</button></form></div>
     <section class="hs-room-stage">
       <div class="hs-room-section-title"><div><span class="hs-room-eyebrow">VOICE STAGE</span><h3>منصة المتحدثين</h3></div><span class="hs-room-seat-count">8 مقاعد</span></div>
@@ -534,6 +535,31 @@ async function openRoom(r) {
     sheet.classList.add('room-sheet');
     if(r.coverUrl){const roomBg='linear-gradient(180deg,rgba(7,8,12,.82),rgba(7,8,12,.91)),url("'+r.coverUrl+'")';sheet.querySelectorAll('.hs-room-cover,.hs-room-stage,.hs-room-people,.hs-room-chat-area').forEach(el=>{el.style.backgroundImage=roomBg;el.style.backgroundSize='cover';el.style.backgroundPosition='center';});}
     if(r.coverUrl){sheet.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.80),rgba(7,8,12,.93)),url("'+String(r.coverUrl).replaceAll('"','')+'")';sheet.style.backgroundSize='cover';sheet.style.backgroundPosition='center';sheet.style.backgroundAttachment='fixed';}
+    const shareRoomButton=sheet.querySelector('#room-share');
+    if(shareRoomButton){
+      const invitePanel=sheet.querySelector('#room-invite-panel'), inviteList=sheet.querySelector('#room-invite-friends');
+      shareRoomButton.onclick=async()=>{
+        invitePanel.classList.toggle('hidden');
+        if(invitePanel.dataset.loaded)return;
+        try{
+          const {friends}=await api.friends();
+          inviteList.innerHTML=friends.length?friends.map(u=>`<button type="button" data-invite-user="${esc(u.uuid)}" class="card w-full p-3 flex items-center gap-3 text-right">${avatar(u,38)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><i data-lucide="send" class="text-gold-300"></i></button>`).join(''):'<p class="text-sm opacity-70">لا توجد أسماء في قائمة أصدقائك بعد. أضيفي أصدقاء من قسم حسابي.</p>';
+          invitePanel.dataset.loaded='1';icons_();
+          inviteList.querySelectorAll('[data-invite-user]').forEach(b=>b.onclick=async()=>{
+            b.disabled=true;
+            try{
+              const friend=friends.find(x=>x.uuid===b.dataset.inviteUser);
+              const result=await api.startConversation(friend.uuid);
+              const inviteUrl=location.origin+location.pathname+'#/rooms?invite='+encodeURIComponent(r.id);
+              await api.sendDirectMessage(result.conversationId,'🎙️ أدعوك للانضمام إلى غرفتي في همسات: '+inviteUrl);
+              toast('تم إرسال دعوة الغرفة إلى '+friend.displayName);
+              b.innerHTML='✓ تم إرسال الدعوة';
+            }catch(e){toast(e.message,'error');b.disabled=false;}
+          });
+        }catch(e){inviteList.innerHTML='<p class="text-sm text-red-300">'+esc(e.message)+'</p>';}
+      };
+      sheet.querySelector('#room-invite-close').onclick=()=>invitePanel.classList.add('hidden');
+    }
     const settingsToggle=sheet.querySelector('#room-settings-toggle');
     if(settingsToggle){
       const panel=sheet.querySelector('#room-settings-panel');let chosenEmoji=r.roomEmoji||'🎙️',chosenCover=r.coverUrl||null;
@@ -630,7 +656,15 @@ async function roomsScreen(params) {
     $('#filters').querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === b));
     draw();
   });
-  try { rooms = (await api.rooms()).rooms; draw(); }
+  try {
+    rooms = (await api.rooms()).rooms; draw();
+    const inviteId=params.get('invite');
+    if(inviteId){
+      const {room}=await api.roomById(inviteId);
+      history.replaceState(null,'',location.pathname+location.search+'#/rooms');
+      openRoom(room);
+    }
+  }
   catch (e) { const el = $('#rooms-list'); if (el) { el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', e.message); icons_(); } }
 }
 
