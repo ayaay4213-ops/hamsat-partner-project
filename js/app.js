@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261116-member-profile-v1';
+import { api } from './api.js?v=20261116-real-profile-v2';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -1335,7 +1335,8 @@ async function directMessageScreen(conversationId) {
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
-    else if (['moments','aristocracy','tasks','agency','family'].includes(route)) comingSoonScreen(route);
+    else if (route === 'moments') { meScreen(); document.querySelector('[data-profile-tab="moments"]')?.click(); }
+    else if (['aristocracy','tasks','agency','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
     else await homeScreen();
   } catch (e) {
