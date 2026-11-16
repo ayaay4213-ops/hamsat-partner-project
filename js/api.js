@@ -392,6 +392,10 @@ export const api = {
     const {data,error}=await client().rpc('equip_shop_item',{p_item_id:itemId});
     fail(error); return data;
   },
+  unequipShopItem: async (itemType) => {
+    const {data,error}=await client().rpc('unequip_shop_item',{p_item_type:itemType});
+    fail(error); return data;
+  },
 
 
   notifications: async () => {
