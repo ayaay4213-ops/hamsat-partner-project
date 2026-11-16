@@ -938,13 +938,13 @@ function renderProfileRewards(host, rewards, profile) {
     </div>
     <div class="hs-reward-section">
       <div class="hs-reward-heading"><b>المقتنيات</b><small>${num(items.length)} عنصر</small></div>
-      ${items.length?'<div class="hs-collection-grid">'+items.slice(0,8).map(item=>`<div class="hs-collection-item">${item.image_url?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="hs-collection-symbol">✧</span>'}<b>${esc(item.name)}</b><small>${esc(typeNames[item.item_type]||'عنصر')} · ${esc(item.rarity||'عادي')}</small>${profile.equippedFrameId===item.id?'<em>مجهز</em>':''}</div>`).join('')+'</div>':'<p class="hs-reward-empty">لا توجد مقتنيات بعد. اكتشفي المتجر لإضافة أول زينة إلى حسابك.</p>'}
+      ${items.length?'<div class="hs-collection-grid">'+items.slice(0,8).map(item=>`<div class="hs-collection-item">${item.image_url?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="hs-collection-symbol">✧</span>'}<b>${esc(item.name)}</b><small>${esc(typeNames[item.item_type]||'عنصر')} · ${esc(item.rarity||'عادي')}</small>${(profile.equippedFrameId===item.id||profile.equippedEmojiPackId===item.id)?'<em>مجهز</em>':''}</div>`).join('')+'</div>':'<p class="hs-reward-empty">لا توجد مقتنيات بعد. اكتشفي المتجر لإضافة أول زينة إلى حسابك.</p>'}
     </div>`;
 }
-async function loadProfileRewards(profileId) {
+async function loadProfileRewards(profileId, profile) {
   const host=document.querySelector('[data-profile-rewards]');
   if(!host||!profileId)return;
-  try{const rewards=await api.profileRewards(profileId);renderProfileRewards(host,rewards,state.profile?.uuid===profileId?state.profile:({equippedFrameId:null}));}
+  try{const rewards=await api.profileRewards(profileId);renderProfileRewards(host,rewards,profile||state.profile||({equippedFrameId:null,equippedEmojiPackId:null}));}
   catch(error){host.innerHTML='<p class="hs-reward-empty">تعذر تحميل المستوى والشارات حالياً.</p>';console.warn('تعذر تحميل إنجازات الملف:',error);}
 }
 async function loadProfileStats(profileId, recordVisit = false) {
@@ -1046,7 +1046,7 @@ function meScreen() {
     </div>`;
   icons_();
   loadProfileStats(p.uuid, false);
-  loadProfileRewards(p.uuid);
+  loadProfileRewards(p.uuid,p);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   $('#logout').onclick = () => openSheet(`
@@ -1078,7 +1078,7 @@ async function userScreen(handle) {
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
-  if (profile) { loadProfileStats(profile.uuid, true); loadProfileRewards(profile.uuid); }
+  if (profile) { loadProfileStats(profile.uuid, true); loadProfileRewards(profile.uuid,profile); }
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(profile.publicId);toast('تم نسخ ID المستخدم');}catch(e){toast(profile.publicId);}};
 
