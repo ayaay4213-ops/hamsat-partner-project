@@ -1185,3 +1185,30 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-profile-tabs{display:flex;gap:8px;margin:20px 16px 0;padding:4px;border:1px solid #c9a64b30;border-radius:14px;background:#11131b}.hs-profile-tabs button{flex:1;padding:11px 8px;border-radius:10px;color:#bdb4a1;font-size:13px}.hs-profile-tabs button.active{background:linear-gradient(120deg,#c9a64b,#e8d28c);color:#16120a;font-weight:800}
 .hs-cp-card{margin:18px 14px 8px;padding:16px;border:1px solid #c9a64b55;border-radius:18px;background:radial-gradient(circle at 50% 0,#c9a64b18,transparent 65%),#11131a;text-align:center}.hs-cp-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:#f0d98e}.hs-cp-title small,.hs-cp-empty,.hs-cp-state{color:#a9a092;font-size:11px}.hs-cp-pair{display:flex;justify-content:center;align-items:center;gap:18px}.hs-cp-pair>span{color:#e9c66c;font-size:25px}.hs-cp-pair .avatar{border:2px solid #c9a64b;border-radius:50%;overflow:hidden}.hs-cp-names{display:block;margin-top:10px;color:#f5ead0}.hs-cp-state{display:block;margin:6px}.hs-cp-actions{display:flex;justify-content:center;gap:10px;margin-top:10px}.hs-cp-actions button,.hs-cp-card>[data-cp-end]{padding:8px 18px;border-radius:10px;background:#c9a64b;color:#15120a;font-size:12px}
 .hs-moments-panel{padding:14px}.hs-moment-compose{display:grid;gap:10px;padding:13px;border:1px solid #c9a64b44;border-radius:15px;background:#141620}.hs-moment-compose textarea{width:100%;min-height:82px;padding:10px;border-radius:10px;background:#090b11;color:#f7f0e3;resize:vertical}.hs-moments-list{display:grid;gap:12px;margin-top:14px}.hs-moment-card{position:relative;padding:13px;border:1px solid #c9a64b30;border-radius:15px;background:#12141c}.hs-moment-card img{width:100%;max-height:340px;object-fit:cover;border-radius:11px;margin-bottom:10px}.hs-moment-card p{white-space:pre-wrap;color:#eee5d5;line-height:1.8}.hs-moment-card small{display:block;margin-top:8px;color:#9f9687}.hs-moment-card button{position:absolute;left:12px;bottom:10px;color:#e7a1a1;font-size:11px}.hs-moment-empty{padding:30px 12px;text-align:center;color:#a69d8e;border:1px dashed #c9a64b45;border-radius:14px}
+
+
+/* HAMSAT room interactions: compact filters, bottom sheets and seat reactions */
+.hs-room-chat-tabs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.hs-room-chat-tabs::-webkit-scrollbar{display:none}
+.hs-room-chat-tabs button{flex:none;padding:7px 14px;border-radius:999px;border:1px solid rgba(220,190,110,.2);background:#ffffff08;color:#c9c0ad;font-size:11px}
+.hs-room-chat-tabs button.active{background:linear-gradient(135deg,#e6c96f,#b18b37);border-color:#e6c96f;color:#17140b;font-weight:800}
+.hs-room-activity{display:flex;align-items:center;gap:9px;max-width:100%;padding:9px 11px;border:1px solid rgba(220,190,110,.15);border-radius:14px;background:rgba(255,255,255,.045);font-size:11px;color:#e8dfc9;line-height:1.7}
+.hs-room-activity.gift{border-color:rgba(226,190,94,.28);background:linear-gradient(120deg,rgba(212,175,55,.11),rgba(255,255,255,.035))}
+.hs-room-activity-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:11px;background:rgba(212,175,55,.12);font-size:19px}
+.hs-room-activity small{color:#e9c967;font-weight:800;margin-inline-start:5px}
+.hs-room-emoji-panel{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:85;width:min(100%,520px);height:42dvh;max-height:420px;min-height:280px;padding:10px 16px calc(18px + env(safe-area-inset-bottom));border:1px solid rgba(226,196,111,.25);border-bottom:0;border-radius:22px 22px 0 0;background:linear-gradient(155deg,rgba(31,29,25,.98),rgba(10,12,17,.99));box-shadow:0 -18px 55px #0009;backdrop-filter:blur(20px)}
+.hs-room-panel-handle{width:42px;height:4px;border-radius:9px;background:#756b56;margin:0 auto 12px}
+.hs-room-emoji-head{display:flex;align-items:center;justify-content:space-between;color:#f2e4c3;font-size:14px;margin-bottom:12px}
+.hs-room-emoji-head button{width:30px;height:30px;border-radius:50%;background:#ffffff10;color:#e8d8b5;font-size:22px}
+.hs-room-emoji-categories{display:flex;gap:8px;margin-bottom:12px}
+.hs-room-emoji-categories button{padding:7px 16px;border-radius:999px;background:#ffffff09;color:#cfc6b3;font-size:11px}
+.hs-room-emoji-categories button.active{background:#159447;color:#fff;font-weight:800}
+.hs-room-emoji-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(3,minmax(44px,1fr));gap:8px}
+.hs-room-emoji-grid button{min-width:0;border:1px solid #ffffff12;border-radius:13px;background:#ffffff08;font-size:25px;display:grid;place-items:center}
+.hs-room-emoji-grid button:active{transform:scale(.94);background:#d4af3722}
+.hs-room-emoji-pagination{display:flex;justify-content:center;gap:7px;padding-top:13px}
+.hs-room-emoji-pagination button{width:7px;height:7px;border-radius:50%;background:#706b60}
+.hs-room-emoji-pagination button.active{width:20px;border-radius:99px;background:#d9bd62}
+.room-sheet #room-gift-panel{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:84;width:min(100%,520px);height:52dvh;max-height:560px;overflow-y:auto;margin:0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));border:1px solid rgba(226,196,111,.25);border-bottom:0;border-radius:22px 22px 0 0;background:linear-gradient(155deg,rgba(31,29,25,.98),rgba(10,12,17,.99));box-shadow:0 -18px 55px #0009;backdrop-filter:blur(20px)}
+.hs-seat-emoji-effect{position:absolute;z-index:12;left:50%;top:2px;transform:translateX(-50%);font-size:29px;pointer-events:none;filter:drop-shadow(0 5px 8px #000);animation:hsSeatEmojiFloat 3.4s ease-out forwards}
+@keyframes hsSeatEmojiFloat{0%{opacity:0;transform:translate(-50%,12px) scale(.55)}15%{opacity:1;transform:translate(-50%,-8px) scale(1.18)}75%{opacity:1;transform:translate(-50%,-42px) scale(1)}100%{opacity:0;transform:translate(-50%,-65px) scale(.86)}}
