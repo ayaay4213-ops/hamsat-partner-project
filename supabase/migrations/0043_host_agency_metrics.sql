@@ -49,6 +49,7 @@ declare
   v_agency uuid;
   v_session bigint;
   v_old public.agency_host_sessions%rowtype;
+  v_seconds bigint;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
   if p_room_id is null or not private.is_room_member(p_room_id) then raise exception 'انضمي إلى الغرفة أولاً'; end if;
@@ -61,12 +62,22 @@ begin
 
   if v_agency is null then return null; end if;
 
-  select id into v_session from public.agency_host_sessions
+  select * into v_old from public.agency_host_sessions
    where agency_id=v_agency and host_id=v_user and ended_at is null
    for update;
-  if v_session is not null then
-    update public.agency_host_sessions set last_heartbeat_at=now(),room_id=p_room_id where id=v_session;
-    return v_session;
+  if found then
+    if v_old.last_heartbeat_at < now()-interval '90 seconds' then
+      v_seconds := greatest(0,floor(extract(epoch from (now()-v_old.started_at)))::bigint);
+      update public.agency_host_sessions set ended_at=now(),duration_seconds=v_seconds where id=v_old.id;
+      insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,live_seconds,session_count)
+      values(v_old.agency_id,v_old.host_id,current_date,v_seconds,1)
+      on conflict(agency_id,host_id,stat_date) do update
+        set live_seconds=public.agency_host_daily_stats.live_seconds+excluded.live_seconds,
+            session_count=public.agency_host_daily_stats.session_count+1,updated_at=now();
+    else
+      update public.agency_host_sessions set last_heartbeat_at=now(),room_id=p_room_id where id=v_old.id;
+      return v_old.id;
+    end if;
   end if;
 
   insert into public.agency_host_sessions(agency_id,host_id,room_id)
