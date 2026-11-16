@@ -172,6 +172,12 @@ export const api = {
     const { error } = await client().rpc('claim_daily_reward'); fail(error);
     return api.wallet();
   },
+  roomById: async (roomId) => {
+    const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
+    const {data:p,error:pe}=await client().from('profiles').select('*').eq('id',data.owner_id).single();fail(pe);
+    const owner=mapProfile(p);
+    return {room:{id:data.id,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
+  },
   rooms: async () => {
     const { data, error } = await client().from('rooms').select('*').order('created_at', { ascending: false }).limit(100);
     fail(error);
