@@ -372,7 +372,7 @@ export const api = {
     fail(error); return {games:data||[]};
   },
   gifts: async () => {
-    const { data, error } = await client().from('gifts').select('id,name,price,icon').eq('active', true).order('price');
+    const { data, error } = await client().from('gifts').select('*').eq('active', true).order('price');
     fail(error); return { gifts: data };
   },
   shopItems: async () => {
