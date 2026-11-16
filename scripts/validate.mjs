@@ -18,6 +18,7 @@ const required = [
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
   'supabase/migrations/0015_direct_messaging.sql',
   'supabase/migrations/0016_notifications.sql',
+  'supabase/migrations/0017_social_data_api_grants.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -144,6 +145,14 @@ if (fs.existsSync(notificationsMigrationPath)) {
   const sql = fs.readFileSync(notificationsMigrationPath, 'utf8').toLowerCase();
   for (const token of ['create table if not exists public.notifications', 'create or replace function public.notify_dm_recipient', 'create or replace function public.notify_gift_recipient', 'alter publication supabase_realtime add table public.notifications']) {
     if (!sql.includes(token)) errors.push(`Missing notification SQL: ${token}`);
+  }
+}
+
+const socialGrantsPath = path.join(root, 'supabase/migrations/0017_social_data_api_grants.sql');
+if (fs.existsSync(socialGrantsPath)) {
+  const sql = fs.readFileSync(socialGrantsPath, 'utf8').toLowerCase();
+  for (const token of ['revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon', 'grant select on table public.dm_conversations to authenticated', 'grant select, insert on table public.dm_messages to authenticated', 'grant update (read_at) on table public.dm_messages to authenticated', 'grant select on table public.notifications to authenticated', 'grant update (read_at) on table public.notifications to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing social Data API grant: ${token}`);
   }
 }
 
