@@ -256,6 +256,47 @@ export const api = {
     const {data,error}=await client().rpc('equip_shop_item',{p_item_id:itemId});
     fail(error); return data;
   },
+
+  startConversation: async (otherUserId) => {
+    const { data, error } = await client().rpc('get_or_create_conversation', { p_other_user: otherUserId });
+    fail(error); return { conversationId: data };
+  },
+  conversations: async () => {
+    const user = await currentUser();
+    const { data, error } = await client().from('dm_conversations')
+      .select('id,user_a,user_b,updated_at,dm_messages(id,body,sender_id,created_at,read_at)')
+      .or('user_a.eq.' + user.id + ',user_b.eq.' + user.id)
+      .order('updated_at', { ascending: false }).limit(50);
+    fail(error);
+    const ids = [...new Set(data.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
+    const profiles = ids.length ? await client().from('profiles').select('*').in('id', ids) : {data:[],error:null};
+    fail(profiles.error);
+    const byId = Object.fromEntries(profiles.data.map(p => [p.id, mapProfile(p)]));
+    return { conversations: data.map(c => {
+      const otherId = c.user_a === user.id ? c.user_b : c.user_a;
+      const msgs = (c.dm_messages || []).sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
+      const last = msgs[0];
+      return { id:c.id, other:byId[otherId], lastMessage:last?.body || '', updatedAt:c.updated_at,
+        unread:msgs.filter(m=>m.sender_id!==user.id&&!m.read_at).length };
+    }).filter(c=>c.other) };
+  },
+  directMessages: async (conversationId) => {
+    const { data, error } = await client().from('dm_messages').select('id,sender_id,body,created_at,read_at')
+      .eq('conversation_id', conversationId).order('created_at',{ascending:true}).limit(200);
+    fail(error);
+    const { error: readError } = await client().from('dm_messages').update({read_at:new Date().toISOString()})
+      .eq('conversation_id',conversationId).neq('sender_id',(await currentUser()).id).is('read_at',null);
+    fail(readError);
+    return { messages:data };
+  },
+  sendDirectMessage: async (conversationId, body) => {
+    const user = await currentUser(), text = String(body || '').trim();
+    if (!text || text.length > 2000) throw new Error('الرسالة يجب أن تكون من 1 إلى 2000 حرف');
+    const { error } = await client().from('dm_messages').insert({conversation_id:conversationId,sender_id:user.id,body:text});
+    fail(error); return {success:true};
+  },
+  subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
   sendGift: async (recipientId, giftId, quantity = 1) => {
     const { data, error } = await client().rpc('send_gift', {
       p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity
