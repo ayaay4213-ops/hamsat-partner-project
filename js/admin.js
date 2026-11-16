@@ -11,7 +11,7 @@ async function boot(){
  const {data:isOwner,error:ownerError}=await supabase.rpc('is_admin');
  if(ownerError||isOwner!==true){message('هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
  admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
- await Promise.all([loadStats(),loadItems(),loadGifts(),loadGames(),loadRooms(),loadUsers()]);
+ await Promise.all([loadStats(),loadItems(),loadGifts(),loadGames(),loadRooms(),loadUsers(),loadBombLevels()]);
 }
 async function upload(file,folder){
  if(!file)return null;
@@ -42,6 +42,12 @@ async function loadGames(){
  const {data,error}=await supabase.from('games').select('*').order('sort_order').order('created_at',{ascending:false});if(error)throw error;
  $('#game-list').innerHTML=data.length?data.map(x=>row(x.icon+' '+x.name,x.id+' · '+x.game_type,x.id,x.active,'game')).join(''):'<p class="muted">لا توجد ألعاب مسجلة بعد.</p>';
  bindToggles('#game-list',data,'game');
+}
+async function loadBombLevels(){
+ const {data,error}=await supabase.from('room_bomb_levels').select('*').order('level');
+ if(error){$('#bomb-level-list').innerHTML='<p class="muted">تظهر إعدادات القنبلة بعد تطبيق ترحيل قاعدة البيانات.</p>';return;}
+ $('#bomb-level-list').innerHTML=(data||[]).map(x=>'<div class="item"><div><b>LV.'+esc(x.level)+'</b><p class="muted text-xs">'+esc(x.threshold)+' نقطة · مكافأة '+esc(x.reward_min)+'–'+esc(x.reward_max)+' عملة · '+(x.active?'مفعّل':'متوقف')+'</p></div><button class="ghost text-sm" data-edit-bomb="'+esc(x.level)+'">تعديل</button></div>').join('')||'<p class="muted">لا توجد مستويات.</p>';
+ $('#bomb-level-list').querySelectorAll('[data-edit-bomb]').forEach(b=>b.onclick=()=>{const x=data.find(z=>String(z.level)===b.dataset.editBomb),form=$('#bomb-level-form');if(!x)return;form.elements.level.value=x.level;form.elements.threshold.value=x.threshold;form.elements.reward_min.value=x.reward_min;form.elements.reward_max.value=x.reward_max;form.elements.active.checked=x.active;});
 }
 async function loadUsers(term=''){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
@@ -74,9 +80,10 @@ async function loadRooms(){
 }
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const image_url=await upload(f.elements.image.files[0],'catalog');const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),item_type:f.elements.item_type.value,price:Number(f.elements.price.value),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 $('#gift-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),category:f.elements.category.value,description:f.elements.description.value.trim(),image_url:f.elements.image_url.value.trim()||null,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية في الكتالوج.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
+$('#bomb-level-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={level:Number(f.elements.level.value),threshold:Number(f.elements.threshold.value),reward_min:Number(f.elements.reward_min.value),reward_max:Number(f.elements.reward_max.value),active:f.elements.active.checked,updated_at:new Date().toISOString()};if(payload.reward_max<payload.reward_min)throw Error('أعلى مكافأة يجب أن تكون أكبر من أو تساوي أقل مكافأة.');const {error}=await supabase.from('room_bomb_levels').upsert(payload,{onConflict:'level'});if(error)throw error;await loadBombLevels();message('تم حفظ إعدادات مستوى القنبلة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#user-search').onsubmit=async e=>{e.preventDefault();try{await loadUsers(e.currentTarget.elements.term.value);}catch(err){$('#user-results').innerHTML='<p class="text-red-300">'+esc(err.message)+'</p>';}};
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games','bomb'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));
