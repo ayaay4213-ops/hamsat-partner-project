@@ -15,7 +15,8 @@ alter table public.wallet_transactions
     'gift_received',
     'admin_adjustment',
     'shop_purchase',
-    'room_bomb_reward'
+    'room_bomb_reward',
+    'agency_topup'
   ));
 
 alter table public.shop_items
