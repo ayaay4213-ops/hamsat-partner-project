@@ -1083,3 +1083,65 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-room-seat{border:0!important;background:transparent!important}
 .hs-room-chat{border:0!important;background:rgba(8,9,12,.34)!important;border-radius:16px!important}
 @media(max-width:380px){.hs-gift-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hs-inbox-intro{padding:16px}.hs-room-exit span{display:none}}
+
+
+/* HAMSAT COSMIC VOICE ROOM — immersive room layout */
+.room-sheet{background-color:#070910!important;background-image:radial-gradient(ellipse at 50% 18%,rgba(71,91,177,.20),transparent 42%),radial-gradient(ellipse at 12% 42%,rgba(88,45,150,.13),transparent 35%),radial-gradient(ellipse at 88% 70%,rgba(24,105,129,.10),transparent 35%),linear-gradient(180deg,#080b16 0%,#080910 55%,#050609 100%)!important}
+.room-sheet:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;background-image:radial-gradient(1px 1px at 12% 18%,#fff 55%,transparent 100%),radial-gradient(1px 1px at 76% 12%,#d9c8ff 55%,transparent 100%),radial-gradient(1px 1px at 88% 42%,#fff 55%,transparent 100%),radial-gradient(1px 1px at 22% 67%,#b9c9ff 55%,transparent 100%),radial-gradient(1px 1px at 61% 78%,#fff 55%,transparent 100%);background-size:180px 180px,230px 230px,270px 270px,310px 310px,220px 220px;z-index:0}
+.room-sheet>*{position:relative;z-index:1}
+.room-sheet .hs-room-head{border:1px solid rgba(190,174,255,.19)!important;border-radius:20px!important;background:linear-gradient(145deg,rgba(24,28,53,.88),rgba(8,10,20,.94))!important;box-shadow:0 12px 34px #0008,0 0 28px #6c5bba12!important}
+.room-sheet .hs-room-cover{min-height:142px!important;background-image:radial-gradient(ellipse at 50% 0%,rgba(117,104,206,.23),transparent 65%),linear-gradient(145deg,#151a32,#080b15 78%)!important}
+.room-sheet .hs-room-title-row{margin-top:17px!important}
+.room-sheet .hs-room-title-row h2{color:#f5edff!important;font-size:18px!important}
+.room-sheet .hs-room-owner-tag,.room-sheet .hs-room-state{border-color:#9b8be055!important;background:#13172bbd!important;color:#e5d6ff!important}
+.room-sheet .hs-room-meta{gap:6px!important;margin:8px 0 10px!important;padding:0 2px!important}
+.room-sheet .hs-room-meta>span,.room-sheet .hs-room-meta button{font-size:10px!important;border-color:#8f82c344!important;background:#14172a!important;color:#e6dcff!important}
+.room-sheet .hs-room-banner{height:31px;overflow:hidden;display:flex;align-items:center;gap:10px;margin:8px 0;border:1px solid #c7a65a40;border-radius:9px;background:linear-gradient(90deg,#1d1b2b,#14172a,#211b2a);color:#f1d98c;font-size:10px;white-space:nowrap}
+.hs-banner-star{padding:0 10px;color:#f3d98b}
+.hs-banner-track{display:flex;gap:42px;min-width:max-content;animation:hsRoomTicker 24s linear infinite}
+.hs-banner-track span{padding-inline:12px}
+@keyframes hsRoomTicker{from{transform:translateX(0)}to{transform:translateX(50%)}}
+.room-sheet .hs-room-shortcuts{display:flex;justify-content:space-between;gap:10px;margin:7px 0 12px}
+.room-sheet .hs-room-shortcuts a{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border:1px solid #8f82c333;border-radius:12px;background:#111629;color:#d9ceff;font-size:10px}
+.room-sheet .hs-room-shortcuts svg{width:15px;height:15px;color:#e4c56c}
+.room-sheet .hs-room-stage{margin:8px 0 10px!important;padding:12px 8px!important;background:transparent!important}
+.room-sheet .hs-room-section-title{margin-bottom:8px!important}
+.room-sheet .hs-room-section-title h3{color:#f3eaff!important}
+.room-sheet .hs-room-eyebrow{color:#b7a5ff!important}
+.room-sheet .hs-room-seat-count{background:#171a31!important;border-color:#9583dc55!important;color:#e4d8ff!important}
+.room-sheet .hs-room-seats{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:15px 5px!important;padding:12px 0!important}
+.room-sheet .hs-room-seat{min-height:0!important;background:transparent!important;border:0!important;padding:0!important;gap:4px!important}
+.room-sheet .hs-room-seat:first-child{grid-column:3!important;grid-row:1!important;transform:scale(1.12);margin-bottom:5px}
+.room-sheet .hs-seat-ring{width:54px!important;height:54px!important;border:1px solid #9d8be8aa!important;background:radial-gradient(circle,#29234a 0%,#14162a 65%,#0a0c16 100%)!important;box-shadow:0 0 0 4px #8972d51c,0 0 18px #8972d52b!important}
+.room-sheet .hs-room-seat:first-child .hs-seat-ring{width:66px!important;height:66px!important;border:2px solid #e6c76e!important;box-shadow:0 0 0 5px #d8b85a25,0 0 26px #d8b85a55!important}
+.room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#e2c66e!important;box-shadow:0 0 0 4px #d6b65a22,0 0 20px #d6b65a4c!important}
+.room-sheet .hs-seat-number{background:linear-gradient(135deg,#f3df9d,#bd9339)!important;color:#17120a!important;border-color:#fff0bb!important}
+.room-sheet .hs-room-seat b{color:#f2edff!important;font-size:10px!important}
+.room-sheet .hs-room-seat small{color:#a9a4c3!important}
+.room-sheet .hs-room-stage-note,.room-sheet .hs-room-people{display:none!important}
+.room-sheet .hs-room-chat-area{margin-top:6px!important;padding:10px 2px calc(12px + env(safe-area-inset-bottom))!important;background:transparent!important;border:0!important;display:flex;flex-direction:column;min-height:230px}
+.room-sheet .hs-room-chat-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.room-sheet .hs-room-chat-heading h3{color:#f2eaff;font-size:15px;font-weight:900}
+.room-sheet .hs-room-welcome{padding:9px 12px;margin-bottom:9px;border:1px solid #d6b65a45;border-radius:12px;background:linear-gradient(110deg,#342a1b88,#1a1c2c);color:#f0dfaa}
+.room-sheet .hs-room-welcome span{font-size:9px;color:#f3d77e;letter-spacing:.08em}
+.room-sheet .hs-room-welcome p{font-size:11px;line-height:1.7;margin-top:3px}
+.room-sheet #room-chat{height:min(27dvh,240px)!important;min-height:130px;flex:1;background:rgba(8,10,19,.42)!important;border:1px solid #9b8de21c!important;border-radius:14px!important;padding:10px!important}
+.room-sheet .hs-room-message{display:flex;align-items:flex-start;gap:8px;margin:8px 0}
+.room-sheet .hs-room-message>div:last-child b{color:#d9cbff;font-size:10px}
+.room-sheet .hs-room-message p{color:#f5f1ff;font-size:12px}
+.room-sheet .hs-room-bottom-bar{position:sticky;bottom:calc(-1 * env(safe-area-inset-bottom));padding:9px 0 calc(5px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(7,9,16,.82),#080a12 22%);backdrop-filter:blur(16px);border-top:1px solid #9a8cdd22;z-index:5}
+.room-sheet .hs-room-tools-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
+.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:39px;height:39px;flex:none;border-radius:13px;display:grid;place-items:center;border:1px solid #9a8cdd3b;background:#171a2d;color:#d9d0ff}
+.room-sheet .hs-tool-icon svg,.room-sheet .hs-tool-mic svg,.room-sheet .hs-tool-gift svg{width:18px;height:18px}
+.room-sheet .hs-tool-mic{background:linear-gradient(145deg,#f0dc9b,#bd9238);border-color:#f4dfa1;color:#17120a}
+.room-sheet .hs-tool-gift{background:linear-gradient(145deg,#e8cb7c,#b78b32);border-color:#f4dfa1;color:#17120a;box-shadow:0 0 18px #d2ac4c30}
+.room-sheet .hs-room-voice-status{font-size:9px;color:#bdb5d9;min-height:14px;margin-bottom:5px}
+.room-sheet .hs-room-compose-wrap{border:1px solid #8c7bc04a;border-radius:16px;background:#111426;padding:5px}
+.room-sheet .hs-room-compose{background:transparent!important;border:0!important;padding:0!important}
+.room-sheet .hs-room-compose input{font-size:12px!important}
+.room-sheet .hs-room-compose button{border-radius:12px!important}
+.room-sheet .hs-room-emojis{display:flex;gap:5px;overflow-x:auto;padding:6px 2px}
+.room-sheet .hs-room-emojis.hidden{display:none!important}
+.room-sheet #room-gift-panel{background:linear-gradient(145deg,#191a2d,#0c0e18)!important;border-color:#c7a65a55!important}
+.room-sheet #room-settings-panel{background:#0d1020!important;border-color:#9583dc44!important}
+@media(max-width:380px){.room-sheet .hs-seat-ring{width:47px!important;height:47px!important}.room-sheet .hs-room-seats{gap:13px 3px!important}.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:35px;height:37px}}
