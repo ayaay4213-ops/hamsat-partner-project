@@ -16,6 +16,8 @@ const required = [
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
+  'supabase/migrations/0015_direct_messaging.sql',
+  'supabase/migrations/0016_notifications.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -23,6 +25,20 @@ const required = [
 
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
+}
+
+// Supabase migration versions must be unique. Duplicate numeric prefixes make
+// migration history ambiguous and can stop a clean project setup.
+const migrationDir = path.join(root, 'supabase/migrations');
+if (fs.existsSync(migrationDir)) {
+  const versions = new Map();
+  for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
+    const version = file.match(/^(\\d+)_/);
+    if (!version) continue;
+    const previous = versions.get(version[1]);
+    if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
+    else versions.set(version[1], file);
+  }
 }
 
 let manifest;
@@ -112,6 +128,22 @@ if (fs.existsSync(seatMigrationPath)) {
     'alter publication supabase_realtime add table public.room_members'
   ]) {
     if (!sql.toLowerCase().includes(token.toLowerCase())) errors.push(`Missing required audio-room SQL: ${token}`);
+  }
+}
+
+const dmMigrationPath = path.join(root, 'supabase/migrations/0015_direct_messaging.sql');
+if (fs.existsSync(dmMigrationPath)) {
+  const sql = fs.readFileSync(dmMigrationPath, 'utf8').toLowerCase();
+  for (const token of ['create table if not exists public.dm_conversations', 'create table if not exists public.dm_messages', 'create or replace function public.get_or_create_conversation', 'alter publication supabase_realtime add table public.dm_messages']) {
+    if (!sql.includes(token)) errors.push(`Missing direct-message SQL: ${token}`);
+  }
+}
+
+const notificationsMigrationPath = path.join(root, 'supabase/migrations/0016_notifications.sql');
+if (fs.existsSync(notificationsMigrationPath)) {
+  const sql = fs.readFileSync(notificationsMigrationPath, 'utf8').toLowerCase();
+  for (const token of ['create table if not exists public.notifications', 'create or replace function public.notify_dm_recipient', 'create or replace function public.notify_gift_recipient', 'alter publication supabase_realtime add table public.notifications']) {
+    if (!sql.includes(token)) errors.push(`Missing notification SQL: ${token}`);
   }
 }
 
