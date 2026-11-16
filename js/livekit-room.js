@@ -15,6 +15,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let seatChannel = null;
   let permissionRefreshing = false;
   const audioElements = new Map();
+  const mutedParticipants = new Set();
 
   const status = (message, connected = joined) => {
     if (!disposed) onState({ message, connected, muted });
@@ -89,6 +90,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
         element.playsInline = true;
         element.setAttribute('playsinline', '');
         element.dataset.livekitParticipant = participant.identity;
+        element.muted = mutedParticipants.has(participant.identity);
         const root = document.getElementById('voice-audio');
         if (root) root.appendChild(element);
         audioElements.set(track.sid, { track, element });
@@ -185,6 +187,15 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     return muted;
   }
 
+  function setParticipantMuted(identity, shouldMute) {
+    if (!identity) return false;
+    if (shouldMute) mutedParticipants.add(identity); else mutedParticipants.delete(identity);
+    for (const item of audioElements.values()) {
+      if (item.element.dataset.livekitParticipant === identity) item.element.muted = shouldMute;
+    }
+    return true;
+  }
+
   async function leave() {
     disposed = true;
     joined = false;
@@ -208,5 +219,5 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false });
   }
 
-  return { join, leave, toggleMute, enableAudio, refreshPermissions, get muted() { return muted; }, get canPublish() { return canPublish; } };
+  return { join, leave, toggleMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get canPublish() { return canPublish; } };
 }
