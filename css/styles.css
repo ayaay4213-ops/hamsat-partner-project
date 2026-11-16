@@ -1144,4 +1144,4 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .room-sheet .hs-room-emojis.hidden{display:none!important}
 .room-sheet #room-gift-panel{background:linear-gradient(145deg,#191a2d,#0c0e18)!important;border-color:#c7a65a55!important}
 .room-sheet #room-settings-panel{background:#0d1020!important;border-color:#9583dc44!important}
-@media(max-width:380px){.room-sheet .hs-seat-ring{width:47px!important;height:47px!important}.room-sheet .hs-room-seats{gap:13px 3px!important}.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:35px;height:37px}}
+@media(max-width:380px){.room-sheet .hs-seat-ring{width:47px!important;height:47px!important}.room-sheet .hs-room-seats{gap:13px 3px!important}.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:31px;height:36px}.room-sheet .hs-room-tools-row{gap:4px!important}}
