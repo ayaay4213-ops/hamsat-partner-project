@@ -481,14 +481,16 @@ export const api = {
     const byId = Object.fromEntries(profiles.map(p => [p.id, p]));
     return { recharges: (data || []).map(x => ({ ...x, agent: byId[x.agent_id] || null, target: byId[x.target_user_id] || null })) };
   },
-  agencyFinance: async (agencyId) => {
+  agencyFinance: async (agencyId, canViewAgency = false) => {
     const user = await currentUser();
-    const [agency, agent] = await Promise.all([
-      client().from('agency_wallets').select('balance_dzd').eq('agency_id', agencyId).maybeSingle(),
-      client().from('agent_commission_wallets').select('balance_dzd').eq('user_id', user.id).maybeSingle()
-    ]);
-    fail(agency.error); fail(agent.error);
-    return { agencyBalance: agency.data?.balance_dzd || 0, agentBalance: agent.data?.balance_dzd || 0 };
+    const agent = await client().from('agent_commission_wallets').select('balance_dzd').eq('user_id', user.id).maybeSingle();
+    fail(agent.error);
+    let agencyBalance = null;
+    if (canViewAgency) {
+      const agency = await client().from('agency_wallets').select('balance_dzd').eq('agency_id', agencyId).maybeSingle();
+      fail(agency.error); agencyBalance = agency.data?.balance_dzd || 0;
+    }
+    return { agencyBalance, agentBalance: agent.data?.balance_dzd || 0 };
   },
   topupPackages: async () => {
     const { data, error } = await client().from('topup_packages').select('*').eq('active', true).order('sort_order');
