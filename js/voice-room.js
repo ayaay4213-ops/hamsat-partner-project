@@ -22,6 +22,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   const peers = new Map();
   const audioNodes = new Map();
   const pendingIce = new Map();
+  const mutedParticipants = new Set();
 
   const status = (message, connected = false) => onState({ message, connected, muted });
 
@@ -79,6 +80,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
         audio.setAttribute('playsinline', '');
         audio.setAttribute('aria-label', 'صوت مشارك في الغرفة');
         audio.dataset.voicePeer = remoteId;
+        audio.muted = mutedParticipants.has(remoteId);
         const root = document.getElementById('voice-audio');
         if (root) root.appendChild(audio);
         audioNodes.set(remoteId, audio);
@@ -238,6 +240,14 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     return muted;
   }
 
+  function setParticipantMuted(identity, shouldMute) {
+    if (!identity) return false;
+    if (shouldMute) mutedParticipants.add(identity); else mutedParticipants.delete(identity);
+    const audio = audioNodes.get(identity);
+    if (audio) audio.muted = shouldMute;
+    return true;
+  }
+
   async function leave() {
     joined = false;
     if (channel) {
@@ -258,7 +268,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, enableAudio, get muted() { return muted; } };
+  return { join, leave, toggleMute, enableAudio, setParticipantMuted, get muted() { return muted; } };
 }
 
 
