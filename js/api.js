@@ -131,6 +131,19 @@ export const api = {
     fail(error);
     return data || { friends: 0, followers: 0, following: 0, visitors: 0, giftsReceived: 0 };
   },
+  profileRewards: async (profileId) => {
+    const [progress,badges,inventory]=await Promise.all([
+      client().from('user_progress').select('xp,level').eq('user_id',profileId).maybeSingle(),
+      client().from('user_badges').select('earned_at,badge:badge_catalog(id,name,description,icon,rarity)').eq('user_id',profileId).order('earned_at',{ascending:false}),
+      client().from('user_inventory').select('item_id,purchased_at,item:shop_items(id,name,item_type,rarity,visual_key,image_url,animation_url)').eq('user_id',profileId).order('purchased_at',{ascending:false}).limit(30)
+    ]);
+    fail(progress.error);fail(badges.error);fail(inventory.error);
+    return {
+      progress:progress.data||{xp:0,level:1},
+      badges:(badges.data||[]).map(x=>({...x.badge,earnedAt:x.earned_at})).filter(x=>x.id),
+      items:(inventory.data||[]).map(x=>({...x.item,purchasedAt:x.purchased_at})).filter(x=>x.id)
+    };
+  },
   friends: async () => {
     const user=await currentUser();
     const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','accepted').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
