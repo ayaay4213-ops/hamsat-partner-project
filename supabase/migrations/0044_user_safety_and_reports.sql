@@ -197,3 +197,7 @@ end;
 $$;
 revoke all on function private.get_or_create_conversation(uuid) from public,anon,authenticated;
 grant execute on function private.get_or_create_conversation(uuid) to authenticated;
+
+-- Recipients may update only read_at, never rewrite another person's message body.
+revoke update on public.dm_messages from authenticated;
+grant update(read_at) on public.dm_messages to authenticated;
