@@ -78,7 +78,7 @@ function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -849,6 +849,7 @@ function meScreen() {
         <a href="#/wallet" class="card p-4"><p class="text-xs text-[#a993c8] mb-1">الرصيد</p><p class="flex items-center gap-1.5 font-bold text-gold-300 text-lg">${coin(18)}${num(state.wallet?.balance)}</p></a>
         <div class="card p-4"><p class="text-xs text-[#a993c8] mb-1">البريد الإلكتروني</p><p class="font-bold text-sm truncate" dir="ltr">${esc(state.account?.email)}</p></div>
       </div>
+      <a href="#/friends" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="users" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">الأصدقاء والمتابعة</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></a>
       <button id="edit-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="pen-line" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">تعديل الملف الشخصي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
       <a href="#/shop" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="gem" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">إطاراتي ومقتنياتي</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></a>
       <button id="share-profile" class="card w-full p-4 flex items-center gap-3 text-right"><i data-lucide="share-2" class="w-5 h-5 text-gold-400"></i><span class="flex-1 font-medium">نسخ اسم المستخدم</span><i data-lucide="chevron-left" class="w-5 h-5 text-[#6e5a8c]"></i></button>
@@ -872,15 +873,30 @@ async function userScreen(handle) {
   if (handle === state.profile?.handle) { location.hash = '#/me'; return; }
   screen.innerHTML = header('الملف الشخصي', `<button onclick="history.back()" class="p-2 -ml-2"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>`) + `<div id="user-body">${loading()}</div>`;
   icons_();
+  let profile;
   try {
-    const { profile } = await api.user(handle);
+    ({ profile } = await api.user(handle));
     $('#user-body').innerHTML = `<div class="fade-in">${profileView(profile, false)}
       <div class="px-5 py-5 space-y-3">
+        <div id="friend-actions" class="grid grid-cols-2 gap-2"><button id="friend-action" class="btn-ghost w-full">إضافة صديق</button><button id="follow-action" class="btn-gold w-full">متابعة</button></div>
         <button id="send-message" class="btn-ghost w-full"><i data-lucide="message-circle" class="w-5 h-5"></i>إرسال رسالة</button>
         <button id="send-gift" class="btn-gold w-full"><i data-lucide="gift" class="w-5 h-5"></i>إرسال هدية</button>
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
+
+  if(profile){
+    try{
+      const status=await api.friendState(profile.uuid), req=status.request;
+      const friendBtn=$('#friend-action'), followBtn=$('#follow-action');
+      if(req?.status==='accepted') friendBtn.textContent='✓ صديق';
+      else if(req?.status==='pending'&&req.sender_id===state.profile.uuid){friendBtn.textContent='تم إرسال الطلب';friendBtn.disabled=true;}
+      else if(req?.status==='pending'&&req.receiver_id===state.profile.uuid){friendBtn.textContent='قبول طلب الصداقة';friendBtn.onclick=async()=>{try{await api.respondFriendRequest(req.id,true);toast('أصبحتم أصدقاء');userScreen(handle);}catch(e){toast(e.message,'error');}};}
+      else friendBtn.onclick=async()=>{try{await api.sendFriendRequest(profile.uuid);friendBtn.textContent='تم إرسال الطلب';friendBtn.disabled=true;toast('تم إرسال طلب الصداقة');}catch(e){toast(e.message,'error');}};
+      followBtn.textContent=status.following?'إلغاء المتابعة':'متابعة';
+      followBtn.onclick=async()=>{try{if(status.following)await api.unfollowUser(profile.uuid);else await api.followUser(profile.uuid);toast(status.following?'تم إلغاء المتابعة':'بدأتِ متابعة هذا المستخدم');userScreen(handle);}catch(e){toast(e.message,'error');}};
+    }catch(e){toast(e.message,'error');}
+  }
   const messageButton = $('#send-message');
   if (messageButton) messageButton.onclick = async () => {
     try { const result = await api.startConversation(profile.uuid); location.hash = '#/dm/' + result.conversationId; }
@@ -920,6 +936,38 @@ async function userScreen(handle) {
           };
         });
     } catch (err) { toast(err.message, 'error'); }
+  };
+}
+
+
+async function friendsScreen(){
+  screen.innerHTML=header('الأصدقاء والمتابعة')+`
+    <div class="p-4 space-y-4 fade-in">
+      <div class="card p-4"><h2 class="font-bold text-gold-300 mb-2">ابحثي عن الأعضاء</h2><input id="friend-search" class="field" placeholder="اكتبي الاسم أو اسم المستخدم..." autocomplete="off"><div id="friend-search-results" class="space-y-2 mt-3"></div></div>
+      <section><div class="flex justify-between items-center mb-2"><h3 class="font-bold">طلبات الصداقة</h3><span id="friend-request-count" class="text-xs text-gold-300"></span></div><div id="friend-requests" class="space-y-2">${loading()}</div></section>
+      <section><h3 class="font-bold mb-2">أصدقائي</h3><div id="friends-list" class="space-y-2">${loading()}</div></section>
+    </div>`;
+  icons_();
+  const requestsRoot=$('#friend-requests'),friendsRoot=$('#friends-list'),searchRoot=$('#friend-search-results');
+  try{
+    const [requests,friends]=await Promise.all([api.friendRequests(),api.friends()]);
+    $('#friend-request-count').textContent=requests.incoming.length+' واردة';
+    requestsRoot.innerHTML=requests.incoming.length?requests.incoming.map(x=>`<div class="card p-3 flex items-center gap-2">${avatar(x.user,42)}<div class="flex-1 min-w-0"><b>${esc(x.user.displayName)}</b><small class="block text-xs opacity-70">@${esc(x.user.handle)}</small></div><button class="btn-gold px-3 py-2 text-xs" data-accept="${esc(x.id)}">قبول</button><button class="btn-ghost px-3 py-2 text-xs" data-reject="${esc(x.id)}">رفض</button></div>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد طلبات جديدة.</p>';
+    requestsRoot.querySelectorAll('[data-accept]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.accept,true);toast('تمت إضافة الصديق');friendsScreen();}catch(e){toast(e.message,'error');}});
+    requestsRoot.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.reject,false);toast('تم رفض الطلب');friendsScreen();}catch(e){toast(e.message,'error');}});
+    friendsRoot.innerHTML=friends.friends.length?friends.friends.map(u=>`<a href="#/u/${esc(u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لم تضيفي أصدقاء بعد. ابحثي عن شخص وابدئي بإرسال طلب.</p>';
+  }catch(e){requestsRoot.innerHTML=emptyBox('wifi-off','تعذّر تحميل الطلبات',e.message);friendsRoot.innerHTML='';}
+  let searchTimer;
+  $('#friend-search').oninput=()=>{
+    clearTimeout(searchTimer);const term=$('#friend-search').value.trim();
+    if(term.length<2){searchRoot.innerHTML='';return;}
+    searchTimer=setTimeout(async()=>{
+      try{
+        const {users}=await api.searchUsers(term);
+        searchRoot.innerHTML=users.length?users.map(u=>`<div class="flex items-center gap-2 py-2 border-b border-white/5">${avatar(u,40)}<a class="flex-1 min-w-0" href="#/u/${esc(u.handle)}"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></a><button class="btn-ghost px-3 py-2 text-xs" data-add-friend="${esc(u.handle)}">عرض / إضافة</button></div>`).join(''):'<p class="text-xs opacity-70">لم نعثر على مستخدم بهذا الاسم.</p>';
+        searchRoot.querySelectorAll('[data-add-friend]').forEach(b=>b.onclick=()=>location.hash='#/u/'+encodeURIComponent(b.dataset.addFriend));
+      }catch(e){searchRoot.innerHTML='<p class="text-xs text-red-300">'+esc(e.message)+'</p>';}
+    },250);
   };
 }
 
@@ -987,6 +1035,7 @@ async function directMessageScreen(conversationId) {
     if (route === 'notifications') await notificationsScreen();
     else if (route === 'games') await gamesScreen();
     else if (route === 'inbox') await inboxScreen();
+    else if (route === 'friends') await friendsScreen();
     else if (route === 'dm' && parts[1]) await directMessageScreen(decodeURIComponent(parts[1]));
     else if (route === 'rooms') await roomsScreen(params);
     else if (route === 'gifts') await giftsScreen();
