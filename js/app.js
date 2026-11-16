@@ -77,7 +77,7 @@ function loading() {
 function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
-    <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
+    <div class="side-drawer-brand"><span>H A M S A T</span><strong>HAMSAT ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
     <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
@@ -181,7 +181,7 @@ function welcomeScreen() {
     <header class="hs-welcome-head"><span class="hs-welcome-mark">✦</span><span>H A M S A T</span><span class="hs-welcome-mark">✦</span></header>
     <section class="hs-welcome-visual">
       <img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات">
-      <div class="hs-welcome-title"><span>مساحة من الألفة والجمال</span><h1>همسات</h1><small>حيث تلتقي الأرواح بالصوت</small></div>
+      <div class="hs-welcome-title"><span>مساحة من الألفة والجمال</span><h1>HAMSAT</h1><small>حيث تلتقي الأرواح بالصوت</small></div>
     </section>
     <div class="hs-welcome-intro"><span class="hs-welcome-line"></span><p>أصدقاء جدد، غرف صوتية، ولحظات تبقى في القلب</p><span class="hs-welcome-line"></span></div>
     <div class="auth-panel hs-welcome-panel">
@@ -196,7 +196,7 @@ function welcomeScreen() {
         <label class="label">كلمة المرور</label>
         <div class="password-tools" data-password-tools><input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
         <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !</div>
-        <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>دخول إلى همسات</button>
+        <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>دخول إلى HAMSAT</button>
       </form>
       <button id="auth-forgot" type="button" class="text-sm text-gold-300 underline underline-offset-4 mt-3 w-full text-center">نسيت كلمة المرور؟</button>
       <p id="auth-feedback" class="hidden text-xs leading-6 mt-3 rounded-xl p-3" role="status" aria-live="polite"></p>
@@ -436,7 +436,7 @@ async function homeScreen() {
     '<header class="hs-home-top"><div class="hs-home-brand">' +
     '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' +
     '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
-    '<div><span>أهلًا بكِ في همسات</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
+    '<div><span>أهلًا بكِ في HAMSAT</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
     '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
     '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
     '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
