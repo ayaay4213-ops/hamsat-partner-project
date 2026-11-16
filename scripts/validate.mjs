@@ -219,6 +219,25 @@ if (fs.existsSync(safetyPath)) {
     if (!sql.includes(token)) errors.push(`Missing user safety SQL: ${token}`);
   }
 }
+const compatibilityPath = path.join(root, 'supabase/migrations/0046_catalog_and_wallet_type_compatibility.sql');
+if (fs.existsSync(compatibilityPath)) {
+  const sql = fs.readFileSync(compatibilityPath, 'utf8').toLowerCase();
+  for (const token of [
+    'room_bomb_reward',
+    'wallet_transactions_transaction_type_check',
+    'profile_frame',
+    'chat_bubble',
+    'special_id',
+    'shop_items_item_type_check'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing catalog/wallet compatibility SQL: ${token}`);
+  }
+} else {
+  errors.push('Missing catalog and wallet compatibility migration: 0046');
+}
+const hardeningPath = path.join(root, 'supabase/migrations/0045_security_and_query_hardening.sql');
+if (!fs.existsSync(hardeningPath)) errors.push('Missing security and query hardening migration: 0045');
+
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
 if (fs.existsSync(liveKitRoomPath)) {
   const js = fs.readFileSync(liveKitRoomPath, 'utf8');
