@@ -328,6 +328,8 @@ function profileForm(p = {}, isNew = true) {
     <div><label class="label">اسم المستخدم</label>
       <div class="relative"><input name="handle" class="field ltr text-left pl-8" dir="ltr" maxlength="20" required placeholder="username" value="${esc(p.handle || state.account?.username?.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20) || '')}"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e5a8c]">@</span></div>
       <p class="text-[11px] text-[#8a76a8] mt-1">أحرف إنجليزية صغيرة وأرقام و _ فقط</p></div>
+    <div><label class="label">العمر</label><input name="age" class="field" type="number" min="13" max="120" placeholder="اختياري" value="${esc(p.age || '')}"></div>
+    <div><label class="label">الجنس</label><select name="gender" class="field"><option value="">غير محدد</option><option value="female" ${p.gender==='female'?'selected':''}>أنثى</option><option value="male" ${p.gender==='male'?'selected':''}>ذكر</option><option value="other" ${p.gender==='other'?'selected':''}>آخر</option></select></div>
     <div><label class="label">نبذة عنك</label><textarea name="bio" class="field resize-none" rows="3" maxlength="160" placeholder="اكتب شيئًا عن نفسك...">${esc(p.bio || '')}</textarea></div>
     <div><label class="label">الدولة</label><input name="country" class="field" maxlength="30" placeholder="اختياري" value="${esc(p.country || '')}"></div>
     <button type="submit" class="btn-gold w-full">${isNew ? '<i data-lucide="check" class="w-5 h-5"></i>إنشاء الملف الشخصي' : '<i data-lucide="save" class="w-5 h-5"></i>حفظ التغييرات'}</button>
@@ -394,7 +396,7 @@ function bindProfileForm(root, onSaved) {
     }
     const values = Object.fromEntries(new FormData(form));
     const payload = {
-      handle: values.handle, displayName: values.displayName, bio: values.bio,
+      handle: values.handle, displayName: values.displayName, bio: values.bio, age: values.age, gender: values.gender,
       country: values.country, color: values.color,
       avatarUrl: values.avatarUrl, coverUrl: values.coverUrl, backgroundUrl: values.backgroundUrl
     };
@@ -984,6 +986,19 @@ async function loadProfileStats(profileId, recordVisit = false) {
   }
 }
 
+
+async function bindProfileSocial(profile,own){
+ const root=document.querySelector('.hs-profile-page');if(!root)return;
+ const buttons=[...root.querySelectorAll('[data-profile-tab]')],panels=[...root.querySelectorAll('[data-profile-panel]')];
+ const show=name=>{buttons.forEach(b=>b.classList.toggle('active',b.dataset.profileTab===name));panels.forEach(p=>p.hidden=p.dataset.profilePanel!==name);if(name==='moments')loadProfileMoments(profile.uuid,own);};
+ buttons.forEach(b=>b.onclick=()=>show(b.dataset.profileTab));
+ const share=root.querySelector('#share-profile-cover');if(share)share.onclick=async()=>{const url=location.origin+location.pathname+'#/u/'+encodeURIComponent(profile.handle||profile.publicId||'');try{if(navigator.share)await navigator.share({title:'HAMSAT',url});else{await navigator.clipboard.writeText(url);toast('تم نسخ رابط الحساب');}}catch(e){if(e.name!=='AbortError')toast(url);}};
+ await loadCoupleSpace(profile,own);
+ const form=root.querySelector('[data-moment-form]');if(form)form.onsubmit=async e=>{e.preventDefault();const body=form.elements.body.value.trim(),file=form.elements.momentImage.files?.[0],btn=form.querySelector('[type=submit]');btn.disabled=true;try{let imageUrl=null;if(file)imageUrl=(await api.uploadMedia(file,'moments')).url;if(!body&&!imageUrl)throw new Error('اكتبي شيئاً أو أضيفي صورة');await api.createMoment(body,imageUrl);form.reset();toast('تم نشر لحظتك');await loadProfileMoments(profile.uuid,true);}catch(err){toast(err.message,'error');}finally{btn.disabled=false;}};
+}
+async function loadProfileMoments(id,own){const host=document.querySelector('[data-moments-list]');if(!host)return;host.textContent='جارٍ تحميل اللحظات…';try{const {moments}=await api.moments(id);host.innerHTML=moments.length?moments.map(m=>'<article class="hs-moment-card">'+(m.image_url?'<img src="'+esc(m.image_url)+'" alt="صورة لحظة" loading="lazy">':'')+(m.body?'<p>'+esc(m.body)+'</p>':'')+'<small>'+dateAr(new Date(m.created_at).getTime())+'</small>'+(own?'<button type="button" data-delete-moment="'+esc(m.id)+'">حذف</button>':'')+'</article>').join(''):'<div class="hs-moment-empty">لا توجد لحظات منشورة بعد.</div>';host.querySelectorAll('[data-delete-moment]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذه اللحظة؟'))return;try{await api.deleteMoment(b.dataset.deleteMoment);loadProfileMoments(id,own);}catch(e){toast(e.message,'error');}});}catch(e){host.innerHTML='<div class="hs-moment-empty">تعذر تحميل اللحظات: '+esc(e.message)+'</div>';}}
+async function loadCoupleSpace(profile,own){const host=document.querySelector('[data-couple-space]');if(!host)return;try{const {space,partner}=await api.coupleSpace(profile.uuid),title='<div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div>';if(!space){host.innerHTML=title+(own?'<p class="hs-cp-empty">لا توجد مساحة CP مرتبطة بحسابك بعد.</p>':'<p class="hs-cp-empty">لا توجد مساحة CP لهذا العضو حالياً.</p><button type="button" class="btn-gold" data-cp-invite>إرسال دعوة CP</button>');host.querySelector('[data-cp-invite]')?.addEventListener('click',async()=>{try{await api.inviteCouple(profile.uuid);toast('تم إرسال دعوة CP');await loadCoupleSpace(profile,false);}catch(e){toast(e.message,'error');}});return;}host.innerHTML=title+'<div class="hs-cp-pair">'+avatar(profile,54)+'<span>♡</span>'+avatar(partner||{},54)+'</div><b class="hs-cp-names">'+esc(profile.displayName)+' & '+esc(partner?.displayName||'عضو')+'</b><small class="hs-cp-state">'+(space.status==='active'?'مرتبطان في همسات':'دعوة CP بانتظار الرد')+'</small>'+(space.status==='pending'&&space.partner_id===state.profile?.uuid?'<div class="hs-cp-actions"><button data-cp-accept>قبول</button><button data-cp-reject>رفض</button></div>':'')+(space.status==='active'&&own?'<button data-cp-end>إنهاء الارتباط</button>':'');host.querySelector('[data-cp-accept]')?.addEventListener('click',async()=>{await api.respondCoupleSpace(space.id,true);loadCoupleSpace(profile,own);});host.querySelector('[data-cp-reject]')?.addEventListener('click',async()=>{await api.respondCoupleSpace(space.id,false);loadCoupleSpace(profile,own);});host.querySelector('[data-cp-end]')?.addEventListener('click',async()=>{if(confirm('إنهاء مساحة CP؟')){await api.endCoupleSpace(space.id);loadCoupleSpace(profile,own);}});}catch(e){host.innerHTML='<div class="hs-cp-empty">تعذر تحميل مساحة CP: '+esc(e.message)+'</div>';}}
+
 function profileView(p, own) {
   const avatarFrame = `
     <div class="hs-profile-frame">
@@ -994,19 +1009,21 @@ function profileView(p, own) {
   return `
     <section class="hs-profile-page">
       <div class="hs-profile-cover" style="${p.coverUrl || p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl || p.backgroundUrl)})` : ''}">
-        <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span>
+        <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
       </div>
       <div class="hs-profile-main">
         ${avatarFrame}
         <div class="hs-profile-identity">
-          <h2>${esc(p.displayName)}</h2>
+          <h2>${esc(p.displayName)} ${p.role==='admin'?'<span class="hs-admin-badge">ADMIN</span>':''}</h2>
+          <p class="hs-profile-demographics">${p.age?num(p.age)+' سنة':''}${p.gender==='female'?' · ♀':p.gender==='male'?' · ♂':''}</p>
           <p dir="ltr">@${esc(p.handle)}</p>
           ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id" dir="ltr"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button>` : ''}
           ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
           <div class="hs-profile-tags">
+            ${p.role==='admin'?'<span>🛡️ إدارة همسات</span>':''}${p.vipLevel>0?'<span>👑 VIP '+num(p.vipLevel)+'</span>':''}
+            <span>💎 ثروة ${num(p.wealthLevel)}</span><span>✨ كاريزما ${num(p.charismaLevel)}</span>
             ${p.country ? `<span>${/الجزائر|algeria/i.test(p.country) ? '🇩🇿' : '⌖'} ${esc(p.country)}</span>` : ''}
-            <span>✦ عضو في همسات</span>
-            ${p.createdAt ? `<span>منذ ${dateAr(p.createdAt)}</span>` : ''}
+            <span>✦ عضو في همسات</span>${p.createdAt ? `<span>منذ ${dateAr(p.createdAt)}</span>` : ''}
           </div>
         </div>
         ${!own ? '' : '<button type="button" class="hs-profile-edit-hint hs-bio-edit" id="edit-profile-inline"><i data-lucide="pencil"></i> تعديل النبذة والملف</button>'}
@@ -1015,8 +1032,9 @@ function profileView(p, own) {
         <div class="hs-profile-ribbon">
           <span>✧</span><b>H A M S A T</b><span>♡</span>
         </div>` : ''}
-      ${profileStatsMarkup()}
-      ${profileRewardsMarkup()}
+      <div class="hs-profile-tabs"><button class="active" type="button" data-profile-tab="profile">الملف الشخصي</button><button type="button" data-profile-tab="moments">لحظة</button></div>
+      <div data-profile-panel="profile">${profileStatsMarkup()}${profileRewardsMarkup()}<section class="hs-cp-card" data-couple-space><div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div><div class="hs-cp-loading">جارٍ تحميل مساحة CP…</div></section></div>
+      <section data-profile-panel="moments" class="hs-moments-panel" hidden>${own?'<form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر اللحظة</button></form>':''}<div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>
     </section>`;
 }
 
@@ -1079,12 +1097,14 @@ function meScreen() {
   icons_();
   loadProfileStats(p.uuid, false);
   loadProfileRewards(p.uuid,p);
+  bindProfileSocial(p,true);
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   const editProfileAction = () => openSheet(`<h2 class="text-lg font-bold mb-2">تعديل الملف الشخصي</h2>${profileForm(p, false)}`, (s) => {
     bindProfileForm(s, () => { closeSheet(); toast('تم حفظ التغييرات'); render(); });
   });
   $('#edit-profile-inline')?.addEventListener('click',editProfileAction);
+  $('#edit-profile-cover')?.addEventListener('click',editProfileAction);
   document.querySelectorAll('[data-profile-stat-go]').forEach(button=>button.addEventListener('click',()=>{
     const key=button.dataset.profileStatGo;
     if(key==='visitors'){toast('قائمة الزوار التفصيلية قيد التجهيز');return;}
@@ -1119,7 +1139,7 @@ async function userScreen(handle) {
       </div></div>`;
   } catch (e) { $('#user-body').innerHTML = `<div class="p-5">${emptyBox('user-x', 'المستخدم غير موجود', e.message)}</div>`; }
   icons_();
-  if (profile) { loadProfileStats(profile.uuid, true); loadProfileRewards(profile.uuid,profile); }
+  if (profile) { loadProfileStats(profile.uuid, true); loadProfileRewards(profile.uuid,profile); bindProfileSocial(profile,false); }
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(profile.publicId);toast('تم نسخ ID المستخدم');}catch(e){toast(profile.publicId);}};
 
