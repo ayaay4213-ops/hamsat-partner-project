@@ -188,7 +188,7 @@ set search_path = ''
 as $$
 declare v_actor uuid := (select auth.uid()); v_target uuid; v_actor_role text;
 begin
-  select member_role into v_actor_role from public.agency_members where agency_id=p_agency_id and user_id=v_actor and status='active';
+  if public.is_admin() then v_actor_role:='owner'; else select member_role into v_actor_role from public.agency_members where agency_id=p_agency_id and user_id=v_actor and status='active'; end if;
   if coalesce(v_actor_role,'') not in ('owner','manager') then raise exception 'لا تملكين صلاحية إدارة أعضاء الوكالة'; end if;
   if p_role not in ('manager','agent','host','support') or (v_actor_role='manager' and p_role='manager') then raise exception 'الدور المطلوب غير مسموح'; end if;
   select id into v_target from public.profiles where public_id=p_member_public_id;
@@ -210,8 +210,8 @@ set search_path = ''
 as $$
 declare v_actor uuid := (select auth.uid()); v_target uuid; v_actor_role text; v_target_role text;
 begin
-  select member_role into v_actor_role from public.agency_members where agency_id=p_agency_id and user_id=v_actor and status='active';
-  if v_actor_role not in ('owner','manager') then raise exception 'لا تملكين صلاحية إدارة أعضاء الوكالة'; end if;
+  if public.is_admin() then v_actor_role:='owner'; else select member_role into v_actor_role from public.agency_members where agency_id=p_agency_id and user_id=v_actor and status='active'; end if;
+  if coalesce(v_actor_role,'') not in ('owner','manager') then raise exception 'لا تملكين صلاحية إدارة أعضاء الوكالة'; end if;
   select p.id,m.member_role into v_target,v_target_role from public.profiles p join public.agency_members m on m.user_id=p.id
    where p.public_id=p_member_public_id and m.agency_id=p_agency_id and m.status='active';
   if v_target is null then raise exception 'العضو غير موجود'; end if;
@@ -368,3 +368,28 @@ begin
   return v_order;
 end;
 $$;
+
+
+create or replace function public.admin_update_agency(
+  p_agency_id uuid,p_status text,p_commission_percent numeric,p_agent_commission_percent numeric
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_admin() then raise exception 'غير مصرح'; end if;
+  if p_status not in ('pending','active','suspended') then raise exception 'حالة الوكالة غير صالحة'; end if;
+  if p_commission_percent not between 0 and 100 or p_agent_commission_percent not between 0 and 100 then raise exception 'نسبة العمولة غير صالحة'; end if;
+  update public.agencies set status=p_status,commission_percent=p_commission_percent,
+    agent_commission_percent=p_agent_commission_percent,updated_at=now()
+   where id=p_agency_id;
+  if not found then raise exception 'الوكالة غير موجودة'; end if;
+  insert into public.agency_audit_logs(agency_id,actor_id,action,details)
+  values(p_agency_id,auth.uid(),'agency_updated',jsonb_build_object('status',p_status,'commission_percent',p_commission_percent,'agent_commission_percent',p_agent_commission_percent));
+  return true;
+end;
+$$;
+revoke all on function public.admin_update_agency(uuid,text,numeric,numeric) from public,anon;
+grant execute on function public.admin_update_agency(uuid,text,numeric,numeric) to authenticated;
