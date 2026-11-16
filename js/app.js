@@ -78,7 +78,7 @@ function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>همسات ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a><a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a></nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -446,7 +446,7 @@ async function homeScreen() {
     '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
     '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
     '<a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b><small>زيني حسابك</small></a>' +
-    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a></section>' +
+    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a><a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b><small>تحديات ممتعة</small></a></section>' +
     '<section class="hs-home-section"><div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>' +
     '<div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></section>' +
     '<section class="hs-home-members"><div class="hs-home-section-head"><div><span>NEW FRIENDS</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>' +
@@ -671,6 +671,56 @@ function showGiftCelebration(gift, quantity = 1) {
   icons_();
   requestAnimationFrame(() => root.classList.add('show'));
   window.setTimeout(() => { root.classList.remove('show'); window.setTimeout(() => root.remove(), 350); }, 2100);
+}
+
+async function gamesScreen() {
+  screen.innerHTML = header('الألعاب') + `
+    <div class="px-5 pt-4 pb-8 fade-in">
+      <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">مساحة التحديات</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">اختاري لعبة وابدئي جولة قصيرة. النقاط هنا نتيجة الجولة الحالية وليست رصيد عملات.</p></div>
+      <div id="games-grid" class="grid grid-cols-1 gap-3">${loading()}</div>
+    </div>`;
+  icons_();
+  let games=[];
+  try { games=(await api.games()).games; }
+  catch(e) { $('#games-grid').innerHTML=emptyBox('wifi-off','تعذّر تحميل الألعاب',e.message); return; }
+  const root=$('#games-grid');
+  const draw=()=>{
+    root.innerHTML=games.length?games.map(g=>{
+      const count=Array.isArray(g.config?.questions)?g.config.questions.length:0;
+      return `<article class="card p-4 flex items-center gap-3"><div class="w-14 h-14 rounded-2xl bg-[#302713] border border-amber-400/30 flex items-center justify-center text-3xl">${esc(g.icon||'🎮')}</div><div class="min-w-0 flex-1"><b class="block">${esc(g.name)}</b><p class="text-xs text-[#bba9d6] mt-1">${esc(g.description||'تحدي ممتع من مجتمع همسات')}</p><small class="text-[10px] text-gold-300">${num(count)} سؤال</small></div><button class="btn-gold text-xs px-3 py-2" data-play="${esc(g.id)}" ${count?'':'disabled'}>${count?'ابدئي':'قريبًا'}</button></article>`;
+    }).join(''):emptyBox('gamepad-2','لا توجد ألعاب منشورة','سيتم عرض الألعاب هنا عندما ينشرها المدير من لوحة الإدارة.');
+    root.querySelectorAll('[data-play]').forEach(btn=>btn.onclick=()=>playGame(games.find(g=>g.id===btn.dataset.play)));
+    icons_();
+  };
+  const playGame=(game)=>{
+    const questions=(game?.config?.questions||[]).filter(q=>q&&typeof q.question==='string'&&Array.isArray(q.options)&&q.options.length>=2);
+    if(!questions.length){toast('هذه اللعبة لا تحتوي أسئلة جاهزة بعد.','error');return;}
+    let index=0,score=0,answered=false;
+    const show=()=>{
+      const q=questions[index];answered=false;
+      openSheet(`
+        <div class="flex items-center justify-between mb-3"><span class="text-xs text-gold-300">${esc(game.name)}</span><span class="text-xs text-[#bba9d6]">${num(index+1)} / ${num(questions.length)}</span></div>
+        <div class="h-1.5 rounded-full bg-[#29252b] mb-5 overflow-hidden"><div class="h-full bg-amber-400" style="width:${((index+1)/questions.length)*100}%"></div></div>
+        <h2 class="text-lg font-bold leading-8 mb-4">${esc(q.question)}</h2>
+        <div class="grid gap-2" id="game-options">${q.options.map((option,i)=>`<button type="button" class="btn-ghost w-full text-right" data-answer="${i}">${esc(option)}</button>`).join('')}</div>
+        <p id="game-feedback" class="text-sm mt-4 text-[#c7bdab]" aria-live="polite"></p>
+        <button id="game-next" type="button" class="btn-gold w-full mt-4" disabled>${index===questions.length-1?'عرض النتيجة':'السؤال التالي'}</button>
+      `,sheet=>{
+        sheet.querySelectorAll('[data-answer]').forEach(button=>button.onclick=()=>{
+          if(answered)return;answered=true;
+          const selected=Number(button.dataset.answer),correct=Number(q.answer);
+          const ok=selected===correct || String(q.answer)===String(q.options[selected]);
+          if(ok)score++;
+          sheet.querySelectorAll('[data-answer]').forEach((x,i)=>{x.disabled=true;if(i===correct)x.classList.add('border','border-emerald-400','text-emerald-300');else if(i===selected&&!ok)x.classList.add('border','border-rose-400','text-rose-300');});
+          sheet.querySelector('#game-feedback').textContent=(ok?'إجابة صحيحة! ✨':'ليست الإجابة الصحيحة.')+(q.explanation?' '+q.explanation:'');
+          sheet.querySelector('#game-next').disabled=false;
+        });
+        sheet.querySelector('#game-next').onclick=()=>{if(index<questions.length-1){index++;show();}else{openSheet(`<div class="text-center py-5"><div class="text-5xl mb-3">🏆</div><h2 class="text-xl font-extrabold text-gold-300">انتهت الجولة!</h2><p class="text-3xl font-bold mt-3">${num(score)} / ${num(questions.length)}</p><p class="text-sm text-[#bba9d6] mt-2">نتيجتك في هذه الجولة</p><button type="button" id="game-finish" class="btn-gold w-full mt-5">العودة للألعاب</button></div>`,s=>s.querySelector('#game-finish').onclick=()=>{closeSheet();draw();});}};
+      });
+    };
+    show();
+  };
+  draw();
 }
 
 async function giftsScreen() {
@@ -935,6 +985,7 @@ async function directMessageScreen(conversationId) {
 }
 
     if (route === 'notifications') await notificationsScreen();
+    else if (route === 'games') await gamesScreen();
     else if (route === 'inbox') await inboxScreen();
     else if (route === 'dm' && parts[1]) await directMessageScreen(decodeURIComponent(parts[1]));
     else if (route === 'rooms') await roomsScreen(params);
