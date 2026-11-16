@@ -971,7 +971,7 @@ async function shopScreen() {
         '<div class="cosmetic-preview emoji-preview">'+(it.visual_key==='love'?'💖 💗 💕':it.visual_key==='luxe'?'👑 💎 ✨':'🌙 ⭐ 🌟')+'</div>';
       const equippedId=({frame:state.profile?.equippedFrameId,profile_frame:state.profile?.equippedProfileFrameId,entrance:state.profile?.equippedEntranceId,chat_bubble:state.profile?.equippedBubbleId,special_id:state.profile?.equippedSpecialId,sound_frame:state.profile?.equippedSoundFrameId,voice_wave:state.profile?.equippedVoiceWaveId,emoji_pack:state.profile?.equippedEmojiPackId})[it.item_type];
       const equipped=has&&equippedId===it.id;
-      const expiry=it.expiresAt?'ينتهي '+new Date(it.expiresAt).toLocaleDateString('ar-DZ'):'دائم';
+      const remaining=it.expiresAt?Math.max(0,Math.ceil((new Date(it.expiresAt).getTime()-Date.now())/86400000)):null;const expiry=it.expiresAt?'متبقي '+num(remaining)+' يوم':'دائم';
       return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?expiry:num(it.price)+' عملة'}</p>
         <button class="btn-${has?(equipped?'ghost':'gold'):'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-type="${esc(it.item_type)}" data-owned="${has}" data-equipped="${equipped}">${has?(equipped?'إلغاء الاستخدام':'استخدام'):'شراء'}</button></article>`;
     }).join(''):emptyBox('package-open','لا توجد مقتنيات بعد','تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي');
