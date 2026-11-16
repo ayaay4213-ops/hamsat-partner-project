@@ -452,6 +452,67 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  myAgencies: async () => {
+    const user = await currentUser();
+    const { data, error } = await client().from('agency_members')
+      .select('agency_id,member_role,status,agencies(id,name,agency_type,status,commission_percent,agent_commission_percent)')
+      .eq('user_id', user.id).eq('status', 'active');
+    fail(error);
+    return { agencies: (data || []).map(x => ({ ...x.agencies, agencyId: x.agency_id, memberRole: x.member_role })) };
+  },
+  agencyMembers: async (agencyId) => {
+    const { data, error } = await client().from('agency_members')
+      .select('user_id,member_role,status,joined_at').eq('agency_id', agencyId).order('joined_at');
+    fail(error);
+    const ids = (data || []).map(x => x.user_id);
+    let profiles = [];
+    if (ids.length) { const r = await client().from('profiles').select('id,public_id,display_name,handle,avatar_url').in('id', ids); fail(r.error); profiles = r.data || []; }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, p]));
+    return { members: (data || []).map(x => ({ ...x, profile: byId[x.user_id] || null })) };
+  },
+  agencyRecharges: async (agencyId) => {
+    const { data, error } = await client().from('agency_recharges')
+      .select('id,agent_id,target_user_id,package_id,coins,price_dzd,total_commission_dzd,agent_commission_dzd,agency_commission_dzd,payment_method,payment_reference,created_at')
+      .eq('agency_id', agencyId).order('created_at', { ascending: false }).limit(50);
+    fail(error);
+    const ids = [...new Set((data || []).flatMap(x => [x.agent_id, x.target_user_id]))];
+    let profiles = [];
+    if (ids.length) { const r = await client().from('profiles').select('id,public_id,display_name,handle').in('id', ids); fail(r.error); profiles = r.data || []; }
+    const byId = Object.fromEntries(profiles.map(p => [p.id, p]));
+    return { recharges: (data || []).map(x => ({ ...x, agent: byId[x.agent_id] || null, target: byId[x.target_user_id] || null })) };
+  },
+  agencyFinance: async (agencyId) => {
+    const user = await currentUser();
+    const [agency, agent] = await Promise.all([
+      client().from('agency_wallets').select('balance_dzd').eq('agency_id', agencyId).maybeSingle(),
+      client().from('agent_commission_wallets').select('balance_dzd').eq('user_id', user.id).maybeSingle()
+    ]);
+    fail(agency.error); fail(agent.error);
+    return { agencyBalance: agency.data?.balance_dzd || 0, agentBalance: agent.data?.balance_dzd || 0 };
+  },
+  topupPackages: async () => {
+    const { data, error } = await client().from('topup_packages').select('*').eq('active', true).order('sort_order');
+    fail(error); return { packages: data || [] };
+  },
+  agentRechargeUser: async (agencyId, targetPublicId, packageId, paymentMethod, paymentReference) => {
+    const { data, error } = await client().rpc('agent_recharge_user', {
+      p_agency_id: agencyId, p_target_public_id: targetPublicId, p_package_id: packageId,
+      p_payment_method: paymentMethod, p_payment_reference: paymentReference
+    });
+    fail(error); return data;
+  },
+  agencyAddMember: async (agencyId, publicId, role) => {
+    const { data, error } = await client().rpc('agency_add_member', { p_agency_id: agencyId, p_member_public_id: publicId, p_role: role });
+    fail(error); return data;
+  },
+  agencyRemoveMember: async (agencyId, publicId) => {
+    const { data, error } = await client().rpc('agency_remove_member', { p_agency_id: agencyId, p_member_public_id: publicId });
+    fail(error); return data;
+  },
+  createExternalTopupOrder: async (packageId, provider) => {
+    const { data, error } = await client().rpc('create_external_topup_order', { p_package_id: packageId, p_payment_provider: provider });
+    fail(error); return data;
+  },
   roomBombState: async (roomId) => {
     const { error: refreshError } = await client().rpc('refresh_room_bomb', { p_room_id: roomId });
     fail(refreshError);
