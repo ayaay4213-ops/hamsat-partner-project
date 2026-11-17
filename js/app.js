@@ -128,7 +128,7 @@ function renderRoomMiniBubble() {
   };
   $('#room-mini-exit').onclick = async () => {
     const current = state.minimizedRoom;
-    if (!current) return;
+    if (!current || !confirm('هل تريدين مغادرة الغرفة وإيقاف الاتصال الصوتي؟')) return;
     state.roomMinimized = false;
     state.minimizedRoom = null;
     root.innerHTML = '';
