@@ -36,7 +36,25 @@ async function loadGifts(){
  bindToggles('#gift-list',data,'gift');
 }
 function bindToggles(root,data,kind){
- $(root).querySelectorAll('[data-toggle]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const x=data.find(z=>z.id===b.dataset.toggle),table=kind==='gift'?'gifts':'shop_items';const {error}=await supabase.from(table).update({active:!x.active,...(table==='shop_items'?{updated_at:new Date().toISOString()}:{})}).eq('id',x.id);if(error)throw error;await Promise.all([kind==='gift'?loadGifts():loadItems(),loadStats()]);message('تم تحديث حالة العنصر.');}catch(e){message(e.message,true);}finally{b.disabled=false;}});
+ const tables={gift:'gifts',item:'shop_items',game:'games'};
+ const table=tables[kind];
+ if(!table){message('نوع عنصر غير معروف.',true);return;}
+ $(root).querySelectorAll('[data-toggle]').forEach(b=>b.onclick=async()=>{
+  b.disabled=true;
+  try{
+   const x=data.find(z=>z.id===b.dataset.toggle);
+   if(!x)throw new Error('العنصر غير موجود في القائمة الحالية.');
+   const payload={active:!x.active};
+   if(table==='shop_items'||table==='games')payload.updated_at=new Date().toISOString();
+   const {error}=await supabase.from(table).update(payload).eq('id',x.id);
+   if(error)throw error;
+   if(kind==='gift')await Promise.all([loadGifts(),loadStats()]);
+   else if(kind==='item')await Promise.all([loadItems(),loadStats()]);
+   else await loadGames();
+   message('تم تحديث حالة العنصر.');
+  }catch(e){message(e.message,true);}
+  finally{b.disabled=false;}
+ });
 }
 async function loadGames(){
  const {data,error}=await supabase.from('games').select('*').order('sort_order').order('created_at',{ascending:false});if(error)throw error;
