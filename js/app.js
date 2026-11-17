@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261116-hamsat-update-v9';
+import { api } from './api.js?v=20261117-hamsat-mini-room-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -651,6 +651,7 @@ async function openRoom(r) {
     voiceAudioEnable.onclick=async()=>{if(!state.voiceRoom)return;voiceAudioEnable.disabled=true;try{await state.voiceRoom.enableAudio();voiceStatus.textContent='تم تفعيل سماع أصوات المشاركين';voiceAudioEnable.textContent='الصوت مفعّل ✓';}catch(e){voiceStatus.textContent='تعذّر تشغيل صوت الآخرين: '+e.message;voiceAudioEnable.disabled=false;}};
     voiceMute.onclick=()=>{if(!state.voiceRoom)return;const muted=state.voiceRoom.toggleMute();voiceMute.textContent=muted?'تشغيل الميكروفون':'كتم الميكروفون';};
     voiceLeave.onclick=async()=>{const controller=state.voiceRoom;state.voiceRoom=null;if(controller)await controller.leave();if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}voiceMute.disabled=true;voiceAudioEnable.disabled=true;voiceAudioEnable.textContent='سماع الآخرين';voiceLeave.hidden=true;voiceStart.disabled=false;voiceStart.textContent='تشغيل الميكروفون';voiceStatus.textContent='تم إيقاف الصوت';};
+    if(state.voiceRoom){voiceMute.disabled=!state.voiceRoom.canPublish;voiceAudioEnable.disabled=false;voiceLeave.hidden=false;voiceStart.disabled=true;voiceStart.textContent=state.voiceRoom.canPublish?'الميكروفون متصل':'دخلتِ للاستماع';voiceStatus.textContent='الغرفة الصوتية مستمرة في الخلفية.';}
     let roomChatFilter='all', roomEventsLoaded=false;
     const seenRoomEventIds=new Set();
     const animateRoomEvent=(event)=>{
