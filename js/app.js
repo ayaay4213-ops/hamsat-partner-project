@@ -6,7 +6,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -102,11 +102,45 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet() { if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet(force = false) { if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+
+function renderRoomMiniBubble() {
+  const root = $('#room-mini-root');
+  if (!root) return;
+  const room = state.minimizedRoom;
+  if (!state.roomMinimized || !room) { root.innerHTML = ''; return; }
+  root.innerHTML = `<div class="hs-room-mini-bubble" role="region" aria-label="الغرفة الصوتية المصغرة">
+    <button type="button" id="room-mini-resume" class="hs-room-mini-resume" aria-label="العودة إلى الغرفة">
+      <span class="hs-room-mini-icon"><i data-lucide="audio-lines"></i><em></em></span>
+      <span class="hs-room-mini-copy"><b>${esc(room.title || 'غرفة همسات')}</b><small><i></i> الصوت مستمر</small></span>
+    </button>
+    <button type="button" id="room-mini-exit" class="hs-room-mini-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button>
+  </div>`;
+  $('#room-mini-resume').onclick = async () => {
+    const current = state.minimizedRoom;
+    state.roomMinimized = false;
+    state.minimizedRoom = null;
+    root.innerHTML = '';
+    if (state.roomChannel) { await api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; }
+    if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; }
+    if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; }
+    await openRoom(current);
+  };
+  $('#room-mini-exit').onclick = async () => {
+    const current = state.minimizedRoom;
+    if (!current) return;
+    state.roomMinimized = false;
+    state.minimizedRoom = null;
+    root.innerHTML = '';
+    closeSheet(true);
+    toast('غادرتِ الغرفة الصوتية.');
+  };
+  icons_();
+}
 
 /* ---------- auth ---------- */
 async function signOut() {
-  closeSheet();
+  closeSheet(true);
   try { await api.signOut(); } catch (e) { toast(e.message, 'error'); return; }
   state.account = state.profile = state.wallet = null;
   location.hash = '#/home';
@@ -511,7 +545,7 @@ async function openRoom(r) {
           <span class="hs-room-owner-tag">${r.ownerUuid === state.profile?.uuid ? "أنتِ المضيفة" : "المضيفة: "+esc(r.ownerName||"عضو")}</span>
         ${'</div>'}
       </div>
-      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr">ID: <b>${esc(r.publicId || "ROOM")}</b> <button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><button type="button" id="room-copy-link"><i data-lucide="link"></i> نسخ الرابط</button>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-expanded="false"><i data-lucide="settings-2"></i> إعدادات الغرفة</button>' : ''}<button type="button" id="room-share"><i data-lucide="users"></i> مشاركة الأصدقاء</button><button type="button" id="room-exit" class="hs-room-exit"><i data-lucide="log-out"></i><span>مغادرة الغرفة</span></button></div>
+      <div class="hs-room-meta"><span><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr">ID: <b>${esc(r.publicId || "ROOM")}</b> <button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><button type="button" id="room-copy-link"><i data-lucide="link"></i> نسخ الرابط</button>${r.ownerUuid === state.profile?.uuid ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-expanded="false"><i data-lucide="settings-2"></i> إعدادات الغرفة</button>' : ''}<button type="button" id="room-share"><i data-lucide="users"></i> مشاركة الأصدقاء</button><button type="button" id="room-minimize" class="hs-room-minimize" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i><span>الاحتفاظ بالغرفة</span></button><button type="button" id="room-exit" class="hs-room-exit"><i data-lucide="log-out"></i><span>مغادرة الغرفة</span></button></div>
     <div class="hs-room-banner"><span class="hs-banner-star">✦</span><div class="hs-banner-track"><span>مرحباً بك في همسات • شاركوا أجمل اللحظات وأرسلوا المحبة</span><span>🎁 هدية مميزة؟ اجعلوا اللحظة أجمل</span><span>🌙 مجتمع همسات يجمعنا بالصوت والكلمة</span></div></div>
     <div class="hs-room-shortcuts"><a href="#/games"><i data-lucide="disc-3"></i><span>المكافآت والألعاب</span></a><a href="#/shop"><i data-lucide="tags"></i><span>العروض والمتجر</span></a></div>
     ${r.ownerUuid === state.profile?.uuid ? '<section id="room-settings-panel" class="hs-room-settings hidden"><div class="flex items-center justify-between mb-3"><h3>إعدادات غرفتك</h3><button type="button" id="room-settings-close" class="hs-room-close" aria-label="إغلاق"><i data-lucide="x"></i></button></div><label class="label">خلفية الغرفة</label><label class="photo-picker room-background-picker"><i data-lucide="image-plus"></i><span>اختاري خلفية من هاتفك</span><input id="room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" id="room-background-reset" class="btn-ghost w-full mt-2">إزالة الخلفية الحالية</button><div class="mt-4"><label class="label">عدد كراسي المتحدثين</label><select id="room-seat-limit" class="field mt-2"><option value="4" ${(r.seatLimit||8)===4?"selected":""}>4 كراسي</option><option value="6" ${(r.seatLimit||8)===6?"selected":""}>6 كراسي</option><option value="8" ${(r.seatLimit||8)===8?"selected":""}>8 كراسي</option><option value="10" ${(r.seatLimit||8)===10?"selected":""}>10 مقاعد</option><option value="12" ${(r.seatLimit||8)===12?"selected":""}>12 مقعدًا</option></select><p class="text-xs opacity-70 mt-1">لا يمكن تقليل العدد إذا كانت الكراسي المراد حذفها مشغولة.</p></div><div class="mt-4 rounded-xl border border-gold-600/30 p-3"><div class="flex items-center gap-2 mb-2"><i data-lucide="shield-check" class="text-gold-300"></i><b class="text-gold-300">إدارة الأعضاء داخل الغرفة</b></div><p class="text-xs opacity-70 mb-3">من هنا يمكنك كتم مايك المتحدث أو إنزاله من كرسي المايك. تظهر الأزرار بجانب الأعضاء الجالسين.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div><div class="mt-4"><label class="label">رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${[\'🎙️\',\'👑\',\'🌙\',\'💎\',\'🌹\',\'🦋\',\'✨\',\'🎶\',\'💕\',\'🔥\',\'☕\',\'🎧\',\'🪄\',\'🥂\',\'🩷\',\'💜\',\'⭐\',\'🌸\',\'🦄\',\'🎤\'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||\'🎙️\')===e?\'active\':\'\'}">${e}</button>`).join(\'\')}</div></div><button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button></section>' : ''}
@@ -708,7 +742,8 @@ async function openRoom(r) {
     try{await api.joinRoom(r.id);state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
-    sheet.querySelector('#room-exit').onclick=async()=>{const button=sheet.querySelector('#room-exit');button.disabled=true;try{if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave();}if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}if(state.roomChannel){await api.unsubscribeRoomChannel(state.roomChannel);state.roomChannel=null;}if(state.roomEventChannel){await api.unsubscribeRoomChannel(state.roomEventChannel);state.roomEventChannel=null;}if(state.roomBombTimer){clearInterval(state.roomBombTimer);state.roomBombTimer=null;}if(state.activeRoomId===r.id)state.activeRoomId=null;await api.leaveRoom(r.id);$('#sheet-root').innerHTML='';toast('غادرتِ الغرفة. ستبقى غرفتك محفوظة ويمكن للجميع دخولها.');}catch(e){toast(e.message,'error');button.disabled=false;}};
+    sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
+    sheet.querySelector('#room-exit').onclick=async()=>{const button=sheet.querySelector('#room-exit');button.disabled=true;try{if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave();}if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}if(state.roomChannel){await api.unsubscribeRoomChannel(state.roomChannel);state.roomChannel=null;}if(state.roomEventChannel){await api.unsubscribeRoomChannel(state.roomEventChannel);state.roomEventChannel=null;}if(state.roomBombTimer){clearInterval(state.roomBombTimer);state.roomBombTimer=null;}if(state.activeRoomId===r.id)state.activeRoomId=null;state.roomMinimized=false;state.minimizedRoom=null;$('#room-mini-root').innerHTML='';await api.leaveRoom(r.id);$('#sheet-root').innerHTML='';toast('غادرتِ الغرفة. ستبقى غرفتك محفوظة ويمكن للجميع دخولها.');}catch(e){toast(e.message,'error');button.disabled=false;}};
     form.onsubmit=async e=>{e.preventDefault();const input=form.elements.message,button=form.querySelector('button'),value=input.value.trim();if(!value)return;button.disabled=true;try{await api.sendRoomMessage(r.id,value);input.value='';await drawMessages();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
     const emojiPanel=sheet.querySelector('#room-emoji-panel');
     const emojiSet=state.profile?.equippedEmojiPackId==='emoji_luxe'?['👑','💎','✨','🥂','🪞','💍','🌟','🎀','🦢','🌹','💫','🪄','🩷','🫶','🌸','🔥','👏','🎉','🎤','🎧']:state.profile?.equippedEmojiPackId==='emoji_moon'?['🌙','⭐','🌟','☄️','🪐','🌌','✨','🌠','🌃','🦋','🌷','💜','🩵','🫶','🎶','🎧','☕','🌸','👏','🎤']:['💖','🌹','😂','😍','👏','✨','🌙','🥰','🫶','🎉','🔥','💎','👑','🦋','🎶','🎤','💜','🩷','🌸','🥂','😎','🤩','💫','🌈','🎊','💐','🩵','🧡','💚','⭐'];
