@@ -1216,12 +1216,21 @@ function meScreen() {
   screen.innerHTML = `
     <div class="hs-me-screen fade-in">
       <div class="hs-me-topbar"><span>H A M S A T</span><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div>
+      <section class="mx-4 mt-4 rounded-2xl border border-gold-500/35 bg-gradient-to-l from-[#352716] via-[#211b18] to-[#15131a] p-4 shadow-lg">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="grid place-items-center w-11 h-11 rounded-xl bg-gold-500/15 text-gold-300 border border-gold-500/30"><i data-lucide="crown" class="w-6 h-6"></i></span>
+            <div class="min-w-0"><small class="block text-gold-200/70">عضوية همسات</small><b class="block text-gold-100">${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'عضوية VIP' }</b><span class="text-xs text-[#c8b99e]">${p.vipLevel > 0 ? 'مستوى عضويتك الحالي' : 'اكتشفي مزايا العضوية المميزة'}</span></div>
+          </div>
+          <a href="#/aristocracy" class="shrink-0 text-xs text-gold-200 underline underline-offset-4">التفاصيل</a>
+        </div>
+      </section>
+      <div class="mx-4 mt-3 rounded-2xl border border-gold-500/25 bg-[#19171b] p-4 flex items-center justify-between gap-3">
+        <div><small class="block text-[#b9aa91]">Coins · محفظتي</small><b class="text-xl text-gold-200">${coin(18)} ${num(state.wallet?.balance)}</b></div>
+        <a href="#/wallet" class="text-xs text-gold-200">عرض المحفظة <i data-lucide="arrow-left" class="inline w-4 h-4"></i></a>
+      </div>
       ${profileView(p, true)}
       <div class="hs-me-content">
-        <div class="hs-me-balance">
-          <div><small>محفظتي</small><b>${coin(18)} ${num(state.wallet?.balance)}</b></div>
-          <a href="#/wallet">عرض المحفظة <i data-lucide="arrow-left"></i></a>
-        </div>
         <div class="hs-me-section-title"><span>الخدمات والمزايا</span><small>كل عالم همسات في مكان واحد</small></div>
         ${menu}
         <button id="edit-profile" class="hs-account-row hs-edit-row">
