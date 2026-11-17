@@ -8,6 +8,10 @@ function fail(error) { if (error) throw new Error(error.message || 'حدث خط�
 
 // Keep auth callbacks on the current Hamsat preview instead of an older deployment/domain.
 const AUTH_REDIRECT_URL = 'https://hamsat-preview-git-build-hamsat-complete-app-hamsat.vercel.app/';
+// Explicit allowlist for profile data used by app screens. Never fetch auth email,
+// phone numbers, or future private columns through public/social profile queries.
+const PROFILE_COLUMNS = 'id,public_id,handle,display_name,bio,country,age,gender,role,vip_level,wealth_level,charisma_level,color,avatar_url,cover_url,background_url,equipped_frame_id,equipped_emoji_pack_id,equipped_entrance_id,equipped_bubble_id,equipped_special_id,equipped_profile_frame_id,equipped_sound_frame_id,equipped_voice_wave_id,created_at';
+
 function mapProfile(p) {
   if (!p) return null;
   return {
@@ -75,7 +79,7 @@ export const api = {
     if (expiryError && !/Could not find the function|does not exist/i.test(expiryError.message || '')) fail(expiryError);
     const user = await currentUser();
     const [pr, wr] = await Promise.all([
-      client().from('profiles').select('*').eq('id', user.id).maybeSingle(),
+      client().from('profiles').select(PROFILE_COLUMNS).eq('id', user.id).maybeSingle(),
       client().from('wallets').select('*').eq('user_id', user.id).maybeSingle()
     ]);
     fail(pr.error); fail(wr.error);
@@ -98,14 +102,14 @@ export const api = {
     return { profile: mapProfile(data), wallet: mapWallet(wallet) };
   },
   users: async () => {
-    const { data, error, count } = await client().from('profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false }).limit(100);
+    const { data, error, count } = await client().from('profiles').select(PROFILE_COLUMNS, { count: 'exact' }).order('created_at', { ascending: false }).limit(100);
     fail(error);
     return { total: count ?? data.length, users: data.map(mapProfile) };
   },
   user: async (identifier) => {
     const value=String(identifier||'').trim();
     const publicMatch=value.toUpperCase().match(/^HAMSAT-?0*(\\d+)$/)||value.match(/^\\d+$/);
-    const query=client().from('profiles').select('*');
+    const query=client().from('profiles').select(PROFILE_COLUMNS);
     const publicId=publicMatch?Number(publicMatch[1]||publicMatch[0]):null;
     const {data,error}=publicId!==null?await query.eq('public_id',publicId).single():await query.eq('handle',value.toLowerCase()).single();
     fail(error); return {profile:mapProfile(data)};
@@ -116,8 +120,8 @@ export const api = {
     const user=await currentUser();
     const idText=q.toUpperCase().replace(/^HAMSAT-?/, '').replace(/^#/, '');
     const isPublicId=/^\d+$/.test(idText);
-    const requests=[client().from('profiles').select('*').or('handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%').neq('id',user.id).limit(30)];
-    if(isPublicId) requests.push(client().from('profiles').select('*').eq('public_id',Number(idText)).neq('id',user.id).limit(1));
+    const requests=[client().from('profiles').select(PROFILE_COLUMNS).or('handle.ilike.%'+q+'%,display_name.ilike.%'+q+'%').neq('id',user.id).limit(30)];
+    if(isPublicId) requests.push(client().from('profiles').select(PROFILE_COLUMNS).eq('public_id',Number(idText)).neq('id',user.id).limit(1));
     const results=await Promise.all(requests);
     for(const result of results) fail(result.error);
     const byId=new Map();
@@ -149,7 +153,7 @@ export const api = {
   moments: async (profileId) => { const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);return {moments:data||[]}; },
   createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
   deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
-  coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select('*').eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:mapProfile(partner)}; },
+  coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:mapProfile(partner)}; },
   inviteCouple: async (partnerId) => { const user=await currentUser();const {data,error}=await client().from('couple_spaces').insert({owner_id:user.id,partner_id:partnerId,status:'pending'}).select('*').single();fail(error);return data; },
   respondCoupleSpace: async (spaceId,accept) => { const {error}=await client().from('couple_spaces').update({status:accept?'active':'rejected',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
   endCoupleSpace: async (spaceId) => { const {error}=await client().from('couple_spaces').update({status:'ended',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
@@ -159,7 +163,7 @@ export const api = {
     fail(error);
     const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
     if(!ids.length)return {friends:[]};
-    const res=await client().from('profiles').select('*').in('id',ids);fail(res.error);
+    const res=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(res.error);
     const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
     return {friends:data.map(x=>byId[x.sender_id===user.id?x.receiver_id:x.sender_id]).filter(Boolean)};
   },
@@ -168,7 +172,7 @@ export const api = {
     const {data,error}=await client().from('friend_requests').select('id,sender_id,receiver_id,created_at').eq('status','pending').or('sender_id.eq.'+user.id+',receiver_id.eq.'+user.id).order('created_at',{ascending:false});
     fail(error);
     const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
-    const res=ids.length?await client().from('profiles').select('*').in('id',ids):{data:[],error:null};fail(res.error);
+    const res=ids.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids):{data:[],error:null};fail(res.error);
     const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
     return {incoming:data.filter(x=>x.receiver_id===user.id).map(x=>({id:x.id,user:byId[x.sender_id]})).filter(x=>x.user),
       outgoing:data.filter(x=>x.sender_id===user.id).map(x=>({id:x.id,user:byId[x.receiver_id]})).filter(x=>x.user)};
@@ -216,7 +220,7 @@ export const api = {
   },
   roomById: async (roomId) => {
     const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
-    const {data:p,error:pe}=await client().from('profiles').select('*').eq('id',data.owner_id).single();fail(pe);
+    const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=mapProfile(p);
     return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
@@ -234,7 +238,7 @@ export const api = {
     const ids = [...new Set(data.map(r => r.owner_id))];
     let owners = [];
     if (ids.length) {
-      const res = await client().from('profiles').select('*').in('id', ids);
+      const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(res.error); owners = res.data;
     }
     const byId = Object.fromEntries(owners.map(p => [p.id, mapProfile(p)]));
@@ -291,7 +295,7 @@ export const api = {
     fail(error);
     const ids = [...new Set(data.map(x => x.user_id))];
     if (!ids.length) return { members: [] };
-    const res = await client().from('profiles').select('*').in('id', ids);
+    const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
     fail(res.error);
     const byId = Object.fromEntries(res.data.map(p => [p.id, mapProfile(p)]));
     return { members: data.map(x => ({ ...byId[x.user_id], userId: x.user_id, joinedAt: new Date(x.joined_at).getTime() })).filter(x => x.displayName) };
@@ -301,7 +305,7 @@ export const api = {
     fail(error);
     const ids=[...new Set(data.map(x=>x.user_id))];
     if(!ids.length)return {seats:data};
-    const res=await client().from('profiles').select('*').in('id',ids);fail(res.error);
+    const res=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(res.error);
     const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
     return {seats:data.map(x=>({...x,member:byId[x.user_id]||null}))};
   },
@@ -341,7 +345,7 @@ export const api = {
     const ids = [...new Set(data.map(x => x.user_id))];
     let profiles = [];
     if (ids.length) {
-      const res = await client().from('profiles').select('*').in('id', ids);
+      const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(res.error); profiles = res.data;
     }
     const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
@@ -424,7 +428,7 @@ export const api = {
       .order('updated_at', { ascending: false }).limit(50);
     fail(error);
     const ids = [...new Set(data.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
-    const profiles = ids.length ? await client().from('profiles').select('*').in('id', ids) : {data:[],error:null};
+    const profiles = ids.length ? await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids) : {data:[],error:null};
     fail(profiles.error);
     const byId = Object.fromEntries(profiles.data.map(p => [p.id, mapProfile(p)]));
     return { conversations: data.map(c => {
@@ -573,7 +577,7 @@ export const api = {
     const ids = (contributionResult.data || []).map(x => x.user_id);
     let profiles = [];
     if (ids.length) {
-      const result = await client().from('profiles').select('*').in('id', ids);
+      const result = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(result.error); profiles = result.data || [];
     }
     const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
@@ -591,7 +595,7 @@ export const api = {
     const ids = [...new Set((data || []).flatMap(e => [e.actor_id, e.target_user_id]).filter(Boolean))];
     let profiles = [];
     if (ids.length) {
-      const result = await client().from('profiles').select('*').in('id', ids);
+      const result = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(result.error);
       profiles = result.data || [];
     }
