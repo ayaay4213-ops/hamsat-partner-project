@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261117-room-seat-limit-12-v2';
+import { api } from './api.js?v=20261117-profile-private-allowlist-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
