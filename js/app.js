@@ -826,7 +826,7 @@ async function openRoom(r) {
       if(roomGameRendering)return;roomGameRendering=true;
       try{
         const data=await api.roomGameState(sessionId),game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
-        roomGameSessionId=sessionId;gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
+        gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
         const players=(data.players||[]).map((p,i)=>'<div class="hs-room-game-player"><span>'+(i+1)+'. '+esc(p.display_name||'عضو')+'</span><b>'+num(p.score)+' نقطة</b></div>').join('');
         let body='';
         if(data.status==='lobby'){
@@ -847,7 +847,8 @@ async function openRoom(r) {
         sheet.querySelectorAll('[data-group-answer]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const result=await api.answerRoomGameSession(sessionId,Number(button.dataset.groupAnswer));toast(result.is_correct?'إجابة صحيحة!':'تم تسجيل الإجابة.');await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');button.disabled=false;}});
         sheet.querySelector('#room-game-next')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.nextRoomGameQuestion(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
         if(roomGameChannel&&roomGameSessionId!==sessionId){await api.unsubscribeRoomChannel(roomGameChannel);roomGameChannel=null;}
-        if(!roomGameChannel){roomGameSessionId=sessionId;roomGameChannel=api.subscribeRoomGame(sessionId,()=>showRoomGameSession(sessionId).catch(err=>toast(err.message,'error')));}
+        roomGameSessionId=sessionId;
+        if(!roomGameChannel){roomGameChannel=api.subscribeRoomGame(sessionId,()=>showRoomGameSession(sessionId).catch(err=>toast(err.message,'error')));}
       }catch(e){toast(e.message,'error');}
       finally{roomGameRendering=false;}
     };
