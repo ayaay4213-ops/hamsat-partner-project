@@ -1335,10 +1335,10 @@ function meScreen() {
         e.preventDefault();submit.disabled=true;
         try{
           if(!sent){
-            phone=form.elements.phone.value.trim().replace(/[\\s().-]/g,'');
-            if(/^0\\d{9}$/.test(phone))phone='+213'+phone.slice(1);
-            else if(/^213\\d{9}$/.test(phone))phone='+'+phone;
-            if(!/^\\+[1-9]\\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');
+            phone=form.elements.phone.value.trim().replace(/[\s().-]/g,'');
+            if(/^0\d{9}$/.test(phone))phone='+213'+phone.slice(1);
+            else if(/^213\d{9}$/.test(phone))phone='+'+phone;
+            if(!/^\+[1-9]\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');
             await api.requestPhoneLink(phone);sent=true;numberBox.classList.add('hidden');codeBox.classList.remove('hidden');form.elements.code.required=true;submit.textContent='تأكيد وربط الرقم';feedback.textContent='أرسلنا رمز التحقق إلى هاتفك.';
           }else{
             await api.verifyPhoneLink(phone,form.elements.code.value);closeSheet();toast('تم ربط رقم الهاتف بحسابك بنجاح.');render();
