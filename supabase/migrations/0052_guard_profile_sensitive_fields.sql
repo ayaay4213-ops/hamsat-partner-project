@@ -11,11 +11,10 @@ begin
     return new;
   end if;
 
-  if not public.is_admin() then
-    if new.public_id is distinct from old.public_id
-       or new.created_at is distinct from old.created_at then
-      raise exception 'لا يمكن تغيير معرّف الحساب أو تاريخ إنشائه.';
-    end if;
+  if (new.public_id is distinct from old.public_id
+      or new.created_at is distinct from old.created_at)
+     and not public.is_admin() then
+    raise exception 'لا يمكن تغيير معرّف الحساب أو تاريخ إنشائه.';
   end if;
 
   if (
