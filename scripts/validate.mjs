@@ -16,6 +16,7 @@ const required = [
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
+  'supabase/migrations/0049_synchronized_room_games.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -219,6 +220,26 @@ if (fs.existsSync(safetyPath)) {
     if (!sql.includes(token)) errors.push(`Missing user safety SQL: ${token}`);
   }
 }
+const multiplayerGamesPath = path.join(root, 'supabase/migrations/0049_synchronized_room_games.sql');
+if (fs.existsSync(multiplayerGamesPath)) {
+  const sql = fs.readFileSync(multiplayerGamesPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.room_game_sessions',
+    'create table if not exists public.room_game_players',
+    'create table if not exists public.room_game_answers',
+    'private.room_game_answer_keys',
+    'create or replace function public.room_game_create',
+    'create or replace function public.room_game_join',
+    'create or replace function public.room_game_start',
+    'create or replace function public.room_game_answer',
+    'create or replace function public.room_game_next',
+    'create or replace function public.room_game_state',
+    'room_game_one_live_per_room_idx',
+    'alter publication supabase_realtime add table public.room_game_sessions'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing synchronized room games SQL: ${token}`);
+  }
+}
 const compatibilityPath = path.join(root, 'supabase/migrations/0046_catalog_and_wallet_type_compatibility.sql');
 if (fs.existsSync(compatibilityPath)) {
   const sql = fs.readFileSync(compatibilityPath, 'utf8').toLowerCase();
@@ -264,6 +285,8 @@ if (fs.existsSync(appRoomPath)) {
     'api.sendRoomEmoji',
     'api.sendRoomGift',
     'room-bomb-floating',
+    'room-game-join',
+    'data-group-answer',
     'api.roomBombState',
     'data-shop-category="profile_frame"',
     'api.unequipShopItem',
