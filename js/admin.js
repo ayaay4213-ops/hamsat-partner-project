@@ -132,6 +132,57 @@ async function loadRooms(){
  $('#room-list').innerHTML=data.length?data.map(x=>{const owner=byId[x.owner_id]||{};return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p></div><span class="pill">غرفة</span></div>';}).join(''):'<p class="muted">لا توجد غرف.</p>';
 }
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const id=f.elements.id.value.trim(),item_type=f.elements.item_type.value;const imageFile=f.elements.image.files[0];const imageFolder=item_type==='room_background'?'catalog/room-backgrounds':item_type==='profile_frame'?'catalog/profile-frames':'catalog';const image_url=imageFile?await upload(imageFile,imageFolder,['room_background','profile_frame'].includes(item_type)?id:null):null;const payload={id,name:f.elements.name.value.trim(),item_type,price:Number(f.elements.price.value),duration_days:Number(f.elements.duration_days.value||0),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
+$('#asset-batch-form').onsubmit=async e=>{
+ e.preventDefault();
+ const form=e.currentTarget,button=form.querySelector('button[type=submit]'),result=$('#asset-batch-result');
+ const files=Array.from(form.elements.assets.files||[]);
+ const frameMap={
+  '01_royal_crown.png':'profile_orig_01_royal_crown',
+  '02_rose_pearl.png':'profile_orig_02_rose_pearl',
+  '03_purple_crystal.png':'profile_orig_03_purple_crystal',
+  '04_neon_gamer.png':'profile_orig_04_neon_gamer',
+  '05_hearts_butterflies.png':'profile_orig_05_hearts_butterflies',
+  '06_celestial_moon.png':'profile_orig_06_celestial_moon',
+  '07_ice_snowflake.png':'profile_orig_07_ice_snowflake',
+  '08_black_gold_royal.png':'profile_orig_08_black_gold_royal',
+  '09_kawaii_cat.png':'profile_orig_09_kawaii_cat',
+  '01_royal_gold_crown.png':'profile_ref_01_royal_gold_crown',
+  '02_pink_roses_pearls.png':'profile_ref_02_pink_roses_pearls',
+  '03_purple_crystal_queen.png':'profile_ref_03_purple_crystal_queen',
+  '04_neon_gamer_headset.png':'profile_ref_04_neon_gamer_headset',
+  '05_pink_hearts_butterflies.png':'profile_ref_05_pink_hearts_butterflies',
+  '06_emerald_celestial_moon.png':'profile_ref_06_emerald_celestial_moon',
+  '07_ice_blue_snowflakes.png':'profile_ref_07_ice_blue_snowflakes',
+  '08_black_gold_rose.png':'profile_ref_08_black_gold_rose',
+  '09_purple_cat_bows.png':'profile_ref_09_purple_cat_bows'
+ };
+ let uploaded=0,skipped=[],failed=[];
+ button.disabled=true;
+ try{
+  for(let index=0;index<files.length;index++){
+   const file=files[index],name=file.name.toLowerCase();
+   const backgroundId=name.replace(/\\.[^.]+$/,'');
+   const id=frameMap[name]||(backgroundId.startsWith('free_')||backgroundId.startsWith('premium_')?backgroundId:null);
+   if(!id){skipped.push(file.name);continue;}
+   const itemType=id.startsWith('free_')||id.startsWith('premium_')?'room_background':'profile_frame';
+   try{
+    result.textContent='جارٍ رفع '+(index+1)+' من '+files.length+': '+file.name;
+    const {data:item,error:itemError}=await supabase.from('shop_items').select('id,item_type').eq('id',id).maybeSingle();
+    if(itemError)throw itemError;
+    if(!item||item.item_type!==itemType)throw new Error('عنصر الكتالوج غير موجود أو نوعه لا يطابق الصورة');
+    const folder=itemType==='room_background'?'catalog/room-backgrounds':'catalog/profile-frames';
+    const imageUrl=await upload(file,folder,id);
+    const {error:updateError}=await supabase.from('shop_items').update({image_url:imageUrl}).eq('id',id);
+    if(updateError)throw updateError;
+    uploaded++;
+   }catch(err){failed.push(file.name+': '+(err.message||'فشل الرفع'));}
+  }
+  await loadItems();
+  result.textContent='اكتمل الرفع: '+uploaded+' صورة مرتبطة. '+(skipped.length?'ملفات تم تجاهلها: '+skipped.join('، ')+'. ':'')+(failed.length?'أخطاء: '+failed.join(' | '):'');
+  message('تم ربط '+uploaded+' صورة. بقيت العناصر مخفية حتى مراجعتها وتفعيلها.');
+ }catch(err){result.textContent=err.message||'تعذر رفع الصور.';message(result.textContent,true);}
+ finally{button.disabled=false;}
+};
 $('#gift-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),category:f.elements.category.value,description:f.elements.description.value.trim(),image_url:f.elements.image_url.value.trim()||null,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية في الكتالوج.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 $('#bomb-level-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={level:Number(f.elements.level.value),threshold:Number(f.elements.threshold.value),reward_min:Number(f.elements.reward_min.value),reward_max:Number(f.elements.reward_max.value),active:f.elements.active.checked,updated_at:new Date().toISOString()};if(payload.reward_max<payload.reward_min)throw Error('أعلى مكافأة يجب أن تكون أكبر من أو تساوي أقل مكافأة.');const {error}=await supabase.from('room_bomb_levels').upsert(payload,{onConflict:'level'});if(error)throw error;await loadBombLevels();message('تم حفظ إعدادات مستوى القنبلة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#agency-create-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {data,error}=await supabase.rpc('admin_create_agency',{p_name:f.elements.name.value.trim(),p_type:f.elements.agency_type.value,p_owner_public_id:Number(f.elements.owner_public_id.value),p_commission_percent:Number(f.elements.commission_percent.value),p_agent_commission_percent:Number(f.elements.agent_commission_percent.value)});if(error)throw error;f.reset();await loadAgencies();message('تم إنشاء الوكالة: '+data);}catch(err){message(err.message,true);}finally{b.disabled=false;}};
