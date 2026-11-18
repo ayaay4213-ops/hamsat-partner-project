@@ -95,7 +95,7 @@ export const api = {
       country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null, color: String(p.color || '#7c3aed'),
       avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
     };
-    const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select('*').single();
+    const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select(PROFILE_COLUMNS).single();
     fail(error);
     const { data: wallet, error: walletError } = await client().from('wallets').select('*').eq('user_id', user.id).single();
     fail(walletError);
@@ -108,7 +108,7 @@ export const api = {
   },
   user: async (identifier) => {
     const value=String(identifier||'').trim();
-    const publicMatch=value.toUpperCase().match(/^HAMSAT-?0*(\\d+)$/)||value.match(/^\\d+$/);
+    const publicMatch=value.toUpperCase().match(/^HAMSAT-?0*(\d+)$/)||value.match(/^\d+$/);
     const query=client().from('profiles').select(PROFILE_COLUMNS);
     const publicId=publicMatch?Number(publicMatch[1]||publicMatch[0]):null;
     const {data,error}=publicId!==null?await query.eq('public_id',publicId).single():await query.eq('handle',value.toLowerCase()).single();
