@@ -244,7 +244,8 @@ if (fs.existsSync(multiplayerGamesPath)) {
 const profileFramesPath = path.join(root, 'supabase/migrations/0050_seed_profile_frame_catalog.sql');
 if (fs.existsSync(profileFramesPath)) {
   const sql = fs.readFileSync(profileFramesPath, 'utf8').toLowerCase();
-  if (sql.split('\n').filter(line => /^\s*\('profile_(?:orig|ref)_/.test(line)).length !== 18) {
+  const frameSeedCount=(sql.split("  ('profile_orig_").length-1)+(sql.split("  ('profile_ref_").length-1);
+  if (frameSeedCount !== 18) {
     errors.push('Profile frame catalog must seed exactly 18 inactive items');
   }
   for (const token of ["'profile_frame'", 'false', 'null', 'on conflict (id) do nothing']) {
