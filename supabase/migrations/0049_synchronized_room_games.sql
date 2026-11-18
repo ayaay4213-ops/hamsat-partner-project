@@ -9,6 +9,7 @@ create table if not exists public.room_game_sessions (
   status text not null default 'lobby' check (status in ('lobby','active','completed','cancelled')),
   questions jsonb not null,
   current_question_index integer not null default 0 check (current_question_index >= 0),
+  question_started_at timestamptz,
   created_at timestamptz not null default now(),
   started_at timestamptz,
   ended_at timestamptz
@@ -188,7 +189,7 @@ begin
   if v_host is null or v_host<>v_user then raise exception 'بدء الجولة متاح لمضيفها فقط'; end if;
   select count(*) into v_count from public.room_game_players where session_id=p_session_id;
   if v_count<2 then raise exception 'تحتاج الجولة إلى لاعبين اثنين على الأقل'; end if;
-  update public.room_game_sessions set status='active',started_at=now() where id=p_session_id;
+  update public.room_game_sessions set status='active',started_at=now(),question_started_at=now() where id=p_session_id;
   return jsonb_build_object('started',true,'players',v_count);
 end;
 $$;
@@ -237,18 +238,23 @@ language plpgsql
 security definer
 set search_path=''
 as $$
-declare v_user uuid := (select auth.uid()); v_host uuid; v_idx integer; v_total integer;
+declare v_user uuid := (select auth.uid()); v_host uuid; v_idx integer; v_total integer; v_question_started timestamptz; v_players integer; v_answers integer;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
-  select host_id,current_question_index,jsonb_array_length(questions)
-    into v_host,v_idx,v_total
+  select host_id,current_question_index,jsonb_array_length(questions),question_started_at
+    into v_host,v_idx,v_total,v_question_started
     from public.room_game_sessions where id=p_session_id and status='active' for update;
   if v_host is null or v_host<>v_user then raise exception 'الانتقال بين الأسئلة متاح لمضيف الجولة فقط'; end if;
+  select count(*) into v_players from public.room_game_players where session_id=p_session_id;
+  select count(*) into v_answers from public.room_game_answers where session_id=p_session_id and question_index=v_idx;
+  if v_answers<v_players and coalesce(v_question_started,now())+interval '30 seconds'>now() then
+    raise exception 'انتظري إجابات اللاعبين أو انتهاء مهلة السؤال';
+  end if;
   if v_idx+1>=v_total then
     update public.room_game_sessions set status='completed',ended_at=now() where id=p_session_id;
     return jsonb_build_object('completed',true);
   end if;
-  update public.room_game_sessions set current_question_index=v_idx+1 where id=p_session_id;
+  update public.room_game_sessions set current_question_index=v_idx+1,question_started_at=now() where id=p_session_id;
   return jsonb_build_object('completed',false,'question_index',v_idx+1);
 end;
 $$;
