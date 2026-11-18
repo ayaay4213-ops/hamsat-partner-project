@@ -332,6 +332,13 @@ if (fs.existsSync(appRoomPath)) {
   }
 }
 
+const adminScriptPath = path.join(root, 'js/admin.js');
+if (fs.existsSync(adminScriptPath)) {
+  const js = fs.readFileSync(adminScriptPath, 'utf8');
+  for (const token of ["$('#asset-batch-form').onsubmit", 'profile_orig_01_royal_crown', 'profile_ref_09_purple_cat_bows', 'catalog/room-backgrounds', 'catalog/profile-frames']) {
+    if (!js.includes(token)) errors.push(`Missing batch asset upload behavior: ${token}`);
+  }
+}
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
@@ -339,7 +346,7 @@ if (fs.existsSync(apiFilePath)) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
-for (const file of ['js/app.js', 'js/api.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
+for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
