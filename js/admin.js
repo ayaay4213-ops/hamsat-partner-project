@@ -161,7 +161,7 @@ $('#asset-batch-form').onsubmit=async e=>{
  try{
   for(let index=0;index<files.length;index++){
    const file=files[index],name=file.name.toLowerCase();
-   const backgroundId=name.replace(/\\.[^.]+$/,'');
+   const backgroundId=name.slice(0,name.lastIndexOf('.'));
    const id=frameMap[name]||(backgroundId.startsWith('free_')||backgroundId.startsWith('premium_')?backgroundId:null);
    if(!id){skipped.push(file.name);continue;}
    const itemType=id.startsWith('free_')||id.startsWith('premium_')?'room_background':'profile_frame';
