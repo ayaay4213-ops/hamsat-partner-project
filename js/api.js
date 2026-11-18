@@ -48,27 +48,27 @@ export const api = {
   },
   sendPhoneOtp: async (phone) => {
     const normalized=String(phone||'').trim();
-    if(!/^\\+[1-9]\\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
     const {data,error}=await client().auth.signInWithOtp({phone:normalized,options:{shouldCreateUser:true}});
     fail(error);return data;
   },
   verifyPhoneOtp: async (phone,token) => {
     const normalized=String(phone||'').trim(),code=String(token||'').trim();
-    if(!/^\\+[1-9]\\d{7,14}$/.test(normalized))throw new Error('رقم الهاتف غير صالح.');
-    if(!/^\\d{6}$/.test(code))throw new Error('رمز التحقق يجب أن يتكون من 6 أرقام.');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized)||! /^\d{6}$/.test(code))throw new Error('تحققي من رقم الهاتف ورمز التحقق المكوّن من 6 أرقام.');
     const {data,error}=await client().auth.verifyOtp({phone:normalized,token:code,type:'sms'});
     fail(error);return data;
   },
   requestPhoneLink: async (phone) => {
     const normalized=String(phone||'').trim();
-    if(!/^\\+[1-9]\\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
     await currentUser();
     const {data,error}=await client().auth.updateUser({phone:normalized});
     fail(error);return data;
   },
   verifyPhoneLink: async (phone,token) => {
     const normalized=String(phone||'').trim(),code=String(token||'').trim();
-    if(!/^\\+[1-9]\\d{7,14}$/.test(normalized)||!/^\\d{6}$/.test(code))throw new Error('تحققي من رقم الهاتف ورمز التحقق المكوّن من 6 أرقام.');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
     const {data,error}=await client().auth.verifyOtp({phone:normalized,token:code,type:'phone_change'});
     fail(error);return data;
   },
