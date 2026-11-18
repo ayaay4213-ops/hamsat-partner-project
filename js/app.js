@@ -1016,7 +1016,7 @@ async function giftsScreen() {
       <label for="gift-search" class="block text-xs font-semibold text-[#cbb9e6] mb-2">ابحثي عن هدية</label>
       <input id="gift-search" type="search" dir="rtl" autocomplete="off" placeholder="اكتبي اسم الهدية…" aria-label="البحث في الهدايا" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3">
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
-      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><div id="gift-members" class="space-y-2">${loading()}</div></section>
+      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><label for="gift-member-search" class="sr-only">ابحثي عن عضو</label><input id="gift-member-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي باسم العضو أو اسم المستخدم…" aria-label="البحث عن عضو لإرسال هدية" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3"><div id="gift-members" class="space-y-2">${loading()}</div></section>
     </div>`;
   icons_();
   try {
@@ -1030,8 +1030,16 @@ async function giftsScreen() {
     };
     renderGiftCatalog();
     $('#gift-search')?.addEventListener('input',event=>renderGiftCatalog(event.target.value));
-    const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
-    members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
+    const members=$('#gift-members');
+    const giftRecipients=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid);
+    const renderGiftRecipients=(query='')=>{
+      const normalized=query.trim().toLocaleLowerCase('ar');
+      const filtered=giftRecipients.filter(u=>[u.displayName,u.handle].some(value=>String(value||'').toLocaleLowerCase('ar').includes(normalized)));
+      $('#gift-member-count').textContent=`${num(filtered.length)} من ${num(giftRecipients.length)} عضو`;
+      members.innerHTML=filtered.map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('search','لا يوجد عضو مطابق','جرّبي اسمًا آخر أو جزءًا من اسم المستخدم');
+    };
+    renderGiftRecipients();
+    $('#gift-member-search')?.addEventListener('input',event=>renderGiftRecipients(event.target.value));
     icons_();
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
