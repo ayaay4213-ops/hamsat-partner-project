@@ -257,6 +257,23 @@ begin
 end;
 $$;
 
+create or replace function public.room_game_cancel(p_session_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path=''
+as $
+declare v_user uuid := (select auth.uid()); v_host uuid;
+begin
+  if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+  select host_id into v_host from public.room_game_sessions
+   where id=p_session_id and status in ('lobby','active') for update;
+  if v_host is null or v_host<>v_user then raise exception 'إلغاء الجولة متاح لمضيفها فقط'; end if;
+  update public.room_game_sessions set status='cancelled',ended_at=now() where id=p_session_id;
+  return jsonb_build_object('cancelled',true);
+end;
+$;
+
 create or replace function public.room_game_state(p_session_id uuid)
 returns jsonb
 language plpgsql
@@ -302,12 +319,14 @@ revoke all on function public.room_game_start(uuid) from public,anon;
 revoke all on function public.room_game_answer(uuid,integer) from public,anon;
 revoke all on function public.room_game_next(uuid) from public,anon;
 revoke all on function public.room_game_state(uuid) from public,anon;
+revoke all on function public.room_game_cancel(uuid) from public,anon;
 grant execute on function public.room_game_create(uuid,text) to authenticated;
 grant execute on function public.room_game_join(uuid) to authenticated;
 grant execute on function public.room_game_start(uuid) to authenticated;
 grant execute on function public.room_game_answer(uuid,integer) to authenticated;
 grant execute on function public.room_game_next(uuid) to authenticated;
 grant execute on function public.room_game_state(uuid) to authenticated;
+grant execute on function public.room_game_cancel(uuid) to authenticated;
 
 do $$
 begin
