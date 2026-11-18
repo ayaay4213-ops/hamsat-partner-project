@@ -236,6 +236,7 @@ if (fs.existsSync(multiplayerGamesPath)) {
     'create or replace function public.room_game_answer',
     'create or replace function public.room_game_next',
     'create or replace function public.room_game_state',
+    'create or replace function public.room_game_cancel',
     'room_game_one_live_per_room_idx',
     'alter publication supabase_realtime add table public.room_game_sessions'
   ]) {
@@ -316,6 +317,7 @@ if (fs.existsSync(appRoomPath)) {
     'api.startRoomGameSession',
     'api.answerRoomGameSession',
     'api.nextRoomGameQuestion',
+    'api.cancelRoomGameSession',
     'api.roomGameState',
     'api.roomBombState',
     'data-shop-category="profile_frame"',
@@ -333,7 +335,7 @@ if (fs.existsSync(appRoomPath)) {
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async', 'agentRechargeUser: async', 'hostStartSession: async', 'blockUser: async', 'reportUser: async', 'reportRoom: async', 'findRoomGameSession: async', 'createRoomGameSession: async', 'joinRoomGameSession: async', 'startRoomGameSession: async', 'answerRoomGameSession: async', 'nextRoomGameQuestion: async', 'roomGameState: async', 'subscribeRoomGame:']) {
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async', 'agentRechargeUser: async', 'hostStartSession: async', 'blockUser: async', 'reportUser: async', 'reportRoom: async', 'findRoomGameSession: async', 'createRoomGameSession: async', 'joinRoomGameSession: async', 'startRoomGameSession: async', 'answerRoomGameSession: async', 'nextRoomGameQuestion: async', 'cancelRoomGameSession: async', 'roomGameState: async', 'subscribeRoomGame:']) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
