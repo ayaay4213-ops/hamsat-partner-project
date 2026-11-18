@@ -427,6 +427,10 @@ export const api = {
     const {data,error}=await client().rpc('room_game_next',{p_session_id:sessionId});
     fail(error); return data;
   },
+  cancelRoomGameSession: async (sessionId) => {
+    const {data,error}=await client().rpc('room_game_cancel',{p_session_id:sessionId});
+    fail(error); return data;
+  },
   roomGameState: async (sessionId) => {
     const {data,error}=await client().rpc('room_game_state',{p_session_id:sessionId});
     fail(error); return data;
