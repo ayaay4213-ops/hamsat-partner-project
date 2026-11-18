@@ -287,6 +287,12 @@ if (fs.existsSync(appRoomPath)) {
     'room-bomb-floating',
     'room-game-join',
     'data-group-answer',
+    'api.createRoomGameSession',
+    'api.joinRoomGameSession',
+    'api.startRoomGameSession',
+    'api.answerRoomGameSession',
+    'api.nextRoomGameQuestion',
+    'api.roomGameState',
     'api.roomBombState',
     'data-shop-category="profile_frame"',
     'api.unequipShopItem',
@@ -303,7 +309,7 @@ if (fs.existsSync(appRoomPath)) {
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async', 'agentRechargeUser: async', 'hostStartSession: async', 'blockUser: async', 'reportUser: async', 'reportRoom: async']) {
+  for (const token of ['roomEvents: async', 'subscribeRoomEvents:', 'sendRoomEmoji: async', 'sendRoomGift: async', 'sendRoomGiftToAll: async', 'roomBombState: async', 'unequipShopItem: async', 'agentRechargeUser: async', 'hostStartSession: async', 'blockUser: async', 'reportUser: async', 'reportRoom: async', 'findRoomGameSession: async', 'createRoomGameSession: async', 'joinRoomGameSession: async', 'startRoomGameSession: async', 'answerRoomGameSession: async', 'nextRoomGameQuestion: async', 'roomGameState: async', 'subscribeRoomGame:']) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
