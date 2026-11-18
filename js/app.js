@@ -1013,6 +1013,8 @@ async function giftsScreen() {
         <i data-lucide="info" class="w-5 h-5 text-gold-400 shrink-0 mt-0.5"></i>
         <p class="text-[13px] text-[#cbb9e6] leading-6">اختاري عضوًا من قائمة الأعضاء وافتحي ملفه لإرسال هدية. يتم خصم العملات وتحويلها عبر قاعدة البيانات بشكل آمن.</p>
       </div>
+      <label for="gift-search" class="block text-xs font-semibold text-[#cbb9e6] mb-2">ابحثي عن هدية</label>
+      <input id="gift-search" type="search" dir="rtl" autocomplete="off" placeholder="اكتبي اسم الهدية…" aria-label="البحث في الهدايا" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3">
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
       <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><div id="gift-members" class="space-y-2">${loading()}</div></section>
     </div>`;
@@ -1020,8 +1022,14 @@ async function giftsScreen() {
   try {
     const [giftResult,memberResult]=await Promise.all([state.gifts?Promise.resolve({gifts:state.gifts}):api.gifts(),api.users()]);
     state.gifts=giftResult.gifts; const el=$('#gifts-grid');if(!el)return;
-    el.innerHTML=state.gifts.map(g=>`<article class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art gift-art-luxe"><i data-lucide="${esc(g.icon || 'gift')}"></i><span>✦</span></div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p><small class="gift-card-note">هدية همسات</small></article>`).join('');
-    icons_();
+    const renderGiftCatalog=(query='')=>{
+      const normalized=query.trim().toLocaleLowerCase('ar');
+      const filtered=state.gifts.filter(g=>String(g.name||'').toLocaleLowerCase('ar').includes(normalized));
+      el.innerHTML=filtered.length?filtered.map(g=>`<article class="gift-card card p-4 flex flex-col items-center text-center"><div class="gift-art gift-art-luxe"><i data-lucide="${esc(g.icon || 'gift')}"></i><span>✦</span></div><p class="font-bold">${esc(g.name)}</p><p class="flex items-center gap-1 text-sm text-gold-300 mt-1">${coin(16)}${num(g.price)}</p><small class="gift-card-note">هدية همسات</small></article>`).join(''):emptyBox('search','لا توجد هدايا مطابقة','جرّبي كتابة جزء آخر من اسم الهدية');
+      icons_();
+    };
+    renderGiftCatalog();
+    $('#gift-search')?.addEventListener('input',event=>renderGiftCatalog(event.target.value));
     const members=$('#gift-members');$('#gift-member-count').textContent=`${num(memberResult.total)} عضو`;
     members.innerHTML=memberResult.users.filter(u=>u.uuid!==state.profile?.uuid).map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="gift-member-row card flex items-center gap-3 p-3">${avatar(u,42)}<span class="flex-1 min-w-0"><strong class="block text-sm truncate">${esc(u.displayName)}</strong><small class="text-xs text-[#a993c8]">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">إرسال هدية ←</span></a>`).join('')||emptyBox('users','لا يوجد أعضاء آخرون بعد','سيظهر الأعضاء هنا عند إنشاء ملفاتهم الشخصية');
     icons_();
