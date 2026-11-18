@@ -5,6 +5,16 @@ function client() {
   return supabase;
 }
 function fail(error) { if (error) throw new Error(error.message || 'حدث خطأ في الاتصال بقاعدة البيانات'); }
+// Email addresses must never be used as public HAMSAT handles.
+function isEmailLikeHandle(value) {
+  const handle=String(value||'').trim();
+  return /@/.test(handle) || /(?:gmail|yahoo|hotmail|outlook|icloud)\\.com$/i.test(handle);
+}
+function safePublicHandle(value, publicId='') {
+  const handle=String(value||'').trim().toLowerCase();
+  if(!handle || isEmailLikeHandle(handle)) return publicId ? 'member'+String(publicId) : '';
+  return handle;
+}
 
 // Keep auth callbacks on the current Hamsat preview instead of an older deployment/domain.
 const AUTH_REDIRECT_URL = 'https://hamsat-preview-git-build-hamsat-complete-app-hamsat.vercel.app/';
@@ -15,7 +25,7 @@ const PROFILE_COLUMNS = 'id,public_id,handle,display_name,bio,country,age,gender
 function mapProfile(p) {
   if (!p) return null;
   return {
-    uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: p.handle || '', displayName: p.display_name || 'عضو جديد',
+    uuid: p.id, publicId: p.public_id == null ? '' : 'HAMSAT-' + String(p.public_id).padStart(6, '0'), handle: safePublicHandle(p.handle,p.public_id), displayName: p.display_name || 'عضو جديد',
     bio: p.bio || '', country: p.country || '', age: p.age == null ? null : Number(p.age), gender: p.gender || '', role: p.role || 'user', vipLevel: Number(p.vip_level || 0), wealthLevel: Number(p.wealth_level || 1), charismaLevel: Number(p.charisma_level || 1), color: p.color || '#7c3aed',
     avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, equippedEntranceId: p.equipped_entrance_id || null, equippedBubbleId: p.equipped_bubble_id || null, equippedSpecialId: p.equipped_special_id || null, equippedProfileFrameId: p.equipped_profile_frame_id || null, equippedSoundFrameId: p.equipped_sound_frame_id || null, equippedVoiceWaveId: p.equipped_voice_wave_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
@@ -121,13 +131,15 @@ export const api = {
     ]);
     fail(pr.error); fail(wr.error);
     if (!wr.data) throw new Error('لم تُنشأ محفظة الحساب بعد. راجعي إعداد trigger في Supabase.');
-    return { account: { id: user.id, username: pr.data?.handle || user.user_metadata?.username || 'عضو' },
+    return { account: { id: user.id, username: safePublicHandle(pr.data?.handle || user.user_metadata?.username,pr.data?.public_id) || 'عضو' },
       profile: await mapProfileWithFrame(pr.data), wallet: mapWallet(wr.data) };
   },
   saveProfile: async (p) => {
     const user = await currentUser();
+    const requestedHandle=String(p.handle || '').trim().toLowerCase();
+    if(isEmailLikeHandle(requestedHandle)) throw new Error('لا تستخدمي بريدك الإلكتروني كاسم عام. اختاري اسم مستخدم لا يكشف بياناتك.');
     const payload = {
-      id: user.id, handle: String(p.handle || '').trim().toLowerCase(),
+      id: user.id, handle: requestedHandle,
       display_name: String(p.displayName || '').trim(), bio: String(p.bio || ''),
       country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null, color: String(p.color || '#7c3aed'),
       avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
