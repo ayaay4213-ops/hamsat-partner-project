@@ -104,7 +104,7 @@ begin
   if v_owner is null or v_owner<>v_user then raise exception 'إنشاء الجولة متاح لمضيف الغرفة فقط'; end if;
   select config into v_config from public.games where id=p_game_id and active=true and game_type in ('quiz','trivia');
   if not found then raise exception 'اللعبة غير متاحة'; end if;
-  if jsonb_typeof(v_config->'questions')<>'array' then raise exception 'اللعبة لا تحتوي أسئلة صالحة'; end if;
+  if jsonb_typeof(v_config->'questions') is distinct from 'array' then raise exception 'اللعبة لا تحتوي أسئلة صالحة'; end if;
   select count(*) into v_count from jsonb_array_elements(v_config->'questions') q(value)
    where jsonb_typeof(q.value->'question')='string'
      and jsonb_typeof(q.value->'options')='array'
@@ -124,7 +124,8 @@ begin
           limit 1
         )
       end,
-      'explanation',coalesce(q.value->>'explanation','')
+      'explanation',coalesce(q.value->>'explanation',''),
+      'option_count',jsonb_array_length(q.value->'options')
     ) order by q.ordinality)
   into v_public_questions,v_answer_keys
   from jsonb_array_elements(v_config->'questions') with ordinality q(value,ordinality)
@@ -136,7 +137,7 @@ begin
     select 1 from jsonb_array_elements(v_answer_keys) k(value)
     where k.value->>'answer_index' is null
        or (k.value->>'answer_index')::integer<0
-       or (k.value->>'answer_index')::integer >= jsonb_array_length(v_public_questions->0->'options')
+       or (k.value->>'answer_index')::integer >= (k.value->>'option_count')::integer
   ) then raise exception 'يوجد سؤال بإجابة صحيحة غير صالحة'; end if;
 
   insert into public.room_game_sessions(room_id,game_id,host_id,questions)
