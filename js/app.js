@@ -1285,6 +1285,11 @@ function meScreen() {
           <span class="hs-account-copy"><b>مشاركة حسابي</b><small>انسخي اسم المستخدم لمشاركته</small></span>
           <i data-lucide="chevron-left" class="hs-account-chevron"></i>
         </button>
+        <button id="link-phone" class="hs-account-row hs-edit-row">
+          <span class="hs-account-icon gold"><i data-lucide="shield-check"></i></span>
+          <span class="hs-account-copy"><b>ربط رقم الهاتف</b><small>تأكيد ملكية رقمك لحماية حسابك · لا يظهر للآخرين</small></span>
+          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
+        </button>
         <button id="logout" class="hs-logout"><i data-lucide="log-out"></i> تسجيل الخروج</button>
       </div>
     </div>`;
@@ -1315,6 +1320,34 @@ function meScreen() {
   $('#share-profile').onclick = async () => {
     try { await navigator.clipboard.writeText('@' + p.handle); toast('تم النسخ'); } catch (e) { toast('@' + p.handle); }
   };
+  $('#link-phone').onclick = () => openSheet(`
+    <h2 class="text-lg font-bold mb-2">ربط رقم الهاتف بحسابك</h2>
+    <p class="text-sm text-[#bba9d6] mb-4">سيبقى رقمك خاصاً ولا يظهر في الملف الشخصي أو الغرف أو البحث. سنرسل رمزاً لتأكيد ملكيتك للرقم.</p>
+    <form id="phone-link-form" class="space-y-3">
+      <div id="phone-link-number"><label class="label">رقم الهاتف بالصيغة الدولية</label><input class="field" name="phone" type="tel" inputmode="tel" dir="ltr" placeholder="+213XXXXXXXXX" required></div>
+      <div id="phone-link-code" class="hidden"><label class="label">رمز التحقق SMS</label><input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div>
+      <p id="phone-link-feedback" class="text-xs text-[#d7c79f]" aria-live="polite"></p>
+      <button class="btn-gold w-full" type="submit">إرسال رمز التحقق</button>
+    </form>`, sheet => {
+      const form=sheet.querySelector('#phone-link-form'),numberBox=sheet.querySelector('#phone-link-number'),codeBox=sheet.querySelector('#phone-link-code'),feedback=sheet.querySelector('#phone-link-feedback'),submit=form.querySelector('button[type=submit]');
+      let phone=null,sent=false;
+      form.onsubmit=async e=>{
+        e.preventDefault();submit.disabled=true;
+        try{
+          if(!sent){
+            phone=form.elements.phone.value.trim().replace(/[\\s().-]/g,'');
+            if(/^0\\d{9}$/.test(phone))phone='+213'+phone.slice(1);
+            else if(/^213\\d{9}$/.test(phone))phone='+'+phone;
+            if(!/^\\+[1-9]\\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');
+            await api.requestPhoneLink(phone);sent=true;numberBox.classList.add('hidden');codeBox.classList.remove('hidden');form.elements.code.required=true;submit.textContent='تأكيد وربط الرقم';feedback.textContent='أرسلنا رمز التحقق إلى هاتفك.';
+          }else{
+            await api.verifyPhoneLink(phone,form.elements.code.value);closeSheet();toast('تم ربط رقم الهاتف بحسابك بنجاح.');render();
+          }
+        }catch(err){feedback.textContent=err.message||'تعذر إكمال ربط الهاتف.';}
+        finally{submit.disabled=false;}
+      };
+    });
+
 }
 
 async function userScreen(handle) {
