@@ -68,7 +68,7 @@ export const api = {
   },
   verifyPhoneLink: async (phone,token) => {
     const normalized=String(phone||'').trim(),code=String(token||'').trim();
-    if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
+    if(!/^\+[1-9]\d{7,14}$/.test(normalized)||!/^\d{6}$/.test(code))throw new Error('تحققي من رقم الهاتف ورمز التحقق المكوّن من 6 أرقام.');
     const {data,error}=await client().auth.verifyOtp({phone:normalized,token:code,type:'phone_change'});
     fail(error);return data;
   },
