@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "status": "asset_manifest_only_not_uploaded",
+  "status": "proposed_prices_pending_owner_review_and_assets_upload",
   "storage_bucket": "hamsat-media",
   "storage_path_prefix": "catalog/room-backgrounds",
-  "note": "Premium prices are intentionally null until the owner approves them. Do not seed premium items as purchasable until a price is approved and the image is uploaded.",
+  "note": "Premium prices are provisional coin prices selected for initial balancing; owner may change them at any time. Items remain inactive and must not be seeded as purchasable until images are uploaded and the owner approves activation.",
   "items": [
     {
       "id": "free_01_queen_girl",
@@ -89,7 +89,7 @@
       "name": "عرش الألعاب الملكي",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 12000,
       "rarity": "مميز",
       "theme": "ملكي",
       "duration_days": 0,
@@ -102,7 +102,7 @@
       "name": "نجوم سحرية",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 8000,
       "rarity": "مميز",
       "theme": "خيالي",
       "duration_days": 0,
@@ -115,7 +115,7 @@
       "name": "القطة الملكية",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 7000,
       "rarity": "مميز",
       "theme": "لطيف",
       "duration_days": 0,
@@ -128,7 +128,7 @@
       "name": "فتاة الزهور",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 7000,
       "rarity": "مميز",
       "theme": "زهري",
       "duration_days": 0,
@@ -141,7 +141,7 @@
       "name": "قلعة الخيال",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 10000,
       "rarity": "مميز",
       "theme": "خيالي",
       "duration_days": 0,
@@ -154,12 +154,13 @@
       "name": "قطة بسماعات",
       "item_type": "room_background",
       "tier": "premium",
-      "price": null,
+      "price": 9000,
       "rarity": "مميز",
       "theme": "ألعاب",
       "duration_days": 0,
       "active": false,
       "image_storage_path": "catalog/room-backgrounds/premium_12_cat_headphones.jpg"
     }
-  ]
+  ],
+  "currency": "coins"
 }
