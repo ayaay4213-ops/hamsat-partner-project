@@ -84,8 +84,8 @@ using (
   )
 );
 
+revoke all on public.room_game_sessions,public.room_game_players,public.room_game_answers from anon,authenticated;
 grant select on public.room_game_sessions,public.room_game_players,public.room_game_answers to authenticated;
-revoke insert,update,delete,truncate,references,trigger on public.room_game_sessions,public.room_game_players,public.room_game_answers from anon,authenticated;
 
 create or replace function public.room_game_create(p_room_id uuid,p_game_id text)
 returns uuid
