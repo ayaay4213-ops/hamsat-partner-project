@@ -859,7 +859,7 @@ async function openRoom(r) {
         roomGameGames=result[0].games||[];
         if(result[1]){await showRoomGameSession(result[1].id);return;}
         gameStage.classList.add('hidden');gameGrid.classList.remove('hidden');
-        gameGrid.innerHTML=roomGameGames.length?roomGameGames.map(g=>'<article class="hs-room-game-card"><span>'+esc(g.icon||'🎮')+'</span><b>'+esc(g.name)+'</b><small>'+esc(g.description||'لعبة من مجتمع همسات')+'</small><small class="hs-game-mode">تحدي جماعي مباشر · بلا خصم من المحفظة</small><button type="button" data-room-create="'+esc(g.id)+'">إنشاء جولة جماعية</button></article>').join(''):'<p class="text-xs opacity-70">لا توجد ألعاب منشورة بعد.</p>';
+        gameGrid.innerHTML=roomGameGames.length?roomGameGames.map(g=>'<article class="hs-room-game-card"><span>'+esc(g.icon||'🎮')+'</span><b>'+esc(g.name)+'</b><small>'+esc(g.description||'لعبة من مجتمع همسات')+'</small><small class="hs-game-mode">تحدي جماعي مباشر · بلا خصم من المحفظة</small>'+(r.ownerUuid===state.profile?.uuid?'<button type="button" data-room-create="'+esc(g.id)+'">إنشاء جولة جماعية</button>':'<small>بانتظار مضيف الغرفة لإنشاء جولة</small>')+'</article>').join(''):'<p class="text-xs opacity-70">لا توجد ألعاب منشورة بعد.</p>';
         gameGrid.querySelectorAll('[data-room-create]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const id=await api.createRoomGameSession(r.id,b.dataset.roomCreate);await showRoomGameSession(id);}catch(e){toast(e.message,'error');b.disabled=false;}});
       }catch(e){gameGrid.innerHTML='<p class="text-xs text-rose-300">'+esc(e.message)+'</p>';}
     };
