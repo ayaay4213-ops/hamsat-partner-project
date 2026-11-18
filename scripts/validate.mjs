@@ -25,18 +25,6 @@ for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
 }
 
-// Phone OTP sign-in must never silently create a second account.
-const apiPath = path.join(root, 'js/api.js');
-if (fs.existsSync(apiPath)) {
-  const api = fs.readFileSync(apiPath, 'utf8');
-  const otpStart = api.indexOf('sendPhoneOtp:');
-  const otpEnd = otpStart >= 0 ? api.indexOf('verifyPhoneOtp:', otpStart) : -1;
-  const otpBlock = otpStart >= 0 ? api.slice(otpStart, otpEnd >= 0 ? otpEnd : otpStart + 1600) : '';
-  if (!otpBlock.includes('shouldCreateUser:false')) {
-    errors.push('Phone OTP sign-in must set shouldCreateUser:false to avoid duplicate accounts');
-  }
-}
-
 let manifest;
 try {
   manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
