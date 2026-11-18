@@ -49,7 +49,7 @@ export const api = {
   sendPhoneOtp: async (phone) => {
     const normalized=String(phone||'').trim();
     if(!/^\+[1-9]\d{7,14}$/.test(normalized))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX');
-    const {data,error}=await client().auth.signInWithOtp({phone:normalized,options:{shouldCreateUser:false}});
+    const {data,error}=await client().auth.signInWithOtp({phone:normalized,options:{shouldCreateUser:true}});
     fail(error);return data;
   },
   verifyPhoneOtp: async (phone,token) => {
