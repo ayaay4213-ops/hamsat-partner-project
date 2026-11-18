@@ -113,8 +113,7 @@ begin
   if jsonb_typeof(v_config->'questions') is distinct from 'array' then raise exception 'اللعبة لا تحتوي أسئلة صالحة'; end if;
   select count(*) into v_count from jsonb_array_elements(v_config->'questions') q(value)
    where jsonb_typeof(q.value->'question')='string'
-     and jsonb_typeof(q.value->'options')='array'
-     and jsonb_array_length(q.value->'options')>=2;
+     and case when jsonb_typeof(q.value->'options')='array' then jsonb_array_length(q.value->'options')>=2 else false end;
   if v_count<1 or v_count>30 then raise exception 'يجب أن تحتوي الجولة من سؤال إلى 30 سؤالاً صالحاً'; end if;
 
   select
@@ -136,8 +135,7 @@ begin
   into v_public_questions,v_answer_keys
   from jsonb_array_elements(v_config->'questions') with ordinality q(value,ordinality)
   where jsonb_typeof(q.value->'question')='string'
-    and jsonb_typeof(q.value->'options')='array'
-    and jsonb_array_length(q.value->'options')>=2;
+    and case when jsonb_typeof(q.value->'options')='array' then jsonb_array_length(q.value->'options')>=2 else false end;
 
   if exists(
     select 1 from jsonb_array_elements(v_answer_keys) k(value)
