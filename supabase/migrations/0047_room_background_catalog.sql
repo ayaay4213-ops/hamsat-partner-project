@@ -63,3 +63,71 @@ create trigger validate_room_background_selection
 
 -- Preserve the existing owner-only room update policy and grant only this new column.
 grant update (background_item_id) on public.rooms to authenticated;
+
+-- Six public/free backgrounds are supported alongside premium paid backgrounds.
+alter table public.shop_items
+  drop constraint if exists shop_items_price_check;
+alter table public.shop_items
+  add constraint shop_items_price_check check (price >= 0);
+
+-- Keep the established inventory-expiry flow while allowing zero-cost claims.
+create or replace function public.purchase_shop_item(p_item_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user uuid := (select auth.uid());
+  v_item public.shop_items%rowtype;
+  v_balance bigint;
+  v_expires_at timestamptz;
+begin
+  if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
+
+  select * into v_item
+    from public.shop_items
+   where id = p_item_id and active = true
+   for share;
+  if not found then raise exception 'هذا العنصر غير متاح'; end if;
+
+  select expires_at into v_expires_at
+    from public.user_inventory
+   where user_id = v_user and item_id = p_item_id;
+
+  if found and (v_expires_at is null or v_expires_at > now()) then
+    return jsonb_build_object('owned', true, 'item_id', p_item_id, 'expires_at', v_expires_at);
+  end if;
+
+  if v_item.price > 0 then
+    update public.wallets
+       set balance = balance - v_item.price, updated_at = now()
+     where user_id = v_user and balance >= v_item.price
+     returning balance into v_balance;
+    if v_balance is null then raise exception 'رصيدك غير كافٍ لشراء هذا العنصر'; end if;
+  else
+    select balance into v_balance
+      from public.wallets
+     where user_id = v_user;
+  end if;
+
+  v_expires_at := case when v_item.duration_days > 0
+    then now() + make_interval(days => v_item.duration_days)
+    else null end;
+
+  insert into public.user_inventory(user_id, item_id, purchased_at, expires_at)
+  values (v_user, p_item_id, now(), v_expires_at)
+  on conflict (user_id, item_id) do update
+    set purchased_at = now(), expires_at = excluded.expires_at;
+
+  if v_item.price > 0 then
+    insert into public.wallet_transactions(user_id, amount, transaction_type, label)
+    values (v_user, -v_item.price, 'shop_purchase', 'شراء ' || v_item.name);
+  end if;
+
+  return jsonb_build_object('owned', true, 'item_id', p_item_id, 'balance', v_balance, 'expires_at', v_expires_at);
+end;
+$$;
+
+revoke all on function public.purchase_shop_item(text) from public, anon;
+grant execute on function public.purchase_shop_item(text) to authenticated;
