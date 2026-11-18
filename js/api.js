@@ -8,7 +8,7 @@ function fail(error) { if (error) throw new Error(error.message || 'حدث خط�
 // Email addresses must never be used as public HAMSAT handles.
 function isEmailLikeHandle(value) {
   const handle=String(value||'').trim();
-  return /@/.test(handle) || /(?:gmail|yahoo|hotmail|outlook|icloud)\\.com$/i.test(handle);
+  return /@/.test(handle) || /(?:gmail|yahoo|hotmail|outlook|icloud)\.com$/i.test(handle);
 }
 function safePublicHandle(value, publicId='') {
   const handle=String(value||'').trim().toLowerCase();
