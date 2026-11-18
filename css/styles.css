@@ -1426,3 +1426,9 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 #screen .avatar.frame-moon{outline:2px solid #9bd9e8;outline-offset:3px;box-shadow:0 0 15px #9bd9e888}
 #screen .avatar.frame-cat{outline:2px solid #e7a4d2;outline-offset:3px;box-shadow:0 0 14px #e7a4d288}
 #screen .avatar.frame-rose{outline:2px solid #e9a4b8;outline-offset:3px;box-shadow:0 0 14px #e9a4b888}
+
+/* Frame overlays must render in profile cards and room-seat sheets alike */
+.avatar{position:relative;overflow:visible}
+.avatar.avatar-photo{overflow:visible}
+.avatar-photo>img:not(.avatar-frame-overlay){width:100%;height:100%;display:block;object-fit:cover;border-radius:50%}
+.avatar img.avatar-frame-overlay{position:absolute;inset:-17%;width:134%;height:134%;max-width:none;object-fit:contain;border-radius:0;z-index:3;pointer-events:none}
