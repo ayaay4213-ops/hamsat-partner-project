@@ -115,7 +115,7 @@ function renderRoomMiniBubble() {
   root.innerHTML = `<div class="hs-room-mini-bubble" role="region" aria-label="الغرفة الصوتية المصغرة">
     <button type="button" id="room-mini-resume" class="hs-room-mini-resume" aria-label="العودة إلى الغرفة">
       <span class="hs-room-mini-icon"><i data-lucide="audio-lines"></i><em></em></span>
-      <span class="hs-room-mini-copy"><b>${esc(room.title || 'غرفة همسات')}</b><small><i></i> الصوت مستمر</small></span>
+      <span class="sr-only">${esc(room.title || 'غرفة همسات')} — الصوت مستمر</span>
     </button>
     <button type="button" id="room-mini-exit" class="hs-room-mini-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button>
   </div>`;
@@ -599,17 +599,17 @@ async function openRoom(r) {
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
     <button type="button" id="room-bomb-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق قنبلة الغرفة"></button><div id="room-bomb-panel" class="hs-room-bomb-panel hidden" role="dialog" aria-label="قنبلة الغرفة"><div class="hs-room-panel-handle"></div><div class="hs-room-bomb-head"><div><span>HAMSAT ROOM EVENT</span><h3>💣 قنبلة الغرفة</h3></div><button type="button" id="room-bomb-close" aria-label="إغلاق">×</button></div><p class="hs-room-bomb-description">كل هدية تُرسل داخل الغرفة تزيد تقدم القنبلة. عند اكتمال المستوى تُوزّع العملات تلقائياً على الموجودين، مع مكافآت إضافية لأعلى المساهمين.</p><div class="hs-room-bomb-status"><div><b id="room-bomb-panel-level">LV.1</b><span id="room-bomb-countdown">بانتظار أول هدية</span></div><strong id="room-bomb-panel-percent">0%</strong></div><div class="hs-room-bomb-track"><i id="room-bomb-panel-bar"></i></div><div id="room-bomb-levels" class="hs-room-bomb-levels"></div><div class="hs-room-bomb-top"><h4>🏆 أعلى المساهمين</h4><div id="room-bomb-top3"><p>لا توجد مساهمات بعد.</p></div></div></div>
     <section class="hs-room-stage">
-      <div class="hs-room-section-title"><div><h3>المقاعد</h3></div><span class="hs-room-seat-count">${r.seatLimit||8} مقاعد</span></div>
+      <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="mic" aria-hidden="true"></i><span class="sr-only">المقاعد</span></div><span class="hs-room-seat-count" aria-label="عدد المقاعد">${r.seatLimit||8}</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
        
       
     </section>
     <section class="hs-room-people hs-room-people-compact">
-      <div class="hs-room-section-title"><div><h3>الحاضرون</h3></div><span class="hs-room-people-live"><i></i> الآن</span></div>
+      <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="users" aria-hidden="true"></i><span class="sr-only">الحاضرون</span></div><span class="hs-room-people-live" aria-label="متصلون الآن"><i></i></span></div>
       <div id="room-members" class="hs-room-members"><span class="text-xs">جارٍ تحميل الأعضاء...</span></div>
     </section>
     <section class="hs-room-chat-area">
-      <div class="hs-room-chat-heading"><div><h3>الدردشة</h3></div><span class="hs-room-people-live"><i></i> متصلون الآن</span></div><div id="room-chat-tabs" class="hs-room-chat-tabs"><button type="button" data-chat-filter="all" class="active">الكل</button><button type="button" data-chat-filter="chat">الدردشة</button><button type="button" data-chat-filter="gifts">الهدايا</button><button type="button" data-chat-filter="games">الألعاب</button></div>
+      <div class="hs-room-chat-heading"><div><i data-lucide="message-circle" aria-hidden="true"></i><span class="sr-only">الدردشة</span></div><span class="hs-room-people-live" aria-label="متصلون الآن"><i></i></span></div><div id="room-chat-tabs" class="hs-room-chat-tabs hs-room-chat-icon-tabs"><button type="button" data-chat-filter="all" class="active" aria-label="الكل" title="الكل"><i data-lucide="layers"></i></button><button type="button" data-chat-filter="chat" aria-label="الدردشة" title="الدردشة"><i data-lucide="message-square"></i></button><button type="button" data-chat-filter="gifts" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button><button type="button" data-chat-filter="games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></button></div>
        
       <div id="room-chat" class="hs-room-chat"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
       <div class="hs-room-bottom-bar">
@@ -622,7 +622,7 @@ async function openRoom(r) {
           <button type="button" id="room-game-center-toggle" class="hs-tool-icon" aria-label="مركز الألعاب"><i data-lucide="gamepad-2"></i></button>
           <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="قائمة الغرفة"><i data-lucide="more-horizontal"></i></button>
         </div>
-        <p id="voice-status" class="hs-room-voice-status" role="status">الصوت غير متصل</p>
+        <p id="voice-status" class="hs-room-voice-status sr-only" role="status">الصوت غير متصل</p>
         <div class="hs-room-compose-wrap">
           <button type="button" id="room-emoji-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق التفاعلات"></button><div id="room-emoji-panel" class="hs-room-emoji-panel hidden" role="dialog" aria-label="اختيار تفاعل"><div class="hs-room-panel-handle"></div><div class="hs-room-emoji-head"><b>التفاعلات</b><button type="button" id="room-emoji-close" aria-label="إغلاق">×</button></div><div class="hs-room-emoji-categories"><button type="button" class="active" data-emoji-category="default">Default</button></div><div id="room-emoji-grid" class="hs-room-emoji-grid"></div><div id="room-emoji-pagination" class="hs-room-emoji-pagination"></div></div>
           <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
