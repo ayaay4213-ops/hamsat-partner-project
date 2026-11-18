@@ -135,6 +135,38 @@ $('#agency-create-form').onsubmit=async e=>{e.preventDefault();const f=e.current
 $('#agency-member-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {error}=await supabase.rpc('agency_add_member',{p_agency_id:f.elements.agency_id.value,p_member_public_id:Number(f.elements.public_id.value),p_role:f.elements.role.value});if(error)throw error;f.elements.public_id.value='';message('تمت إضافة العضو إلى الوكالة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#topup-package-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),coins:Number(f.elements.coins.value),price_dzd:Number(f.elements.price_dzd.value),sort_order:Number(f.elements.sort_order.value||0),active:f.elements.active.checked};const {error}=await supabase.from('topup_packages').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await loadTopupPackages();message('تم حفظ باقة الشحن.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#user-search').onsubmit=async e=>{e.preventDefault();try{await loadUsers(e.currentTarget.elements.term.value);}catch(err){$('#user-results').innerHTML='<p class="text-red-300">'+esc(err.message)+'</p>';}};
+$('#seed-default-games').onclick=async()=>{
+ const button=$('#seed-default-games');button.disabled=true;
+ const templates=[
+  {id:'hamsat_general_quiz',name:'معلومات عامة',game_type:'trivia',icon:'🧠',description:'أسئلة ثقافية خفيفة ومتنوعة — جولة فردية تجريبية.',sort_order:10,config:{mode:'solo_preview',questions:[
+   {question:'ما عاصمة الجزائر؟',options:['وهران','الجزائر','قسنطينة','عنابة'],answer:1,explanation:'مدينة الجزائر هي عاصمة البلاد.'},
+   {question:'كم عدد ألوان قوس قزح التقليدية؟',options:['5','6','7','8'],answer:2,explanation:'تُقسم ألوانه تقليدياً إلى سبعة.'},
+   {question:'ما الكوكب المعروف بالكوكب الأحمر؟',options:['الزهرة','المريخ','زحل','عطارد'],answer:1,explanation:'يبدو المريخ أحمر بسبب أكاسيد الحديد.'},
+   {question:'ما أكبر محيط على الأرض؟',options:['الأطلسي','الهندي','الهادئ','المتجمد'],answer:2,explanation:'المحيط الهادئ هو الأكبر.'}
+  ]}},
+  {id:'hamsat_riddles',name:'ألغاز وذكاء',game_type:'guess',icon:'🧩',description:'ألغاز قصيرة لتنشيط التفكير — جولة فردية تجريبية.',sort_order:20,config:{mode:'solo_preview',questions:[
+   {question:'شيء كلما أخذت منه كبر، ما هو؟',options:['الحفرة','العمر','الظل','البحر'],answer:0,explanation:'الحفرة تكبر كلما أخذت من ترابها.'},
+   {question:'له أسنان ولا يعض، ما هو؟',options:['الأسد','المشط','المفتاح','المنشار'],answer:1,explanation:'المشط له أسنان.'},
+   {question:'ما الشيء الذي يكتب ولا يقرأ؟',options:['القلم','الكتاب','الطالب','الحاسوب'],answer:0,explanation:'القلم يكتب ولا يقرأ.'},
+   {question:'ما الشيء الذي يسمع بلا أذن ويتكلم بلا لسان؟',options:['الراديو','الصدى','الهاتف','الكتاب'],answer:2,explanation:'الهاتف ينقل الصوت.'}
+  ]}},
+  {id:'hamsat_words',name:'تحدي الكلمات',game_type:'challenge',icon:'🔤',description:'اختاري الإجابة الصحيحة في تحدي الكلمات — جولة فردية تجريبية.',sort_order:30,config:{mode:'solo_preview',questions:[
+   {question:'ما جمع كلمة «قلم»؟',options:['أقلام','قلمات','قلمون','قواليم'],answer:0,explanation:'جمع قلم هو أقلام.'},
+   {question:'أي كلمة تبدأ بحرف الضاد؟',options:['صباح','ضوء','ظلال','طريق'],answer:1,explanation:'ضوء تبدأ بحرف الضاد.'},
+   {question:'ما مرادف كلمة «سعيد»؟',options:['حزين','فرح','غاضب','متعب'],answer:1,explanation:'فرح من مرادفات سعيد.'},
+   {question:'أي كلمة هي اسم حيوان؟',options:['نافذة','غيمة','غزال','مصباح'],answer:2,explanation:'الغزال حيوان.'}
+  ]}}
+ ];
+ try{
+  const ids=templates.map(x=>x.id);
+  const {data:existing,error:lookupError}=await supabase.from('games').select('id').in('id',ids);if(lookupError)throw lookupError;
+  const found=new Set((existing||[]).map(x=>x.id)),missing=templates.filter(x=>!found.has(x.id));
+  if(!missing.length){message('الألعاب الجاهزة موجودة مسبقاً؛ لم نكررها.');return;}
+  const {error}=await supabase.from('games').insert(missing);if(error)throw error;
+  await loadGames();message('تمت إضافة '+missing.length+' ألعاب جاهزة ونشرها. هذه جولات فردية بلا مكافآت مالية.');
+ }catch(err){message(err.message||'تعذر إضافة الألعاب الجاهزة.',true);}
+ finally{button.disabled=false;}
+};
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games','bomb','agencies','reports'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
