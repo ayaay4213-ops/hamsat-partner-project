@@ -51,7 +51,9 @@ function wirePasswordTools(root = document) {
 function initial(name) { return esc((name || '؟').trim().charAt(0)); }
 function avatar(p, size = 44) {
   const style = `width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px`;
-  const frameClass = p?.equippedFrameId ? ' frame-' + esc(p.equippedFrameId.replace('frame_','')) : '';
+  const equippedFrame = String(p?.equippedProfileFrameId || p?.equippedFrameId || '');
+  const frameStyle = /diamond|empress/i.test(equippedFrame) ? 'diamond' : /royal|midnight/i.test(equippedFrame) ? 'royal' : /gold|rose/i.test(equippedFrame) ? 'gold' : '';
+  const frameClass = frameStyle ? ' frame-' + frameStyle : '';
   return p?.avatarUrl
     ? `<div class="avatar avatar-photo${frameClass}" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy"></div>`
     : `<div class="avatar${frameClass}" style="${style}">${initial(p?.displayName)}</div>`;
@@ -1031,7 +1033,7 @@ async function shopScreen() {
   screen.innerHTML = header('المتجر والمقتنيات', `<a href="#/wallet" class="text-sm text-gold-300">${coin(18)} ${num(state.wallet?.balance)}</a>`) + `
     <div class="px-5 pt-4 pb-8 fade-in">
       <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">متجر همسات الملكي</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">امتلكي إطارات لحسابك وحزم إيموجي للدردشة. العناصر التي تشترينها تبقى محفوظة في مقتنياتك.</p></div>
-      <div class="flex gap-2 mb-3"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div><div id="shop-category-tabs" class="hs-shop-category-tabs"><button type="button" class="active" data-shop-category="all">الكل</button><button type="button" data-shop-category="frame">إطارات</button><button type="button" data-shop-category="entrance">دخول</button><button type="button" data-shop-category="chat_bubble">فقاعات الدردشة</button><button type="button" data-shop-category="special_id">معرّف خاص</button><button type="button" data-shop-category="profile_frame">إطار الملف</button></div>
+      <div class="flex gap-2 mb-3"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div><div id="shop-category-tabs" class="hs-shop-category-tabs"><button type="button" class="active" data-shop-category="all">الكل</button><button type="button" data-shop-category="frame">إطارات</button><button type="button" data-shop-category="entrance">دخول</button><button type="button" data-shop-category="chat_bubble">فقاعات الدردشة</button><button type="button" data-shop-category="special_id">معرّف خاص</button><button type="button" data-shop-category="profile_frame">إطار الملف</button><button type="button" data-shop-category="sound_frame">إطار الصوت</button><button type="button" data-shop-category="voice_wave">موجات الصوت</button><button type="button" data-shop-category="emoji_pack">حزم الإيموجي</button></div>
       <div id="shop-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
     </div>`;
   icons_();
