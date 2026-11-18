@@ -400,7 +400,7 @@ export const api = {
     fail(error); return { success: true };
   },
   games: async () => {
-    const {data,error}=await client().from('games').select('id,name,description,game_type,icon,config').eq('active',true).order('sort_order').order('created_at',{ascending:false});
+    const {data,error}=await client().from('games').select('id,name,description,game_type,icon').eq('active',true).order('sort_order').order('created_at',{ascending:false});
     fail(error); return {games:data||[]};
   },
   findRoomGameSession: async (roomId) => {
