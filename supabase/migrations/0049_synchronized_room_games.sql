@@ -77,7 +77,8 @@ drop policy if exists "Room members read game answers" on public.room_game_answe
 create policy "Room members read game answers" on public.room_game_answers
 for select to authenticated
 using (
-  exists(
+  user_id=(select auth.uid())
+  and exists(
     select 1 from public.room_game_sessions s
     join public.room_members rm on rm.room_id=s.room_id
     where s.id=room_game_answers.session_id and rm.user_id=(select auth.uid())
