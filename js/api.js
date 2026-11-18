@@ -20,6 +20,18 @@ function mapProfile(p) {
     avatarUrl: p.avatar_url || null, coverUrl: p.cover_url || null, backgroundUrl: p.background_url || null, equippedFrameId: p.equipped_frame_id || null, equippedEmojiPackId: p.equipped_emoji_pack_id || null, equippedEntranceId: p.equipped_entrance_id || null, equippedBubbleId: p.equipped_bubble_id || null, equippedSpecialId: p.equipped_special_id || null, equippedProfileFrameId: p.equipped_profile_frame_id || null, equippedSoundFrameId: p.equipped_sound_frame_id || null, equippedVoiceWaveId: p.equipped_voice_wave_id || null, createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
   };
 }
+async function mapProfilesWithFrames(rows) {
+  const mapped=(rows||[]).map(mapProfile);
+  const ids=[...new Set(mapped.map(p=>p?.equippedProfileFrameId).filter(Boolean))];
+  if(!ids.length)return mapped;
+  const {data,error}=await client().from('shop_items').select('id,image_url').in('id',ids).eq('item_type','profile_frame').eq('active',true);
+  fail(error);
+  const urls=Object.fromEntries((data||[]).map(x=>[x.id,x.image_url]));
+  return mapped.map(p=>({...p,equippedProfileFrameUrl:urls[p.equippedProfileFrameId]||null}));
+}
+async function mapProfileWithFrame(row) {
+  return (await mapProfilesWithFrames(row?[row]:[]))[0]||null;
+}
 function mapWallet(w, tx = []) {
   const next = w?.daily_claimed_at ? new Date(new Date(w.daily_claimed_at).getTime() + 86400000).getTime() : null;
   return {
@@ -110,7 +122,7 @@ export const api = {
     fail(pr.error); fail(wr.error);
     if (!wr.data) throw new Error('لم تُنشأ محفظة الحساب بعد. راجعي إعداد trigger في Supabase.');
     return { account: { id: user.id, username: pr.data?.handle || user.user_metadata?.username || 'عضو' },
-      profile: mapProfile(pr.data), wallet: mapWallet(wr.data) };
+      profile: await mapProfileWithFrame(pr.data), wallet: mapWallet(wr.data) };
   },
   saveProfile: async (p) => {
     const user = await currentUser();
@@ -124,12 +136,12 @@ export const api = {
     fail(error);
     const { data: wallet, error: walletError } = await client().from('wallets').select('*').eq('user_id', user.id).single();
     fail(walletError);
-    return { profile: mapProfile(data), wallet: mapWallet(wallet) };
+    return { profile: await mapProfileWithFrame(data), wallet: mapWallet(wallet) };
   },
   users: async () => {
     const { data, error, count } = await client().from('profiles').select(PROFILE_COLUMNS, { count: 'exact' }).order('created_at', { ascending: false }).limit(100);
     fail(error);
-    return { total: count ?? data.length, users: data.map(mapProfile) };
+    return { total: count ?? data.length, users: await mapProfilesWithFrames(data) };
   },
   user: async (identifier) => {
     const value=String(identifier||'').trim();
@@ -137,7 +149,7 @@ export const api = {
     const query=client().from('profiles').select(PROFILE_COLUMNS);
     const publicId=publicMatch?Number(publicMatch[1]||publicMatch[0]):null;
     const {data,error}=publicId!==null?await query.eq('public_id',publicId).single():await query.eq('handle',value.toLowerCase()).single();
-    fail(error); return {profile:mapProfile(data)};
+    fail(error); return {profile:await mapProfileWithFrame(data)};
   },
   searchUsers: async (term) => {
     const q=String(term||'').trim().replace(/[,%()]/g,'');
@@ -151,7 +163,7 @@ export const api = {
     for(const result of results) fail(result.error);
     const byId=new Map();
     for(const result of results) for(const profile of (result.data||[])) byId.set(profile.id,profile);
-    return {users:[...byId.values()].map(mapProfile).slice(0,30)};
+    return {users:(await mapProfilesWithFrames([...byId.values()])).slice(0,30)};
   },
   profileStats: async (profileId, recordVisit = false) => {
     if (recordVisit) {
@@ -178,7 +190,7 @@ export const api = {
   moments: async (profileId) => { const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);return {moments:data||[]}; },
   createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
   deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
-  coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:mapProfile(partner)}; },
+  coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:await mapProfileWithFrame(partner)}; },
   inviteCouple: async (partnerId) => { const user=await currentUser();const {data,error}=await client().from('couple_spaces').insert({owner_id:user.id,partner_id:partnerId,status:'pending'}).select('*').single();fail(error);return data; },
   respondCoupleSpace: async (spaceId,accept) => { const {error}=await client().from('couple_spaces').update({status:accept?'active':'rejected',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
   endCoupleSpace: async (spaceId) => { const {error}=await client().from('couple_spaces').update({status:'ended',updated_at:new Date().toISOString()}).eq('id',spaceId);fail(error); },
@@ -189,7 +201,7 @@ export const api = {
     const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
     if(!ids.length)return {friends:[]};
     const res=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(res.error);
-    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(res.data);const byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
     return {friends:data.map(x=>byId[x.sender_id===user.id?x.receiver_id:x.sender_id]).filter(Boolean)};
   },
   friendRequests: async () => {
@@ -198,7 +210,7 @@ export const api = {
     fail(error);
     const ids=[...new Set((data||[]).map(x=>x.sender_id===user.id?x.receiver_id:x.sender_id))];
     const res=ids.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids):{data:[],error:null};fail(res.error);
-    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(res.data);const byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
     return {incoming:data.filter(x=>x.receiver_id===user.id).map(x=>({id:x.id,user:byId[x.sender_id]})).filter(x=>x.user),
       outgoing:data.filter(x=>x.sender_id===user.id).map(x=>({id:x.id,user:byId[x.receiver_id]})).filter(x=>x.user)};
   },
@@ -246,7 +258,7 @@ export const api = {
   roomById: async (roomId) => {
     const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
-    const owner=mapProfile(p);
+    const owner=await mapProfileWithFrame(p);
     return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
@@ -266,7 +278,7 @@ export const api = {
       const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(res.error); owners = res.data;
     }
-    const byId = Object.fromEntries(owners.map(p => [p.id, mapProfile(p)]));
+    const mappedOwners=await mapProfilesWithFrames(owners);const byId = Object.fromEntries(mappedOwners.map(p => [p.uuid,p]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
       return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
@@ -323,7 +335,7 @@ export const api = {
     if (!ids.length) return { members: [] };
     const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
     fail(res.error);
-    const byId = Object.fromEntries(res.data.map(p => [p.id, mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(res.data);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { members: data.map(x => ({ ...byId[x.user_id], userId: x.user_id, joinedAt: new Date(x.joined_at).getTime() })).filter(x => x.displayName) };
   },
   roomSeats: async (roomId) => {
@@ -332,7 +344,7 @@ export const api = {
     const ids=[...new Set(data.map(x=>x.user_id))];
     if(!ids.length)return {seats:data};
     const res=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(res.error);
-    const byId=Object.fromEntries(res.data.map(p=>[p.id,mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(res.data);const byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
     return {seats:data.map(x=>({...x,member:byId[x.user_id]||null}))};
   },
   requestRoomSeat: async (roomId,seatNo) => {
@@ -374,7 +386,7 @@ export const api = {
       const res = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(res.error); profiles = res.data;
     }
-    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(profiles);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { messages: data.map(x => ({ id: x.id, body: x.body, userId: x.user_id,
       displayName: byId[x.user_id]?.displayName || 'عضو',
       color: byId[x.user_id]?.color || '#7c3aed',
@@ -493,7 +505,7 @@ export const api = {
     const ids = [...new Set(data.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
     const profiles = ids.length ? await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids) : {data:[],error:null};
     fail(profiles.error);
-    const byId = Object.fromEntries(profiles.data.map(p => [p.id, mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(profiles.data);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { conversations: data.map(c => {
       const otherId = c.user_a === user.id ? c.user_b : c.user_a;
       const msgs = (c.dm_messages || []).sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
@@ -643,7 +655,7 @@ export const api = {
       const result = await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids);
       fail(result.error); profiles = result.data || [];
     }
-    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(profiles);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return {
       bomb: bombResult.data || { room_id: roomId, level: 1, progress: 0, ends_at: null },
       levels: levelResult.data || [],
