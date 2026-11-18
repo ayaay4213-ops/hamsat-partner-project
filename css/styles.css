@@ -1457,3 +1457,155 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .room-sheet .hs-room-icon-heading>div{width:31px;height:31px}
  .room-sheet .hs-room-chat-icon-tabs button{width:32px;height:30px}
 }
+
+
+/* HAMSAT ROOM EXPERIENCE — cosmic glass stage, clearer seats and compact controls */
+.room-sheet{
+  background:#050d1d!important;color:#f5f3ed!important;
+  border:1px solid rgba(123,190,224,.28)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.78),inset 0 1px rgba(255,255,255,.08)!important;
+}
+.room-sheet .hs-room-cover{
+  min-height:205px!important;padding:calc(14px + env(safe-area-inset-top)) 15px 18px!important;
+  background-color:#071a35!important;
+  background-image:radial-gradient(ellipse at 50% -8%,rgba(69,159,226,.38),transparent 52%),radial-gradient(ellipse at 88% 42%,rgba(17,196,180,.18),transparent 38%),linear-gradient(155deg,#0a2850 0%,#07172f 56%,#07101f 100%)!important;
+  border-bottom:1px solid rgba(113,190,225,.25)!important;
+}
+.room-sheet .hs-room-head-row{position:relative;z-index:2}
+.room-sheet .hs-room-title-row{position:relative;z-index:1;margin-top:26px!important;gap:11px!important}
+.room-sheet .hs-room-owner{border:2px solid #e5c76e!important;box-shadow:0 0 0 4px rgba(75,165,215,.17),0 0 24px rgba(55,174,223,.25)!important}
+.room-sheet .hs-room-title-row h2{color:#fff!important;text-shadow:0 2px 18px #000b!important;font-size:19px!important}
+.room-sheet .hs-room-title-emoji{background:linear-gradient(145deg,#e6cb79,#98702c)!important;color:#172039!important;border:1px solid #fff0b5!important}
+.room-sheet .hs-room-owner-tag{background:linear-gradient(145deg,#f2d98e,#9e762e)!important;color:#20190b!important}
+.room-sheet .hs-room-state{background:rgba(4,24,44,.78)!important;border:1px solid rgba(112,215,207,.45)!important;color:#b7fff0!important}
+.room-sheet .hs-room-state i{background:#45e0bb!important;box-shadow:0 0 10px #45e0bb!important}
+.room-sheet .hs-room-meta-compact{background:rgba(5,15,31,.96)!important;border-bottom:1px solid rgba(100,181,215,.18)!important}
+.room-sheet .hs-room-meta-compact .hs-room-member-count{color:#c8e8f5!important}
+.room-sheet .hs-room-meta-compact .hs-room-meta-actions button,
+.room-sheet .hs-room-quick-actions a,.room-sheet .hs-room-quick-actions button{
+  background:linear-gradient(145deg,rgba(33,91,130,.55),rgba(8,28,51,.9))!important;
+  border:1px solid rgba(117,195,225,.36)!important;color:#e8f7ff!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.09),0 5px 14px #0005!important;
+}
+.room-sheet .hs-room-meta-compact .hs-room-meta-actions #room-minimize{
+  background:linear-gradient(145deg,#f3dc94,#b58b39)!important;color:#171b26!important;border-color:#fff0b7!important;
+}
+.room-sheet .hs-room-meta-compact .hs-room-meta-actions #room-exit{
+  background:linear-gradient(145deg,#6b2835,#351724)!important;color:#ffe3e7!important;border-color:#a95668!important;
+}
+.room-sheet .hs-room-quick-actions{background:linear-gradient(180deg,#07172d,#07101e)!important;padding:8px 12px 12px!important}
+.room-sheet .hs-room-stage{
+  position:relative!important;overflow:hidden!important;
+  margin:10px 9px 12px!important;padding:16px 10px 14px!important;
+  border:1px solid rgba(100,188,224,.34)!important;border-radius:23px!important;
+  background:radial-gradient(ellipse at 50% 0%,rgba(48,147,210,.23),transparent 60%),radial-gradient(circle at 15% 80%,rgba(12,177,171,.10),transparent 35%),linear-gradient(155deg,rgba(13,42,75,.97),rgba(5,17,34,.98) 72%)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.09),0 16px 34px #0006!important;
+}
+.room-sheet .hs-room-stage:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(1px 1px at 12% 18%,#d8f5ff 99%,transparent),radial-gradient(1px 1px at 78% 24%,#d8f5ff 99%,transparent),radial-gradient(1px 1px at 43% 61%,#9adfff 99%,transparent),radial-gradient(1px 1px at 91% 78%,#fff 99%,transparent),radial-gradient(1px 1px at 25% 88%,#fff 99%,transparent);
+}
+.room-sheet .hs-room-stage>*{position:relative;z-index:1}
+.room-sheet .hs-room-icon-heading>div,.room-sheet .hs-room-chat-heading>div{
+  background:linear-gradient(145deg,rgba(35,105,145,.62),rgba(8,30,53,.95))!important;
+  border:1px solid rgba(122,203,231,.42)!important;color:#c9f3ff!important;
+  box-shadow:0 4px 15px #0005!important;
+}
+.room-sheet .hs-room-seat-count,.room-sheet .hs-room-seat .hs-seat-number{
+  background:linear-gradient(145deg,#f0d98f,#a77d35)!important;color:#172238!important;
+  border:1px solid #fff0b6!important;box-shadow:0 2px 10px #0008!important;
+}
+.room-sheet .hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px 7px!important;padding:15px 2px 8px!important}
+.room-sheet .hs-room-seat{
+  min-height:106px!important;gap:5px!important;padding:3px 1px!important;
+  color:#f1faff!important;
+}
+.room-sheet .hs-room-seat:before{
+  width:68px!important;height:68px!important;top:1px!important;
+  border:1px solid rgba(131,211,239,.58)!important;
+  background:radial-gradient(circle at 35% 25%,rgba(132,219,255,.36),rgba(17,65,103,.72) 48%,rgba(4,21,43,.96) 78%)!important;
+  box-shadow:0 0 0 5px rgba(84,180,221,.08),0 0 22px rgba(44,160,218,.24),inset 0 1px rgba(255,255,255,.24)!important;
+}
+.room-sheet .hs-seat-ring{
+  width:59px!important;height:59px!important;padding:3px!important;
+  border:1px solid rgba(157,224,246,.8)!important;
+  background:linear-gradient(145deg,#1a5278,#071a31)!important;
+  box-shadow:0 0 0 4px rgba(85,178,224,.14),0 0 20px rgba(51,162,220,.32)!important;
+}
+.room-sheet .hs-room-seat:first-child .hs-seat-ring{width:62px!important;height:62px!important}
+.room-sheet .hs-room-seat .hs-seat-ring .avatar{width:100%!important;height:100%!important}
+.room-sheet .hs-room-seat .hs-seat-live-mic{
+  background:linear-gradient(145deg,#ffe9a5,#b68a34)!important;color:#15243a!important;
+  border:2px solid #09223c!important;box-shadow:0 2px 9px #0009!important;
+}
+.room-sheet .hs-room-seat b{color:#f5fbff!important;font-size:10px!important;text-shadow:0 1px 5px #000!important}
+.room-sheet .hs-room-seat small{color:#b7d8e8!important;font-size:9px!important}
+.room-sheet .hs-room-seat.empty .hs-seat-ring{
+  border:1px solid rgba(132,215,241,.72)!important;
+  background:radial-gradient(circle at 35% 25%,rgba(130,217,246,.25),rgba(15,55,88,.78) 56%,rgba(4,20,39,.98))!important;
+}
+.room-sheet .hs-room-seat.empty .hs-seat-chair{color:#ffe59b!important;text-shadow:0 0 13px rgba(255,219,125,.75)!important}
+.room-sheet .hs-room-seat.empty .hs-seat-chair svg{width:23px!important;height:23px!important;fill:rgba(255,224,139,.16)!important}
+.room-sheet .hs-room-seat.empty .hs-seat-center-mic{display:none!important}
+.room-sheet .hs-room-seat.empty b,.room-sheet .hs-room-seat.empty small{display:none!important}
+.room-sheet .hs-room-seat.empty .hs-seat-number{top:0!important;left:calc(50% + 34px)!important;width:17px!important;height:17px!important;font-size:9px!important}
+.room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#ffe49b!important;box-shadow:0 0 0 4px rgba(242,204,112,.13),0 0 22px rgba(237,188,81,.34)!important}
+.room-sheet .hs-room-seat.mine .hs-seat-ring{box-shadow:0 0 0 5px rgba(255,224,140,.22),0 0 26px rgba(244,204,105,.55)!important}
+.room-sheet .hs-room-people,.room-sheet .hs-room-chat-area{
+  margin:0 9px 11px!important;padding:12px!important;
+  border:1px solid rgba(100,188,224,.26)!important;border-radius:19px!important;
+  background:linear-gradient(145deg,rgba(12,37,65,.96),rgba(5,17,33,.98))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.05),0 8px 22px #0004!important;
+}
+.room-sheet .hs-room-person{
+  background:linear-gradient(145deg,rgba(34,83,116,.48),rgba(8,26,46,.9))!important;
+  border:1px solid rgba(117,192,220,.25)!important;color:#effaff!important;
+  border-radius:14px!important;
+}
+.room-sheet .hs-room-person .avatar{border:1px solid rgba(238,208,132,.75)!important}
+.room-sheet .hs-room-chat-icon-tabs button{
+  background:linear-gradient(145deg,#153c5c,#091c32)!important;
+  border-color:rgba(112,190,220,.35)!important;color:#c5e8f4!important;
+}
+.room-sheet .hs-room-chat-icon-tabs button.active{
+  background:linear-gradient(145deg,#f0d78e,#a47a31)!important;color:#18243a!important;border-color:#fff0b5!important;
+}
+.room-sheet .hs-room-message>div{background:rgba(24,54,78,.82)!important;border-color:rgba(108,183,216,.24)!important}
+.room-sheet .hs-room-message b{color:#f2d991!important}
+.room-sheet .hs-room-message p{color:#f3f8fc!important}
+.room-sheet .hs-room-activity{background:rgba(20,55,79,.72)!important;border-color:rgba(112,189,220,.22)!important}
+.room-sheet .hs-room-bottom-bar{
+  position:sticky!important;bottom:0!important;z-index:12!important;
+  margin:0!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;
+  background:linear-gradient(180deg,rgba(5,17,33,.94),rgba(3,11,23,.99))!important;
+  border-top:1px solid rgba(113,192,225,.28)!important;
+  box-shadow:0 -12px 30px rgba(0,0,0,.32)!important;backdrop-filter:blur(18px)!important;
+}
+.room-sheet .hs-room-tools-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7px!important}
+.room-sheet .hs-room-tools-row button{
+  width:42px!important;height:42px!important;min-width:42px!important;border-radius:15px!important;
+  display:grid!important;place-items:center!important;
+  background:linear-gradient(145deg,#17496d,#0a203a)!important;
+  border:1px solid rgba(129,205,231,.38)!important;color:#eafaff!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 14px #0006!important;
+}
+.room-sheet .hs-room-tools-row #voice-start,.room-sheet .hs-room-tools-row #room-send-gift{
+  background:linear-gradient(145deg,#f4dc98,#b58938)!important;color:#18243a!important;border-color:#fff0b8!important;
+}
+.room-sheet .hs-room-compose-wrap{margin-top:9px!important}
+.room-sheet .hs-room-chat-form input{
+  min-height:44px!important;border-radius:16px!important;background:#07182b!important;
+  border:1px solid rgba(116,190,222,.36)!important;color:#fff!important;
+}
+.room-sheet .hs-room-chat-form button{
+  min-width:44px!important;border-radius:14px!important;
+  background:linear-gradient(145deg,#f0d88f,#a77c31)!important;color:#182238!important;
+}
+@media(max-width:380px){
+ .room-sheet .hs-room-seats{gap:12px 3px!important}
+ .room-sheet .hs-room-seat{min-height:96px!important}
+ .room-sheet .hs-room-seat:before{width:60px!important;height:60px!important}
+ .room-sheet .hs-seat-ring{width:52px!important;height:52px!important}
+ .room-sheet .hs-room-seat:first-child .hs-seat-ring{width:55px!important;height:55px!important}
+ .room-sheet .hs-room-tools-row button{width:38px!important;height:38px!important;min-width:38px!important}
+}
