@@ -674,7 +674,7 @@ export const api = {
       fail(result.error);
       profiles = result.data || [];
     }
-    const byId = Object.fromEntries(profiles.map(p => [p.id, mapProfile(p)]));
+    const mapped=await mapProfilesWithFrames(profiles);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { events: (data || []).map(e => ({ ...e, actor: byId[e.actor_id] || null, target: byId[e.target_user_id] || null })) };
   },
   subscribeRoomEvents: (roomId, callback) => client().channel('room-events-' + roomId)
