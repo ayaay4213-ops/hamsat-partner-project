@@ -403,6 +403,39 @@ export const api = {
     const {data,error}=await client().from('games').select('id,name,description,game_type,icon,config').eq('active',true).order('sort_order').order('created_at',{ascending:false});
     fail(error); return {games:data||[]};
   },
+  findRoomGameSession: async (roomId) => {
+    const {data,error}=await client().from('room_game_sessions').select('id,status,game_id,created_at').eq('room_id',roomId).in('status',['lobby','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    fail(error); return data;
+  },
+  createRoomGameSession: async (roomId,gameId) => {
+    const {data,error}=await client().rpc('room_game_create',{p_room_id:roomId,p_game_id:gameId});
+    fail(error); return data;
+  },
+  joinRoomGameSession: async (sessionId) => {
+    const {data,error}=await client().rpc('room_game_join',{p_session_id:sessionId});
+    fail(error); return data;
+  },
+  startRoomGameSession: async (sessionId) => {
+    const {data,error}=await client().rpc('room_game_start',{p_session_id:sessionId});
+    fail(error); return data;
+  },
+  answerRoomGameSession: async (sessionId,answerIndex) => {
+    const {data,error}=await client().rpc('room_game_answer',{p_session_id:sessionId,p_answer_index:answerIndex});
+    fail(error); return data;
+  },
+  nextRoomGameQuestion: async (sessionId) => {
+    const {data,error}=await client().rpc('room_game_next',{p_session_id:sessionId});
+    fail(error); return data;
+  },
+  roomGameState: async (sessionId) => {
+    const {data,error}=await client().rpc('room_game_state',{p_session_id:sessionId});
+    fail(error); return data;
+  },
+  subscribeRoomGame: (sessionId,callback) => client().channel('room-game-'+sessionId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_game_sessions',filter:'id=eq.'+sessionId},callback)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_game_players',filter:'session_id=eq.'+sessionId},callback)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_game_answers',filter:'session_id=eq.'+sessionId},callback)
+    .subscribe(),
   gifts: async () => {
     const { data, error } = await client().from('gifts').select('*').eq('active', true).order('price');
     fail(error); return { gifts: data };
