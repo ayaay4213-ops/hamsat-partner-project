@@ -51,12 +51,13 @@ function wirePasswordTools(root = document) {
 function initial(name) { return esc((name || '؟').trim().charAt(0)); }
 function avatar(p, size = 44) {
   const style = `width:${size}px;height:${size}px;background:${esc(p?.color || '#5b3a85')};font-size:${Math.round(size * 0.42)}px`;
-  const equippedFrame = String(p?.equippedProfileFrameId || p?.equippedFrameId || '');
-  const frameStyle = /diamond|empress/i.test(equippedFrame) ? 'diamond' : /royal|midnight/i.test(equippedFrame) ? 'royal' : /gold|rose/i.test(equippedFrame) ? 'gold' : '';
+  const equippedFrame = String(p?.equippedProfileFrameId || p?.equippedFrameId || '').toLowerCase();
+  const frameStyle = /diamond|empress|crystal|ice/.test(equippedFrame) ? 'diamond' : /neon|gamer/.test(equippedFrame) ? 'neon' : /moon|celestial/.test(equippedFrame) ? 'moon' : /cat|kawaii/.test(equippedFrame) ? 'cat' : /rose|heart|butterfly/.test(equippedFrame) ? 'rose' : /gold|royal|crown|midnight/.test(equippedFrame) ? 'royal' : '';
   const frameClass = frameStyle ? ' frame-' + frameStyle : '';
+  const frameOverlay = p?.equippedProfileFrameUrl ? `<img class="avatar-frame-overlay" src="${esc(p.equippedProfileFrameUrl)}" alt="" aria-hidden="true" loading="lazy">` : '';
   return p?.avatarUrl
-    ? `<div class="avatar avatar-photo${frameClass}" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy"></div>`
-    : `<div class="avatar${frameClass}" style="${style}">${initial(p?.displayName)}</div>`;
+    ? `<div class="avatar avatar-photo${frameClass}" style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy">${frameOverlay}</div>`
+    : `<div class="avatar${frameClass}" style="${style}">${initial(p?.displayName)}${frameOverlay}</div>`;
 }
 function num(n) { return Number(n || 0).toLocaleString('ar-EG'); }
 function dateAr(ts) { return new Date(ts).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }); }
