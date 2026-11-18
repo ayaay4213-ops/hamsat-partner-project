@@ -271,7 +271,7 @@ returns jsonb
 language plpgsql
 security definer
 set search_path=''
-as $
+as $$
 declare v_user uuid := (select auth.uid()); v_host uuid;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
@@ -281,7 +281,7 @@ begin
   update public.room_game_sessions set status='cancelled',ended_at=now() where id=p_session_id;
   return jsonb_build_object('cancelled',true);
 end;
-$;
+$$;
 
 create or replace function public.room_game_state(p_session_id uuid)
 returns jsonb
