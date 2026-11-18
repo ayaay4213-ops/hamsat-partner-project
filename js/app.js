@@ -815,12 +815,12 @@ async function openRoom(r) {
     let emojiTouchStartX=0;emojiGrid.addEventListener('touchstart',e=>{emojiTouchStartX=e.changedTouches[0].clientX;},{passive:true});emojiGrid.addEventListener('touchend',e=>{const delta=e.changedTouches[0].clientX-emojiTouchStartX;if(Math.abs(delta)>45){emojiPage=Math.max(0,Math.min(Math.ceil(emojiSet.length/15)-1,emojiPage+(delta<0?1:-1)));drawEmojiPage();}},{passive:true});
     sheet.querySelector('#room-emoji-toggle')?.addEventListener('click',()=>{const opening=emojiPanel.classList.contains('hidden');if(opening){sheet.querySelector('#room-gift-panel').classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');sheet.querySelector('#room-game-center').classList.add('hidden');sheet.querySelector('#room-game-backdrop').classList.add('hidden');}emojiPanel.classList.toggle('hidden');sheet.querySelector('#room-emoji-backdrop').classList.toggle('hidden',!opening);});
     const gamePanel=sheet.querySelector('#room-game-center'),gameBackdrop=sheet.querySelector('#room-game-backdrop'),gameGrid=sheet.querySelector('#room-games-grid'),gameStage=sheet.querySelector('#room-game-stage');
-    let roomGameChannel=null,roomGameSessionId=null,roomGameRendering=false;
+    let roomGameChannel=null,roomGameSessionId=null,roomGameRendering=false,roomGameRefreshQueued=false;
     const closeRoomGames=()=>{gamePanel.classList.add('hidden');gameBackdrop.classList.add('hidden');gameGrid.classList.remove('hidden');gameStage.classList.add('hidden');if(roomGameChannel){api.unsubscribeRoomChannel(roomGameChannel).catch(()=>{});roomGameChannel=null;}roomGameSessionId=null;};
     sheet.querySelector('#room-game-close').onclick=closeRoomGames;gameBackdrop.onclick=closeRoomGames;
     sheet.querySelector('#room-game-balance-refresh').onclick=async()=>{try{state.wallet=(await api.wallet()).wallet;sheet.querySelector('#room-game-balance').textContent=num(state.wallet?.balance);}catch(e){toast(e.message,'error');}};
     const showRoomGameSession=async(sessionId)=>{
-      if(roomGameRendering)return;roomGameRendering=true;
+      if(roomGameRendering){roomGameRefreshQueued=true;return;}roomGameRendering=true;
       try{
         const data=await api.roomGameState(sessionId),game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
         gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
@@ -847,7 +847,7 @@ async function openRoom(r) {
         roomGameSessionId=sessionId;
         if(!roomGameChannel){roomGameChannel=api.subscribeRoomGame(sessionId,()=>showRoomGameSession(sessionId).catch(err=>toast(err.message,'error')));}
       }catch(e){toast(e.message,'error');}
-      finally{roomGameRendering=false;}
+      finally{roomGameRendering=false;if(roomGameRefreshQueued&&roomGameSessionId){roomGameRefreshQueued=false;Promise.resolve().then(()=>showRoomGameSession(roomGameSessionId));}}
     };
     let roomGameGames=[];
     const loadRoomGames=async()=>{
