@@ -17,6 +17,7 @@ const required = [
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
   'supabase/migrations/0049_synchronized_room_games.sql',
+  'supabase/migrations/0050_seed_profile_frame_catalog.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -238,6 +239,16 @@ if (fs.existsSync(multiplayerGamesPath)) {
     'alter publication supabase_realtime add table public.room_game_sessions'
   ]) {
     if (!sql.includes(token)) errors.push(`Missing synchronized room games SQL: ${token}`);
+  }
+}
+const profileFramesPath = path.join(root, 'supabase/migrations/0050_seed_profile_frame_catalog.sql');
+if (fs.existsSync(profileFramesPath)) {
+  const sql = fs.readFileSync(profileFramesPath, 'utf8').toLowerCase();
+  if ((sql.match(/'profile_(?:orig|ref)_/g) || []).length !== 18) {
+    errors.push('Profile frame catalog must seed exactly 18 inactive items');
+  }
+  for (const token of ["'profile_frame'", 'false', 'null', 'on conflict (id) do nothing']) {
+    if (!sql.includes(token)) errors.push(`Missing safe profile-frame catalog setting: ${token}`);
   }
 }
 const compatibilityPath = path.join(root, 'supabase/migrations/0046_catalog_and_wallet_type_compatibility.sql');
