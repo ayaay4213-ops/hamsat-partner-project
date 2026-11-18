@@ -339,6 +339,12 @@ if (fs.existsSync(adminScriptPath)) {
     if (!js.includes(token)) errors.push(`Missing batch asset upload behavior: ${token}`);
   }
 }
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  if (!js.includes('avatar-frame-overlay') || !js.includes('equippedProfileFrameUrl')) {
+    errors.push('Missing transparent equipped profile-frame rendering');
+  }
+}
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
