@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261118-profile-id-privacy-fix-v1';
+import { api } from './api.js?v=20261118-phone-otp-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -320,10 +320,10 @@ function welcomeScreen() {
       submit.disabled = true; clearFeedback();
       try {
         if (!pendingPhone) {
-          let phone = identity.value.trim().replace(/[\\s().-]/g, '');
-          if (/^0\\d{9}$/.test(phone)) phone = '+213' + phone.slice(1);
-          else if (/^213\\d{9}$/.test(phone)) phone = '+' + phone;
-          if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw new Error('اكتبي الرقم بالصيغة الدولية، مثال الجزائر +213XXXXXXXXX.');
+          let phone = identity.value.trim().replace(/[\s().-]/g, '');
+          if (/^0\d{9}$/.test(phone)) phone = '+213' + phone.slice(1);
+          else if (/^213\d{9}$/.test(phone)) phone = '+' + phone;
+          if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error('اكتبي الرقم بالصيغة الدولية، مثال الجزائر +213XXXXXXXXX.');
           await api.sendPhoneOtp(phone); pendingPhone = phone; identity.readOnly = true; syncAuthMode();
           showFeedback('أرسلنا رمز التحقق إلى الرقم المدخل. أدخلي الرمز المكوّن من 6 أرقام.');
         } else {
