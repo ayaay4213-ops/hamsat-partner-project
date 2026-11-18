@@ -17,6 +17,8 @@ create index if not exists room_game_sessions_room_created_idx
   on public.room_game_sessions(room_id, created_at desc);
 create index if not exists room_game_sessions_status_idx
   on public.room_game_sessions(room_id, status);
+create unique index if not exists room_game_one_live_per_room_idx
+  on public.room_game_sessions(room_id) where status in ('lobby','active');
 
 create table if not exists public.room_game_players (
   session_id uuid not null references public.room_game_sessions(id) on delete cascade,
@@ -100,8 +102,11 @@ declare
   v_count integer;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
-  select owner_id into v_owner from public.rooms where id=p_room_id;
+  select owner_id into v_owner from public.rooms where id=p_room_id for update;
   if v_owner is null or v_owner<>v_user then raise exception 'إنشاء الجولة متاح لمضيف الغرفة فقط'; end if;
+  if exists(select 1 from public.room_game_sessions where room_id=p_room_id and status in ('lobby','active')) then
+    raise exception 'توجد جولة جماعية مفتوحة في هذه الغرفة بالفعل';
+  end if;
   select config into v_config from public.games where id=p_game_id and active=true and game_type in ('quiz','trivia');
   if not found then raise exception 'اللعبة غير متاحة'; end if;
   if jsonb_typeof(v_config->'questions') is distinct from 'array' then raise exception 'اللعبة لا تحتوي أسئلة صالحة'; end if;
