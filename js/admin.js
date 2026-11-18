@@ -26,7 +26,7 @@ async function upload(file,folder,stableName=null){
 function row(title,sub,id,active,kind){return '<div class="item"><div class="min-w-0"><b>'+esc(title)+'</b><p class="muted text-xs">'+esc(sub)+' · '+(active?'منشور':'مخفي')+'</p></div><button class="ghost text-sm" data-toggle="'+esc(id)+'" data-kind="'+kind+'">'+(active?'إخفاء':'نشر')+'</button></div>'}
 async function loadStats(){
  const tables=['profiles','rooms','gifts','shop_items'],ids=['stat-users','stat-rooms','stat-gifts','stat-items'];
- await Promise.all(tables.map(async(t,i)=>{const {count,error}=await supabase.from(t).select('*',{count:'exact',head:true});if(error)throw error;$('#'+ids[i]).textContent=count??0;}));
+ await Promise.all(tables.map(async(t,i)=>{const query=supabase.from(t).select(t==='profiles'?'id':'*',{count:'exact',head:true});const {count,error}=await query;if(error)throw error;$('#'+ids[i]).textContent=count??0;}));
 }
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('price');if(error)throw error;
