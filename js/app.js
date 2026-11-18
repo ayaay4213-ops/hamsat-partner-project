@@ -1050,6 +1050,7 @@ async function shopScreen() {
     <div class="px-5 pt-4 pb-8 fade-in">
       <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">متجر همسات الملكي</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">امتلكي إطارات لحسابك وحزم إيموجي للدردشة. العناصر التي تشترينها تبقى محفوظة في مقتنياتك.</p></div>
       <div class="flex gap-2 mb-3"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div><div id="shop-category-tabs" class="hs-shop-category-tabs"><button type="button" class="active" data-shop-category="all">الكل</button><button type="button" data-shop-category="frame">إطارات</button><button type="button" data-shop-category="entrance">دخول</button><button type="button" data-shop-category="chat_bubble">فقاعات الدردشة</button><button type="button" data-shop-category="special_id">معرّف خاص</button><button type="button" data-shop-category="profile_frame">إطار الملف</button><button type="button" data-shop-category="sound_frame">إطار الصوت</button><button type="button" data-shop-category="voice_wave">موجات الصوت</button><button type="button" data-shop-category="emoji_pack">حزم الإيموجي</button></div>
+      <label for="shop-search" class="sr-only">البحث في المتجر والمقتنيات</label><input id="shop-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي عن إطار أو عنصر…" aria-label="البحث في المتجر والمقتنيات" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 my-3">
       <div id="shop-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
     </div>`;
   icons_();
@@ -1058,9 +1059,11 @@ async function shopScreen() {
     const [catalog,inventory]=await Promise.all([api.shopItems(),api.inventory()]);
     items=catalog.items;owned=inventory.items;
   } catch(e) { $('#shop-grid').innerHTML=emptyBox('wifi-off','تعذّر تحميل المتجر',e.message);return; }
-  let mode='all',category='all';
+  let mode='all',category='all',searchQuery='';
   const draw=()=>{
-    const baseList=mode==='owned'?owned:items;const list=baseList.filter(it=>category==='all'||it.item_type===category);
+    const baseList=mode==='owned'?owned:items;
+    const query=searchQuery.trim().toLocaleLowerCase('ar');
+    const list=baseList.filter(it=>(category==='all'||it.item_type===category)&&(!query||[it.name,it.rarity,it.item_type].some(value=>String(value||'').toLocaleLowerCase('ar').includes(query))));
     $('#shop-grid').innerHTML=list.length?list.map(it=>{
       const has=owned.some(o=>o.id===it.id);
       const visual=it.image_url?'<div class="cosmetic-preview"><img src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:12px"></div>':['frame','profile_frame','sound_frame'].includes(it.item_type)?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
@@ -1070,7 +1073,7 @@ async function shopScreen() {
       const remaining=it.expiresAt?Math.max(0,Math.ceil((new Date(it.expiresAt).getTime()-Date.now())/86400000)):null;const expiry=it.expiresAt?'متبقي '+num(remaining)+' يوم':'دائم';
       return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?expiry:num(it.price)+' عملة'}</p>
         <button class="btn-${has?(equipped?'ghost':'gold'):'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-type="${esc(it.item_type)}" data-owned="${has}" data-equipped="${equipped}">${has?(equipped?'إلغاء الاستخدام':'استخدام'):'شراء'}</button></article>`;
-    }).join(''):emptyBox('package-open','لا توجد مقتنيات بعد','تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي');
+    }).join(''):emptyBox('search',searchQuery?'لا توجد نتائج مطابقة':mode==='owned'?'لا توجد مقتنيات بعد':'لا توجد عناصر في هذا القسم',searchQuery?'جرّبي كلمة بحث أخرى':mode==='owned'?'تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي':'اختاري قسمًا آخر من أقسام المتجر');
     $('#shop-grid').querySelectorAll('[data-item]').forEach(b=>b.onclick=async()=>{
       b.disabled=true;
       try{
@@ -1081,6 +1084,7 @@ async function shopScreen() {
     });
     icons_();
   };
+  $('#shop-search')?.addEventListener('input',event=>{searchQuery=event.target.value;draw();});
   screen.querySelectorAll('[data-shop-category]').forEach(b=>b.onclick=()=>{category=b.dataset.shopCategory;screen.querySelectorAll('[data-shop-category]').forEach(x=>x.classList.toggle('active',x===b));draw();});
   screen.querySelectorAll('[data-shop-tab]').forEach(b=>b.onclick=()=>{
     mode=b.dataset.shopTab;
