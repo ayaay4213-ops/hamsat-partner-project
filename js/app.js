@@ -222,14 +222,15 @@ function welcomeScreen() {
       <div class="hs-welcome-panel-head"><span>✧</span><div><h2>مرحبًا بعودتكِ</h2><p>سجّلي الدخول وعودي إلى مجتمع همسات</p></div><span>✧</span></div>
       <div class="grid grid-cols-2 gap-2 mb-4" id="auth-methods">
         <button type="button" data-method="email" class="auth-method active">البريد الإلكتروني</button>
-        <button type="button" data-method="phone" class="auth-method" disabled title="تفعيل SMS مطلوب">الهاتف قريبًا</button>
+        <button type="button" data-method="phone" class="auth-method">رقم الهاتف</button>
       </div>
       <form id="auth-preview-form" class="space-y-3">
         <label class="label" id="auth-id-label">البريد الإلكتروني</label>
         <input id="auth-identity" class="field" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com" required>
-        <label class="label">كلمة المرور</label>
+        <div id="auth-password-fields" class="space-y-3"><label class="label" id="auth-password-label">كلمة المرور</label>
         <div class="password-tools" data-password-tools><input id="auth-password" class="field" type="password" autocomplete="current-password" placeholder="أدخلي كلمة المرور" required><button type="button" data-password-toggle aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><i data-lucide="eye"></i></button><button type="button" data-password-copy aria-label="نسخ كلمة المرور" title="نسخ كلمة المرور"><i data-lucide="copy"></i></button></div>
-        <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !</div>
+        <div id="auth-password-rules" class="hidden rounded-xl border border-gold-600/30 bg-ink-800/70 p-3 text-xs leading-6 text-[#cbb9a6]">لإنشاء حساب، يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وحرف إنجليزي صغير وحرف كبير ورقم ورمز خاص مثل @ أو # أو !</div></div>
+        <div id="auth-otp-field" class="hidden"><label class="label" for="auth-otp-code">رمز التحقق المرسل برسالة SMS</label><input id="auth-otp-code" class="field" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" dir="ltr" placeholder="000000"></div>
         <button type="submit" class="btn-gold w-full mt-2"><i data-lucide="log-in" class="w-5 h-5"></i>دخول إلى HAMSAT</button>
       </form>
       <button id="auth-forgot" type="button" class="text-sm text-gold-300 underline underline-offset-4 mt-3 w-full text-center">نسيت كلمة المرور؟</button>
@@ -247,9 +248,12 @@ function welcomeScreen() {
   const passwordInput = $('#auth-password');
   const rules = $('#auth-password-rules');
   const feedback = $('#auth-feedback');
+  const passwordFields = $('#auth-password-fields');
+  const identityLabel = $('#auth-id-label');
+  const otpField = $('#auth-otp-field');
+  let authMethod = 'email', pendingPhone = null;
   wirePasswordTools(screen);
   const forgot = $('#auth-forgot');
-  screen.querySelector('[data-method="phone"]').disabled = true;
   const showFeedback = (message, isError = false) => {
     feedback.textContent = message;
     feedback.className = 'text-xs leading-6 mt-3 rounded-xl p-3 ' + (isError
@@ -259,16 +263,36 @@ function welcomeScreen() {
   };
   const clearFeedback = () => { feedback.textContent = ''; feedback.classList.add('hidden'); };
   const syncAuthMode = () => {
-    const signingUp = authMode === 'signup';
-    submit.innerHTML = signingUp ? '<i data-lucide="user-plus" class="w-5 h-5"></i>إنشاء الحساب' : '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول';
+    const phoneMode = authMethod === 'phone';
+    const signingUp = authMode === 'signup' && !phoneMode;
+    submit.innerHTML = phoneMode ? (pendingPhone ? '<i data-lucide="shield-check" class="w-5 h-5"></i>تحقق من الرمز' : '<i data-lucide="message-square" class="w-5 h-5"></i>إرسال رمز SMS') : (signingUp ? '<i data-lucide="user-plus" class="w-5 h-5"></i>إنشاء الحساب' : '<i data-lucide="log-in" class="w-5 h-5"></i>تسجيل الدخول');
     create.textContent = signingUp ? 'لديك حساب؟ تسجيل الدخول' : 'إنشاء حساب جديد';
+    create.classList.toggle('hidden', phoneMode);
+    forgot.classList.toggle('hidden', signingUp || phoneMode);
+    passwordFields.classList.toggle('hidden', phoneMode || !!pendingPhone);
+    otpField.classList.toggle('hidden', !phoneMode || !pendingPhone);
+    identityLabel.classList.toggle('hidden', phoneMode && !!pendingPhone);
+    identity.classList.toggle('hidden', phoneMode && !!pendingPhone);
+    identity.type = phoneMode ? 'tel' : 'email';
+    identity.autocomplete = phoneMode ? 'tel' : 'email';
+    identity.placeholder = phoneMode ? '+213XXXXXXXXX' : 'name@example.com';
+    identity.dir = phoneMode ? 'ltr' : 'ltr';
+    identity.required = !(phoneMode && !!pendingPhone);
+    passwordInput.required = !phoneMode;
     passwordInput.autocomplete = signingUp ? 'new-password' : 'current-password';
     passwordInput.setAttribute('aria-describedby', signingUp ? 'auth-password-rules' : '');
     rules.classList.toggle('hidden', !signingUp);
-    forgot.classList.toggle('hidden', signingUp);
     clearFeedback();
     icons_();
   };
+  screen.querySelectorAll('[data-method]').forEach(button => button.onclick = () => {
+    authMethod = button.dataset.method;
+    authMode = 'signin'; pendingPhone = null;
+    identity.value = ''; identity.readOnly = false;
+    const code = $('#auth-otp-code'); if(code) code.value = '';
+    screen.querySelectorAll('[data-method]').forEach(x=>x.classList.toggle('active',x===button));
+    syncAuthMode();
+  });
   create.onclick = () => {
     authMode = authMode === 'signin' ? 'signup' : 'signin';
     syncAuthMode();
@@ -292,6 +316,24 @@ function welcomeScreen() {
   identity.addEventListener('input', clearFeedback);
   form.onsubmit = async (e) => {
     e.preventDefault();
+    if (authMethod === 'phone') {
+      submit.disabled = true; clearFeedback();
+      try {
+        if (!pendingPhone) {
+          let phone = identity.value.trim().replace(/[\\s().-]/g, '');
+          if (/^0\\d{9}$/.test(phone)) phone = '+213' + phone.slice(1);
+          else if (/^213\\d{9}$/.test(phone)) phone = '+' + phone;
+          if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw new Error('اكتبي الرقم بالصيغة الدولية، مثال الجزائر +213XXXXXXXXX.');
+          await api.sendPhoneOtp(phone); pendingPhone = phone; identity.readOnly = true; syncAuthMode();
+          showFeedback('أرسلنا رمز التحقق إلى الرقم المدخل. أدخلي الرمز المكوّن من 6 أرقام.');
+        } else {
+          await api.verifyPhoneOtp(pendingPhone, $('#auth-otp-code').value);
+          toast('تم التحقق من الهاتف وتسجيل الدخول.'); await boot();
+        }
+      } catch(err) { showFeedback(err.message || 'تعذر إكمال التحقق. حاولي مجدداً.', true); }
+      finally { submit.disabled = false; }
+      return;
+    }
     const email = identity.value.trim();
     const password = passwordInput.value;
     if (authMode === 'signup') {
