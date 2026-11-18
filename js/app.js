@@ -818,17 +818,51 @@ async function openRoom(r) {
     const closeRoomGames=()=>{gamePanel.classList.add('hidden');gameBackdrop.classList.add('hidden');gameGrid.classList.remove('hidden');gameStage.classList.add('hidden');};
     sheet.querySelector('#room-game-close').onclick=closeRoomGames;gameBackdrop.onclick=closeRoomGames;
     sheet.querySelector('#room-game-balance-refresh').onclick=async()=>{try{state.wallet=(await api.wallet()).wallet;sheet.querySelector('#room-game-balance').textContent=num(state.wallet?.balance);}catch(e){toast(e.message,'error');}};
-    const playRoomQuiz=(game)=>{
-      const questions=(game?.config?.questions||[]).filter(q=>q&&typeof q.question==='string'&&Array.isArray(q.options)&&q.options.length>=2);
-      if(!questions.length){toast('هذه اللعبة لا تحتوي أسئلة جاهزة بعد.','error');return;}
-      let index=0,score=0,answered=false;
-      const showQuestion=()=>{const q=questions[index];answered=false;gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
-        gameStage.innerHTML='<div class="hs-room-game-progress"><b>'+esc(game.name)+'</b><span>'+num(index+1)+' / '+num(questions.length)+'</span></div><div class="hs-room-game-track"><i style="width:'+(((index+1)/questions.length)*100)+'%"></i></div><h4>'+esc(q.question)+'</h4><div class="hs-room-game-options">'+q.options.map((o,i)=>'<button type="button" data-room-answer="'+i+'">'+esc(o)+'</button>').join('')+'</div><p id="room-game-feedback" aria-live="polite"></p><button type="button" id="room-game-next" disabled>'+(index===questions.length-1?'عرض النتيجة':'السؤال التالي')+'</button>';
-        gameStage.querySelectorAll('[data-room-answer]').forEach(button=>button.onclick=()=>{if(answered)return;answered=true;const selected=Number(button.dataset.roomAnswer),correct=Number(q.answer),ok=selected===correct||String(q.answer)===String(q.options[selected]);if(ok)score++;gameStage.querySelectorAll('[data-room-answer]').forEach((x,i)=>{x.disabled=true;if(i===correct)x.classList.add('correct');else if(i===selected&&!ok)x.classList.add('wrong');});gameStage.querySelector('#room-game-feedback').textContent=(ok?'إجابة صحيحة! ✨':'ليست الإجابة الصحيحة.')+(q.explanation?' '+q.explanation:'');gameStage.querySelector('#room-game-next').disabled=false;});
-        gameStage.querySelector('#room-game-next').onclick=()=>{if(index<questions.length-1){index++;showQuestion();}else{gameStage.innerHTML='<div class="hs-room-game-result"><div>🏆</div><h4>انتهت الجولة!</h4><strong>'+num(score)+' / '+num(questions.length)+'</strong><p>نتيجتك في هذه الجولة</p><button type="button" id="room-game-back">العودة للألعاب</button></div>';gameStage.querySelector('#room-game-back').onclick=()=>{gameStage.classList.add('hidden');gameGrid.classList.remove('hidden');};}};
-      };showQuestion();
+    let roomGameChannel=null,roomGameSessionId=null,roomGameRendering=false;
+    const closeRoomGames=()=>{gamePanel.classList.add('hidden');gameBackdrop.classList.add('hidden');gameGrid.classList.remove('hidden');gameStage.classList.add('hidden');if(roomGameChannel){api.unsubscribeRoomChannel(roomGameChannel).catch(()=>{});roomGameChannel=null;}roomGameSessionId=null;};
+    sheet.querySelector('#room-game-close').onclick=closeRoomGames;gameBackdrop.onclick=closeRoomGames;
+    sheet.querySelector('#room-game-balance-refresh').onclick=async()=>{try{state.wallet=(await api.wallet()).wallet;sheet.querySelector('#room-game-balance').textContent=num(state.wallet?.balance);}catch(e){toast(e.message,'error');}};
+    const showRoomGameSession=async(sessionId)=>{
+      if(roomGameRendering)return;roomGameRendering=true;
+      try{
+        const data=await api.roomGameState(sessionId),game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
+        roomGameSessionId=sessionId;gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
+        const players=(data.players||[]).map((p,i)=>'<div class="hs-room-game-player"><span>'+(i+1)+'. '+esc(p.display_name||'عضو')+'</span><b>'+num(p.score)+' نقطة</b></div>').join('');
+        let body='';
+        if(data.status==='lobby'){
+          body='<p class="text-sm text-center mb-3">بانتظار اللاعبين للانضمام</p><div class="hs-room-game-players">'+(players||'<p>لا يوجد لاعبون بعد</p>')+'</div>';
+          if(!joined)body+='<button type="button" id="room-game-join" class="btn-gold w-full mt-3">انضم إلى الجولة</button>';
+          if(isHost)body+='<button type="button" id="room-game-start" class="btn-gold w-full mt-3" '+((data.players||[]).length<2?'disabled':'')+'>ابدأ الجولة ('+num((data.players||[]).length)+'/2 على الأقل)</button>';
+        }else if(data.status==='active'&&question){
+          const myAnswer=data.my_answer;
+          body='<div class="hs-room-game-progress"><b>'+esc(game?.name||'تحدي الغرفة')+'</b><span>'+num(data.current_question_index+1)+' / '+num(data.question_count)+'</span></div><div class="hs-room-game-track"><i style="width:'+(((data.current_question_index+1)/data.question_count)*100)+'%"></i></div><h4>'+esc(question.question||'')+'</h4><div class="hs-room-game-options">'+(myAnswer?'<p class="text-sm text-center">'+(myAnswer.is_correct?'إجابة صحيحة! ✨':'تم تسجيل إجابتك، حظاً أوفر في السؤال التالي.')+'</p>':(question.options||[]).map((o,i)=>'<button type="button" data-group-answer="'+i+'">'+esc(o)+'</button>').join(''))+'</div><div class="hs-room-game-players mt-4">'+players+'</div>';
+          if(isHost)body+='<button type="button" id="room-game-next" class="btn-gold w-full mt-3">'+(data.current_question_index+1>=data.question_count?'إنهاء الجولة':'السؤال التالي')+'</button>';
+          else if(myAnswer)body+='<p class="text-xs text-center mt-3 opacity-70">بانتظار المضيف للانتقال إلى السؤال التالي</p>';
+        }else{
+          body='<div class="hs-room-game-result"><div>🏆</div><h4>انتهت الجولة!</h4><div class="hs-room-game-players">'+players+'</div><p class="text-xs mt-3">تم حفظ نتائج هذه الجولة داخل الغرفة.</p></div>';
+        }
+        gameStage.innerHTML='<div class="flex items-center justify-between mb-3"><span class="text-xs text-gold-300">'+esc(game?.name||'تحدي جماعي')+'</span><span class="text-xs opacity-60">'+(data.status==='lobby'?'ردهة الانتظار':data.status==='active'?'جولة مباشرة':'مكتملة')+'</span></div>'+body;
+        sheet.querySelector('#room-game-join')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.joinRoomGameSession(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
+        sheet.querySelector('#room-game-start')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.startRoomGameSession(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
+        sheet.querySelectorAll('[data-group-answer]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const result=await api.answerRoomGameSession(sessionId,Number(button.dataset.groupAnswer));toast(result.is_correct?'إجابة صحيحة!':'تم تسجيل الإجابة.');await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');button.disabled=false;}});
+        sheet.querySelector('#room-game-next')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.nextRoomGameQuestion(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
+        if(roomGameChannel&&roomGameSessionId!==sessionId){await api.unsubscribeRoomChannel(roomGameChannel);roomGameChannel=null;}
+        if(!roomGameChannel){roomGameSessionId=sessionId;roomGameChannel=api.subscribeRoomGame(sessionId,()=>showRoomGameSession(sessionId).catch(err=>toast(err.message,'error')));}
+      }catch(e){toast(e.message,'error');}
+      finally{roomGameRendering=false;}
     };
-    const loadRoomGames=async()=>{gameGrid.innerHTML='<p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p>';try{const {games}=await api.games();gameGrid.innerHTML=games.length?games.map(g=>'<article class="hs-room-game-card"><span>'+esc(g.icon||'🎮')+'</span><b>'+esc(g.name)+'</b><small>'+esc(g.description||'لعبة من مجتمع همسات')+'</small><small class="hs-game-mode">'+(g.config?.mode==='solo_preview'?'جولة فردية تجريبية · بلا مكافآت':'لعبة مجتمع')+'</small><button type="button" data-room-play="'+esc(g.id)+'">'+((g.config?.questions||[]).length?'العب الآن':'قريباً')+'</button></article>').join(''):'<p class="text-xs opacity-70">لا توجد ألعاب منشورة بعد.</p>';gameGrid.querySelectorAll('[data-room-play]').forEach(b=>b.onclick=()=>{const game=games.find(g=>g.id===b.dataset.roomPlay);if(game)playRoomQuiz(game);});}catch(e){gameGrid.innerHTML='<p class="text-xs text-rose-300">'+esc(e.message)+'</p>';}};
+    let roomGameGames=[];
+    const loadRoomGames=async()=>{
+      gameGrid.innerHTML='<p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p>';
+      try{
+        const result=await Promise.all([api.games(),api.findRoomGameSession(r.id)]);
+        roomGameGames=result[0].games||[];
+        if(result[1]){await showRoomGameSession(result[1].id);return;}
+        gameStage.classList.add('hidden');gameGrid.classList.remove('hidden');
+        gameGrid.innerHTML=roomGameGames.length?roomGameGames.map(g=>'<article class="hs-room-game-card"><span>'+esc(g.icon||'🎮')+'</span><b>'+esc(g.name)+'</b><small>'+esc(g.description||'لعبة من مجتمع همسات')+'</small><small class="hs-game-mode">تحدي جماعي مباشر · بلا خصم من المحفظة</small><button type="button" data-room-create="'+esc(g.id)+'">إنشاء جولة جماعية</button></article>').join(''):'<p class="text-xs opacity-70">لا توجد ألعاب منشورة بعد.</p>';
+        gameGrid.querySelectorAll('[data-room-create]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const id=await api.createRoomGameSession(r.id,b.dataset.roomCreate);await showRoomGameSession(id);}catch(e){toast(e.message,'error');b.disabled=false;}});
+      }catch(e){gameGrid.innerHTML='<p class="text-xs text-rose-300">'+esc(e.message)+'</p>';}
+    };
     sheet.querySelector('#room-game-center-toggle').onclick=()=>{emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');gamePanel.classList.remove('hidden');gameBackdrop.classList.remove('hidden');sheet.querySelector('#room-game-balance').textContent=num(state.wallet?.balance);loadRoomGames();};
     const bombPanel=sheet.querySelector('#room-bomb-panel'),bombBackdrop=sheet.querySelector('#room-bomb-backdrop');
     let roomBombEndsAt=null,bombExpiryHandled=false;
