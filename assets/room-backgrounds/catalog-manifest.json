@@ -2,8 +2,8 @@
   "schema_version": 1,
   "status": "proposed_prices_pending_owner_review_and_assets_upload",
   "storage_bucket": "hamsat-media",
-  "storage_path_prefix": "catalog/room-backgrounds",
-  "note": "Premium prices are provisional coin prices selected for initial balancing; owner may change them at any time. Items remain inactive and must not be seeded as purchasable until images are uploaded and the owner approves activation.",
+  "storage_path_prefix": "{admin_user_id}/catalog/room-backgrounds",
+  "note": "Room background images are uploaded by the Super Admin form under {admin_user_id}/catalog/room-backgrounds/{item_id}.{ext}. The upload path is compatible with the existing Hamsat media Storage ownership policy; the returned public URL is stored in shop_items.image_url. Premium prices are provisional coin prices and can be changed by the owner. Keep items inactive until the images are uploaded, the database migration is applied, and the owner approves activation.",
   "items": [
     {
       "id": "free_01_queen_girl",
@@ -16,7 +16,7 @@
       "theme": "هادئة",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_01_queen_girl.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_01_queen_girl.{jpg|png|webp}"
     },
     {
       "id": "free_02_moonlit_terrace",
@@ -29,7 +29,7 @@
       "theme": "ليلي",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_02_moonlit_terrace.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_02_moonlit_terrace.{jpg|png|webp}"
     },
     {
       "id": "free_03_gamer_girl",
@@ -42,7 +42,7 @@
       "theme": "ألعاب",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_03_gamer_girl.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_03_gamer_girl.{jpg|png|webp}"
     },
     {
       "id": "free_04_neon_controller",
@@ -55,7 +55,7 @@
       "theme": "ألعاب",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_04_neon_controller.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_04_neon_controller.{jpg|png|webp}"
     },
     {
       "id": "free_05_royal_teddy",
@@ -68,7 +68,7 @@
       "theme": "لطيف",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_05_royal_teddy.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_05_royal_teddy.{jpg|png|webp}"
     },
     {
       "id": "free_06_ribbon_girl",
@@ -81,7 +81,7 @@
       "theme": "أنثوي",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/free_06_ribbon_girl.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/free_06_ribbon_girl.{jpg|png|webp}"
     },
     {
       "id": "premium_07_gaming_throne",
@@ -94,7 +94,7 @@
       "theme": "ملكي",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_07_gaming_throne.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_07_gaming_throne.{jpg|png|webp}"
     },
     {
       "id": "premium_08_magic_stars",
@@ -107,7 +107,7 @@
       "theme": "خيالي",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_08_magic_stars.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_08_magic_stars.{jpg|png|webp}"
     },
     {
       "id": "premium_09_royal_kitten",
@@ -120,7 +120,7 @@
       "theme": "لطيف",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_09_royal_kitten.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_09_royal_kitten.{jpg|png|webp}"
     },
     {
       "id": "premium_10_flower_girl",
@@ -133,7 +133,7 @@
       "theme": "زهري",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_10_flower_girl.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_10_flower_girl.{jpg|png|webp}"
     },
     {
       "id": "premium_11_fantasy_castle",
@@ -146,7 +146,7 @@
       "theme": "خيالي",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_11_fantasy_castle.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_11_fantasy_castle.{jpg|png|webp}"
     },
     {
       "id": "premium_12_cat_headphones",
@@ -159,7 +159,7 @@
       "theme": "ألعاب",
       "duration_days": 0,
       "active": false,
-      "image_storage_path": "catalog/room-backgrounds/premium_12_cat_headphones.jpg"
+      "image_storage_path": "{admin_user_id}/catalog/room-backgrounds/premium_12_cat_headphones.{jpg|png|webp}"
     }
   ],
   "currency": "coins"
