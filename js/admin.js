@@ -60,7 +60,7 @@ function bindToggles(root,data,kind){
  });
 }
 async function loadGames(){
- const {data,error}=await supabase.from('games').select('*').order('sort_order').order('created_at',{ascending:false});if(error)throw error;
+ const {data,error}=await supabase.from('games').select('id,name,game_type,icon,active,sort_order,created_at').order('sort_order').order('created_at',{ascending:false});if(error)throw error;
  $('#game-list').innerHTML=data.length?data.map(x=>row(x.icon+' '+x.name,x.id+' · '+x.game_type,x.id,x.active,'game')).join(''):'<p class="muted">لا توجد ألعاب مسجلة بعد.</p>';
  bindToggles('#game-list',data,'game');
 }
