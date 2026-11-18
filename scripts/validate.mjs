@@ -18,6 +18,7 @@ const required = [
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
   'supabase/migrations/0049_synchronized_room_games.sql',
   'supabase/migrations/0050_seed_profile_frame_catalog.sql',
+  'supabase/migrations/0051_protect_game_answer_keys.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -239,6 +240,17 @@ if (fs.existsSync(multiplayerGamesPath)) {
     'alter publication supabase_realtime add table public.room_game_sessions'
   ]) {
     if (!sql.includes(token)) errors.push(`Missing synchronized room games SQL: ${token}`);
+  }
+}
+const gameAnswerProtectionPath = path.join(root, 'supabase/migrations/0051_protect_game_answer_keys.sql');
+if (fs.existsSync(gameAnswerProtectionPath)) {
+  const sql = fs.readFileSync(gameAnswerProtectionPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on public.games from anon,authenticated',
+    'grant select (id,name,description,game_type,icon,active,sort_order,created_at,updated_at)',
+    'grant insert,update,delete on public.games to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing game answer-key protection: ${token}`);
   }
 }
 const profileFramesPath = path.join(root, 'supabase/migrations/0050_seed_profile_frame_catalog.sql');
