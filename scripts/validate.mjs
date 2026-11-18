@@ -238,6 +238,7 @@ if (fs.existsSync(multiplayerGamesPath)) {
     'create or replace function public.room_game_state',
     'create or replace function public.room_game_cancel',
     'room_game_one_live_per_room_idx',
+    'revoke all on public.room_game_sessions,public.room_game_players,public.room_game_answers from anon,authenticated',
     'alter publication supabase_realtime add table public.room_game_sessions'
   ]) {
     if (!sql.includes(token)) errors.push(`Missing synchronized room games SQL: ${token}`);
