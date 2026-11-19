@@ -28,10 +28,10 @@ begin
     raise exception 'إنشاء الجولة متاح لمضيف الغرفة فقط';
   end if;
 
-  if not exists (
-    select 1 from public.room_members rm
-     where rm.room_id=p_room_id and rm.user_id=v_user
-  ) then
+  perform 1 from public.room_members rm
+   where rm.room_id=p_room_id and rm.user_id=v_user
+   for key share;
+  if not found then
     raise exception 'يجب أن يكون مضيف الغرفة عضواً فيها لإنشاء الجولة';
   end if;
 
@@ -143,10 +143,10 @@ begin
     raise exception 'بدء الجولة متاح لمضيفها فقط';
   end if;
 
-  if not exists (
-    select 1 from public.room_members rm
-     where rm.room_id=v_room and rm.user_id=v_user
-  ) then
+  perform 1 from public.room_members rm
+   where rm.room_id=v_room and rm.user_id=v_user
+   for key share;
+  if not found then
     raise exception 'يجب أن يبقى مضيف الجولة داخل الغرفة لبدئها';
   end if;
 
@@ -192,10 +192,10 @@ begin
     raise exception 'الانتقال بين الأسئلة متاح لمضيف الجولة فقط';
   end if;
 
-  if not exists (
-    select 1 from public.room_members rm
-     where rm.room_id=v_room and rm.user_id=v_user
-  ) then
+  perform 1 from public.room_members rm
+   where rm.room_id=v_room and rm.user_id=v_user
+   for key share;
+  if not found then
     raise exception 'يجب أن يبقى مضيف الجولة داخل الغرفة للانتقال بين الأسئلة';
   end if;
 
@@ -248,10 +248,10 @@ begin
     raise exception 'إلغاء الجولة متاح لمضيفها فقط';
   end if;
 
-  if not exists (
-    select 1 from public.room_members rm
-     where rm.room_id=v_room and rm.user_id=v_user
-  ) then
+  perform 1 from public.room_members rm
+   where rm.room_id=v_room and rm.user_id=v_user
+   for key share;
+  if not found then
     raise exception 'يجب أن يبقى مضيف الجولة داخل الغرفة لإلغائها';
   end if;
 
