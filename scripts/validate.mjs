@@ -443,7 +443,7 @@ if (fs.existsSync(roomGameHostMembershipPath)) {
   ]) {
     if (!sql.includes(token)) errors.push(`Missing room-game host membership protection: ${token}`);
   }
-  const membershipChecks = (sql.match(/from public\\.room_members rm/g) || []).length;
+  const membershipChecks = (sql.match(/from public\.room_members rm/g) || []).length;
   if (membershipChecks !== 4) errors.push('Room-game host membership migration must protect all four host operations');
 } else {
   errors.push('Missing room-game host membership migration: 0059');
