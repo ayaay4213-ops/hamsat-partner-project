@@ -357,7 +357,7 @@ if (fs.existsSync(appRoomPath)) {
 const adminScriptPath = path.join(root, 'js/admin.js');
 if (fs.existsSync(adminScriptPath)) {
   const js = fs.readFileSync(adminScriptPath, 'utf8');
-  for (const token of ["$('#room-background-files').onchange", "$('#profile-frame-files').onchange", "$('#asset-batch-upload').onclick", 'PROFILE_FRAME_ASSETS', 'profile_ref_09_purple_cat_bows', 'files.length!==12', 'frames.length!==9', 'URL.createObjectURL', 'catalog/room-backgrounds', 'catalog/profile-frames']) {
+  for (const token of ["$('#room-background-files').onchange", "$('#profile-frame-files').onchange", "$('#asset-batch-upload').onclick", 'PROFILE_FRAME_ASSETS', 'profile_ref_09_purple_cat_bows', 'backgrounds.length!==12', 'frames.length!==9', 'URL.createObjectURL', 'catalog/room-backgrounds', 'catalog/profile-frames']) {
     if (!js.includes(token)) errors.push(`Missing preview/mapped asset upload behavior: ${token}`);
   }
 }
