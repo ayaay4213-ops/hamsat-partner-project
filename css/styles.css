@@ -1609,3 +1609,14 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .room-sheet .hs-room-seat:first-child .hs-seat-ring{width:55px!important;height:55px!important}
  .room-sheet .hs-room-tools-row button{width:38px!important;height:38px!important;min-width:38px!important}
 }
+
+
+/* Compact circular floating voice-room control — keeps the room one tap away. */
+#room-mini-root{inset-inline:14px;bottom:calc(88px + env(safe-area-inset-bottom));justify-content:flex-start;align-items:flex-end}
+.hs-room-mini-bubble{position:relative;width:62px;height:62px;min-width:62px;padding:6px;gap:0;border-radius:50%;overflow:visible;background:linear-gradient(145deg,#292316,#090a0d 72%);border:1px solid rgba(231,198,90,.82);box-shadow:0 8px 26px rgba(0,0,0,.55),0 0 20px rgba(212,175,55,.2)}
+.hs-room-mini-resume{width:100%;height:100%;min-width:0;flex:1;justify-content:center;align-items:center;padding:0;border-radius:50%;outline-offset:3px}
+.hs-room-mini-resume:focus-visible,.hs-room-mini-exit:focus-visible{outline:2px solid #f5df98}
+.hs-room-mini-icon{width:46px;height:46px;flex:0 0 46px}
+.hs-room-mini-exit{position:absolute;top:-5px;inset-inline-end:-5px;width:25px;height:25px;z-index:2;border:1px solid rgba(245,226,160,.75);background:#17130c;color:#f5df98;box-shadow:0 2px 8px #0009}
+.hs-room-mini-exit svg{width:13px;height:13px}
+@media(min-width:640px){#room-mini-root{inset-inline-start:max(14px,calc((100vw - 480px)/2));inset-inline-end:auto;bottom:96px}}
