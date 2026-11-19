@@ -407,6 +407,8 @@ if (fs.existsSync(roomIntegrityPath)) {
     'p_request_id uuid',
     "private.claim_gift_request(v_user,'room_all',p_request_id)",
     'room_seats rs where rs.room_id=s.room_id and rs.user_id=v_user',
+    'room_members rm where rm.room_id=v_room_id and rm.user_id=v_user',
+    "v_end_at := least(now(),coalesce(v_old.last_heartbeat_at,v_old.started_at)+interval '45 seconds')",
     "interval '45 seconds'"
   ]) {
     if (!sql.includes(token)) errors.push(`Missing room/gift integrity protection: ${token}`);
@@ -421,7 +423,7 @@ if (fs.existsSync(apiFilePath)) {
 if (fs.existsSync(appRoomPath)) {
   const js = fs.readFileSync(appRoomPath, 'utf8');
   if (/state\.account(?:\?\.)?\.email|state\.account\[['"]email['"]\]/i.test(js)) errors.push('The account UI must never render the authentication email');
-  for (const token of ['room-game-countdown','question_started_at','roomGiftRequestId','crypto.randomUUID()']) {
+  for (const token of ['room-game-countdown','question_started_at','roomGiftRequestId','directGiftRequestId','directGiftRequestSignature','api.sendGift(profile.uuid, values.giftId, quantity, directGiftRequestId)','crypto.randomUUID()']) {
     if (!js.includes(token)) errors.push(`Missing room/account privacy UI protection: ${token}`);
   }
 }
