@@ -327,9 +327,29 @@ if (fs.existsSync(appRoomPath)) {
     'api.agentRechargeUser',
     'api.hostStartSession',
     'api.blockUser',
-    'api.reportRoom'
+    'api.reportRoom',
+    'api.kickRoomParticipant',
+    'data-kick-room-member',
+    'function renderRoomMiniBubble()',
+    "state.roomMinimized=true;state.minimizedRoom=r",
+    "data-room-bg-item",
+    "معاينة — ستُطبّق بعد حفظ الإعدادات",
+    "room-seat-limit"
   ]) {
     if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
+  }
+  const miniResumeStart = js.indexOf("$('#room-mini-resume').onclick");
+  const miniExitStart = js.indexOf("$('#room-mini-exit').onclick", miniResumeStart);
+  if (miniResumeStart < 0 || miniExitStart < 0) {
+    errors.push('Missing room mini-bubble resume/exit controls');
+  } else {
+    const resumeHandler = js.slice(miniResumeStart, miniExitStart);
+    if (!resumeHandler.includes('await openRoom(current)')) {
+      errors.push('Room mini-bubble must restore the minimized room');
+    }
+    if (/\\.leave\\s*\\(/.test(resumeHandler)) {
+      errors.push('Room mini-bubble resume must preserve the existing voice connection');
+    }
   }
 }
 
