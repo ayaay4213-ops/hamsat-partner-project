@@ -852,7 +852,7 @@ async function openRoom(r) {
         }
         gameStage.innerHTML='<div class="flex items-center justify-between mb-3"><span class="text-xs text-gold-300">'+esc(game?.name||'تحدي جماعي')+'</span><span class="text-xs opacity-60">'+(data.status==='lobby'?'ردهة الانتظار':data.status==='active'?'جولة مباشرة':'مكتملة')+'</span></div>'+body;
         if(data.status==='active'&&question){
-          const deadline=Date.now()+remainingSeconds*1000;
+          const deadline=questionStartedMs+30000-(serverNowMs-Date.now());
           const updateGameCountdown=()=>{
             const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));
             const timer=sheet.querySelector('#room-game-countdown');
