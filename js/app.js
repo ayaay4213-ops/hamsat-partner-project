@@ -745,7 +745,7 @@ async function openRoom(r) {
       if(host&&!muteStateLoaded){const savedMutes=await api.roomMutedUsers(r.id);savedMutes.userIds.forEach(id=>remotelyMutedUsers.add(id));muteStateLoaded=true;}
       const seatedUsers=new Set(seats.map(x=>x.user_id));
       const adminMembersEl=sheet.querySelector('#room-admin-members');
-      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host?`<button type="button" class="hs-room-member-action" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button><button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.innerHTML=renderMemberRows();
       if(adminMembersEl)adminMembersEl.innerHTML=renderMemberRows();
       const actionRoots=[membersEl,adminMembersEl].filter(Boolean);
@@ -766,6 +766,13 @@ async function openRoom(r) {
       actionRoots.forEach(root=>root.querySelectorAll('[data-remove-seat]').forEach(b=>b.onclick=async()=>{
         b.disabled=true;
         try{await api.hostRemoveRoomSeat(r.id,b.dataset.removeSeat);if(state.voiceRoom)await state.voiceRoom.refreshPermissions();await drawMembers();toast('تم إنزال العضو من كرسي المايك');}
+        catch(e){toast(e.message,'error');b.disabled=false;}
+      }));
+      actionRoots.forEach(root=>root.querySelectorAll('[data-kick-room-member]').forEach(b=>b.onclick=async()=>{
+        const uid=b.dataset.kickRoomMember;
+        if(!confirm('سيتم طرد هذا العضو من الغرفة وإيقاف اتصاله الصوتي. هل تريدين المتابعة؟'))return;
+        b.disabled=true;
+        try{await api.kickRoomParticipant(r.id,uid);remotelyMutedUsers.delete(uid);toast('تم طرد العضو من الغرفة');await drawMembers();}
         catch(e){toast(e.message,'error');b.disabled=false;}
       }));
       const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
