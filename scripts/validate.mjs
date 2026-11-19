@@ -423,7 +423,7 @@ if (fs.existsSync(apiFilePath)) {
 if (fs.existsSync(appRoomPath)) {
   const js = fs.readFileSync(appRoomPath, 'utf8');
   if (/state\.account(?:\?\.)?\.email|state\.account\[['"]email['"]\]/i.test(js)) errors.push('The account UI must never render the authentication email');
-  for (const token of ['room-game-countdown','question_started_at','roomGiftRequestId','directGiftRequestId','directGiftRequestSignature','api.sendGift(profile.uuid, values.giftId, quantity, directGiftRequestId)','crypto.randomUUID()']) {
+  for (const token of ['room-game-countdown','question_started_at','const deadline=questionStartedMs+30000-(serverNowMs-Date.now())','roomGiftRequestId','directGiftRequestId','directGiftRequestSignature','api.sendGift(profile.uuid, values.giftId, quantity, directGiftRequestId)','crypto.randomUUID()']) {
     if (!js.includes(token)) errors.push(`Missing room/account privacy UI protection: ${token}`);
   }
 }
