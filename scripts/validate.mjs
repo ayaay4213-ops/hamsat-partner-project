@@ -401,6 +401,7 @@ if (fs.existsSync(roomIntegrityPath)) {
     "now() >= v_started_at + interval '30 seconds'",
     "'question_started_at',v_session.question_started_at",
     'private.gift_request_results',
+    'alter table private.gift_request_results enable row level security',
     'private.claim_gift_request',
     'private.complete_gift_request',
     'p_request_id uuid',
