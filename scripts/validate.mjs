@@ -373,6 +373,13 @@ if (fs.existsSync(apiFilePath)) {
     if (!js.includes(token)) errors.push(`Missing room interaction API method: ${token}`);
   }
 }
+const roomCssPath = path.join(root, 'css/styles.css');
+if (fs.existsSync(roomCssPath)) {
+  const css = fs.readFileSync(roomCssPath, 'utf8');
+  for (const token of ['.hs-room-mini-bubble{position:relative;width:62px;height:62px', '.hs-room-mini-exit{position:absolute', '.hs-room-mini-resume:focus-visible']) {
+    if (!css.includes(token)) errors.push(`Missing circular minimized-room styling: ${token}`);
+  }
+}
 for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
