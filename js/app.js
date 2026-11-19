@@ -833,8 +833,8 @@ async function openRoom(r) {
         const data=await api.roomGameState(sessionId);
         if(state.roomGameTimer){clearInterval(state.roomGameTimer);state.roomGameTimer=null;}
         const game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
-        const serverNowMs=Date.parse(data.server_now)||Date.now(),questionStartedMs=Date.parse(data.question_started_at)||serverNowMs;
-        const remainingSeconds=Math.max(0,Math.ceil((30000-Math.max(0,serverNowMs-questionStartedMs))/1000));
+        const serverNowMs=Date.parse(data.server_now)||Date.now(),questionStartedMs=Date.parse(data.question_started_at);
+        const remainingSeconds=Number.isFinite(questionStartedMs)?Math.max(0,Math.ceil((30000-Math.max(0,serverNowMs-questionStartedMs))/1000)):0;
         gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
         const players=(data.players||[]).map((p,i)=>'<div class="hs-room-game-player"><span>'+(i+1)+'. '+esc(p.display_name||'عضو')+'</span><b>'+num(p.score)+' نقطة</b></div>').join('');
         let body='';
