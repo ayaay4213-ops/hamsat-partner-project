@@ -392,3 +392,34 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
+
+const roomIntegrityPath = path.join(root, 'supabase/migrations/0056_room_and_gift_integrity.sql');
+if (fs.existsSync(roomIntegrityPath)) {
+  const sql = fs.readFileSync(roomIntegrityPath, 'utf8').toLowerCase();
+  for (const token of [
+    "now() >= v_started_at + interval '30 seconds'",
+    "'question_started_at',v_session.question_started_at",
+    'private.gift_request_results',
+    'private.claim_gift_request',
+    'private.complete_gift_request',
+    'p_request_id uuid',
+    "private.claim_gift_request(v_user,'room_all',p_request_id)",
+    'room_seats rs where rs.room_id=s.room_id and rs.user_id=v_user',
+    "interval '45 seconds'"
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing room/gift integrity protection: ${token}`);
+  }
+}
+if (fs.existsSync(apiFilePath)) {
+  const js = fs.readFileSync(apiFilePath, 'utf8');
+  if (!/p_request_id:\s*requestId/.test(js)) errors.push('Gift API calls must pass the idempotency request UUID');
+  const meBlock = js.match(/return\s*\{\s*account:\s*\{([^}]*)\}/s);
+  if (!meBlock || /\bemail\b/i.test(meBlock[1])) errors.push('The account payload must expose only a safe public identity, never an email address');
+}
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  if (/state\.account(?:\?\.)?\.email|state\.account\[['"]email['"]\]/i.test(js)) errors.push('The account UI must never render the authentication email');
+  for (const token of ['room-game-countdown','question_started_at','roomGiftRequestId','crypto.randomUUID()']) {
+    if (!js.includes(token)) errors.push(`Missing room/account privacy UI protection: ${token}`);
+  }
+}
