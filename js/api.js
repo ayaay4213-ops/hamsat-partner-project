@@ -389,6 +389,10 @@ export const api = {
     const {data,error}=await client().rpc('host_remove_room_seat',{p_room_id:roomId,p_target_user:userId});
     fail(error);return data;
   },
+  kickRoomParticipant: async (roomId,userId) => {
+    const {data,error}=await client().functions.invoke('livekit-kick',{body:{room_id:roomId,participant_id:userId}});
+    fail(error);if(data?.error)throw new Error(data.error);return data;
+  },
   roomMessages: async (roomId) => {
     const { data, error } = await client().from('room_messages').select('id,user_id,body,created_at').eq('room_id', roomId).order('created_at', { ascending: true }).limit(100);
     fail(error);
