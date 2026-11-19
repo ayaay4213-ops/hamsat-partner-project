@@ -41,9 +41,11 @@ async function loadItems(){
   const media=['room_background','profile_frame'].includes(x.item_type);
   const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-amber-300/20">':'<div class="w-16 h-16 rounded-xl border border-dashed border-amber-300/30 grid place-items-center text-[10px] text-amber-200/70">'+(media?'بانتظار الصورة':'بدون صورة')+'</div>';
   const publishBlocked=media&&!x.image_url&&!x.active;
-  return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p></div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item" '+(publishBlocked?'disabled title="ارفعي الصورة وراجعيها قبل النشر"':'')+'>'+(publishBlocked?'ارفع الصورة أولاً':x.active?'إخفاء':'نشر')+'</button></div>';
+   const replaceControl=media?'<div class="flex items-center gap-2 mt-2"><input class="field text-xs" type="file" accept="image/png,image/jpeg,image/webp" data-replace-file="'+esc(x.id)+'"><button class="ghost text-xs" type="button" data-replace-image="'+esc(x.id)+'">استبدال الصورة</button></div>':'';
+  return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p>'+replaceControl+'</div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item" '+(publishBlocked?'disabled title="ارفعي الصورة وراجعيها قبل النشر"':'')+'>'+(publishBlocked?'ارفع الصورة أولاً':x.active?'إخفاء':'نشر')+'</button></div>';
  }).join(''):'<p class="muted">لا توجد عناصر بعد.</p>');
  bindToggles('#item-list',data,'item');
+  $('#item-list').querySelectorAll('[data-replace-image]').forEach(button=>button.onclick=()=>replaceMediaImage(button.dataset.replaceImage,$('[data-replace-file="'+button.dataset.replaceImage+'"]'),button));
 }
 async function loadGifts(){
  const {data,error}=await supabase.from('gifts').select('*').order('price');if(error)throw error;
@@ -161,53 +163,62 @@ const PROFILE_FRAME_ASSETS=[
  ['profile_ref_09_purple_cat_bows','القطة البنفسجية والفيونكات']
 ];
 const selectedAssets={backgrounds:[],frames:[]};
+const selectedAssets={backgrounds:[],frames:[]};
+const previewObjectUrls={backgrounds:[],frames:[]};
+function clearAssetPreviews(kind){previewObjectUrls[kind].forEach(url=>URL.revokeObjectURL(url));previewObjectUrls[kind]=[];}
 function renderAssetPreviews(kind,files,items,targetId){
- const target=$(targetId),list=Array.from(files||[]);
- selectedAssets[kind]=list;
+ const target=$(targetId),list=Array.from(files||[]);clearAssetPreviews(kind);selectedAssets[kind]=list;
  if(!list.length){target.innerHTML='<p class="muted text-xs">لم يتم اختيار صور بعد.</p>';return;}
  target.innerHTML=list.map((file,index)=>{
   const options=items.map(([id,label],i)=>'<option value="'+esc(id)+'" '+(i===index?'selected':'')+'>'+esc(label)+'</option>').join('');
-  const preview=URL.createObjectURL(file);
-  return '<div class="item !items-start"><div class="min-w-0 w-full"><img src="'+preview+'" alt="معاينة '+(index+1)+'" class="w-full h-36 object-contain rounded-lg bg-black/30"><p class="text-xs mt-2 break-all">'+esc(file.name)+'</p><label class="text-xs muted block mt-2">ربط الصورة بالعنصر<select class="field mt-1" data-asset-kind="'+kind+'" data-asset-index="'+index+'">'+options+'</select></label><p class="text-xs muted mt-1">الحجم: '+(file.size/1024/1024).toFixed(2)+' MB</p></div></div>';
+  const preview=URL.createObjectURL(file);previewObjectUrls[kind].push(preview);
+  const valid=['image/png','image/jpeg','image/webp'].includes(file.type)&&file.size<=5*1024*1024;
+  return '<div class="item !items-start"><div class="min-w-0 w-full"><img src="'+preview+'" alt="معاينة '+(index+1)+'" class="w-full h-36 object-contain rounded-lg bg-black/30"><p class="text-xs mt-2 break-all">'+esc(file.name)+'</p><label class="text-xs muted block mt-2">ربط الصورة بالعنصر<select class="field mt-1" data-asset-kind="'+kind+'" data-asset-index="'+index+'">'+options+'</select></label><p class="text-xs mt-1 '+(valid?'text-emerald-300':'text-red-300')+'">'+(file.size/1024/1024).toFixed(2)+' MB · '+(valid?'الملف صالح':'صيغة غير مقبولة أو الحجم أكبر من 5MB')+'</p></div></div>';
  }).join('');
 }
-function assetMappings(kind,items){
- const selects=Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]'));
- return selects.map(select=>({id:select.value,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));
+function assetMappings(kind){return Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]')).map(select=>({id:select.value,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));}
+function mediaFolder(type){return type==='room_background'?'catalog/room-backgrounds':'catalog/profile-frames';}
+async function replaceMediaImage(id,input,button){
+ const file=input.files?.[0];if(!file)return;button.disabled=true;
+ try{
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)throw Error('الصورة يجب أن تكون PNG/JPG/WEBP وبحد أقصى 5MB.');
+  const {data:item,error}=await supabase.from('shop_items').select('id,item_type').eq('id',id).maybeSingle();if(error)throw error;
+  if(!item||!['room_background','profile_frame'].includes(item.item_type))throw Error('عنصر الخلفية أو الإطار غير موجود.');
+  const url=await upload(file,mediaFolder(item.item_type),id);
+  const {error:updateError}=await supabase.from('shop_items').update({image_url:url,active:false}).eq('id',id);if(updateError)throw updateError;
+  await loadItems();message('تم استبدال الصورة. بقي العنصر مخفياً حتى المراجعة.');
+ }catch(err){message(err.message||'تعذر استبدال الصورة.',true);}finally{button.disabled=false;input.value='';}
 }
 $('#room-background-files').onchange=e=>renderAssetPreviews('backgrounds',e.target.files,ROOM_BACKGROUND_ASSETS,'#room-background-preview');
 $('#profile-frame-files').onchange=e=>renderAssetPreviews('frames',e.target.files,PROFILE_FRAME_ASSETS,'#profile-frame-preview');
 $('#asset-batch-upload').onclick=async()=>{
- const button=$('#asset-batch-upload'),result=$('#asset-batch-result');
- const backgrounds=selectedAssets.backgrounds,frames=selectedAssets.frames;
+ const button=$('#asset-batch-upload'),result=$('#asset-batch-result'),backgrounds=selectedAssets.backgrounds,frames=selectedAssets.frames;
  if(backgrounds.length!==12||frames.length!==9){result.textContent='يجب اختيار 12 خلفية و9 إطارات بالضبط قبل الرفع.';message(result.textContent,true);return;}
- const all=[...backgrounds,...frames];
- const invalid=all.find(f=>!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>5*1024*1024);
+ const all=[...backgrounds,...frames],invalid=all.find(f=>!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>5*1024*1024);
  if(invalid){result.textContent='الملف '+invalid.name+' غير صالح. الصيغ المقبولة PNG/JPG/WEBP وبحد أقصى 5MB للصورة.';message(result.textContent,true);return;}
- const bgMap=assetMappings('backgrounds',ROOM_BACKGROUND_ASSETS),frameMap=assetMappings('frames',PROFILE_FRAME_ASSETS);
- const mappings=[...bgMap,...frameMap];
- if(new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يوجد عنصر مكرر في الربط. اربطي كل صورة بعنصر مختلف.';message(result.textContent,true);return;}
+ const bgMap=assetMappings('backgrounds'),frameMap=assetMappings('frames'),mappings=[...bgMap,...frameMap];
+ if(bgMap.length!==12||frameMap.length!==9||new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يوجد عنصر مكرر أو ربط ناقص. اربطي كل صورة بعنصر مختلف.';message(result.textContent,true);return;}
  if(bgMap.some(x=>!ROOM_BACKGROUND_ASSETS.some(y=>y[0]===x.id))||frameMap.some(x=>!PROFILE_FRAME_ASSETS.some(y=>y[0]===x.id))){result.textContent='الربط المحدد غير صحيح.';message(result.textContent,true);return;}
- button.disabled=true;let uploaded=0,failed=[];
+ button.disabled=true;let uploaded=0;const failed=[],status=[];
  try{
+  const {data:catalog,error}=await supabase.from('shop_items').select('id,item_type').in('id',mappings.map(x=>x.id));if(error)throw error;
+  const byId=new Map((catalog||[]).map(x=>[x.id,x]));
+  const mismatch=mappings.find((m,i)=>!byId.has(m.id)||byId.get(m.id).item_type!==(i<12?'room_background':'profile_frame'));
+  if(mismatch)throw Error('توقف الرفع قبل البدء: عنصر الكتالوج غير موجود أو نوعه غير مطابق: '+mismatch.id);
   for(let i=0;i<mappings.length;i++){
-   const {id,file}=mappings[i],itemType=i<12?'room_background':'profile_frame';
+   const {id,file}=mappings[i],type=i<12?'room_background':'profile_frame';
    try{
     result.textContent='جارٍ رفع '+(i+1)+' من 21: '+file.name;
-    const {data:item,error:itemError}=await supabase.from('shop_items').select('id,item_type,active').eq('id',id).maybeSingle();
-    if(itemError)throw itemError;
-    if(!item||item.item_type!==itemType)throw new Error('عنصر الكتالوج غير موجود أو نوعه لا يطابق الصورة');
-    const folder=itemType==='room_background'?'catalog/room-backgrounds':'catalog/profile-frames';
-    const imageUrl=await upload(file,folder,id);
-    const {error:updateError}=await supabase.from('shop_items').update({image_url:imageUrl,active:false}).eq('id',id);
-    if(updateError)throw updateError;
-    uploaded++;
-   }catch(err){failed.push(file.name+': '+(err.message||'فشل الرفع'));}
+    const url=await upload(file,mediaFolder(type),id);
+    const {error:updateError}=await supabase.from('shop_items').update({image_url:url,active:false}).eq('id',id);if(updateError)throw updateError;
+    uploaded++;status.push('✓ '+file.name+' — تم الربط وبقي مخفياً');
+   }catch(err){failed.push(file.name+': '+(err.message||'فشل الرفع'));status.push('✕ '+file.name+' — '+(err.message||'فشل الرفع'));}
+   result.textContent='تم '+(i+1)+' من 21\n'+status.join('\n');
   }
   await loadItems();
-  result.textContent='تم ربط '+uploaded+' من 21 صورة. '+(failed.length?'تعذّر رفع: '+failed.join(' | '):'اكتمل الرفع بنجاح. راجعي الصور قبل تفعيل أي عنصر.');
-  message('تم ربط '+uploaded+' صورة، وجميع العناصر بقيت مخفية للمراجعة.');
- }catch(err){result.textContent=err.message||'تعذر رفع الصور.';message(result.textContent,true);}
+  result.textContent='النتيجة: '+uploaded+' من 21 صورة مرتبطة.\n'+(failed.length?'صور تحتاج إعادة المحاولة:\n'+failed.join('\n'):'كل الصور ارتبطت بنجاح.')+'\nجميع العناصر بقيت مخفية للمراجعة.';
+  message(failed.length?'اكتمل الرفع جزئياً: '+uploaded+' من 21. راجعي الصور التي فشلت.':'تم ربط الصور الـ21 بنجاح، وجميع العناصر بقيت مخفية للمراجعة.',!!failed.length);
+ }catch(err){result.textContent=err.message||'تعذر بدء الرفع.';message(result.textContent,true);}
  finally{button.disabled=false;}
 };
 $('#gift-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),category:f.elements.category.value,description:f.elements.description.value.trim(),image_url:f.elements.image_url.value.trim()||null,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية في الكتالوج.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
