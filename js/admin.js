@@ -163,7 +163,6 @@ const PROFILE_FRAME_ASSETS=[
  ['profile_ref_09_purple_cat_bows','القطة البنفسجية والفيونكات']
 ];
 const selectedAssets={backgrounds:[],frames:[]};
-const selectedAssets={backgrounds:[],frames:[]};
 const previewObjectUrls={backgrounds:[],frames:[]};
 function clearAssetPreviews(kind){previewObjectUrls[kind].forEach(url=>URL.revokeObjectURL(url));previewObjectUrls[kind]=[];}
 function renderAssetPreviews(kind,files,items,targetId){
