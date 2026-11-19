@@ -40,7 +40,8 @@ async function loadItems(){
  $('#item-list').innerHTML=summary+(data.length?data.map(x=>{
   const media=['room_background','profile_frame'].includes(x.item_type);
   const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-amber-300/20">':'<div class="w-16 h-16 rounded-xl border border-dashed border-amber-300/30 grid place-items-center text-[10px] text-amber-200/70">'+(media?'بانتظار الصورة':'بدون صورة')+'</div>';
-  return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p></div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item">'+(x.active?'إخفاء':'نشر')+'</button></div>';
+  const publishBlocked=media&&!x.image_url&&!x.active;
+  return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p></div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item" '+(publishBlocked?'disabled title="ارفعي الصورة وراجعيها قبل النشر"':'')+'>'+(publishBlocked?'ارفع الصورة أولاً':x.active?'إخفاء':'نشر')+'</button></div>';
  }).join(''):'<p class="muted">لا توجد عناصر بعد.</p>');
  bindToggles('#item-list',data,'item');
 }
@@ -58,6 +59,7 @@ function bindToggles(root,data,kind){
   try{
    const x=data.find(z=>z.id===b.dataset.toggle);
    if(!x)throw new Error('العنصر غير موجود في القائمة الحالية.');
+   if(table==='shop_items'&&['room_background','profile_frame'].includes(x.item_type)&&!x.image_url&&!x.active)throw new Error('لا يمكن نشر خلفية أو إطار قبل رفع صورته ومراجعتها.');
    const payload={active:!x.active};
    if(table==='shop_items'||table==='games')payload.updated_at=new Date().toISOString();
    const {error}=await supabase.from(table).update(payload).eq('id',x.id);
