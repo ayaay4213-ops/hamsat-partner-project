@@ -347,7 +347,7 @@ if (fs.existsSync(appRoomPath)) {
     if (!resumeHandler.includes('await openRoom(current)')) {
       errors.push('Room mini-bubble must restore the minimized room');
     }
-    if (/\\.leave\\s*\\(/.test(resumeHandler)) {
+    if (/\.leave\s*\(/.test(resumeHandler)) {
       errors.push('Room mini-bubble resume must preserve the existing voice connection');
     }
   }
