@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261119-room-kick-v1';
+import { api } from './api.js?v=20261119-room-integrity-v1?v=20261119-room-kick-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -105,7 +105,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet(force = false) { if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 function renderRoomMiniBubble() {
   const root = $('#room-mini-root');
@@ -824,13 +824,17 @@ async function openRoom(r) {
     sheet.querySelector('#room-emoji-toggle')?.addEventListener('click',()=>{const opening=emojiPanel.classList.contains('hidden');if(opening){sheet.querySelector('#room-gift-panel').classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');sheet.querySelector('#room-game-center').classList.add('hidden');sheet.querySelector('#room-game-backdrop').classList.add('hidden');}emojiPanel.classList.toggle('hidden');sheet.querySelector('#room-emoji-backdrop').classList.toggle('hidden',!opening);});
     const gamePanel=sheet.querySelector('#room-game-center'),gameBackdrop=sheet.querySelector('#room-game-backdrop'),gameGrid=sheet.querySelector('#room-games-grid'),gameStage=sheet.querySelector('#room-game-stage');
     let roomGameChannel=null,roomGameSessionId=null,roomGameRendering=false,roomGameRefreshQueued=false;
-    const closeRoomGames=()=>{gamePanel.classList.add('hidden');gameBackdrop.classList.add('hidden');gameGrid.classList.remove('hidden');gameStage.classList.add('hidden');if(roomGameChannel){api.unsubscribeRoomChannel(roomGameChannel).catch(()=>{});roomGameChannel=null;}roomGameSessionId=null;};
+    const closeRoomGames=()=>{if(state.roomGameTimer){clearInterval(state.roomGameTimer);state.roomGameTimer=null;}gamePanel.classList.add('hidden');gameBackdrop.classList.add('hidden');gameGrid.classList.remove('hidden');gameStage.classList.add('hidden');if(roomGameChannel){api.unsubscribeRoomChannel(roomGameChannel).catch(()=>{});roomGameChannel=null;}roomGameSessionId=null;};
     sheet.querySelector('#room-game-close').onclick=closeRoomGames;gameBackdrop.onclick=closeRoomGames;
     sheet.querySelector('#room-game-balance-refresh').onclick=async()=>{try{state.wallet=(await api.wallet()).wallet;sheet.querySelector('#room-game-balance').textContent=num(state.wallet?.balance);}catch(e){toast(e.message,'error');}};
     const showRoomGameSession=async(sessionId)=>{
       if(roomGameRendering){roomGameRefreshQueued=true;return;}roomGameRendering=true;
       try{
-        const data=await api.roomGameState(sessionId),game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
+        const data=await api.roomGameState(sessionId);
+        if(state.roomGameTimer){clearInterval(state.roomGameTimer);state.roomGameTimer=null;}
+        const game=(roomGameGames||[]).find(x=>x.id===data.game_id),isHost=data.host_id===state.profile?.id,joined=(data.players||[]).some(x=>x.user_id===state.profile?.id),question=data.question;
+        const serverNowMs=Date.parse(data.server_now)||Date.now(),questionStartedMs=Date.parse(data.question_started_at)||serverNowMs;
+        const remainingSeconds=Math.max(0,Math.ceil((30000-Math.max(0,serverNowMs-questionStartedMs))/1000));
         gameGrid.classList.add('hidden');gameStage.classList.remove('hidden');
         const players=(data.players||[]).map((p,i)=>'<div class="hs-room-game-player"><span>'+(i+1)+'. '+esc(p.display_name||'عضو')+'</span><b>'+num(p.score)+' نقطة</b></div>').join('');
         let body='';
@@ -840,13 +844,27 @@ async function openRoom(r) {
           if(isHost)body+='<button type="button" id="room-game-start" class="btn-gold w-full mt-3" '+((data.players||[]).length<2?'disabled':'')+'>ابدأ الجولة ('+num((data.players||[]).length)+'/2 على الأقل)</button><button type="button" id="room-game-cancel" class="btn-ghost w-full mt-2">إلغاء الجولة</button>';
         }else if(data.status==='active'&&question){
           const myAnswer=data.my_answer;
-          body='<div class="hs-room-game-progress"><b>'+esc(game?.name||'تحدي الغرفة')+'</b><span>'+num(data.current_question_index+1)+' / '+num(data.question_count)+'</span></div><div class="hs-room-game-track"><i style="width:'+(((data.current_question_index+1)/data.question_count)*100)+'%"></i></div><h4>'+esc(question.question||'')+'</h4><div class="hs-room-game-options">'+(myAnswer?'<p class="text-sm text-center">'+(myAnswer.is_correct?'إجابة صحيحة! ✨':'تم تسجيل إجابتك، حظاً أوفر في السؤال التالي.')+'</p>':(question.options||[]).map((o,i)=>'<button type="button" data-group-answer="'+i+'">'+esc(o)+'</button>').join(''))+'</div><div class="hs-room-game-players mt-4">'+players+'</div>';
+          body='<div class="hs-room-game-progress"><b>'+esc(game?.name||'تحدي الغرفة')+'</b><span>'+num(data.current_question_index+1)+' / '+num(data.question_count)+'</span></div><div class="hs-room-game-track"><i style="width:'+(((data.current_question_index+1)/data.question_count)*100)+'%"></i></div><div id="room-game-countdown" class="text-center text-sm text-amber-300 my-2" aria-live="polite">الوقت المتبقي: '+num(remainingSeconds)+' ث</div><h4>'+esc(question.question||'')+'</h4><div class="hs-room-game-options">'+(myAnswer?'<p class="text-sm text-center">'+(myAnswer.is_correct?'إجابة صحيحة! ✨':'تم تسجيل إجابتك، حظاً أوفر في السؤال التالي.')+'</p>':(question.options||[]).map((o,i)=>'<button type="button" data-group-answer="'+i+'">'+esc(o)+'</button>').join(''))+'</div><div class="hs-room-game-players mt-4">'+players+'</div>';
           if(isHost)body+='<button type="button" id="room-game-next" class="btn-gold w-full mt-3">'+(data.current_question_index+1>=data.question_count?'إنهاء الجولة':'السؤال التالي')+'</button><button type="button" id="room-game-cancel" class="btn-ghost w-full mt-2">إنهاء وإلغاء الجولة</button>';
           else if(myAnswer)body+='<p class="text-xs text-center mt-3 opacity-70">بانتظار المضيف للانتقال إلى السؤال التالي</p>';
         }else{
           body='<div class="hs-room-game-result"><div>'+(data.status==='cancelled'?'↩️':'🏆')+'</div><h4>'+(data.status==='cancelled'?'تم إلغاء الجولة':'انتهت الجولة!')+'</h4><div class="hs-room-game-players">'+players+'</div><p class="text-xs mt-3">'+(data.status==='cancelled'?'لم تُحتسب مكافآت أو عملات لهذه الجولة.':'تم حفظ نتائج هذه الجولة داخل الغرفة.')+'</p></div>';
         }
         gameStage.innerHTML='<div class="flex items-center justify-between mb-3"><span class="text-xs text-gold-300">'+esc(game?.name||'تحدي جماعي')+'</span><span class="text-xs opacity-60">'+(data.status==='lobby'?'ردهة الانتظار':data.status==='active'?'جولة مباشرة':'مكتملة')+'</span></div>'+body;
+        if(data.status==='active'&&question){
+          const deadline=Date.now()+remainingSeconds*1000;
+          const updateGameCountdown=()=>{
+            const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));
+            const timer=sheet.querySelector('#room-game-countdown');
+            if(timer)timer.textContent=left>0?'الوقت المتبقي: '+num(left)+' ث':'انتهى وقت الإجابة';
+            if(left===0){
+              if(state.roomGameTimer){clearInterval(state.roomGameTimer);state.roomGameTimer=null;}
+              gameStage.querySelectorAll('[data-group-answer]').forEach(button=>button.disabled=true);
+            }
+          };
+          updateGameCountdown();
+          if(remainingSeconds>0)state.roomGameTimer=window.setInterval(updateGameCountdown,250);
+        }
         sheet.querySelector('#room-game-join')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.joinRoomGameSession(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
         sheet.querySelector('#room-game-start')?.addEventListener('click',async e=>{e.currentTarget.disabled=true;try{await api.startRoomGameSession(sessionId);await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');e.currentTarget.disabled=false;}});
         sheet.querySelectorAll('[data-group-answer]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const result=await api.answerRoomGameSession(sessionId,Number(button.dataset.groupAnswer));toast(result.is_correct?'إجابة صحيحة!':'تم تسجيل الإجابة.');await showRoomGameSession(sessionId);}catch(err){toast(err.message,'error');button.disabled=false;}});
@@ -893,7 +911,10 @@ async function openRoom(r) {
 
     sheet.querySelector('#room-emoji-close')?.addEventListener('click',()=>{emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');});sheet.querySelector('#room-emoji-backdrop')?.addEventListener('click',()=>{emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');});
     const giftPanel=sheet.querySelector('#room-gift-panel'),giftForm=sheet.querySelector('#room-gift-form'),giftGrid=sheet.querySelector('#room-gift-grid'),giftSubmit=giftForm.querySelector('[type="submit"]');
-    let selectedGiftCategory='app';
+    let selectedGiftCategory='app',roomGiftRequestId=null;
+    giftForm.elements.recipient.addEventListener('change',()=>{roomGiftRequestId=null;});
+    giftForm.elements.quantity.addEventListener('change',()=>{roomGiftRequestId=null;});
+    giftGrid.addEventListener('click',event=>{if(event.target.closest('[data-gift]'))roomGiftRequestId=null;});
     const drawRoomGiftGrid=()=>{
       const filtered=(state.gifts||[]).filter(g=>(g.category||'app')===selectedGiftCategory);
       giftGrid.innerHTML=filtered.map(g=>'<button type="button" class="hs-gift-choice" data-gift="'+esc(g.id)+'"><span class="hs-gift-choice-art"><i data-lucide="'+esc(g.icon||'gift')+'"></i></span><b>'+esc(g.name)+'</b><small>'+num(g.price)+' عملة</small></button>').join('')||'<p class="text-xs opacity-70">لا توجد هدايا في هذا التصنيف حالياً</p>';
@@ -910,15 +931,15 @@ async function openRoom(r) {
         const recipients=members.filter(m=>m.userId!==state.profile?.uuid&&seatedIds.has(m.userId));
         if(!recipients.length){toast('لا يوجد أعضاء آخرون على مقاعد المايك حالياً');return;}
         const seatNumbers=Object.fromEntries(seats.map(x=>[x.user_id,x.seat_no]));
-        giftForm.elements.recipient.innerHTML=recipients.map(m=>'<option value="'+esc(m.userId)+'">'+esc(m.displayName)+' · مقعد '+num(seatNumbers[m.userId])+'</option>').join('')+'<option value="__all__">All · كل الجالسين ('+num(recipients.length)+')</option>';sheet.querySelector('#room-gift-all').onclick=()=>{giftForm.elements.recipient.value='__all__';sheet.querySelector('#room-gift-selection').textContent='سيتم إرسال الهدية إلى جميع الجالسين على المايك';};
-        giftForm.elements.gift.value='';giftSubmit.disabled=true;
+        giftForm.elements.recipient.innerHTML=recipients.map(m=>'<option value="'+esc(m.userId)+'">'+esc(m.displayName)+' · مقعد '+num(seatNumbers[m.userId])+'</option>').join('')+'<option value="__all__">All · كل الجالسين ('+num(recipients.length)+')</option>';sheet.querySelector('#room-gift-all').onclick=()=>{roomGiftRequestId=null;giftForm.elements.recipient.value='__all__';sheet.querySelector('#room-gift-selection').textContent='سيتم إرسال الهدية إلى جميع الجالسين على المايك';};
+        roomGiftRequestId=null;giftForm.elements.gift.value='';giftSubmit.disabled=true;
         sheet.querySelector('#room-gift-selection').textContent='اختاري هدية للمتابعة';
         selectedGiftCategory='app';sheet.querySelectorAll('#room-gift-categories [data-gift-category]').forEach(x=>x.classList.toggle('active',x.dataset.giftCategory==='app'));drawRoomGiftGrid();
         emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');sheet.querySelector('#room-game-center').classList.add('hidden');sheet.querySelector('#room-game-backdrop').classList.add('hidden');giftPanel.classList.remove('hidden');sheet.querySelector('#room-gift-backdrop').classList.remove('hidden');icons_();
       }catch(e){toast(e.message,'error');}
     };
     sheet.querySelector('#room-gift-close').onclick=()=>{giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');};sheet.querySelector('#room-gift-backdrop').onclick=()=>{giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');};
-    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));const quantity=Number(v.quantity||1);if(v.recipient==='__all__'){const gift=state.gifts.find(g=>g.id===v.gift);const count=(await api.roomSeats(r.id)).seats.filter(x=>x.user_id!==state.profile?.uuid).length;const total=Number(gift?.price||0)*quantity*count;if(!confirm('سيتم إرسال '+(gift?.name||'الهدية')+' ×'+quantity+' إلى '+num(count)+' أعضاء. الإجمالي المتوقع: '+num(total)+' عملة. هل تريدين المتابعة؟'))return;}const result=v.recipient==='__all__'?await api.sendRoomGiftToAll(r.id,v.gift,quantity):await api.sendRoomGift(r.id,v.recipient,v.gift,quantity);state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');toast(result?.recipients_count?'تم إرسال الهدية إلى '+num(result.recipients_count)+' أعضاء':'تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
+    giftForm.onsubmit=async e=>{e.preventDefault();const b=giftSubmit;if(!giftForm.elements.gift.value){toast('اختاري هدية أولاً');return;}b.disabled=true;try{const v=Object.fromEntries(new FormData(giftForm));const quantity=Number(v.quantity||1);if(v.recipient==='__all__'){const gift=state.gifts.find(g=>g.id===v.gift);const count=(await api.roomSeats(r.id)).seats.filter(x=>x.user_id!==state.profile?.uuid).length;const total=Number(gift?.price||0)*quantity*count;if(!confirm('سيتم إرسال '+(gift?.name||'الهدية')+' ×'+quantity+' إلى '+num(count)+' أعضاء. الإجمالي المتوقع: '+num(total)+' عملة. هل تريدين المتابعة؟'))return;}if(!roomGiftRequestId)roomGiftRequestId=crypto.randomUUID();const result=v.recipient==='__all__'?await api.sendRoomGiftToAll(r.id,v.gift,quantity,roomGiftRequestId):await api.sendRoomGift(r.id,v.recipient,v.gift,quantity,roomGiftRequestId);roomGiftRequestId=null;state.wallet=(await api.wallet()).wallet;giftPanel.classList.add('hidden');sheet.querySelector('#room-gift-backdrop').classList.add('hidden');toast(result?.recipients_count?'تم إرسال الهدية إلى '+num(result.recipients_count)+' أعضاء':'تم إرسال الهدية بنجاح');}catch(err){toast(err.message,'error');}finally{b.disabled=false;}};
     drawRoomBomb();
     const del=sheet.querySelector('#del-room');if(del)del.onclick=async()=>{if(!confirm('هل تريد حذف هذه الغرفة؟'))return;del.disabled=true;try{await api.deleteRoom(r.id);closeSheet();toast('تم حذف الغرفة');render();}catch(e){toast(e.message,'error');del.disabled=false;}};
   });
