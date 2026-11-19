@@ -16,8 +16,9 @@ function safePublicHandle(value, publicId='') {
   return handle;
 }
 
-// Keep auth callbacks on the current Hamsat preview instead of an older deployment/domain.
-const AUTH_REDIRECT_URL = 'https://hamsat-preview-git-build-hamsat-complete-app-hamsat.vercel.app/';
+// Return auth callbacks to the exact origin currently hosting HAMSAT.
+// Supabase Auth must allow the production and preview origins in its Redirect URLs list.
+const AUTH_REDIRECT_URL = new URL('/', window.location.href).toString();
 // Explicit allowlist for profile data used by app screens. Never fetch auth email,
 // phone numbers, or future private columns through public/social profile queries.
 const PROFILE_COLUMNS = 'id,public_id,handle,display_name,bio,country,age,gender,role,vip_level,wealth_level,charisma_level,color,avatar_url,cover_url,background_url,equipped_frame_id,equipped_emoji_pack_id,equipped_entrance_id,equipped_bubble_id,equipped_special_id,equipped_profile_frame_id,equipped_sound_frame_id,equipped_voice_wave_id,created_at';
