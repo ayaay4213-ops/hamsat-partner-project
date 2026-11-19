@@ -392,7 +392,7 @@ if (errors.length) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
+
 
 const roomIntegrityPath = path.join(root, 'supabase/migrations/0056_room_and_gift_integrity.sql');
 if (fs.existsSync(roomIntegrityPath)) {
@@ -427,3 +427,5 @@ if (fs.existsSync(appRoomPath)) {
     if (!js.includes(token)) errors.push(`Missing room/account privacy UI protection: ${token}`);
   }
 }
+
+console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
