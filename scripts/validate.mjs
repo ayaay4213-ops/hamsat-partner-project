@@ -449,4 +449,66 @@ if (fs.existsSync(roomGameHostMembershipPath)) {
   errors.push('Missing room-game host membership migration: 0059');
 }
 
+
+const authApiPath = path.join(root, 'js/api.js');
+if (fs.existsSync(authApiPath)) {
+  const js = fs.readFileSync(authApiPath, 'utf8');
+  if (!js.includes("new URL('/', window.location.href).toString()")) {
+    errors.push('Auth callbacks must use the current HAMSAT origin, not a stale hard-coded deployment URL');
+  }
+  if (/hamsat-preview-git-build-hamsat-complete-app-hamsat\.vercel\.app/.test(js)) {
+    errors.push('Stale HAMSAT preview URL remains in auth callback configuration');
+  }
+}
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  if (!/data-method="phone" class="auth-method active"/.test(js) || !/let authMethod = 'phone'/.test(js)) {
+    errors.push('Phone OTP must be the default active HAMSAT authentication method');
+  }
+  if (!js.includes("showFeedback('تم إنشاء الحساب. تحققي من بريدك الإلكتروني")) {
+    errors.push('Email signup without an immediate session must guide users to confirm email');
+  }
+  if (/أوقفي Confirm email|إيقاف Confirm email/.test(js)) {
+    errors.push('Authentication UI must not instruct users to disable email confirmation');
+  }
+}
+const moderationSourcePath = path.join(root, 'supabase/functions/admin-user-moderate/index.ts');
+if (fs.existsSync(moderationSourcePath)) {
+  const source = fs.readFileSync(moderationSourcePath, 'utf8');
+  for (const token of [
+    'caller.auth.getUser(token)',
+    'caller.rpc("is_admin")',
+    'isAdmin !== true',
+    'authData.user.id === userId',
+    'target.role === "admin"',
+    'service.auth.admin.updateUserById'
+  ]) {
+    if (!source.includes(token)) errors.push(`Admin moderation source is missing security check: ${token}`);
+  }
+} else {
+  errors.push('Missing tracked source for deployed admin-user-moderate Edge Function');
+}
+const accountModerationPath = path.join(root, 'supabase/migrations/0027_account_moderation.sql');
+if (fs.existsSync(accountModerationPath)) {
+  const sql = fs.readFileSync(accountModerationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create trigger protect_profile_moderation_fields',
+    'before update on public.profiles',
+    'execute function public.protect_profile_moderation_fields()'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing profile moderation trigger setup: ${token}`);
+  }
+} else {
+  errors.push('Missing account moderation migration: 0027');
+}
+const profileProtectionPath = path.join(root, 'supabase/migrations/0036_protect_profile_ranks_and_couple_identity.sql');
+if (fs.existsSync(profileProtectionPath)) {
+  const sql = fs.readFileSync(profileProtectionPath, 'utf8').toLowerCase();
+  for (const token of ['new.role is distinct from old.role','new.is_banned is distinct from old.is_banned','new.vip_level is distinct from old.vip_level','new.wealth_level is distinct from old.wealth_level','new.charisma_level is distinct from old.charisma_level']) {
+    if (!sql.includes(token)) errors.push(`Missing protected profile field in migration 0036: ${token}`);
+  }
+} else {
+  errors.push('Missing profile-rank protection migration: 0036');
+}
+
 console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
