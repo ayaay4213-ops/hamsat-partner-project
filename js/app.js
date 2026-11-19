@@ -1468,17 +1468,30 @@ async function userScreen(handle) {
           <button type="submit" class="btn-gold w-full"><i data-lucide="send" class="w-5 h-5"></i>تأكيد الإرسال</button>
         </form>`, sheet => {
           const form = sheet.querySelector('#gift-send-form');
+          let directGiftRequestId = null;
+          let directGiftRequestSignature = null;
           form.onsubmit = async e => {
             e.preventDefault();
             const button = form.querySelector('[type="submit"]');
+            const values = Object.fromEntries(new FormData(form));
+            const quantity = Number(values.quantity);
+            const signature = JSON.stringify([profile.uuid, values.giftId, quantity]);
+            if (directGiftRequestId && directGiftRequestSignature !== signature) {
+              toast('لم يتأكد الإرسال السابق بعد. أعيدي المحاولة بنفس الهدية والكمية أو أغلقي النافذة وافتحيها لبدء طلب جديد.', 'error');
+              return;
+            }
+            if (!directGiftRequestId) {
+              directGiftRequestId = crypto.randomUUID();
+              directGiftRequestSignature = signature;
+            }
             button.disabled = true;
             try {
-              const values = Object.fromEntries(new FormData(form));
-              await api.sendGift(profile.uuid, values.giftId, Number(values.quantity));
+              // Keep the same request UUID across retries, including wallet refresh failures.
+              await api.sendGift(profile.uuid, values.giftId, quantity, directGiftRequestId);
               state.wallet = (await api.wallet()).wallet;
               const sentGift = state.gifts.find(g => g.id === values.giftId);
               closeSheet();
-              showGiftCelebration(sentGift, Number(values.quantity));
+              showGiftCelebration(sentGift, quantity);
               toast('تم إرسال الهدية بنجاح');
               render();
             } catch (err) {
