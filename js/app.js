@@ -224,8 +224,8 @@ function welcomeScreen() {
     <div class="auth-panel hs-welcome-panel">
       <div class="hs-welcome-panel-head"><span>✧</span><div><h2>مرحبًا بعودتكِ</h2><p>سجّلي الدخول وعودي إلى مجتمع همسات</p></div><span>✧</span></div>
       <div class="grid grid-cols-2 gap-2 mb-4" id="auth-methods">
-        <button type="button" data-method="email" class="auth-method active">البريد الإلكتروني</button>
-        <button type="button" data-method="phone" class="auth-method">رقم الهاتف</button>
+        <button type="button" data-method="phone" class="auth-method active">رقم الهاتف</button>
+        <button type="button" data-method="email" class="auth-method">البريد الإلكتروني</button>
       </div>
       <form id="auth-preview-form" class="space-y-3">
         <label class="label" id="auth-id-label">البريد الإلكتروني</label>
@@ -254,7 +254,7 @@ function welcomeScreen() {
   const passwordFields = $('#auth-password-fields');
   const identityLabel = $('#auth-id-label');
   const otpField = $('#auth-otp-field');
-  let authMethod = 'email', pendingPhone = null;
+  let authMethod = 'phone', pendingPhone = null;
   wirePasswordTools(screen);
   const forgot = $('#auth-forgot');
   const showFeedback = (message, isError = false) => {
@@ -367,7 +367,7 @@ function welcomeScreen() {
         } else {
           authMode = 'signin';
           syncAuthMode();
-          showFeedback('لم يسمح خادم التسجيل بالدخول المباشر. يجب إيقاف Confirm email في Supabase ثم حفظ التغيير. لا تحتاجين إلى فتح Gmail أو إدخال أي كود.', true);
+          showFeedback('تم إنشاء الحساب. تحققي من بريدك الإلكتروني وافتحي رابط التأكيد المرسل إليكِ، ثم عودي لتسجيل الدخول. افحصي الرسائل غير المرغوب فيها إذا لم تجدي الرسالة.', false);
         }
       }
     } catch (err) {
@@ -375,7 +375,7 @@ function welcomeScreen() {
       if (/password.*(weak|contain|character)|weak password/i.test(message)) {
         showFeedback('كلمة المرور لا تحقق شروط الأمان. استخدمي 8 أحرف على الأقل مع حرف صغير وكبير ورقم ورمز خاص.', true);
       } else if (/email not confirmed/i.test(message)) {
-        showFeedback('إعداد تأكيد البريد ما زال مفعّلًا على الخادم. أوقفي Confirm email في Supabase واحفظي التغيير، ثم أعيدي المحاولة ببريد جديد.', true);
+        showFeedback('لم يتم تأكيد البريد الإلكتروني بعد. افتحي رسالة التأكيد المرسلة إليكِ، ثم أعيدي تسجيل الدخول.', true);
       } else if (/invalid login credentials/i.test(message)) {
         showFeedback('البريد أو كلمة المرور غير صحيحة. تأكدي من كتابتهما كما عند إنشاء الحساب.', true);
       } else {
@@ -383,7 +383,7 @@ function welcomeScreen() {
       }
     } finally { submit.disabled = false; }
   };
-  icons_();
+  syncAuthMode();
 }
 
 function profileForm(p = {}, isNew = true) {
