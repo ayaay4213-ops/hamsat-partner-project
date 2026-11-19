@@ -4,7 +4,7 @@ create or replace function public.send_room_gift(
   p_room_id uuid,
   p_recipient uuid,
   p_gift_id text,
-  p_quantity integer
+  p_quantity integer default 1
 )
 returns jsonb
 language sql
@@ -17,7 +17,7 @@ $$;
 create or replace function public.send_room_gift_to_all(
   p_room_id uuid,
   p_gift_id text,
-  p_quantity integer
+  p_quantity integer default 1
 )
 returns jsonb
 language sql
