@@ -41,11 +41,18 @@
 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active"> نشره في المتجر بعد المراجعة</label>
 <button class="btn sm:col-span-2" type="submit">حفظ العنصر</button></form>
 <div class="panel space-y-3">
-  <div><h3 class="font-bold">رفع دفعة الخلفيات وإطارات الملف</h3><p class="muted text-xs leading-6">ارفعي الخلفيات الـ12 والإطارات الـ18 بعد فك ضغط الحزم. يمكنك اختيار الصور دفعة واحدة أو على مجموعتين. ستظهر معاينة وحالة كل صورة في قائمة العناصر، وتبقى العناصر مخفية حتى تراجعيها وتفعّلي المناسب.</p></div>
-  <form id="asset-batch-form" class="grid gap-3">
-    <input class="field" type="file" name="assets" accept="image/png,image/jpeg,image/webp" multiple required>
-    <button class="btn" type="submit">رفع وربط الصور المختارة</button>
-  </form>
+  <div><h3 class="font-bold">رفع الصور — 12 خلفية و9 إطارات</h3><p class="muted text-xs leading-6">اختاري الصور من الهاتف مهما كانت أسماؤها. ستظهر معاينة كل صورة، ثم اربطيها يدوياً بالعنصر الصحيح قبل الرفع. لا يتم نشر أي عنصر تلقائياً.</p></div>
+  <div class="grid gap-3">
+    <label class="text-sm">خلفيات الغرف — اختاري 12 صورة بالضبط
+      <input id="room-background-files" class="field mt-1" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+    </label>
+    <div id="room-background-preview" class="grid sm:grid-cols-2 gap-2"></div>
+    <label class="text-sm">إطارات الملفات الشخصية — اختاري 9 صور بالضبط
+      <input id="profile-frame-files" class="field mt-1" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+    </label>
+    <div id="profile-frame-preview" class="grid sm:grid-cols-2 gap-2"></div>
+    <button id="asset-batch-upload" class="btn" type="button">رفع الصور بعد مراجعة الربط</button>
+  </div>
   <div id="asset-batch-result" class="muted text-xs" aria-live="polite"></div>
 </div>
 <div><h3 class="font-bold mb-2">العناصر المسجلة</h3><div id="item-list" class="space-y-2"></div></div>
