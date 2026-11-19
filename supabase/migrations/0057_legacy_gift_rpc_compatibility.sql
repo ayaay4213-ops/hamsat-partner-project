@@ -1,10 +1,10 @@
 -- Preserve compatibility with the currently published HAMSAT client.
--- The live client still calls the three-argument direct-gift RPC.
--- The wrapper delegates to the idempotent implementation with a fresh request UUID.
+-- The live client still calls the three-argument direct-gift RPC, whose quantity
+-- parameter historically defaulted to 1. Delegate to the idempotent implementation.
 create or replace function public.send_gift(
   p_recipient uuid,
   p_gift_id text,
-  p_quantity integer
+  p_quantity integer default 1
 )
 returns jsonb
 language sql
