@@ -428,4 +428,25 @@ if (fs.existsSync(appRoomPath)) {
   }
 }
 
+const roomGameHostMembershipPath = path.join(root, 'supabase/migrations/0059_require_room_membership_for_game_host.sql');
+if (fs.existsSync(roomGameHostMembershipPath)) {
+  const sql = fs.readFileSync(roomGameHostMembershipPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function public.room_game_create',
+    'create or replace function public.room_game_start',
+    'create or replace function public.room_game_next',
+    'create or replace function public.room_game_cancel',
+    'from public.room_members rm',
+    'set search_path to \'\'',
+    'security definer',
+    'يجب أن يبقى مضيف الجولة داخل الغرفة'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing room-game host membership protection: ${token}`);
+  }
+  const membershipChecks = (sql.match(/from public\\.room_members rm/g) || []).length;
+  if (membershipChecks !== 4) errors.push('Room-game host membership migration must protect all four host operations');
+} else {
+  errors.push('Missing room-game host membership migration: 0059');
+}
+
 console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
