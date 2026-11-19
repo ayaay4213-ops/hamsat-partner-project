@@ -763,6 +763,9 @@ async function openRoom(r) {
       const host=r.ownerUuid===state.profile?.uuid;
       if(host&&!muteStateLoaded){const savedMutes=await api.roomMutedUsers(r.id);savedMutes.userIds.forEach(id=>remotelyMutedUsers.add(id));muteStateLoaded=true;}
       const seatedUsers=new Set(seats.map(x=>x.user_id));
+      // Use the already-loaded room member profile as a fallback when the seat join has no embedded profile.
+      // This keeps the real avatar_url and equipped frame visible on every occupied microphone seat.
+      const memberById=Object.fromEntries(members.map(member=>[member.userId,member]));
       const adminMembersEl=sheet.querySelector('#room-admin-members');
       const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host?`<button type="button" class="hs-room-member-action danger" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button>`:``}${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.innerHTML=renderMemberRows();
@@ -796,7 +799,7 @@ async function openRoom(r) {
       }));
       const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
       seatsEl.innerHTML=Array.from({length:Math.max(1,Math.min(12,Number(r.seatLimit)||8))},(_,i)=>{
-        const n=i+1,seat=bySeat[n],m=seat?.member,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
+        const n=i+1,seat=bySeat[n],m=seat?(seat.member||memberById[seat.user_id]||null):null,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-chair"><i data-lucide="armchair"></i></span><i class="hs-seat-center-mic" data-lucide="mic"></i></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
         return `<button type="button" data-seat="${n}" data-user-id="${esc(seat.user_id)}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
       }).join('');
