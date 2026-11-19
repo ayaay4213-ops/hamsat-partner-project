@@ -11,6 +11,7 @@ as $$
 declare
   v_user uuid := (select auth.uid());
   v_question integer;
+  v_room_id uuid;
   v_options jsonb;
   v_started_at timestamptz;
   v_key jsonb;
@@ -19,13 +20,16 @@ declare
   v_score integer;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
-  select s.current_question_index,s.questions->s.current_question_index,s.question_started_at
-    into v_question,v_options,v_started_at
+  select s.current_question_index,s.room_id,s.questions->s.current_question_index,s.question_started_at
+    into v_question,v_room_id,v_options,v_started_at
     from public.room_game_sessions s
     join public.room_game_players p on p.session_id=s.id and p.user_id=v_user
    where s.id=p_session_id and s.status='active'
    for update of s;
   if v_question is null then raise exception 'الجولة غير نشطة أو لم تنضم إليها'; end if;
+  if not exists(select 1 from public.room_members rm where rm.room_id=v_room_id and rm.user_id=v_user) then
+    raise exception 'يجب البقاء داخل الغرفة للإجابة';
+  end if;
   if v_started_at is null or now() >= v_started_at + interval '30 seconds' then
     raise exception 'انتهى وقت الإجابة عن هذا السؤال';
   end if;
@@ -289,6 +293,7 @@ declare
   v_session bigint;
   v_old public.agency_host_sessions%rowtype;
   v_seconds bigint;
+  v_end_at timestamptz;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
   if p_room_id is null or not private.is_room_member(p_room_id) then raise exception 'انضمي إلى الغرفة أولاً'; end if;
@@ -305,8 +310,11 @@ begin
    where agency_id=v_agency and host_id=v_user and ended_at is null for update;
   if found then
     if v_old.last_heartbeat_at < now()-interval '90 seconds' then
-      v_seconds := greatest(0,floor(extract(epoch from (v_old.last_heartbeat_at-v_old.started_at)))::bigint);
-      update public.agency_host_sessions set ended_at=now(),duration_seconds=v_seconds where id=v_old.id;
+      v_end_at := least(now(),coalesce(v_old.last_heartbeat_at,v_old.started_at)+interval '45 seconds');
+      v_seconds := greatest(0,floor(extract(epoch from (v_end_at-v_old.started_at)))::bigint);
+      update public.agency_host_sessions
+         set ended_at=now(),duration_seconds=v_seconds,last_heartbeat_at=v_end_at
+       where id=v_old.id;
       insert into public.agency_host_daily_stats(agency_id,host_id,stat_date,live_seconds,session_count)
       values(v_old.agency_id,v_old.host_id,(now() at time zone 'Africa/Algiers')::date,v_seconds,1)
       on conflict(agency_id,host_id,stat_date) do update
