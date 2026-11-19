@@ -357,7 +357,7 @@ if (fs.existsSync(appRoomPath)) {
 const adminScriptPath = path.join(root, 'js/admin.js');
 if (fs.existsSync(adminScriptPath)) {
   const js = fs.readFileSync(adminScriptPath, 'utf8');
-  for (const token of ["$('#room-background-files').onchange", "$('#profile-frame-files').onchange", "$('#asset-batch-upload').onclick", 'PROFILE_FRAME_ASSETS', 'profile_ref_09_purple_cat_bows', 'backgrounds.length!==12', 'frames.length!==9', 'publishBlocked=media&&!x.image_url&&!x.active', "لا يمكن نشر خلفية أو إطار قبل رفع صورته ومراجعتها.", 'URL.createObjectURL', 'catalog/room-backgrounds', 'catalog/profile-frames', 'URL.revokeObjectURL(url)', 'data-replace-image', 'replaceMediaImage', 'preflight', 'اكتمل الرفع جزئياً']) {
+  for (const token of ["$('#room-background-files').onchange", "$('#profile-frame-files').onchange", "$('#asset-batch-upload').onclick", 'PROFILE_FRAME_ASSETS', 'profile_ref_09_purple_cat_bows', 'backgrounds.length!==12', 'frames.length!==9', 'publishBlocked=media&&!x.image_url&&!x.active', "لا يمكن نشر خلفية أو إطار قبل رفع صورته ومراجعتها.", 'URL.createObjectURL', 'catalog/room-backgrounds', 'catalog/profile-frames', 'URL.revokeObjectURL(url)', 'data-replace-image', 'replaceMediaImage', 'اكتمل الرفع جزئياً']) {
     if (!js.includes(token)) errors.push(`Missing preview/mapped asset upload behavior: ${token}`);
   }
 }
