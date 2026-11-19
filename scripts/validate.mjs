@@ -19,6 +19,7 @@ const required = [
   'supabase/migrations/0049_synchronized_room_games.sql',
   'supabase/migrations/0050_seed_profile_frame_catalog.sql',
   'supabase/migrations/0051_protect_game_answer_keys.sql',
+  'supabase/migrations/0056_room_and_gift_integrity.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
