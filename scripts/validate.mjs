@@ -387,13 +387,6 @@ for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js',
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
 }
 
-if (errors.length) {
-  console.error('Hamsat validation failed:');
-  for (const error of errors) console.error(`- ${error}`);
-  process.exit(1);
-}
-
-
 const roomIntegrityPath = path.join(root, 'supabase/migrations/0056_room_and_gift_integrity.sql');
 if (fs.existsSync(roomIntegrityPath)) {
   const sql = fs.readFileSync(roomIntegrityPath, 'utf8').toLowerCase();
