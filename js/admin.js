@@ -29,8 +29,19 @@ async function loadStats(){
  await Promise.all(tables.map(async(t,i)=>{const query=supabase.from(t).select(t==='profiles'?'id':'*',{count:'exact',head:true});const {count,error}=await query;if(error)throw error;$('#'+ids[i]).textContent=count??0;}));
 }
 async function loadItems(){
- const {data,error}=await supabase.from('shop_items').select('*').order('price');if(error)throw error;
- $('#item-list').innerHTML=data.length?data.map(x=>row(x.name,x.id+' · '+x.item_type+' · '+x.price+' عملة',x.id,x.active,'item')).join(''):'<p class="muted">لا توجد عناصر بعد.</p>';
+ const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
+ const mediaItems=data.filter(x=>['room_background','profile_frame'].includes(x.item_type));
+ const withImages=mediaItems.filter(x=>!!x.image_url).length;
+ const missingImages=mediaItems.length-withImages;
+ const summary='<div class="grid grid-cols-3 gap-2 mb-3">'+
+  '<div class="stat"><span class="muted text-xs">الخلفيات والإطارات</span><b>'+mediaItems.length+'</b></div>'+
+  '<div class="stat"><span class="muted text-xs">صور مرفوعة</span><b>'+withImages+'</b></div>'+
+  '<div class="stat"><span class="muted text-xs">بانتظار الرفع</span><b>'+missingImages+'</b></div></div>';
+ $('#item-list').innerHTML=summary+(data.length?data.map(x=>{
+  const media=['room_background','profile_frame'].includes(x.item_type);
+  const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-amber-300/20">':'<div class="w-16 h-16 rounded-xl border border-dashed border-amber-300/30 grid place-items-center text-[10px] text-amber-200/70">'+(media?'بانتظار الصورة':'بدون صورة')+'</div>';
+  return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p></div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item">'+(x.active?'إخفاء':'نشر')+'</button></div>';
+ }).join(''):'<p class="muted">لا توجد عناصر بعد.</p>');
  bindToggles('#item-list',data,'item');
 }
 async function loadGifts(){
