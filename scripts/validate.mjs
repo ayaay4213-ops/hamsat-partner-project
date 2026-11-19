@@ -511,6 +511,31 @@ if (fs.existsSync(profileProtectionPath)) {
   errors.push('Missing profile-rank protection migration: 0036');
 }
 
+const directGiftCompatPath = path.join(root, 'supabase/migrations/0057_legacy_gift_rpc_compatibility.sql');
+if (directGiftCompatPath && fs.existsSync(directGiftCompatPath)) {
+  const sql = fs.readFileSync(directGiftCompatPath, 'utf8').toLowerCase();
+  for (const token of ['create or replace function public.send_gift(', 'p_quantity integer default 1', 'security invoker', 'gen_random_uuid()', 'revoke all on function public.send_gift(uuid,text,integer) from public,anon', 'grant execute on function public.send_gift(uuid,text,integer) to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing legacy direct-gift RPC compatibility protection: ${token}`);
+  }
+} else {
+  errors.push('Missing legacy direct-gift RPC compatibility migration: 0057');
+}
+const roomGiftCompatPath = path.join(root, 'supabase/migrations/0058_legacy_room_gift_rpc_compatibility.sql');
+if (fs.existsSync(roomGiftCompatPath)) {
+  const sql = fs.readFileSync(roomGiftCompatPath, 'utf8').toLowerCase();
+  for (const token of ['create or replace function public.send_room_gift(', 'create or replace function public.send_room_gift_to_all(', 'p_quantity integer default 1', 'security invoker', 'gen_random_uuid()', 'grant execute on function public.send_room_gift(uuid,uuid,text,integer) to authenticated', 'grant execute on function public.send_room_gift_to_all(uuid,text,integer) to authenticated']) {
+    if (!sql.includes(token)) errors.push(`Missing legacy room-gift RPC compatibility protection: ${token}`);
+  }
+} else {
+  errors.push('Missing legacy room-gift RPC compatibility migration: 0058');
+}
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  for (const token of ['const stopHostSessionTracking=async()=>', 'const ensureHostSessionTracking=async()=>', 'await state.voiceRoom.refreshPermissions()', 'if(leaving) await stopHostSessionTracking();', 'else await ensureHostSessionTracking();']) {
+    if (!js.includes(token)) errors.push(`Missing host microphone-seat session tracking behavior: ${token}`);
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
