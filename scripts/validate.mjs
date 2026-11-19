@@ -511,4 +511,10 @@ if (fs.existsSync(profileProtectionPath)) {
   errors.push('Missing profile-rank protection migration: 0036');
 }
 
-console.log('Hamsat validation passed: required files, PWA manifest, local references, audio-room migration markers, and JavaScript syntax.');
+if (errors.length) {
+  console.error('Hamsat validation failed:');
+  for (const error of errors) console.error(`- ${error}`);
+  process.exit(1);
+}
+
+console.log('Hamsat validation passed: required files, PWA manifest, local references, room/gift integrity, game-host membership, authentication, moderation safeguards, and JavaScript syntax.');
