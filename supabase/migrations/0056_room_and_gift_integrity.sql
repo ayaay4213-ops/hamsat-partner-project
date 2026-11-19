@@ -107,6 +107,7 @@ create table if not exists private.gift_request_results (
 );
 create index if not exists gift_request_results_created_at_idx
   on private.gift_request_results(created_at);
+alter table private.gift_request_results enable row level security;
 revoke all on private.gift_request_results from public,anon,authenticated;
 
 create or replace function private.claim_gift_request(p_sender uuid,p_operation text,p_request_id uuid)
