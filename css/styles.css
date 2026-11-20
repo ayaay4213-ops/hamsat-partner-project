@@ -3358,3 +3358,184 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .room-sheet .hs-room-seat .hs-seat-ring{width:30px!important;height:30px!important;min-width:30px!important}
   .room-sheet .hs-room-unified>.hs-room-people{max-height:40px!important}
 }
+
+/* HAMSAT final room composition: one continuous chosen background behind every room control */
+.room-sheet>.hs-room-canvas{
+  position:relative!important;
+  display:flex!important;
+  flex-direction:column!important;
+  isolation:isolate!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:transparent!important;
+}
+.room-sheet>.hs-room-canvas>.hs-room-shared-bg{
+  position:absolute!important;
+  inset:0!important;
+  z-index:-1!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  pointer-events:none!important;
+}
+.room-sheet>.hs-room-canvas:after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:-1!important;
+  pointer-events:none!important;
+  background:linear-gradient(180deg,rgba(4,5,12,.25),rgba(4,5,12,.08) 42%,rgba(4,5,12,.22))!important;
+}
+.room-sheet .hs-room-head,
+.room-sheet .hs-room-cover,
+.room-sheet .hs-room-meta,
+.room-sheet .hs-room-quick-actions,
+.room-sheet .hs-room-unified,
+.room-sheet .hs-room-stage,
+.room-sheet .hs-room-people,
+.room-sheet .hs-room-chat-area,
+.room-sheet .hs-room-bottom-bar,
+.room-sheet .hs-room-compose-wrap,
+.room-sheet #room-chat-form{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-head,
+.room-sheet .hs-room-unified{position:relative!important;z-index:1!important}
+.room-sheet .hs-room-cover{min-height:clamp(88px,13dvh,112px)!important}
+.room-sheet .hs-room-meta{min-height:34px!important;flex:0 0 auto!important}
+.room-sheet .hs-room-quick-actions{
+  display:flex!important;flex:0 0 auto!important;align-items:center!important;
+  justify-content:center!important;gap:12px!important;padding:3px 8px 5px!important;
+  border:0!important;
+}
+.room-sheet .hs-room-unified{
+  flex:1 1 0!important;height:0!important;min-height:0!important;
+  margin:0!important;padding:4px 8px!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage,
+.room-sheet .hs-room-unified>.hs-room-people,
+.room-sheet .hs-room-unified>.hs-room-chat-area{
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage{flex:0 0 auto!important;padding:3px 2px 5px!important}
+.room-sheet .hs-room-seats{gap:4px!important;padding:3px 1px!important}
+.room-sheet .hs-room-seat,
+.room-sheet .hs-room-seat.empty{
+  background:rgba(5,7,14,.12)!important;
+  border-color:rgba(255,255,255,.26)!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-unified>.hs-room-people{
+  flex:0 0 auto!important;max-height:44px!important;padding:2px!important;
+  border-top:1px solid rgba(255,255,255,.20)!important;
+}
+.room-sheet .hs-room-members .hs-room-person{
+  background:rgba(5,7,14,.14)!important;border-color:rgba(255,255,255,.20)!important;
+}
+.room-sheet .hs-room-unified>.hs-room-chat-area{
+  display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+  height:0!important;min-height:0!important;padding:3px 2px 0!important;overflow:hidden!important;
+}
+.room-sheet .hs-room-chat-heading,
+.room-sheet .hs-room-chat-tabs{flex:0 0 auto!important;background:transparent!important}
+.room-sheet .hs-room-chat{
+  flex:1 1 0!important;height:auto!important;min-height:40px!important;
+  overflow-y:auto!important;background:transparent!important;
+  padding:4px 3px 8px!important;
+}
+.room-sheet .hs-room-message>div{
+  background:rgba(5,7,14,.22)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  backdrop-filter:blur(3px)!important;
+}
+.room-sheet .hs-room-bottom-bar{
+  position:relative!important;inset:auto!important;z-index:3!important;
+  display:block!important;flex:0 0 auto!important;width:100%!important;
+  padding:5px 2px max(6px,env(safe-area-inset-bottom))!important;
+  border:0!important;border-top:1px solid rgba(255,255,255,.20)!important;
+  backdrop-filter:none!important;
+}
+.room-sheet .hs-room-tools-row{
+  display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+  justify-content:space-between!important;gap:4px!important;margin:0 0 5px!important;
+}
+.room-sheet .hs-room-tools-row button{
+  display:grid!important;visibility:visible!important;opacity:1!important;
+  flex:1 1 0!important;min-width:0!important;width:auto!important;
+  height:37px!important;min-height:37px!important;max-width:none!important;
+  background:rgba(7,9,16,.25)!important;
+  border:1px solid rgba(255,255,255,.32)!important;
+  color:#fff!important;box-shadow:none!important;backdrop-filter:blur(3px)!important;
+}
+.room-sheet .hs-room-tools-row #room-send-gift{
+  background:rgba(212,175,55,.25)!important;color:#fff4ce!important;
+  border-color:rgba(255,224,143,.65)!important;
+}
+.room-sheet .hs-room-compose-wrap{
+  display:block!important;visibility:visible!important;opacity:1!important;
+  padding:0!important;border:0!important;
+}
+.room-sheet #room-chat-form.hs-room-compose{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  height:43px!important;min-height:43px!important;padding:3px!important;gap:6px!important;
+  background:rgba(5,7,14,.16)!important;border:1px solid rgba(255,255,255,.35)!important;
+  border-radius:13px!important;backdrop-filter:blur(3px)!important;
+}
+.room-sheet #room-chat-form input{
+  flex:1 1 auto!important;min-width:0!important;height:35px!important;
+  font-size:16px!important;line-height:1.4!important;font-weight:600!important;
+  color:#fff!important;background:transparent!important;border:0!important;
+  text-shadow:0 1px 3px #000!important;
+}
+.room-sheet #room-chat-form input::placeholder{color:rgba(255,255,255,.82)!important;font-size:13px!important}
+.room-sheet #room-chat-form button{
+  flex:0 0 38px!important;width:38px!important;height:35px!important;
+  background:rgba(220,184,83,.92)!important;color:#17120a!important;
+}
+.room-sheet .hs-room-voice-status{display:none!important}
+
+/* Home room list: image itself is full-width, without a card frame */
+#screen .hs-home-room-list{
+  display:flex!important;flex-direction:column!important;gap:18px!important;
+  width:100%!important;max-width:none!important;
+}
+#screen .hs-home-room-list .room-card.hs-room-discovery-card.hs-home-room-square{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  height:auto!important;min-height:0!important;padding:0!important;margin:0!important;
+  border:0!important;border-radius:0!important;outline:0!important;
+  background:transparent!important;box-shadow:none!important;overflow:visible!important;
+}
+#screen .hs-home-room-list .hs-home-room-square .hs-room-discovery-media{
+  display:block!important;position:relative!important;width:100%!important;
+  height:auto!important;min-height:0!important;aspect-ratio:16/9!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;overflow:hidden!important;
+}
+#screen .hs-home-room-list .hs-home-room-square .hs-room-discovery-media>img,
+#screen .hs-home-room-list .hs-home-room-square .hs-room-discovery-media>.hs-room-discovery-placeholder{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;object-fit:cover!important;
+  border:0!important;border-radius:0!important;
+}
+#screen .hs-home-room-list .hs-home-room-square .hs-room-discovery-body{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  width:100%!important;min-height:28px!important;height:auto!important;
+  margin:0!important;padding:3px 2px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+#screen .hs-home-room-list .hs-home-room-square-title{
+  font-size:10px!important;line-height:1.25!important;font-weight:500!important;
+}
+#screen .hs-home-room-list .hs-home-room-square .hs-room-discovery-enter{
+  display:grid!important;place-items:center!important;width:23px!important;height:23px!important;
+  min-width:23px!important;margin:0!important;border:0!important;border-radius:50%!important;
+  background:transparent!important;box-shadow:none!important;
+}
