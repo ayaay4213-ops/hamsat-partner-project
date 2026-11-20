@@ -564,6 +564,7 @@ function roomCard(r) {
       <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
       <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
       <span class="room-cover-topic">${esc(r.topic)}</span>
+      <span class="room-cover-capacity"><i data-lucide="mic" class="w-3 h-3"></i>سعة ${num(r.seatLimit || 8)}</span>
     </div>
     <div class="room-card-body">
       <div class="flex items-center gap-2 min-w-0">
@@ -1036,7 +1037,7 @@ async function roomsScreen(params) {
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
         ${['الكل', ...TOPICS].map(t => `<button data-t="${t}" class="chip ${t === roomFilter ? 'active' : ''}">${t}</button>`).join('')}
       </div>
-      <div id="rooms-list" class="space-y-3 pt-1 pb-6">${loading()}</div>
+      <div id="rooms-list" class="pt-1 pb-6">${loading()}</div>
     </div>`;
   icons_();
   $('#new-room').onclick = newRoomSheet;
