@@ -5,6 +5,7 @@ on:
     branches:
       - 'build/**'
       - 'feature/**'
+      - 'fix/**'
       - 'work/**'
   pull_request:
     branches:
