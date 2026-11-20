@@ -2116,7 +2116,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 
 /* Final mobile room refinement: keep chat and actions visible without square controls */
 .room-sheet{height:100dvh!important;max-height:100dvh!important;min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}
-.room-sheet>.hs-room-canvas{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-height:0!important;height:100%!important;overflow:hidden!important;background-color:#080a12!important}
+.room-sheet>.hs-room-canvas{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;min-height:0!important;height:auto!important;overflow:hidden!important;background-color:#080a12!important}
 .room-sheet .hs-room-head{flex:none!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .room-sheet .hs-room-cover{min-height:116px!important;background-color:transparent!important;background-size:cover!important;background-position:center!important;border:0!important;border-radius:0!important}
 .room-sheet .hs-room-meta{flex:none!important;margin:3px 0 5px!important;padding:0 8px!important;border:0!important}
