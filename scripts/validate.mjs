@@ -656,6 +656,17 @@ if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
+
+const oneRoomMigrationPath = path.join(root, 'supabase/migrations/0060_one_room_per_member.sql');
+if (!fs.existsSync(oneRoomMigrationPath)) {
+  errors.push('Missing database-level one-room-per-member migration: 0060');
+} else {
+  const sql = fs.readFileSync(oneRoomMigrationPath, 'utf8').toLowerCase();
+  if (!sql.includes('create unique index if not exists rooms_one_owned_room_per_member_idx') || !sql.includes('having count(*) > 1')) {
+    errors.push('One-room migration must preflight duplicate owners and create a unique owner index');
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
