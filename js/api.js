@@ -284,7 +284,7 @@ export const api = {
     const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=await mapProfileWithFrame(p);
-    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
+    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,backgroundUrl:data.background_url||(/^https?:\/\//i.test(data.background_item_id||'')?data.background_item_id:null),roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
     // Load every public room in pages instead of silently stopping at the first 100.
@@ -307,7 +307,7 @@ export const api = {
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
       return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
-        description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
+        description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, backgroundUrl: r.background_url || (/^https?:\/\//i.test(r.background_item_id||'')?r.background_item_id:null), roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
         ownerColor: p.color || '#7c3aed' };
     }) };
@@ -333,13 +333,14 @@ export const api = {
       topic: String(settings.topic || 'عام').trim().slice(0, 40),
       description: String(settings.description || '').trim().slice(0, 240),
       cover_url: settings.coverUrl || null,
-      background_item_id: settings.backgroundItemId || null,
+      background_item_id: settings.backgroundItemId && !/^https?:\/\//i.test(String(settings.backgroundItemId)) ? settings.backgroundItemId : null,
+      background_url: settings.backgroundUrl || (/^https?:\/\//i.test(String(settings.backgroundItemId||'')) ? settings.backgroundItemId : null),
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
       seat_limit: [4,6,8,10,12].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8
     };
     if (!payload.title) throw new Error('اسم الغرفة مطلوب');
-    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit').single();
-    fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
+    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,background_url,room_emoji,seat_limit').single();
+    fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, backgroundUrl: data.background_url || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
   },
 
   leaveRoom: async (roomId) => {
