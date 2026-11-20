@@ -342,6 +342,13 @@ export const api = {
     fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
   },
 
+  myStaffRole: async () => {
+    const user = await currentUser();
+    const { data, error } = await client().from('staff_roles')
+      .select('permissions,active,updated_at').eq('user_id', user.id).maybeSingle();
+    fail(error);
+    return data || { permissions: [], active: false };
+  },
   getRoomBackground: async (roomId) => {
     const { data, error } = await client().from('room_backgrounds')
       .select('image_url,updated_at,updated_by').eq('room_id', roomId).maybeSingle();
