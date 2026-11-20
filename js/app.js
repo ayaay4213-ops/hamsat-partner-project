@@ -740,8 +740,9 @@ async function openRoom(r) {
         if(seat){const effect=document.createElement('span');effect.className='hs-seat-emoji-effect';effect.textContent=event.payload?.emoji||'✨';seat.appendChild(effect);window.setTimeout(()=>effect.remove(),3600);}
       } else if(event.event_type==='gift'){showGiftCelebration({name:event.payload?.gift_name||'هدية',icon:'gift'},Number(event.payload?.quantity||1));}else if(event.event_type==='bomb'){toast('💣 اكتمل مستوى قنبلة الغرفة وتم توزيع الجوائز!');}
     };
+    let roomJoinedAt=Date.now();
     const drawMessages=async()=>{
-      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id,roomJoinedAt).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
@@ -833,7 +834,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{await api.joinRoom(r.id);state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
