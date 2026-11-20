@@ -397,8 +397,10 @@ export const api = {
     const {data,error}=await client().functions.invoke('livekit-kick',{body:{room_id:roomId,participant_id:userId}});
     fail(error);if(data?.error)throw new Error(data.error);return data;
   },
-  roomMessages: async (roomId) => {
-    const { data, error } = await client().from('room_messages').select('id,user_id,body,created_at').eq('room_id', roomId).order('created_at', { ascending: true }).limit(100);
+  roomMessages: async (roomId, since = null) => {
+    let query = client().from('room_messages').select('id,user_id,body,created_at').eq('room_id', roomId);
+    if (since) query = query.gte('created_at', new Date(since).toISOString());
+    const { data, error } = await query.order('created_at', { ascending: true }).limit(100);
     fail(error);
     const ids = [...new Set(data.map(x => x.user_id))];
     let profiles = [];
@@ -682,10 +684,10 @@ export const api = {
       contributors: (contributionResult.data || []).map(x => ({ ...x, profile: byId[x.user_id] || null }))
     };
   },
-  roomEvents: async (roomId) => {
-    const { data, error } = await client().from('room_activity_events')
-      .select('id,room_id,actor_id,target_user_id,event_type,payload,created_at')
-      .eq('room_id', roomId).order('created_at', { ascending: true }).limit(120);
+  roomEvents: async (roomId, since = null) => {
+    let query = client().from('room_activity_events').select('id,room_id,actor_id,target_user_id,event_type,payload,created_at').eq('room_id', roomId);
+    if (since) query = query.gte('created_at', new Date(since).toISOString());
+    const { data, error } = await query.order('created_at', { ascending: true }).limit(120);
     fail(error);
     const ids = [...new Set((data || []).flatMap(e => [e.actor_id, e.target_user_id]).filter(Boolean))];
     let profiles = [];
