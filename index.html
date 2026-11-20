@@ -47,7 +47,7 @@ tailwind.config = { theme: { extend: {
   }
 }}};
 </script>
-<link rel="stylesheet" href="css/styles.css?v=20261121-hamsat-design-update-v20">
+<link rel="stylesheet" href="css/styles.css?v=20261121-hamsat-design-update-v21">
 <script src="https://js.puter.com/v2/"></script>
     <!-- puter-pwa: generated, do not edit -->
     <link rel="manifest" href="manifest.json">
@@ -78,7 +78,15 @@ tailwind.config = { theme: { extend: {
       <small class="splash-footer">مساحتك للتواصل واللقاء</small>
       <div class="splash-ornament splash-ornament-bottom">✦</div>
     </div>
-    <script>window.setTimeout(function(){var s=document.getElementById("hamsat-splash");if(s){s.classList.add("splash-hide");window.setTimeout(function(){s.remove();},750);}},4200);</script>
+    <script>
+      window.HAMSAT_SPLASH_STARTED_AT = Date.now();
+      // Fallback only: if the app module never starts, don't leave a frozen splash forever.
+      window.setTimeout(function(){
+        if(window.HAMSAT_SPLASH_CONTROLLED)return;
+        var s=document.getElementById('hamsat-splash');
+        if(s){s.classList.add('splash-hide');window.setTimeout(function(){s.remove();},750);}
+      },12000);
+    </script>
     <div id="screen" class="flex-1 flex flex-col"></div>
     <nav id="tabbar" class="hidden fixed bottom-0 inset-x-0 mx-auto app-width z-30 bg-ink-900/95 backdrop-blur border-t border-ink-600">
       <div class="grid grid-cols-6 pb-safe">
@@ -128,7 +136,7 @@ tailwind.config = { theme: { extend: {
       })();
     </script>
   </div>
-  <script type="module" src="js/app.js?v=20261121-hamsat-design-update-v20"></script>
+  <script type="module" src="js/app.js?v=20261121-hamsat-design-update-v21"></script>
   <!-- Preview safety net: keeps the existing app files intact and shows a local preview
        when TrebEdit's file preview cannot load JavaScript modules or Puter. -->
   <script>
