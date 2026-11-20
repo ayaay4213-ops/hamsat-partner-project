@@ -191,7 +191,7 @@ async function searchStaffUsers(term){
  if(!clean)throw new Error('اكتبي ID أو اسم المستخدم أولاً.');
  let q=supabase.from('profiles').select('id,public_id,display_name,handle').limit(20);
  const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
- q=/^\\d+$/.test(numeric)?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
+ q=/^\d+$/.test(numeric)?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
  const {data,error}=await q;if(error)throw error;
  const root=$('#staff-candidates');
  root.innerHTML=(data||[]).length?(data||[]).map(x=>'<button type="button" class="item w-full text-right" data-staff-user="'+esc(x.id)+'"><span><b>'+esc(x.display_name||'عضو')+'</b><small class="block muted">HAMSAT-'+esc(x.public_id||'—')+' · @'+esc(x.handle||'—')+'</small></span><span class="pill">اختيار</span></button>').join(''):'<p class="muted text-sm">لم يتم العثور على عضو مطابق.</p>';
