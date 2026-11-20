@@ -2526,3 +2526,26 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
     max-width:54px!important;max-height:54px!important;flex-basis:54px!important;
   }
 }
+
+
+/* HAMSAT mobile comfort layer — safe areas, readable controls and stable sheets */
+:root { color-scheme: dark; }
+html { min-height: 100%; min-height: 100dvh; overscroll-behavior-y: none; }
+body { min-height: 100%; min-height: 100dvh; margin: 0; }
+#app { min-height: 100vh; min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+#screen { min-width: 0; width: 100%; overflow-x: clip; }
+button, a, input, textarea, select { touch-action: manipulation; }
+button, a { -webkit-tap-highlight-color: transparent; }
+:where(button,a,input,textarea,select,[tabindex]):focus-visible { outline: 2px solid #f0d98c; outline-offset: 3px; }
+#tabbar { padding-bottom: env(safe-area-inset-bottom); }
+#tabbar .tab { min-height: 56px; justify-content: center; padding-top: 8px; padding-bottom: 7px; }
+.room-sheet { max-height: 94dvh; padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.sheet, .room-sheet, .hs-room-unified { overscroll-behavior: contain; }
+@media (max-width: 390px) {
+  .app-shell { width: 100%; max-width: 100%; }
+  #tabbar .tab { gap: 2px; }
+  #tabbar .tab svg { width: 20px; height: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
