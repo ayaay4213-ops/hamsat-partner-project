@@ -94,6 +94,39 @@ tailwind.config = { theme: { extend: {
     <div id="room-mini-root" aria-live="polite"></div>
     <div id="sheet-root"></div>
     <div id="toast" class="toast"></div>
+    <button id="hamsat-install" class="hamsat-install-cta" type="button" hidden aria-label="تثبيت تطبيق همسات على الهاتف">
+      <span aria-hidden="true">↓</span><span>تثبيت همسات</span>
+    </button>
+    <script>
+      (function () {
+        const button = document.getElementById('hamsat-install');
+        if (!button) return;
+        let installEvent = null;
+        const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (isStandalone()) return;
+        window.addEventListener('beforeinstallprompt', event => {
+          event.preventDefault();
+          installEvent = event;
+          button.hidden = false;
+        });
+        button.addEventListener('click', async () => {
+          if (!installEvent) return;
+          const promptEvent = installEvent;
+          installEvent = null;
+          try {
+            await promptEvent.prompt();
+            await promptEvent.userChoice;
+          } catch (error) {
+            console.warn('HAMSAT install prompt was not completed:', error);
+          }
+          button.hidden = true;
+        });
+        window.addEventListener('appinstalled', () => {
+          installEvent = null;
+          button.hidden = true;
+        });
+      })();
+    </script>
   </div>
   <script type="module" src="js/app.js?v=20261120-admin-access-guard-v14"></script>
   <!-- Preview safety net: keeps the existing app files intact and shows a local preview
