@@ -2719,3 +2719,58 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .hs-room-discovery-body { padding:8px; }
   .hs-room-discovery-meta { font-size:9px; }
 }
+
+
+/* HAMSAT room cards refinement — show the complete artwork, without frames */
+.hs-room-discovery-card {
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+.hs-room-discovery-media {
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: #101116 !important;
+}
+.hs-room-discovery-media > img {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+.hs-room-discovery-shade { display: none !important; }
+.hs-room-discovery-body {
+  padding: 9px 2px 2px !important;
+  background: transparent !important;
+}
+.hs-room-discovery-owner { gap: 7px !important; }
+.hs-room-discovery-owner b { font-size: 11px !important; }
+.hs-room-discovery-owner small { font-size: 9px !important; }
+.hs-room-discovery-meta {
+  margin-top: 7px !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+  font-size: 9px !important;
+}
+.hs-room-discovery-enter {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 27px !important;
+  height: 27px !important;
+  margin: 7px 0 0 auto !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  color: #f2d78a !important;
+  background: rgba(212,175,55,.12) !important;
+  border: 0 !important;
+  font-size: 0 !important;
+}
+.hs-room-discovery-enter svg { width: 14px !important; height: 14px !important; }
