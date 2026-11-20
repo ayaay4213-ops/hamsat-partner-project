@@ -518,70 +518,27 @@ function onboardingScreen() {
 async function homeScreen() {
   const p = state.profile;
   screen.innerHTML = `
-    <div class="hs-home hs-home-refined fade-in">
-      <header class="hs-home-top">
+    <div class="hs-home hs-home-refined hs-home-rooms-only fade-in">
+      <header class="hs-home-top hs-home-top-minimal">
         <div class="hs-home-brand">
           ${state.isAdmin ? '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' : ''}
-          <a href="#/me" class="hs-home-avatar">${avatar(p,40)}</a>
-          <div><span>أهلًا بكِ</span><strong>${esc(p.displayName || 'صديقتنا')}</strong></div>
+          <span class="hs-home-brand-title">H A M S A T</span>
         </div>
-        <a href="#/wallet" class="hs-home-wallet">${coin(19)}<span>${num(state.wallet?.balance)}</span><i data-lucide="plus"></i></a>
       </header>
-      <section class="hs-home-hero hs-home-hero-refined">
-        <div class="hs-home-hero-copy">
-          <span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>
-          <h1>هنا تبدأ <em>أجمل الحكايات</em></h1>
-          <p>اقتربي من الأصدقاء واكتشفي مجتمعك الصوتي.</p>
-          <a href="#/rooms" class="hs-home-create"><i data-lucide="door-open"></i> الدخول إلى غرفتك</a>
-        </div>
-        <span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span>
+      <section class="hs-home-section hs-home-section-rooms-only">
+        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-40"></div></div>
       </section>
-      <nav class="hs-home-shortcuts hs-home-shortcuts-refined" aria-label="الوصول السريع">
-        <a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b></a>
-        <a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b></a>
-        <a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b></a>
-        <a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b></a>
-        <a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b></a>
-      </nav>
-      <section class="hs-home-section">
-        <div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>
-        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div></div>
-      </section>
-      <section class="hs-home-members">
-        <div class="hs-home-section-head"><div><span>COMMUNITY</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>
-        <div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div></div>
-      </section>
-      <div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div>
     </div>`;
   icons_();
-  const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
-  const hr = $('#home-rooms'); if (!hr) return;
-  if (rooms.status === 'fulfilled') {
-    const allRooms = rooms.value.rooms || [];
-    const homeRooms = allRooms.slice(0, 3);
-    hr.innerHTML = homeRooms.length ? homeRooms.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
-    const myRoom = allRooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
-    const homeCreate = screen.querySelector('.hs-home-create');
-    if (myRoom && homeCreate) {
-      homeCreate.href = '#/rooms';
-      homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك';
-      homeCreate.onclick = (event) => { event.preventDefault(); openRoom(myRoom); };
-    }
-    bindRoomCards(hr, homeRooms);
-  } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason?.message || 'حاولي مرة أخرى');
-  const hu = $('#home-users');
-  if (users.status === 'fulfilled') {
-    const uniqueUsers = [];
-    const seenUsers = new Set();
-    (users.value.users || []).forEach(user => {
-      const key = String(user.uuid || user.id || user.handle || user.displayName || '').toLowerCase();
-      if (!key || seenUsers.has(key)) return;
-      seenUsers.add(key);
-      uniqueUsers.push(user);
-    });
-    $('#members-count').textContent = num(users.value.total ?? uniqueUsers.length) + ' عضو';
-    hu.innerHTML = uniqueUsers.slice(0, 10).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user">${avatar(u,48)}<span>${esc(u.displayName || 'عضو')}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
-  } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
+  const hr = $('#home-rooms');
+  try {
+    const { rooms: allRooms = [] } = await api.rooms();
+    if (!hr) return;
+    hr.innerHTML = allRooms.length ? allRooms.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'ستظهر الغرف هنا عند إنشائها');
+    bindRoomCards(hr, allRooms);
+  } catch (error) {
+    if (hr) hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', error.message || 'حاولي مرة أخرى');
+  }
   icons_();
 }
 function emptyBox(icon, title, sub = '') {
@@ -1430,13 +1387,15 @@ function profileView(p, own) {
           <h2>${esc(p.displayName)} ${p.role==='admin'?'<span class="hs-admin-badge">ADMIN</span>':''}</h2>
           <p class="hs-profile-demographics">${p.age?num(p.age)+' سنة':''}${p.gender==='female'?' · ♀':p.gender==='male'?' · ♂':''}</p>
           <p dir="ltr">@${esc(p.handle)}</p>
-          ${p.publicId ? `<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id" dir="ltr"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button>` : ''}
+          ${p.publicId ? `<div class="hs-profile-id-row" dir="ltr">${p.country ? `<span class="hs-profile-country-flag" title="${esc(p.country)}">${/الجزائر|algeria/i.test(p.country)?'🇩🇿':/tunisia/i.test(p.country)?'🇹🇳':/morocco/i.test(p.country)?'🇲🇦':/egypt/i.test(p.country)?'🇪🇬':'🌍'}</span>`:''}<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button></div>` : ''}
           ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
-          <div class="hs-profile-tags">
-            ${p.role==='admin'?'<span>🛡️ إدارة همسات</span>':''}${p.vipLevel>0?'<span>👑 VIP '+num(p.vipLevel)+'</span>':''}
-            <span>💎 ثروة ${num(p.wealthLevel)}</span><span>✨ كاريزما ${num(p.charismaLevel)}</span>
-            ${p.country ? `<span>${/الجزائر|algeria/i.test(p.country) ? '🇩🇿' : '⌖'} ${esc(p.country)}</span>` : ''}
-            <span>✦ عضو في همسات</span>${p.createdAt ? `<span>منذ ${dateAr(p.createdAt)}</span>` : ''}
+          <div class="hs-profile-tags hs-profile-info-chips">
+            ${p.role==='admin'?'<span class="hs-profile-info-chip"><i data-lucide="shield-check"></i> إدارة همسات</span>':''}
+            ${p.vipLevel>0?'<span class="hs-profile-info-chip"><i data-lucide="crown"></i> VIP '+num(p.vipLevel)+'</span>':''}
+            <span class="hs-profile-info-chip"><i data-lucide="gem"></i> ثروة ${num(p.wealthLevel)}</span>
+            <span class="hs-profile-info-chip"><i data-lucide="sparkles"></i> كاريزما ${num(p.charismaLevel)}</span>
+            <span class="hs-profile-info-chip"><i data-lucide="badge-check"></i> عضو في همسات</span>
+            ${p.createdAt ? `<span class="hs-profile-info-chip"><i data-lucide="calendar-days"></i> منذ ${dateAr(p.createdAt)}</span>` : ''}
           </div>
         </div>
         ${!own ? '' : '<button type="button" class="hs-profile-edit-hint hs-bio-edit" id="edit-profile-inline"><i data-lucide="pencil"></i> تعديل النبذة والملف</button>'}
@@ -1531,7 +1490,6 @@ function meScreen() {
     bindProfileForm(s, () => { closeSheet(); toast('تم حفظ التغييرات'); render(); });
   });
   $('#edit-profile-inline')?.addEventListener('click',editProfileAction);
-  $('#edit-profile-cover')?.addEventListener('click',editProfileAction);
   document.querySelectorAll('[data-profile-stat-go]').forEach(button=>button.addEventListener('click',()=>{
     const key=button.dataset.profileStatGo;
     if(key==='visitors'){toast('قائمة الزوار التفصيلية قيد التجهيز');return;}
@@ -1854,7 +1812,7 @@ function dismissHamsatSplash() {
 
 async function boot() {
   icons_();
-  window.setTimeout(dismissHamsatSplash, 2300);
+  window.setTimeout(dismissHamsatSplash, 4200);
   if (passwordRecoveryActive) {
     resetPasswordScreen();
     return;
