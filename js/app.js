@@ -703,7 +703,7 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const room=sheet.querySelector('.hs-room-unified');
+      const room=sheet.querySelector('.hs-room-canvas');
       if(!room)return;
       let image=room.querySelector(':scope > .hs-room-shared-bg');
       if(!url){
