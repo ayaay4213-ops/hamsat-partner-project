@@ -6,7 +6,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomSettingsChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -107,7 +107,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomSettingsChannel) { api.unsubscribeRoomChannel(state.roomSettingsChannel); state.roomSettingsChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 function renderRoomMiniBubble() {
   const root = $('#room-mini-root');
@@ -127,7 +127,7 @@ function renderRoomMiniBubble() {
     state.minimizedRoom = null;
     root.innerHTML = '';
     if (state.roomChannel) { await api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; }
-    if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; }
+    if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomSettingsChannel) { await api.unsubscribeRoomChannel(state.roomSettingsChannel); state.roomSettingsChannel = null; }
     if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; }
     await openRoom(current);
   };
@@ -886,7 +886,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);if(r.ownerUuid===state.profile?.uuid){try{await api.requestRoomSeat(r.id,1);}catch(seatError){console.warn('Could not reserve the host microphone seat',seatError);}}const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);if(r.ownerUuid===state.profile?.uuid){try{await api.requestRoomSeat(r.id,1);}catch(seatError){console.warn('Could not reserve the host microphone seat',seatError);}}const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));state.roomSettingsChannel=api.subscribeRoomSettings(r.id,async()=>{try{const latest=await api.roomById(r.id);Object.assign(r,latest.room);let nextBackground=r.backgroundUrl;if(!nextBackground&&r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))nextBackground=r.backgroundItemId;else{const catalog=await api.shopItems();nextBackground=catalog.items.find(item=>item.id===r.backgroundItemId)?.image_url||null;}}applyRoomBackground(nextBackground);}catch(error){console.warn('Could not refresh shared room appearance',error);}});}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
