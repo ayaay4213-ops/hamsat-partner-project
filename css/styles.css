@@ -3576,3 +3576,36 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .room-sheet .hs-room-head-row{
   transform:translateY(-8px)!important;
 }
+
+
+/* HAMSAT: expose room settings + adjacent icons; remove the frosted separator */
+.room-sheet .hs-room-meta-compact{
+  position:relative!important;z-index:30!important;
+  display:flex!important;align-items:center!important;
+  flex-wrap:nowrap!important;overflow:visible!important;
+  min-height:38px!important;height:auto!important;
+  border:0!important;border-bottom:0!important;border-top:0!important;
+  outline:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  background:transparent!important;
+}
+.room-sheet .hs-room-meta-compact::before,
+.room-sheet .hs-room-meta-compact::after{display:none!important;content:none!important}
+.room-sheet .hs-room-meta-compact .hs-room-meta-actions{
+  display:flex!important;align-items:center!important;justify-content:flex-end!important;
+  flex:0 0 auto!important;flex-wrap:nowrap!important;
+  gap:3px!important;min-width:max-content!important;
+  overflow:visible!important;position:relative!important;z-index:31!important;
+}
+.room-sheet .hs-room-meta-compact .hs-room-meta-actions button,
+.room-sheet .hs-room-meta-compact #room-settings-toggle{
+  display:inline-flex!important;visibility:visible!important;opacity:1!important;
+  flex:0 0 29px!important;width:29px!important;min-width:29px!important;
+  height:29px!important;margin:0!important;padding:0!important;
+  order:initial!important;transform:none!important;
+  filter:none!important;backdrop-filter:none!important;
+}
+.room-sheet .hs-room-meta-compact .hs-room-id-chip,
+.room-sheet .hs-room-meta-compact .hs-room-member-count{
+  flex:0 1 auto!important;min-width:0!important;white-space:nowrap!important;
+}
