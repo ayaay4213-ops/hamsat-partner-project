@@ -215,7 +215,7 @@ export const api = {
     if(!ids.length)return {friends:[]};
     const res=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(res.error);
     const mapped=await mapProfilesWithFrames(res.data);const byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
-    return {friends:data.map(x=>byId[x.sender_id===user.id?x.receiver_id:x.sender_id]).filter(Boolean)};
+    return {friends:ids.map(id=>byId[id]).filter(Boolean)};
   },
   friendRequests: async () => {
     const user=await currentUser();
