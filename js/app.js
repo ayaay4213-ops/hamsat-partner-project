@@ -788,7 +788,7 @@ async function openRoom(r) {
     };
     let roomJoinedAt=Date.now();
     const drawMessages=async()=>{
-      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id,roomJoinedAt).catch(()=>({events:[]}))]);
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
@@ -895,7 +895,7 @@ async function openRoom(r) {
       emojiGrid.innerHTML=emojiSet.slice(start,start+15).map(e=>'<button type="button" data-room-emoji="'+e+'" aria-label="إرسال '+e+'">'+e+'</button>').join('');
       emojiPagination.innerHTML=Array.from({length:pages},(_,i)=>'<button type="button" data-emoji-page="'+i+'" class="'+(i===emojiPage?'active':'')+'" aria-label="صفحة '+(i+1)+'"></button>').join('');
       emojiPagination.querySelectorAll('[data-emoji-page]').forEach(b=>b.onclick=()=>{emojiPage=Number(b.dataset.emojiPage);drawEmojiPage();});
-      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.roomEmoji);emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');toast('تم إرسال التفاعل');await drawMessages();}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
+      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.roomEmoji);toast('تم إرسال التفاعل');}catch(e){if(/مقاعد المايك/.test(e.message||'')){try{await api.sendRoomMessage(r.id,b.dataset.roomEmoji);toast('تم إرسال الإيموجي في الدردشة');}catch(fallbackError){toast(fallbackError.message,'error');return;}}else{toast(e.message,'error');return;}}finally{b.disabled=false;}emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');await drawMessages();});
     };
     drawEmojiPage();
     let emojiTouchStartX=0;emojiGrid.addEventListener('touchstart',e=>{emojiTouchStartX=e.changedTouches[0].clientX;},{passive:true});emojiGrid.addEventListener('touchend',e=>{const delta=e.changedTouches[0].clientX-emojiTouchStartX;if(Math.abs(delta)>45){emojiPage=Math.max(0,Math.min(Math.ceil(emojiSet.length/15)-1,emojiPage+(delta<0?1:-1)));drawEmojiPage();}},{passive:true});
@@ -990,7 +990,6 @@ async function openRoom(r) {
     sheet.querySelector('#room-emoji-close')?.addEventListener('click',()=>{emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');});sheet.querySelector('#room-emoji-backdrop')?.addEventListener('click',()=>{emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');});
     const giftPanel=sheet.querySelector('#room-gift-panel'),giftForm=sheet.querySelector('#room-gift-form'),giftGrid=sheet.querySelector('#room-gift-grid'),giftSubmit=giftForm.querySelector('[type="submit"]'),giftBalanceLabel=sheet.querySelector('#room-gift-balance');
     let selectedGiftCategory='app',roomGiftRequestId=null;
-    giftForm.elements.recipient.addEventListener('change',()=>{roomGiftRequestId=null;});
     giftForm.elements.quantity.addEventListener('change',()=>{roomGiftRequestId=null;refreshGiftEstimate();});giftForm.elements.recipient.addEventListener('change',()=>{roomGiftRequestId=null;refreshGiftEstimate();});
     giftGrid.addEventListener('click',event=>{if(event.target.closest('[data-gift]'))roomGiftRequestId=null;});
     const refreshGiftEstimate=()=>{const gift=state.gifts?.find(item=>item.id===giftForm.elements.gift.value);if(!gift)return;const qty=Number(giftForm.elements.quantity.value||1),count=giftForm.elements.recipient.value==='__all__'?Number(giftForm.elements.recipient.selectedOptions[0]?.dataset.count||1):1,total=Number(gift.price||0)*qty*count,balance=Number(state.wallet?.balance||0);sheet.querySelector('#room-gift-selection').textContent='الإجمالي: '+num(total)+' عملة · رصيدك: '+num(balance);giftSubmit.disabled=total>balance;};
