@@ -188,3 +188,25 @@ end;
 $$;
 revoke all on function public.staff_update_user_report(bigint,text,text) from public, anon;
 grant execute on function public.staff_update_user_report(bigint,text,text) to authenticated;
+
+-- Return aggregate occupancy only; never expose room member identities.
+create or replace function public.get_public_room_member_counts(p_room_ids uuid[])
+returns table(room_id uuid, member_count bigint)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then raise exception 'يجب تسجيل الدخول'; end if;
+  if coalesce(array_length(p_room_ids,1),0)>1000 then raise exception 'عدد الغرف المطلوب كبير جداً'; end if;
+  return query
+    select r.id, count(m.user_id)::bigint
+      from public.rooms r
+      left join public.room_members m on m.room_id=r.id
+     where r.id = any(coalesce(p_room_ids,'{}'::uuid[]))
+     group by r.id;
+end;
+$$;
+revoke all on function public.get_public_room_member_counts(uuid[]) from public, anon;
+grant execute on function public.get_public_room_member_counts(uuid[]) to authenticated;
