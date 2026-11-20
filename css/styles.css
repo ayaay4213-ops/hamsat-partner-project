@@ -2110,3 +2110,5 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .room-sheet .hs-room-unified>.hs-room-people{padding-top:1px!important;padding-bottom:1px!important}
  .room-sheet .hs-room-tools-row button{height:34px!important}
 }
+
+.room-sheet .hs-room-cover{background-image:none!important;background-color:transparent!important;border:0!important}
