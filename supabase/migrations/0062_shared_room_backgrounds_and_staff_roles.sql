@@ -122,6 +122,7 @@ set search_path = ''
 as $$
 declare
   v_result public.staff_roles;
+  v_target_role text;
   v_allowed constant text[] := array[
     'room_moderation','report_review','member_support','event_management'
   ]::text[];
@@ -131,6 +132,9 @@ begin
   end if;
   if p_user_id is null then raise exception 'يجب تحديد حساب المسؤول'; end if;
   if p_user_id = auth.uid() then raise exception 'لا يمكن تعيين صلاحيات مسؤول لنفس حساب السوبر أدمن'; end if;
+  select role into v_target_role from public.profiles where id = p_user_id;
+  if v_target_role is null then raise exception 'الحساب غير موجود'; end if;
+  if v_target_role = 'admin' then raise exception 'لا يمكن منح حساب Super Admin دور مسؤول محدود'; end if;
   if not (coalesce(p_permissions, '{}'::text[]) <@ v_allowed) then
     raise exception 'تتضمن الصلاحيات اختياراً غير مسموح';
   end if;
