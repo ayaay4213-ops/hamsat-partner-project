@@ -6,7 +6,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
+const state = { isAdmin: false, account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -89,7 +89,7 @@ async function openSideMenu() {
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
 }
 function closeSideMenu() { const root=$('#side-drawer-root'); if(root) root.innerHTML=''; }
-function menuButton() { return `<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>`; }
+function menuButton() { return state.isAdmin ? `<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>` : ''; }
 window.hamsatOpenMenu = openSideMenu;
 function header(title, right = '') {
   return `<header class="sticky top-0 z-20 bg-ink-900/95 backdrop-blur border-b border-ink-700 px-5 h-14 flex items-center justify-between">
@@ -148,6 +148,7 @@ async function signOut() {
   closeSheet(true);
   try { await api.signOut(); } catch (e) { toast(e.message, 'error'); return; }
   state.account = state.profile = state.wallet = null;
+  state.isAdmin = false;
   location.hash = '#/home';
   await render();
 }
@@ -157,6 +158,7 @@ async function loadMe() {
   state.account = data.account;
   state.profile = data.profile;
   state.wallet = data.wallet;
+  state.isAdmin = await api.isAdmin().catch(() => false);
 }
 
 /* ---------- screens ---------- */
