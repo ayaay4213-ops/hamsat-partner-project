@@ -2833,3 +2833,89 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .hs-home-room-list .hs-room-discovery-owner .avatar{width:36px!important;height:36px!important}
   .hs-home-room-list .hs-room-discovery-owner b{font-size:12px!important}
 }
+
+
+/* HAMSAT final UI fixes — profile cover and square home room covers */
+.hs-profile-cover{
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+.hs-home-room-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+.hs-home-room-list .hs-room-discovery-card.hs-home-room-square{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  gap:0!important;
+  border:1px solid rgba(212,175,55,.16)!important;
+  border-radius:15px!important;
+  overflow:hidden!important;
+  background:linear-gradient(155deg,rgba(30,25,35,.96),rgba(13,12,18,.99))!important;
+}
+.hs-home-room-list .hs-home-room-square .hs-room-discovery-media{
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  flex:none!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:#100d17!important;
+}
+.hs-home-room-list .hs-home-room-square .hs-room-discovery-media>img{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+.hs-home-room-list .hs-home-room-square .hs-room-discovery-body{
+  min-height:42px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:6px!important;
+  padding:7px 9px!important;
+}
+.hs-home-room-list .hs-home-room-square-title{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#f4e8c8!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+  font-weight:700!important;
+}
+.hs-home-room-list .hs-home-room-square .hs-room-discovery-enter{
+  flex:none!important;
+  width:25px!important;
+  height:25px!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:0!important;
+  border:1px solid rgba(212,175,55,.25)!important;
+  background:rgba(212,175,55,.12)!important;
+  color:#f2d78a!important;
+}
+.hs-home-room-list .hs-home-room-square .hs-room-discovery-live{
+  top:7px!important;
+  right:7px!important;
+  font-size:9px!important;
+}
+@media(max-width:340px){
+  .hs-home-room-list{gap:8px!important}
+  .hs-home-room-list .hs-home-room-square .hs-room-discovery-body{padding:6px!important}
+  .hs-home-room-list .hs-home-room-square-title{font-size:10px!important}
+}
