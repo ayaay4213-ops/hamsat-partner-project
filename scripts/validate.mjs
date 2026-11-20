@@ -600,8 +600,8 @@ const appApiPath = path.join(root, 'js/api.js');
 if (fs.existsSync(appRoomPath) && fs.existsSync(appApiPath)) {
   const appSource = fs.readFileSync(appRoomPath, 'utf8');
   const apiSource = fs.readFileSync(appApiPath, 'utf8');
-  const apiMethods = new Set([...apiSource.matchAll(/^\\s{2}([A-Za-z_$][\\w$]*)\\s*:\\s*(?:async\\s*)?\\(/gm)].map(match => match[1]));
-  const calledMethods = new Set([...appSource.matchAll(/\\bapi\\.([A-Za-z_$][\\w$]*)\\s*\\(/g)].map(match => match[1]));
+  const apiMethods = new Set([...apiSource.matchAll(/^\s{2}([A-Za-z_$][\w$]*)\s*:\s*(?:async\s*)?\(/gm)].map(match => match[1]));
+  const calledMethods = new Set([...appSource.matchAll(/\bapi\.([A-Za-z_$][\w$]*)\s*\(/g)].map(match => match[1]));
   for (const method of calledMethods) {
     if (!apiMethods.has(method)) errors.push(`App calls an API method that is not defined: api.${method}`);
   }
