@@ -326,6 +326,16 @@ export const api = {
     fail(error);
     return data;
   },
+  roomBackground: async (roomId) => {
+    const {data,error}=await client().from('room_backgrounds').select('image_url,updated_at').eq('room_id',roomId).maybeSingle();
+    fail(error);return {imageUrl:data?.image_url||null,updatedAt:data?.updated_at||null};
+  },
+  saveRoomBackground: async (roomId,imageUrl) => {
+    const user=await currentUser();
+    if(imageUrl && (!/^https:\/\//i.test(String(imageUrl)) || String(imageUrl).length>2048))throw new Error('رابط خلفية الغرفة غير صالح.');
+    const {error}=await client().from('room_backgrounds').upsert({room_id:roomId,image_url:imageUrl||null,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:'room_id'});
+    fail(error);return {imageUrl:imageUrl||null};
+  },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
     const payload = {
@@ -438,6 +448,7 @@ export const api = {
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_seats', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members', filter: 'room_id=eq.' + roomId }, callback)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'room_backgrounds', filter: 'room_id=eq.' + roomId }, callback)
     .subscribe(),
   unsubscribeRoomChannel: async (channel) => { if (channel) await client().removeChannel(channel); },
   deleteRoom: async (id) => {
