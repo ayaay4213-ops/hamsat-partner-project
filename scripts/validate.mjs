@@ -58,8 +58,10 @@ for (const ref of localRefs) {
 
 // Keep a room's microphone background intact when its owner saves only the room cover.
 const appSource = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
-const coverSaveCall = appSource.match(/#room-cover-save[\\s\\S]*?api\\.updateRoomSettings\\(r\\.id,\\{([^}]*)\\}\\)/);
-if (!coverSaveCall || !/backgroundUrl\\s*:\\s*r\\.backgroundUrl/.test(coverSaveCall[1])) {
+const coverSaveStart = appSource.indexOf("sheet.querySelector('#room-cover-save').onclick");
+const coverSaveEnd = appSource.indexOf("sheet.querySelector('#room-background-save').onclick", coverSaveStart);
+const coverSaveCode = coverSaveStart >= 0 && coverSaveEnd > coverSaveStart ? appSource.slice(coverSaveStart, coverSaveEnd) : '';
+if (!coverSaveCode.includes('backgroundUrl:r.backgroundUrl')) {
   errors.push('Room cover save must preserve the currently selected microphone background URL');
 }
 
