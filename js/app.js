@@ -539,6 +539,9 @@ async function homeScreen() {
   if (rooms.status === 'fulfilled') {
     const list = rooms.value.rooms.slice(0, 3);
     hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
+    const myRoom = rooms.value.rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
+    const homeCreate = screen.querySelector('.hs-home-create');
+    if (myRoom && homeCreate) { homeCreate.href = '#/rooms'; homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك'; icons_(); }
     bindRoomCards(hr, rooms.value.rooms);
   } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason.message);
   const hu = $('#home-users');
