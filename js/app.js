@@ -602,6 +602,7 @@ async function openRoom(r) {
     <button type="button" id="room-gift-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق الهدايا"></button><div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><form id="room-gift-form" class="space-y-3"><div class="flex items-center justify-between gap-2"><label class="label">إلى أحد الجالسين على المايك</label><button type="button" id="room-gift-all" class="hs-gift-all">All</button></div><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-categories" class="hs-room-gift-categories"><button type="button" data-gift-category="app" class="active">هدية التطبيق</button><button type="button" data-gift-category="event">هدية الحدث</button><button type="button" data-gift-category="lucky">الهدايا المحظوظة</button><button type="button" data-gift-category="special">هدية خاصة</button></div><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
     <button type="button" id="room-bomb-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق قنبلة الغرفة"></button><div id="room-bomb-panel" class="hs-room-bomb-panel hidden" role="dialog" aria-label="قنبلة الغرفة"><div class="hs-room-panel-handle"></div><div class="hs-room-bomb-head"><div><span>HAMSAT ROOM EVENT</span><h3>💣 قنبلة الغرفة</h3></div><button type="button" id="room-bomb-close" aria-label="إغلاق">×</button></div><p class="hs-room-bomb-description">كل هدية تُرسل داخل الغرفة تزيد تقدم القنبلة. عند اكتمال المستوى تُوزّع العملات تلقائياً على الموجودين، مع مكافآت إضافية لأعلى المساهمين.</p><div class="hs-room-bomb-status"><div><b id="room-bomb-panel-level">LV.1</b><span id="room-bomb-countdown">بانتظار أول هدية</span></div><strong id="room-bomb-panel-percent">0%</strong></div><div class="hs-room-bomb-track"><i id="room-bomb-panel-bar"></i></div><div id="room-bomb-levels" class="hs-room-bomb-levels"></div><div class="hs-room-bomb-top"><h4>🏆 أعلى المساهمين</h4><div id="room-bomb-top3"><p>لا توجد مساهمات بعد.</p></div></div></div>
+    <div class="hs-room-unified" aria-label="واجهة الغرفة الصوتية">
     <section class="hs-room-stage">
       <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="mic" aria-hidden="true"></i><span class="sr-only">المقاعد</span></div><span class="hs-room-seat-count" aria-label="عدد المقاعد">${r.seatLimit||8}</span></div>
       <div id="room-seats" class="hs-room-seats"></div>
@@ -634,6 +635,7 @@ async function openRoom(r) {
         <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
       </div>
     </section>
+    </div>
     ${isRoomOwner ? `<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>` : ''}
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
@@ -1555,14 +1557,18 @@ async function friendsScreen(){
     </div>`;
   icons_();
   const requestsRoot=$('#friend-requests'),friendsRoot=$('#friends-list'),searchRoot=$('#friend-search-results');
-  try{
-    const [requests,friends]=await Promise.all([api.friendRequests(),api.friends()]);
+  const [requestResult,friendsResult]=await Promise.allSettled([api.friendRequests(),api.friends()]);
+  if(requestResult.status==='fulfilled'){
+    const requests=requestResult.value;
     $('#friend-request-count').textContent=requests.incoming.length+' واردة';
     requestsRoot.innerHTML=requests.incoming.length?requests.incoming.map(x=>`<div class="card p-3 flex items-center gap-2">${avatar(x.user,42)}<div class="flex-1 min-w-0"><b>${esc(x.user.displayName)}</b><small class="block text-xs opacity-70">@${esc(x.user.handle)} · ${esc(x.user.publicId || "")}</small></div><button class="btn-gold px-3 py-2 text-xs" data-accept="${esc(x.id)}">قبول</button><button class="btn-ghost px-3 py-2 text-xs" data-reject="${esc(x.id)}">رفض</button></div>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد طلبات جديدة.</p>';
     requestsRoot.querySelectorAll('[data-accept]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.accept,true);toast('تمت إضافة الصديق');friendsScreen();}catch(e){toast(e.message,'error');}});
     requestsRoot.querySelectorAll('[data-reject]').forEach(b=>b.onclick=async()=>{try{await api.respondFriendRequest(b.dataset.reject,false);toast('تم رفض الطلب');friendsScreen();}catch(e){toast(e.message,'error');}});
-    friendsRoot.innerHTML=friends.friends.length?friends.friends.map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لم تضيفي أصدقاء بعد. ابحثي عن شخص وابدئي بإرسال طلب.</p>';
-  }catch(e){requestsRoot.innerHTML=emptyBox('wifi-off','تعذّر تحميل الطلبات',e.message);friendsRoot.innerHTML='';}
+  }else{requestsRoot.innerHTML=emptyBox('wifi-off','تعذّر تحميل الطلبات',requestResult.reason?.message||'حاولي مجدداً');}
+  if(friendsResult.status==='fulfilled'){
+    const friends=friendsResult.value.friends||[];
+    friendsRoot.innerHTML=friends.length?friends.map(u=>`<a href="#/u/${encodeURIComponent(u.publicId || u.handle)}" class="card p-3 flex items-center gap-3">${avatar(u,44)}<span class="flex-1 min-w-0"><b class="block">${esc(u.displayName)}</b><small class="opacity-70">@${esc(u.handle)}</small></span><span class="text-xs text-gold-300">عرض الملف ←</span></a>`).join(''):'<p class="text-sm opacity-70 p-3">لا توجد صداقات مؤكدة بعد. ستظهر هنا الحسابات التي تقبلين طلب صداقتها أو تقبل طلبك.</p>';
+  }else{friendsRoot.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأصدقاء',friendsResult.reason?.message||'حاولي مجدداً');}
   let searchTimer;
   $('#friend-search').oninput=()=>{
     clearTimeout(searchTimer);const term=$('#friend-search').value.trim();
