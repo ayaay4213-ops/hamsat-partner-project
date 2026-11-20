@@ -81,9 +81,11 @@ async function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   // Show the Super Admin entry only after the database confirms the fixed owner identity.
   const showAdmin = state.account ? await api.isAdmin().catch(() => false) : false;
+  const staffRole = state.account ? await api.myStaffRole().catch(() => ({active:false,permissions:[]})) : {active:false,permissions:[]};
+  const showStaff = Boolean(staffRole.active && staffRole.permissions?.length);
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>HAMSAT ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}</nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}${showStaff ? '<a href="staff.html"><i data-lucide="shield-check"></i>مساحة المسؤول</a>' : ''}</nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
