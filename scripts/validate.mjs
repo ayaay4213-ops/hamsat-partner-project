@@ -529,6 +529,36 @@ if (fs.existsSync(appRoomPath)) {
   }
 }
 
+
+const roomAvatarPath = path.join(root, 'js/app.js');
+const roomStylePath = path.join(root, 'css/styles.css');
+if (fs.existsSync(roomAvatarPath)) {
+  const js = fs.readFileSync(roomAvatarPath, 'utf8');
+  for (const token of [
+    'const memberById=Object.fromEntries(members.map(member=>[member.userId,member]))',
+    'seat?(seat.member||memberById[seat.user_id]||null):null',
+    'avatar(m,58)'
+  ]) {
+    if (!js.includes(token)) errors.push(`Room microphone seats are missing profile/avatar fallback: ${token}`);
+  }
+}
+if (fs.existsSync(roomStylePath)) {
+  const css = fs.readFileSync(roomStylePath, 'utf8');
+  for (const token of [
+    '.room-sheet .hs-room-stage',
+    '.room-sheet .hs-room-seat .hs-seat-ring .avatar',
+    '.room-sheet .hs-room-seat .hs-seat-live-mic',
+    '.room-sheet .hs-room-chat-area'
+  ]) {
+    if (!css.includes(token)) errors.push(`Missing HAMSAT room visual redesign styling: ${token}`);
+  }
+}
+if (fs.existsSync(html)) {
+  for (const token of ['css/styles.css?v=20261119-room-redesign-v1','js/app.js?v=20261119-room-avatar-fallback-v1']) {
+    if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
