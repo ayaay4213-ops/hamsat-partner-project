@@ -895,7 +895,7 @@ async function openRoom(r) {
       emojiGrid.innerHTML=emojiSet.slice(start,start+15).map(e=>'<button type="button" data-room-emoji="'+e+'" aria-label="إرسال '+e+'">'+e+'</button>').join('');
       emojiPagination.innerHTML=Array.from({length:pages},(_,i)=>'<button type="button" data-emoji-page="'+i+'" class="'+(i===emojiPage?'active':'')+'" aria-label="صفحة '+(i+1)+'"></button>').join('');
       emojiPagination.querySelectorAll('[data-emoji-page]').forEach(b=>b.onclick=()=>{emojiPage=Number(b.dataset.emojiPage);drawEmojiPage();});
-      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.room-emoji);emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');toast('تم إرسال التفاعل');await drawMessages();}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
+      emojiGrid.querySelectorAll('[data-room-emoji]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api.sendRoomEmoji(r.id,b.dataset.roomEmoji);emojiPanel.classList.add('hidden');sheet.querySelector('#room-emoji-backdrop').classList.add('hidden');toast('تم إرسال التفاعل');await drawMessages();}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
     };
     drawEmojiPage();
     let emojiTouchStartX=0;emojiGrid.addEventListener('touchstart',e=>{emojiTouchStartX=e.changedTouches[0].clientX;},{passive:true});emojiGrid.addEventListener('touchend',e=>{const delta=e.changedTouches[0].clientX-emojiTouchStartX;if(Math.abs(delta)>45){emojiPage=Math.max(0,Math.min(Math.ceil(emojiSet.length/15)-1,emojiPage+(delta<0?1:-1)));drawEmojiPage();}},{passive:true});
