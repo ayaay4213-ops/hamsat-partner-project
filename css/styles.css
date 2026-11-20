@@ -2649,3 +2649,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hs-profile-id-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:7px}
 .hs-profile-country-flag{font-size:18px;line-height:1}
 .hs-profile-id-row .hs-profile-id{margin:0}
+
+.hs-room-stage{position:relative;isolation:isolate;background-color:#0c0e14;background-size:cover;background-position:center;background-repeat:no-repeat;border-radius:20px;overflow:hidden}
+.hs-room-stage>*{position:relative;z-index:1}
+.hs-member-avatar-link{display:inline-flex;padding:0;border:0;background:transparent;border-radius:50%;cursor:pointer}
+.hs-member-avatar-link:focus-visible,.hs-room-seat.occupied:focus-visible{outline:2px solid #e6c96f;outline-offset:3px}
+.hs-moments-feed-page{padding:12px 14px 30px}
+.hs-moments-feed-list{display:grid;gap:13px;max-width:720px;margin:0 auto}
+.hs-moment-feed-author{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.hs-moment-feed-author>div{display:grid;gap:2px;text-align:right}
+.hs-moment-feed-author b{font-size:13px;color:#f0dfb4}
+.hs-moment-feed-author small{font-size:10px;color:#9d9485;direction:ltr;text-align:right}
+.hs-moment-feed-card{padding:14px}
