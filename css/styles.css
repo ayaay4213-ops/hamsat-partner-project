@@ -1809,3 +1809,35 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .room-sheet .hs-room-seats{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:24px 8px!important}
  .room-sheet .hs-room-seat .hs-seat-ring{width:clamp(62px,18vw,82px)!important;height:clamp(62px,18vw,82px)!important;min-width:clamp(62px,18vw,82px)!important}
 }
+
+
+/* Room owner menu and reference-matched settings screen */
+.room-sheet .hs-room-owner-menu{position:fixed;z-index:120;left:0;right:0;bottom:0;max-height:76dvh;overflow:auto;background:#242238;color:#fff;border-radius:28px 28px 0 0;padding:14px 18px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -18px 50px #0008}
+.room-sheet .hs-owner-menu-grabber{width:42px;height:4px;border-radius:99px;background:#77738c;margin:0 auto 18px}
+.room-sheet .hs-owner-menu-title{font-weight:800;text-align:right;margin:0 4px 18px;font-size:18px}
+.room-sheet .hs-owner-menu-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 10px}
+.room-sheet .hs-owner-menu-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:92px;color:#f7f4ff;background:transparent;border:0}
+.room-sheet .hs-owner-menu-grid button i{width:56px;height:56px;padding:15px;border-radius:50%;background:#302e48;border:1px solid #ffffff12;color:#f3e8c5}
+.room-sheet .hs-owner-menu-grid button span{font-size:12px;text-align:center}
+.room-sheet .hs-owner-menu-grid .hs-owner-settings-tile i{color:#e8cf8b;border-color:#b99b5a66}
+.room-sheet #room-settings-panel{position:fixed!important;z-index:125!important;inset:0!important;width:100%!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain;background:#242238!important;color:#fff!important;border:0!important;border-radius:0!important;padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))!important;box-shadow:none!important}
+.room-sheet .hs-room-settings-header{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;text-align:center;margin:0 0 22px}
+.room-sheet .hs-room-settings-header h3{font-size:20px;font-weight:800}
+.room-sheet .hs-room-settings-header button{width:42px;height:42px;border-radius:50%;background:#302e48;color:#fff}
+.room-sheet .hs-room-settings-group{background:#2b2942;border-radius:18px;padding:16px;margin:0 0 14px}
+.room-sheet .hs-room-settings-group h4{font-size:16px;font-weight:800;margin:0 0 14px;color:#f7f2ff}
+.room-sheet .hs-room-setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #ffffff12}
+.room-sheet .hs-room-setting-row:last-child{border-bottom:0}
+.room-sheet .hs-room-setting-row label{font-weight:700}
+.room-sheet .hs-room-setting-value,.room-sheet .hs-room-settings-hint{font-size:13px;color:#c1bbd0}
+.room-sheet .hs-room-settings-fields{display:grid;gap:10px}
+.room-sheet .hs-room-settings-fields .label{margin-top:8px}
+.room-sheet .hs-room-settings-group .field{background:#211f35!important;border:0!important;color:#fff!important;max-width:46%}
+.room-sheet .hs-room-settings-hint{margin:8px 0;line-height:1.7}
+.room-sheet .hs-room-background-preview{margin-top:12px;min-height:90px;border-radius:14px;overflow:hidden;background:#211f35;display:grid;place-items:center;color:#c1bbd0;font-size:13px}
+.room-sheet .hs-room-background-preview img{width:100%;height:150px;object-fit:cover}
+.room-sheet .room-background-picker{display:flex;align-items:center;gap:12px;padding:16px;border:1px dashed #b99b5a88;border-radius:14px;background:#211f35}
+.room-sheet .room-background-picker i{color:#e8cf8b}
+.room-sheet .hs-room-settings-group #room-background-catalog{max-height:280px;overflow:auto}
+.room-sheet .hs-room-settings-group #room-background-catalog article{background:#211f35}
+.room-sheet #room-settings-save{position:sticky;bottom:0;box-shadow:0 -8px 20px #242238}
