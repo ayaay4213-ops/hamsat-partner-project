@@ -2576,3 +2576,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hs-home-room-list .room-description{display:block!important;white-space:normal!important;font-size:12px!important;line-height:1.7!important}
 .hs-home-room-list .room-card-footer{font-size:11px!important;margin-top:12px!important;padding-top:10px!important}
 @media(max-width:380px){.hs-home-room-list .room-cover{min-height:165px!important}.hs-home-room-list{gap:14px!important}}
+
+/* Moment social controls */
+.hs-moment-social{display:flex;align-items:center;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid #c9a64b22;color:#d9c99e;font-size:11px}
+.hs-moment-social button{position:static;color:#f1c8d7;font-weight:700}
+.hs-moment-comments{display:grid;gap:7px;margin-top:9px;color:#d9d2c5;font-size:12px}
+.hs-moment-comments p{padding:7px 9px;border-radius:9px;background:#ffffff08}
+.hs-moment-comments b{color:#e5c66f;margin-inline-end:5px}
+.hs-moment-comment-form{display:flex;gap:7px;margin-top:9px}
+.hs-moment-comment-form input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;background:#090b11;color:#f7f0e3;border:1px solid #c9a64b33;font-size:12px}
+.hs-moment-comment-form button{position:static;padding:7px 12px;border-radius:9px;background:#c9a64b;color:#17140b;font-weight:700;font-size:11px}
