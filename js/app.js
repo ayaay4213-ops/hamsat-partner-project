@@ -539,7 +539,7 @@ async function homeScreen() {
   const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
   const hr = $('#home-rooms'); if (!hr) return;
   if (rooms.status === 'fulfilled') {
-    const list = rooms.value.rooms.slice(0, 3);
+    const list = rooms.value.rooms;
     hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
     const myRoom = rooms.value.rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
     const homeCreate = screen.querySelector('.hs-home-create');
