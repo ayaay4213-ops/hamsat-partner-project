@@ -2549,3 +2549,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* HAMSAT install affordance — shown only when the browser offers native installation */
+.hamsat-install-cta[hidden] { display: none !important; }
+.hamsat-install-cta {
+  position: fixed; z-index: 35; right: max(14px, env(safe-area-inset-right));
+  bottom: calc(82px + env(safe-area-inset-bottom)); display: inline-flex;
+  align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 0 16px; border: 1px solid rgba(255,235,171,.72); border-radius: 999px;
+  color: #17140b; background: linear-gradient(135deg,#f7e6ad,#d4af37 62%,#a9821f);
+  box-shadow: 0 8px 26px rgba(0,0,0,.42), 0 0 20px rgba(212,175,55,.18);
+  font: 800 13px/1.2 Tajawal,system-ui,sans-serif;
+}
+.hamsat-install-cta span:first-child { font-size: 19px; line-height: 1; }
+.hamsat-install-cta:active { transform: translateY(1px) scale(.98); }
+@media (min-width: 700px) { .hamsat-install-cta { right: max(calc((100vw - 480px)/2 + 14px), env(safe-area-inset-right)); } }
