@@ -652,7 +652,7 @@ if (fs.existsSync(html)) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-room-chat-friends-v3")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-room-background-shared-v1")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
