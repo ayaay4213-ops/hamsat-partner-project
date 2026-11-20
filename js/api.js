@@ -64,6 +64,12 @@ export const api = {
   getSession: async () => {
     const { data, error } = await client().auth.getSession(); fail(error); return data.session;
   },
+  // The database is the authority: never infer Super Admin access from editable profile fields.
+  isAdmin: async () => {
+    const { data, error } = await client().rpc('is_admin');
+    if (error) return false;
+    return data === true;
+  },
   onAuthStateChange: (callback) => client().auth.onAuthStateChange(callback),
   signInWithEmail: async (email, password) => {
     const { data, error } = await client().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
