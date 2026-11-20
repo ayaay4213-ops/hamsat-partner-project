@@ -519,7 +519,7 @@ async function homeScreen() {
   const p = state.profile;
   screen.innerHTML = '<div class="hs-home fade-in">' +
     '<header class="hs-home-top"><div class="hs-home-brand">' +
-    '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' +
+    (state.isAdmin ? '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' : '') +
     '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
     '<div><span>أهلًا بكِ في HAMSAT</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
     '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
@@ -1344,6 +1344,24 @@ async function bindProfileSocial(profile,own){
  const buttons=[...root.querySelectorAll('[data-profile-tab]')],panels=[...root.querySelectorAll('[data-profile-panel]')];
  const show=name=>{buttons.forEach(b=>b.classList.toggle('active',b.dataset.profileTab===name));panels.forEach(p=>p.hidden=p.dataset.profilePanel!==name);if(name==='moments')loadProfileMoments(profile.uuid,own);};
  buttons.forEach(b=>b.onclick=()=>show(b.dataset.profileTab));
+ const coverButton=root.querySelector('#edit-profile-cover');if(coverButton&&own)coverButton.onclick=()=>{
+  const picker=document.createElement('input');picker.type='file';picker.accept='image/jpeg,image/png,image/webp';picker.hidden=true;root.appendChild(picker);
+  picker.onchange=async()=>{
+   const file=picker.files?.[0];picker.remove();if(!file)return;
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){toast('اختاري صورة JPG أو PNG أو WEBP لا تتجاوز 5MB','error');return;}
+   coverButton.disabled=true;
+   try{
+    const uploaded=await api.uploadMedia(file,'profile-covers');
+    const saved=await api.saveProfile({...profile,coverUrl:uploaded.url});
+    state.profile=saved.profile;
+    const cover=root.querySelector('.hs-profile-cover');
+    if(cover)cover.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url('+JSON.stringify(uploaded.url)+')';
+    toast('تم حفظ غلاف الحساب وإظهاره في ملفك');
+   }catch(error){toast('تعذر حفظ غلاف الحساب: '+error.message,'error');}
+   finally{coverButton.disabled=false;}
+  };
+  picker.click();
+ };
  const share=root.querySelector('#share-profile-cover');if(share)share.onclick=async()=>{const url=location.origin+location.pathname+'#/u/'+encodeURIComponent(profile.handle||profile.publicId||'');try{if(navigator.share)await navigator.share({title:'HAMSAT',url});else{await navigator.clipboard.writeText(url);toast('تم نسخ رابط الحساب');}}catch(e){if(e.name!=='AbortError')toast(url);}};
  await loadCoupleSpace(profile,own);
  const form=root.querySelector('[data-moment-form]');if(form)form.onsubmit=async e=>{e.preventDefault();const body=form.elements.body.value.trim(),file=form.elements.momentImage.files?.[0],btn=form.querySelector('[type=submit]');btn.disabled=true;try{let imageUrl=null;if(file)imageUrl=(await api.uploadMedia(file,'moments')).url;if(!body&&!imageUrl)throw new Error('اكتبي شيئاً أو أضيفي صورة');await api.createMoment(body,imageUrl);form.reset();toast('تم نشر لحظتك');await loadProfileMoments(profile.uuid,true);}catch(err){toast(err.message,'error');}finally{btn.disabled=false;}};
