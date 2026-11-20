@@ -1150,7 +1150,7 @@ async function roomsScreen(params) {
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
         ${['الكل', ...TOPICS].map(t => `<button data-t="${t}" class="chip ${t === roomFilter ? 'active' : ''}">${t}</button>`).join('')}
       </div>
-      <div id="rooms-list" class="space-y-3 pt-1 pb-6">${loading()}</div>
+      <div id="rooms-list" class="hs-room-discovery-grid pt-1 pb-6">${loading()}</div>
     </div>`;
   icons_();
   $('#new-room').onclick = newRoomSheet;
