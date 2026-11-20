@@ -103,14 +103,23 @@ tailwind.config = { theme: { extend: {
         if (!button) return;
         let installEvent = null;
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isAndroid = /android/i.test(navigator.userAgent);
         if (isStandalone()) return;
+        // Keep a visible manual-install path on Android when Chrome does not emit
+        // beforeinstallprompt (for example, before engagement criteria are met).
+        if (isAndroid) button.hidden = false;
         window.addEventListener('beforeinstallprompt', event => {
           event.preventDefault();
           installEvent = event;
           button.hidden = false;
         });
         button.addEventListener('click', async () => {
-          if (!installEvent) return;
+          if (!installEvent) {
+            alert(isAndroid
+              ? 'لتثبيت همسات: افتحي قائمة Chrome (⋮) ثم اختاري «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، افتحي الرابط في Chrome وحدّثي الصفحة بعد التأكد من اتصال الإنترنت.'
+              : 'افتحي قائمة المتصفح ثم اختاري «إضافة إلى الشاشة الرئيسية» لتثبيت همسات.');
+            return;
+          }
           const promptEvent = installEvent;
           installEvent = null;
           try {
@@ -128,7 +137,7 @@ tailwind.config = { theme: { extend: {
       })();
     </script>
   </div>
-  <script type="module" src="js/app.js?v=20261120-admin-access-guard-v14"></script>
+  <script type="module" src="js/app.js?v=20261120-shared-background-staff-pwa-v1"></script>
   <!-- Preview safety net: keeps the existing app files intact and shows a local preview
        when TrebEdit's file preview cannot load JavaScript modules or Puter. -->
   <script>
