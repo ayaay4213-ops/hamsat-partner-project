@@ -579,8 +579,10 @@ function bindRoomCards(root, rooms) {
 
 async function openRoom(r) {
   if (!r) return;
+
   const isRoomOwner = String(r.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase();
   openSheet(`
+    <div class="hs-room-canvas">
     <div class="hs-room-head">
       <div class="hs-room-cover" style="${r.coverUrl ? `background-image:linear-gradient(180deg,#08090a22,#08090add),url(${JSON.stringify(r.coverUrl)})` : ''}">
         <div class="hs-room-head-row">
@@ -666,11 +668,12 @@ async function openRoom(r) {
       </div>
     </section>
     </div>
+    </div>
     ${isRoomOwner ? `<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>` : ''}
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const unified=sheet.querySelector('.hs-room-unified');
+      const unified=sheet.querySelector('.hs-room-canvas');
       if(!unified)return;
       unified.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(3,9,20,.28),rgba(3,9,20,.48)),url('+JSON.stringify(String(url))+')':'none','important');
       unified.style.setProperty('background-size','cover','important');
