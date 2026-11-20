@@ -517,41 +517,70 @@ function onboardingScreen() {
 
 async function homeScreen() {
   const p = state.profile;
-  screen.innerHTML = '<div class="hs-home fade-in">' +
-    '<header class="hs-home-top"><div class="hs-home-brand">' +
-    (state.isAdmin ? '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' : '') +
-    '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
-    '<div><span>أهلًا بكِ في HAMSAT</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
-    '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
-    '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
-    '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
-    '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
-    '<div class="hs-home-hero-art hs-home-hero-art-large"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
-    '<section class="hs-home-shortcuts">' +
-    '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
-    '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
-    '<a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b><small>زيني حسابك</small></a>' +
-    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a><a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b><small>تحديات ممتعة</small></a></section>' +
-    '<section class="hs-home-section"><div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>' +
-    '<div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></section>' +
-    '<section class="hs-home-members"><div class="hs-home-section-head"><div><span>NEW FRIENDS</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>' +
-    '<div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div><div class="skeleton w-16 h-20 shrink-0"></div></div></section>' +
-    '<div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div></div>';
+  screen.innerHTML = `
+    <div class="hs-home hs-home-refined fade-in">
+      <header class="hs-home-top">
+        <div class="hs-home-brand">
+          ${state.isAdmin ? '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' : ''}
+          <a href="#/me" class="hs-home-avatar">${avatar(p,40)}</a>
+          <div><span>أهلًا بكِ</span><strong>${esc(p.displayName || 'صديقتنا')}</strong></div>
+        </div>
+        <a href="#/wallet" class="hs-home-wallet">${coin(19)}<span>${num(state.wallet?.balance)}</span><i data-lucide="plus"></i></a>
+      </header>
+      <section class="hs-home-hero hs-home-hero-refined">
+        <div class="hs-home-hero-copy">
+          <span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>
+          <h1>هنا تبدأ <em>أجمل الحكايات</em></h1>
+          <p>اقتربي من الأصدقاء واكتشفي مجتمعك الصوتي.</p>
+          <a href="#/rooms" class="hs-home-create"><i data-lucide="door-open"></i> الدخول إلى غرفتك</a>
+        </div>
+        <span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span>
+      </section>
+      <nav class="hs-home-shortcuts hs-home-shortcuts-refined" aria-label="الوصول السريع">
+        <a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b></a>
+        <a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b></a>
+        <a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b></a>
+        <a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b></a>
+        <a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b></a>
+      </nav>
+      <section class="hs-home-section">
+        <div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>
+        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div></div>
+      </section>
+      <section class="hs-home-members">
+        <div class="hs-home-section-head"><div><span>COMMUNITY</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>
+        <div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div></div>
+      </section>
+      <div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div>
+    </div>`;
   icons_();
   const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
   const hr = $('#home-rooms'); if (!hr) return;
   if (rooms.status === 'fulfilled') {
-    const list = rooms.value.rooms;
-    hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
-    const myRoom = rooms.value.rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
+    const allRooms = rooms.value.rooms || [];
+    const homeRooms = allRooms.slice(0, 3);
+    hr.innerHTML = homeRooms.length ? homeRooms.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
+    const myRoom = allRooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
     const homeCreate = screen.querySelector('.hs-home-create');
-    if (myRoom && homeCreate) { homeCreate.href = '#/rooms'; homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك'; homeCreate.onclick = (event) => { event.preventDefault(); openRoom(myRoom); }; icons_(); }
-    bindRoomCards(hr, rooms.value.rooms);
-  } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason.message);
+    if (myRoom && homeCreate) {
+      homeCreate.href = '#/rooms';
+      homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك';
+      homeCreate.onclick = (event) => { event.preventDefault(); openRoom(myRoom); };
+    }
+    bindRoomCards(hr, homeRooms);
+  } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason?.message || 'حاولي مرة أخرى');
   const hu = $('#home-users');
   if (users.status === 'fulfilled') {
-    $('#members-count').textContent = num(users.value.total) + ' عضو';
-    hu.innerHTML = users.value.users.slice(0,12).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user"><span class="hs-home-user-cover" style="${u.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.08),rgba(7,8,12,.38)),url(${JSON.stringify(u.coverUrl)})` : ''}"></span>${avatar(u,56)}<span>${esc(u.displayName)}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
+    const uniqueUsers = [];
+    const seenUsers = new Set();
+    (users.value.users || []).forEach(user => {
+      const key = String(user.uuid || user.id || user.handle || user.displayName || '').toLowerCase();
+      if (!key || seenUsers.has(key)) return;
+      seenUsers.add(key);
+      uniqueUsers.push(user);
+    });
+    $('#members-count').textContent = num(users.value.total ?? uniqueUsers.length) + ' عضو';
+    hu.innerHTML = uniqueUsers.slice(0, 10).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user">${avatar(u,48)}<span>${esc(u.displayName || 'عضو')}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
   } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
   icons_();
 }
