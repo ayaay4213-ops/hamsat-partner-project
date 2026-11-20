@@ -557,7 +557,7 @@ function emptyBox(icon, title, sub = '') {
 }
 
 function roomCard(r) {
-  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition">
+  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition" aria-label="دخول غرفة ${esc(r.title)}">
     <div class="room-cover" ${r.coverUrl ? `style="background-image:linear-gradient(180deg,rgba(4,5,8,.12),rgba(4,5,8,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
       <div class="room-cover-glow"></div>
       <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
@@ -565,12 +565,10 @@ function roomCard(r) {
       <span class="room-cover-topic">${esc(r.topic)}</span>
     </div>
     <div class="room-card-body">
-      <div class="flex items-center gap-2 min-w-0">
-        <div class="min-w-0 flex-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><p class="text-xs text-[#b7b2a5] mt-1 truncate">بواسطة ${esc(r.ownerName)}</p></div>
-        ${avatar({displayName:r.ownerName,color:r.ownerColor},38)}
+      <div class="room-card-title-row">
+        <p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p>
+        <span class="room-enter" aria-hidden="true"><i data-lucide="log-in"></i></span>
       </div>
-      <p class="room-description">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف ومشاركة الأحاديث')}</p>
-      <div class="room-card-footer"><span><i data-lucide="clock-3"></i>${timeAgo(r.createdAt)}</span><span class="room-enter">دخول الغرفة <i data-lucide="arrow-left"></i></span></div>
     </div>
   </button>`;
 }
@@ -1359,9 +1357,16 @@ async function bindProfileSocial(profile,own){
    try{
     const uploaded=await api.uploadMedia(file,'profile-covers');
     const saved=await api.saveProfile({...profile,coverUrl:uploaded.url});
+    if(!saved?.profile?.coverUrl)throw new Error('لم يؤكد الخادم حفظ غلاف الحساب');
+    Object.assign(profile,saved.profile);
     state.profile=saved.profile;
     const cover=root.querySelector('.hs-profile-cover');
-    if(cover)cover.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url('+JSON.stringify(uploaded.url)+')';
+    if(cover){
+      cover.style.backgroundImage='linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url('+JSON.stringify(saved.profile.coverUrl)+')';
+      let image=cover.querySelector('.hs-profile-cover-image');
+      if(!image){image=document.createElement('img');image.className='hs-profile-cover-image';image.alt='غلاف الحساب';cover.prepend(image);}
+      image.src=saved.profile.coverUrl;
+    }
     toast('تم حفظ غلاف الحساب وإظهاره في ملفك');
    }catch(error){toast('تعذر حفظ غلاف الحساب: '+error.message,'error');}
    finally{coverButton.disabled=false;}
@@ -1398,6 +1403,7 @@ function profileView(p, own) {
   return `
     <section class="hs-profile-page" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
       <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl)})` : ''}">
+        ${p.coverUrl ? `<img class="hs-profile-cover-image" src="${esc(p.coverUrl)}" alt="غلاف الحساب" loading="eager">` : ''}
         <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
       </div>
       <div class="hs-profile-main">
@@ -1886,7 +1892,9 @@ function dismissHamsatSplash() {
 
 async function boot() {
   icons_();
-  window.setTimeout(dismissHamsatSplash, 4200);
+  window.HAMSAT_SPLASH_CONTROLLED = true;
+  const splashStartedAt = Number(window.HAMSAT_SPLASH_STARTED_AT || Date.now());
+  window.setTimeout(dismissHamsatSplash, Math.max(0, 4000 - (Date.now() - splashStartedAt)));
   if (passwordRecoveryActive) {
     resetPasswordScreen();
     return;
