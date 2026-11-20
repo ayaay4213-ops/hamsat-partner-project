@@ -10,9 +10,9 @@ async function boot(){
  if(e){message('تعذّر التحقق من صلاحية الإدارة. تأكدي من ترحيل صلاحيات لوحة الإدارة.',true);return;}
  const {data:isOwner,error:ownerError}=await supabase.rpc('is_admin');
  if(ownerError||isOwner!==true){message('هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
- admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
+ admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');watchLoginEvents();
  const sections=[
-  ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],
+  ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
   ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports]
  ];
@@ -22,7 +22,7 @@ async function boot(){
    console.error('HAMSAT admin section failed:',label,error);
    const target=({
     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
-    'الغرف':'#room-list','الأعضاء':'#user-results','قنبلة الغرفة':'#bomb-level-list',
+    'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
     'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list'
    })[label];
    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
@@ -147,6 +147,15 @@ async function loadReports(){
  root.innerHTML=(data||[]).map(x=>'<article class="item block"><div class="flex justify-between gap-3"><div><b>بلاغ #'+esc(x.id)+'</b><p class="muted text-xs">'+(x.subject_user_id?'مستخدم #'+esc(byId[x.subject_user_id]?.public_id||'—'):'غرفة '+esc(byRoom[x.room_id]?.name||'—'))+' · المبلّغ #'+esc(byId[x.reporter_id]?.public_id||'—')+'</p></div><span class="pill">'+esc(x.status)+'</span></div><p class="text-sm mt-2">'+esc(x.reason)+'</p><p class="muted text-xs mt-1">'+esc(x.details||'لا توجد تفاصيل إضافية')+'</p><div class="flex gap-2 mt-3"><button class="ghost text-xs" data-report-status="reviewing" data-id="'+esc(x.id)+'">قيد المراجعة</button><button class="ghost text-xs" data-report-status="resolved" data-id="'+esc(x.id)+'">تم الحل</button><button class="ghost text-xs" data-report-status="dismissed" data-id="'+esc(x.id)+'">إغلاق</button></div></article>').join('')||'<p class="muted">لا توجد بلاغات حالياً.</p>';
  root.querySelectorAll('[data-report-status]').forEach(b=>b.onclick=async()=>{const {error}=await supabase.rpc('admin_update_user_report',{p_report_id:Number(b.dataset.id),p_status:b.dataset.reportStatus});if(error){message(error.message,true);return;}await loadReports();message('تم تحديث حالة البلاغ.');});
 }
+
+async function loadLogins(){
+ const root=$('#login-events');
+ const {data,error}=await supabase.rpc('admin_recent_logins',{p_limit:100});
+ if(error)throw error;
+ const dateText=value=>value?new Date(value).toLocaleString('ar-DZ'):'وقت غير متاح';
+ root.innerHTML=(data||[]).length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(String(x.public_id??'').padStart(6,'0'))+' · '+esc(x.handle?'@'+x.handle:'لم يحدد اسم مستخدم')+'</p><p class="muted text-xs mt-1">وقت الدخول: '+esc(dateText(x.signed_in_at))+'</p></div><span class="pill">دخول جديد</span></div>').join(''):'<p class="muted">لا توجد تسجيلات دخول مسجلة بعد تفعيل الإشعارات.</p>';
+}
+
 async function loadUsers(term=''){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
  let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).limit(200);
@@ -173,6 +182,23 @@ async function loadUsers(term=''){
   const lastLogin=activity.last_sign_in_at;
   return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>';
  }).join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
+
+ out.querySelectorAll('[data-moderate-user]').forEach(moderateButton=>{
+  const kickButton=document.createElement('button');
+  kickButton.type='button';kickButton.className='ghost text-xs';kickButton.textContent='إخراج الآن';
+  kickButton.onclick=async()=>{
+   if(!confirm('هل تريدين إنهاء جلسة هذا العضو وإخراجه من التطبيق الآن؟'))return;
+   kickButton.disabled=true;
+   try{
+    const {data,error}=await supabase.functions.invoke('admin-user-moderate',{body:{user_id:moderateButton.dataset.moderateUser,action:'kick'}});
+    if(error)throw error;if(data?.error)throw new Error(data.error);
+    message('تم إنهاء جلسة العضو. لم يتم حظره ويمكنه تسجيل الدخول مجدداً.');
+    await loadUsers(clean);
+   }catch(e){message(e.message||'تعذّر إخراج العضو.',true);kickButton.disabled=false;}
+  };
+  moderateButton.after(kickButton);
+ });
+
  out.querySelectorAll('[data-moderate-user]').forEach(b=>b.onclick=async()=>{
   const next=b.dataset.banned!=='true';
   if(next&&!confirm('هل تريدين حظر هذا الحساب من HAMSAT؟'))return;
@@ -304,7 +330,11 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games','bomb','agencies','reports'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','agencies','reports'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
+$('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
+let loginChannel=null;
+function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}
+
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));
