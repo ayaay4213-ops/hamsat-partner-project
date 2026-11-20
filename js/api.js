@@ -114,11 +114,17 @@ export const api = {
   signOut: async () => { const { error } = await client().auth.signOut(); fail(error); },
   uploadMedia: async (file, folder) => {
     const user=await currentUser();
-    if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('اختاري صورة JPG أو PNG أو WEBP');
+    if(!file)throw new Error('اختاري صورة أولاً');
+    const ext=(file.name?.split('.').pop()||'').toLowerCase();
+    const mime=(file.type||'').toLowerCase();
+    const allowedExt=['jpg','jpeg','png','webp'];
+    const allowedMime=['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'];
+    if(!allowedExt.includes(ext)&&!allowedMime.includes(mime))throw new Error('الصيغ المدعومة هي JPG وPNG وWEBP فقط');
     if(file.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميغابايت');
-    const ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1];
-    const path=user.id+'/'+folder+'/'+Date.now()+'.'+ext;
-    const {data,error}=await client().storage.from('hamsat-media').upload(path,file,{upsert:true,contentType:file.type});fail(error);
+    const normalizedExt=allowedExt.includes(ext)?(ext==='jpeg'?'jpg':ext):(mime.includes('png')?'png':mime.includes('webp')?'webp':'jpg');
+    const contentType=normalizedExt==='png'?'image/png':normalizedExt==='webp'?'image/webp':'image/jpeg';
+    const path=user.id+'/'+folder+'/'+Date.now()+'.'+normalizedExt;
+    const {data,error}=await client().storage.from('hamsat-media').upload(path,file,{upsert:true,contentType});fail(error);
     const {data:publicData}=client().storage.from('hamsat-media').getPublicUrl(data.path);
     return {url:publicData.publicUrl,path:data.path};
   },
