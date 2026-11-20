@@ -2151,3 +2151,38 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .room-sheet .hs-room-emoji-panel button,.room-sheet .hs-room-emoji-grid button{border-radius:50%!important}
 @media(max-height:740px){.room-sheet .hs-room-cover{min-height:96px!important}.room-sheet .hs-room-seats{gap:6px 3px!important;padding:2px 0!important}.room-sheet .hs-room-stage{padding-top:2px!important}.room-sheet .hs-room-seat b{font-size:9px!important}.room-sheet .hs-room-seat small{font-size:8px!important}.room-sheet #room-chat{min-height:42px!important}}
 @media(max-width:380px){.room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{width:31px!important;height:32px!important;min-width:31px!important}.room-sheet .hs-room-tools-row{gap:2px!important}}
+
+
+/* HAMSAT final room correction: restore composer, panel visibility and split room cover/background */
+.room-sheet .hs-room-head{position:relative!important;overflow:visible!important}
+.room-sheet .hs-room-cover{background-image:none!important;background-color:transparent!important}
+.room-sheet .hs-room-title-row{display:flex!important;align-items:center!important;gap:9px!important}
+.room-sheet .hs-room-cover-thumb{width:42px!important;height:42px!important;flex:0 0 42px!important;border-radius:50%!important;border:2px solid #e7cb7d!important;background:linear-gradient(145deg,#302719,#101116)!important;background-size:cover!important;background-position:center!important;box-shadow:0 0 0 3px rgba(212,175,55,.15),0 4px 12px #0008!important;display:grid!important;place-items:center!important;overflow:hidden!important;color:#e8cb7b!important}
+.room-sheet .hs-room-cover-thumb svg{width:18px!important;height:18px!important}
+.room-sheet .hs-room-owner{width:36px!important;height:36px!important;flex:0 0 36px!important}
+.room-sheet .hs-room-owner .avatar{width:34px!important;height:34px!important}
+.room-sheet .hs-room-unified>.hs-room-stage{position:relative!important;flex:0 0 auto!important;min-height:190px!important;overflow:hidden!important;border:0!important;border-radius:0!important;background-color:#10121b!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;padding:8px 8px 7px!important}
+.room-sheet .hs-room-unified>.hs-room-chat-area{position:relative!important;display:flex!important;flex:1 1 0!important;min-height:0!important;max-height:none!important;flex-direction:column!important;overflow:hidden!important;padding:3px 8px 2px!important}
+.room-sheet .hs-room-chat{display:flex!important;flex:1 1 0!important;min-height:35px!important;height:auto!important;max-height:none!important;overflow-y:auto!important}
+.room-sheet .hs-room-bottom-bar{position:relative!important;display:flex!important;flex:0 0 auto!important;flex-direction:column!important;overflow:visible!important;z-index:30!important;padding:4px 8px calc(6px + env(safe-area-inset-bottom))!important}
+.room-sheet .hs-room-compose-wrap{display:block!important;position:relative!important;flex:0 0 auto!important;min-height:43px!important;width:100%!important;overflow:visible!important;visibility:visible!important;opacity:1!important}
+.room-sheet #room-chat-form.hs-room-compose{display:flex!important;visibility:visible!important;opacity:1!important;min-height:40px!important;width:100%!important;position:relative!important;z-index:2!important}
+.room-sheet #room-chat-form input{display:block!important;visibility:visible!important;opacity:1!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;min-height:35px!important;color:#fff!important;caret-color:#f2d98d!important}
+.room-sheet #room-chat-form input::placeholder{color:#c5b997!important;opacity:1!important}
+.room-sheet .hs-room-tools-row{position:relative!important;z-index:3!important}
+.room-sheet .hs-room-panel-backdrop{position:fixed!important;inset:0!important;z-index:180!important;display:block!important}
+.room-sheet .hs-room-panel-backdrop.hidden{display:none!important}
+.room-sheet #room-emoji-panel,.room-sheet #room-gift-panel,.room-sheet #room-game-center{position:fixed!important;left:50%!important;right:auto!important;bottom:0!important;z-index:190!important;transform:translateX(-50%)!important;max-height:72dvh!important;overflow-y:auto!important;pointer-events:auto!important}
+.room-sheet #room-emoji-panel.hidden,.room-sheet #room-gift-panel.hidden,.room-sheet #room-game-center.hidden{display:none!important}
+.room-sheet #room-gift-panel{width:min(100%,520px)!important}
+.room-sheet #room-emoji-panel{width:min(100%,520px)!important}
+.room-sheet #room-game-center{width:min(100%,520px)!important}
+.room-sheet .hs-room-settings .room-cover-picker{display:flex!important;cursor:pointer!important;min-height:48px!important;align-items:center!important;justify-content:center!important}
+.room-sheet .hs-room-settings .room-cover-picker input{display:none!important}
+.room-sheet .hs-room-settings .hs-room-background-picker{display:flex!important}
+@media(max-height:740px){
+ .room-sheet .hs-room-unified>.hs-room-stage{min-height:165px!important}
+ .room-sheet .hs-room-unified>.hs-room-chat-area{min-height:0!important}
+ .room-sheet #room-chat{min-height:28px!important}
+ .room-sheet .hs-room-compose-wrap{min-height:40px!important}
+}
