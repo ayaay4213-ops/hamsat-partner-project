@@ -698,7 +698,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-home-section-head>a{display:flex;align-items:center;gap:5px;color:#e2c36c;font-size:10px}
 .hs-home-section-head>a svg{width:13px;height:13px}
 .hs-home-room-list{display:grid;grid-template-columns:1fr;gap:11px}
-.hs-home-room-list .room-cover{height:86px}
+.hs-home-room-list .room-cover{height:auto!important;aspect-ratio:16/9;min-height:150px;max-height:220px;width:100%}
 .hs-home-room-list .room-card-body{padding:12px 14px}
 .hs-home-room-list .room-description{display:none}
 .hs-home-room-list .room-card-footer{margin-top:9px}
