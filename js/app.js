@@ -547,7 +547,7 @@ async function homeScreen() {
   const hu = $('#home-users');
   if (users.status === 'fulfilled') {
     $('#members-count').textContent = num(users.value.total) + ' عضو';
-    hu.innerHTML = users.value.users.slice(0,12).map(u => '<a href="#/u/' + esc(u.handle) + '" class="hs-home-user">' + avatar(u,56) + '<span>' + esc(u.displayName) + '</span></a>').join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
+    hu.innerHTML = users.value.users.slice(0,12).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user"><span class="hs-home-user-cover" style="${u.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.08),rgba(7,8,12,.38)),url(${JSON.stringify(u.coverUrl)})` : ''}"></span>${avatar(u,56)}<span>${esc(u.displayName)}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
   } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
   icons_();
 }
@@ -596,6 +596,7 @@ async function openRoom(r) {
       </div>
       <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-minimize" class="hs-room-minimize" aria-label="الاحتفاظ بالغرفة" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
     <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><a href="#/games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></a><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
+    </div>
     ${isRoomOwner ? `
       <div id="room-owner-menu" class="hs-room-owner-menu hidden" role="dialog" aria-label="أدوات المضيفة">
         <div class="hs-owner-menu-grabber"></div><div class="hs-owner-menu-title">أدوات الغرفة</div>
@@ -627,7 +628,6 @@ async function openRoom(r) {
         <div class="hs-room-settings-group"><h4>إدارة الأعضاء</h4><p class="hs-room-settings-hint">كتم المتحدث أو إنزاله من المايك أو إخراجه من الغرفة.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div>
         <button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button>
       </section>` : ''}
-    </div>
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
     <button type="button" id="room-gift-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق الهدايا"></button><div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><form id="room-gift-form" class="space-y-3"><div class="flex items-center justify-between gap-2"><label class="label">إلى أحد الجالسين على المايك</label><button type="button" id="room-gift-all" class="hs-gift-all">All</button></div><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-categories" class="hs-room-gift-categories"><button type="button" data-gift-category="app" class="active">هدية التطبيق</button><button type="button" data-gift-category="event">هدية الحدث</button><button type="button" data-gift-category="lucky">الهدايا المحظوظة</button><button type="button" data-gift-category="special">هدية خاصة</button></div><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
@@ -709,7 +709,7 @@ async function openRoom(r) {
         const action=button.dataset.ownerAction;ownerMenu.classList.add('hidden');
         if(action==='settings'){panel.classList.remove('hidden');panel.scrollTop=0;await loadRoomSettings();}
         if(action==='gift')sheet.querySelector('#room-send-gift')?.click();
-        if(action==='games')sheet.querySelector('#room-game-center')?.classList.remove('hidden');
+        if(action==='games')sheet.querySelector('#room-game-center-toggle')?.click();
         if(action==='invite')sheet.querySelector('#room-share')?.click();
         if(action==='share')sheet.querySelector('#room-copy-link')?.click();
       });
