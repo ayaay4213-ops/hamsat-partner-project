@@ -3567,3 +3567,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
   padding: max(env(safe-area-inset-top), 8px) 10px max(env(safe-area-inset-bottom), 8px)!important;
   margin:0!important;overflow:hidden!important;
 }
+
+
+/* HAMSAT room top controls: lift the upper strip so it is fully visible */
+.sheet.room-sheet>.hs-room-canvas{
+  padding-top:max(env(safe-area-inset-top),0px)!important;
+}
+.room-sheet .hs-room-head-row{
+  transform:translateY(-8px)!important;
+}
