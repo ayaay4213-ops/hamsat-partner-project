@@ -7,10 +7,12 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 :root{color-scheme:dark;--gold:#c9a64b;--gold2:#ead59a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1c1a15 0,#090a0d 48%);color:#f7f2e8;font-family:Tajawal,system-ui}.wrap{max-width:1100px;margin:auto;padding:16px}.panel{background:linear-gradient(145deg,#15171c,#101115);border:1px solid #34302a;border-radius:18px;padding:16px;box-shadow:0 12px 36px #0005}.field{width:100%;background:#090a0d;border:1px solid #393e48;border-radius:11px;padding:12px;color:white}.field:focus{outline:1px solid var(--gold)}.btn{background:linear-gradient(120deg,#ead59a,#b88c2d);color:#17140b;border-radius:11px;padding:11px 16px;font-weight:800}.ghost{border:1px solid #51472f;border-radius:11px;padding:10px 14px;color:#ead59a}.muted{color:#aaa39a}.tab{padding:10px 14px;border-radius:10px;border:1px solid #343943;color:#cfc7b7}.tab.active{background:#302713;border-color:var(--gold);color:#f5df9a}.item{border:1px solid #303640;border-radius:13px;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between}.hidden{display:none!important}.stat{border:1px solid #393329;border-radius:14px;padding:14px;background:#0c0d10}.stat b{display:block;font-size:25px;color:#ead59a}.pill{font-size:11px;border:1px solid #65532c;border-radius:99px;padding:3px 8px;color:#ead59a}
+ .admin-menu-button{min-width:44px;min-height:44px;font-size:24px;line-height:1} #admin-menu{position:sticky;top:8px;z-index:50;background:#15171cf5;backdrop-filter:blur(12px)} #admin-menu .tab{flex:1 1 auto}
 </style>
 </head>
 <body><div class="wrap space-y-4">
-<header class="flex flex-wrap items-center justify-between gap-3 py-3"><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
+<header class="flex flex-wrap items-center justify-between gap-3 py-3"><div class="flex items-center gap-3"><button id="admin-menu-toggle" class="ghost text-2xl leading-none" type="button" aria-label="فتح قائمة لوحة الإدارة">☰</button><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
+<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button></nav>
 <div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
 <main id="admin" class="hidden space-y-4">
 <section id="overview" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -22,7 +24,7 @@
 <nav class="flex flex-wrap gap-2">
 <button class="tab active" data-tab="catalog">الإطارات والدخوليات</button>
 <button class="tab" data-tab="gifts">الهدايا</button>
-<button class="tab" data-tab="users">الأعضاء وID</button>
+<button class="tab" data-tab="users">الأعضاء وID</button><button class="tab" data-tab="logins">دخول الأعضاء</button>
 <button class="tab" data-tab="rooms">الغرف</button>
 <button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button>
 </nav>
@@ -76,6 +78,7 @@
 <form id="user-search" class="flex flex-col sm:flex-row gap-2"><input class="field" name="term" placeholder="مثال: 3 أو HAMSAT-000003 أو Silva" required><button class="btn" type="submit">بحث</button></form>
 <div id="user-results" class="space-y-2"><p class="muted text-sm">اكتبي ID أو اسم العضو للبحث.</p></div>
 </section>
+<section id="logins" class="panel space-y-3 hidden"><div><h2 class="text-xl font-bold">إشعارات دخول الأعضاء</h2><p class="muted text-sm">كل تسجيل دخول جديد يظهر هنا مباشرة مع رقم العضو والوقت، دون عرض بيانات الاتصال الخاصة.</p></div><div id="login-events" class="space-y-2"><p class="muted">جارٍ تحميل سجل الدخول...</p></div></section>
 <section id="rooms" class="panel space-y-3 hidden">
 <div><h2 class="text-xl font-bold">الغرف</h2><p class="muted text-sm">قائمة الغرف الحالية ومعرّف كل غرفة وصاحبتها.</p></div>
 <button id="refresh-rooms" class="ghost">تحديث القائمة</button><div id="room-list" class="space-y-2"></div>
