@@ -57,6 +57,15 @@ tailwind.config = { theme: { extend: {
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="HAMSAT">
     <!-- /puter-pwa -->
+    <script>
+      // HAMSAT_PWA_SW_REGISTRATION — scoped to this app only.
+      if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .catch(error => console.warn('HAMSAT offline shell registration failed:', error));
+        }, { once: true });
+      }
+    </script>
 </head>
 <body class="bg-ink-950 text-white font-sans antialiased">
   <div id="app" class="app-shell mx-auto relative min-h-[100dvh] bg-ink-900 flex flex-col">
