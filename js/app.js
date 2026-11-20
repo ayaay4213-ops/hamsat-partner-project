@@ -713,10 +713,15 @@ async function openRoom(r) {
       if(!opening)return;
       try{
         const current=await api.getRoomBackground(r.id);
-        r.backgroundUrl=current.url;
-        pendingSharedBgUrl=current.url;
-        applyRoomBackground(current.url);
-        drawSharedBgPreview(current.url,current.url?'الخلفية المشتركة الحالية':'لا توجد خلفية مخصصة بعد');
+        let currentUrl=current.url;
+        if(!current.exists&&r.backgroundItemId){
+          if(/^https?:\/\//i.test(r.backgroundItemId))currentUrl=r.backgroundItemId;
+          else{const {items}=await api.shopItems();currentUrl=items.find(item=>item.id===r.backgroundItemId)?.image_url||null;}
+        }
+        r.backgroundUrl=currentUrl;
+        pendingSharedBgUrl=currentUrl;
+        applyRoomBackground(currentUrl);
+        drawSharedBgPreview(currentUrl,currentUrl?'الخلفية المشتركة الحالية':'لا توجد خلفية مخصصة بعد');
       }catch(error){drawSharedBgPreview(null,'تعذّر تحميل الخلفية: '+error.message);}
     };
     if(sharedBgOpen)sharedBgOpen.onclick=openSharedBgPanel;
@@ -800,7 +805,7 @@ async function openRoom(r) {
           catalog.innerHTML='<p class="text-xs opacity-60">جارٍ تحميل الخلفيات...</p>';
           try{
             const [catalogResult,inventoryResult,sharedBgResult]=await Promise.all([api.shopItems(),api.inventory(),api.getRoomBackground(r.id)]);
-            const backgrounds=catalogResult.items.filter(item=>item.item_type==='room_background');chosenBackgroundId=sharedBgResult.url||null;chosenBackgroundUrl=sharedBgResult.url||null;applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML=chosenBackgroundUrl?'<img src="'+esc(chosenBackgroundUrl)+'" alt="معاينة خلفية الغرفة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">الخلفية المحفوظة</p>':'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';
+            const backgrounds=catalogResult.items.filter(item=>item.item_type==='room_background');if(sharedBgResult.exists){chosenBackgroundId=sharedBgResult.url||null;chosenBackgroundUrl=sharedBgResult.url||null;}else{chosenBackgroundUrl=/^https?:\/\//i.test(chosenBackgroundId||'')?chosenBackgroundId:(backgrounds.find(item=>item.id===chosenBackgroundId)?.image_url||null);}applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML=chosenBackgroundUrl?'<img src="'+esc(chosenBackgroundUrl)+'" alt="معاينة خلفية الغرفة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">الخلفية المحفوظة</p>':'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';
             const ownedIds=new Set(inventoryResult.items.filter(item=>item.item_type==='room_background'&&(!item.expiresAt||new Date(item.expiresAt).getTime()>Date.now())).map(item=>item.id));
             catalog.innerHTML=backgrounds.length?'<div class="grid grid-cols-2 gap-2">'+backgrounds.map(item=>{const owned=ownedIds.has(item.id);return '<article class="rounded-xl border border-gold-600/30 p-2 text-center"><div class="h-20 rounded-lg overflow-hidden bg-black/30">'+(item.image_url?'<img src="'+esc(item.image_url)+'" alt="'+esc(item.name)+'" class="w-full h-full object-cover">':'<div class="h-full grid place-items-center">🌌</div>')+'</div><b class="block text-xs mt-2">'+esc(item.name)+'</b><small class="text-[10px] text-gold-300">'+(owned?'مملوكة':Number(item.price)===0?'مجانية':num(item.price)+' عملة')+'</small><button type="button" data-room-bg-item="'+esc(item.id)+'" data-owned="'+owned+'" class="btn-ghost w-full mt-2 text-xs">'+(owned?'اختيار':'شراء')+'</button></article>';}).join('')+'</div>':'<p class="text-xs opacity-60">لا توجد خلفيات في المتجر حالياً.</p>';
             catalog.querySelectorAll('[data-room-bg-item]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const item=backgrounds.find(x=>x.id===button.dataset.roomBgItem);if(!item)return;if(button.dataset.owned!=='true'){await api.purchaseShopItem(item.id);toast('تم شراء الخلفية وإضافتها إلى مقتنياتك');button.dataset.owned='true';button.textContent='اختيار';button.closest('article').querySelector('small').textContent='مملوكة';}else{chosenBackgroundFile=null;const galleryInput=sheet.querySelector('#room-background-gallery-file');if(galleryInput)galleryInput.value='';if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}chosenBackgroundId=item.id;chosenBackgroundUrl=item.image_url||null;sheet.querySelector('#room-background-preview').innerHTML=item.image_url?'<img src="'+esc(item.image_url)+'" alt="معاينة خلفية المتجر" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">معاينة — ستُطبّق بعد حفظ الإعدادات</p>':'<div class="h-20 grid place-items-center text-xs">الخلفية المختارة</div>';sheet.querySelector('#room-background-preview').innerHTML=item.image_url?'<img src="'+esc(item.image_url)+'" alt="معاينة خلفية المتجر" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">معاينة — ستُطبّق بعد حفظ الإعدادات</p>':'<div class="h-20 grid place-items-center text-xs">الخلفية المختارة</div>';toast('تم اختيار الخلفية');}}catch(error){toast(error.message,'error');}finally{button.disabled=false;}});
