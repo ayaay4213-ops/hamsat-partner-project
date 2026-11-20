@@ -537,61 +537,36 @@ function onboardingScreen() {
 }
 
 async function homeScreen() {
-  const p = state.profile;
-  screen.innerHTML = '<div class="hs-home fade-in">' +
-    '<header class="hs-home-top"><div class="hs-home-brand">' +
-    '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' +
-    '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
-    '<div><span>أهلًا بكِ في HAMSAT</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
-    '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
-    '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
-    '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
-    '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
-    '<div class="hs-home-hero-art hs-home-hero-art-large"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
-    '<section class="hs-home-shortcuts">' +
-    '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
-    '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
-    '<a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b><small>زيني حسابك</small></a>' +
-    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a><a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b><small>تحديات ممتعة</small></a></section>' +
-    '<section class="hs-home-section"><div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>' +
-    '<div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></section>' +
-    '<section class="hs-home-members"><div class="hs-home-section-head"><div><span>NEW FRIENDS</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>' +
-    '<div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div><div class="skeleton w-16 h-20 shrink-0"></div></div></section>' +
-    '<div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div></div>';
+  screen.innerHTML = `
+    <main class="hs-home hs-home-minimal fade-in" dir="rtl">
+      <div class="hs-home-ad-slot" role="region" aria-label="مساحة إعلانية"></div>
+      <section class="hs-home-section hs-home-minimal-rooms" aria-label="الغرف الصوتية">
+        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-12"></div><div class="skeleton h-12"></div></div>
+      </section>
+    </main>`;
   icons_();
-  const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
-  const hr = $('#home-rooms'); if (!hr) return;
-  if (rooms.status === 'fulfilled') {
-    const list = rooms.value.rooms.slice(0, 3);
-    hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
-    const myRoom = rooms.value.rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
-    const homeCreate = screen.querySelector('.hs-home-create');
-    if (myRoom && homeCreate) { homeCreate.href = '#/rooms'; homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك'; homeCreate.onclick = (event) => { event.preventDefault(); openRoom(myRoom); }; icons_(); }
-    bindRoomCards(hr, rooms.value.rooms);
-  } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason.message);
-  const hu = $('#home-users');
-  if (users.status === 'fulfilled') {
-    $('#members-count').textContent = num(users.value.total) + ' عضو';
-    hu.innerHTML = users.value.users.slice(0,12).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user"><span class="hs-home-user-cover" style="${u.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.08),rgba(7,8,12,.38)),url(${JSON.stringify(u.coverUrl)})` : ''}"></span>${avatar(u,56)}<span>${esc(u.displayName)}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
-  } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
-  icons_();
+  const hr = $('#home-rooms');
+  try {
+    const rooms = await api.rooms();
+    if (!hr || !screen.contains(hr)) return;
+    const list = rooms.rooms || [];
+    hr.innerHTML = list.length
+      ? list.map(roomCard).join('')
+      : '<div class="hs-home-no-rooms">لا توجد غرف حالياً</div>';
+    bindRoomCards(hr, list);
+    icons_();
+  } catch (err) {
+    if (hr) hr.innerHTML = '<div class="hs-home-no-rooms">تعذّر تحميل الغرف، حاولي تحديث الصفحة</div>';
+  }
 }
 function emptyBox(icon, title, sub = '') {
   return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
 }
 
 function roomCard(r) {
-  const vip = Number(r.ownerVipLevel || 0) > 0;
-  return `<button data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-square text-right overflow-hidden transition" aria-label="دخول غرفة ${esc(r.title)}">
-    <div class="hs-room-discovery-media">
-      ${r.coverUrl ? `<img src="${esc(r.coverUrl)}" alt="${esc(r.title)}" loading="lazy">` : '<div class="hs-room-discovery-placeholder"><i data-lucide="audio-lines"></i></div>'}
-      <span class="hs-room-discovery-live"><i></i> مباشرة</span>
-      ${vip ? '<span class="hs-room-discovery-vip"><i data-lucide="crown"></i> VIP</span>' : ''}
-    </div>
-    <div class="hs-room-discovery-body">
-      <b class="hs-home-room-square-title">${esc(r.title)}</b>
-      <span class="hs-room-discovery-enter" aria-label="دخول الغرفة" title="دخول الغرفة"><i data-lucide="log-in"></i></span>
-    </div>
+  return `<button type="button" data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-minimal" aria-label="دخول غرفة ${esc(r.title)}">
+    <span class="hs-home-room-minimal-title">${esc(r.title)}</span>
+    <span class="hs-room-discovery-enter" aria-label="دخول الغرفة" title="دخول الغرفة"><i data-lucide="log-in"></i></span>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
