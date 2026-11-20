@@ -596,6 +596,34 @@ if (fs.existsSync(adminHtmlPath)) {
   }
 }
 
+const appApiPath = path.join(root, 'js/api.js');
+if (fs.existsSync(appRoomPath) && fs.existsSync(appApiPath)) {
+  const appSource = fs.readFileSync(appRoomPath, 'utf8');
+  const apiSource = fs.readFileSync(appApiPath, 'utf8');
+  const apiMethods = new Set([...apiSource.matchAll(/^\\s{2}([A-Za-z_$][\\w$]*)\\s*:\\s*(?:async\\s*)?\\(/gm)].map(match => match[1]));
+  const calledMethods = new Set([...appSource.matchAll(/\\bapi\\.([A-Za-z_$][\\w$]*)\\s*\\(/g)].map(match => match[1]));
+  for (const method of calledMethods) {
+    if (!apiMethods.has(method)) errors.push(`App calls an API method that is not defined: api.${method}`);
+  }
+}
+if (fs.existsSync(adminJsPath)) {
+  const adminJs = fs.readFileSync(adminJsPath, 'utf8');
+  const selectedAssetsDeclarations = (adminJs.match(/const selectedAssets=/g) || []).length;
+  if (selectedAssetsDeclarations !== 1) errors.push('Super Admin asset selection state must be declared exactly once');
+}
+if (fs.existsSync(adminHtmlPath)) {
+  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  const adminJs = fs.existsSync(adminJsPath) ? fs.readFileSync(adminJsPath, 'utf8') : '';
+  const tabs = [...adminHtml.matchAll(/data-tab="([^"]+)"/g)].map(match => match[1]);
+  for (const tab of tabs) {
+    if (!new RegExp('id="' + tab.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\if (errors.length) {
+  console.error('Hamsat validation failed:');') + '"').test(adminHtml)) {
+      errors.push(`Super Admin tab has no matching content section: ${tab}`);
+    }
+    if (!adminJs.includes("'" + tab + "'")) errors.push(`Super Admin boot/tab handler is missing section: ${tab}`);
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
