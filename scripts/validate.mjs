@@ -616,10 +616,7 @@ if (fs.existsSync(adminHtmlPath)) {
   const adminJs = fs.existsSync(adminJsPath) ? fs.readFileSync(adminJsPath, 'utf8') : '';
   const tabs = [...adminHtml.matchAll(/data-tab="([^"]+)"/g)].map(match => match[1]);
   for (const tab of tabs) {
-    if (!new RegExp('id="' + tab.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\if (errors.length) {
-  console.error('Hamsat validation failed:');') + '"').test(adminHtml)) {
-      errors.push(`Super Admin tab has no matching content section: ${tab}`);
-    }
+    if (!adminHtml.includes('id="' + tab + '"')) errors.push(`Super Admin tab has no matching content section: ${tab}`);
     if (!adminJs.includes("'" + tab + "'")) errors.push(`Super Admin boot/tab handler is missing section: ${tab}`);
   }
 }
