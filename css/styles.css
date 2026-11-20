@@ -3814,3 +3814,38 @@ button, a { -webkit-tap-highlight-color: transparent; }
   padding:20px 12px!important;text-align:center!important;color:#b8ad91!important;
   font-size:13px!important;border:1px solid rgba(212,175,55,.16)!important;border-radius:10px!important;
 }
+
+
+/* HAMSAT home room tiles: keep room artwork, title and enter action only */
+#screen .hs-home-room-photo{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important;border:1px solid rgba(212,175,55,.22)!important;border-radius:13px!important;background:#111116!important;min-width:0!important;text-align:right!important}
+#screen .hs-home-room-photo-media{display:block!important;position:relative!important;width:100%!important;aspect-ratio:1.55!important;overflow:hidden!important;background:#17151c!important}
+#screen .hs-home-room-photo-media img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important}
+#screen .hs-home-room-photo-placeholder{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;color:#c8a94c!important;background:radial-gradient(circle at 50% 40%,#3a3040,#131219 72%)!important}
+#screen .hs-home-room-photo-placeholder svg{width:34px!important;height:34px!important}
+#screen .hs-home-room-photo-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;min-height:44px!important;padding:7px 10px!important;color:#f3e5bc!important}
+#screen .hs-home-room-photo-footer b{font-size:13px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#screen .hs-home-room-photo .hs-room-discovery-enter{display:grid!important;place-items:center!important;flex:0 0 28px!important;width:28px!important;height:28px!important;border-radius:50%!important;color:#e7c65a!important;background:rgba(212,175,55,.1)!important}
+#screen .hs-home-room-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+@media(min-width:600px){#screen .hs-home-room-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+#screen .hs-moments-only{padding:16px 13px 100px!important;min-height:100dvh!important;background:#08090c!important}
+#screen .hs-moments-top{margin-bottom:14px!important}
+#screen .hs-moments-top h1{font-size:20px!important;font-weight:800!important;color:#f2d77b!important}
+#screen .hs-moments-top p{font-size:12px!important;color:#a99b83!important;margin-top:4px!important}
+#screen .hs-moments-only .hs-moment-compose{display:grid!important;gap:10px!important;margin-bottom:18px!important;padding:12px!important;border:1px solid rgba(212,175,55,.2)!important;border-radius:14px!important;background:#141319!important}
+#screen .hs-moments-only .hs-moment-compose textarea{width:100%!important;min-height:72px!important;background:#0c0b10!important;color:#f6eddb!important;border:1px solid #37303a!important;border-radius:9px!important;padding:10px!important}
+#screen .hs-moments-only .hs-moment-card{margin-bottom:14px!important;padding:12px!important;border:1px solid rgba(212,175,55,.2)!important;border-radius:14px!important;background:#15131a!important;color:#f4ead8!important}
+#screen .hs-moments-only .hs-moment-card>img{width:100%!important;max-height:420px!important;object-fit:cover!important;border-radius:10px!important;margin-bottom:10px!important}
+#screen .hs-moments-only .hs-moment-card>p{font-size:14px!important;white-space:pre-wrap!important;margin:7px 0!important}
+#screen .hs-moments-only .hs-moment-card>small{display:block!important;color:#9b8f7a!important;font-size:11px!important}
+#screen .hs-moment-actions{display:flex!important;gap:18px!important;align-items:center!important;margin-top:12px!important;padding-top:10px!important;border-top:1px solid #302a32!important}
+#screen .hs-moment-actions button{display:inline-flex!important;align-items:center!important;gap:6px!important;color:#c9bda9!important;font-size:13px!important}
+#screen .hs-moment-actions button svg{width:19px!important;height:19px!important}
+#screen .hs-moment-actions button.liked{color:#f06a8b!important}
+#screen .hs-moment-actions button.liked svg{fill:rgba(240,106,139,.2)!important}
+#screen .hs-moment-comments{display:none!important;padding:8px 0!important;font-size:12px!important}
+#screen .hs-moment-comments.expanded{display:block!important}
+#screen .hs-moment-comments p{padding:5px 0!important;border-bottom:1px solid #29242d!important}
+#screen .hs-moment-comment-form{display:flex!important;gap:7px!important;margin-top:8px!important}
+#screen .hs-moment-comment-form input{flex:1!important;min-width:0!important;background:#0b0a0f!important;border:1px solid #37303a!important;border-radius:20px!important;padding:8px 12px!important;color:#fff!important;font-size:12px!important}
+#screen .hs-moment-comment-form button{width:36px!important;height:36px!important;display:grid!important;place-items:center!important;border-radius:50%!important;background:#b99439!important;color:#17120a!important}
+#screen .hs-moment-delete{margin-top:10px!important;color:#b9a6a6!important;font-size:11px!important}
