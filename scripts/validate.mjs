@@ -559,6 +559,27 @@ if (fs.existsSync(html)) {
   }
 }
 
+const adminJsPath = path.join(root, 'js/admin.js');
+const adminHtmlPath = path.join(root, 'admin.html');
+if (fs.existsSync(adminJsPath)) {
+  const adminJs = fs.readFileSync(adminJsPath, 'utf8');
+  if (!adminJs.includes('const sections=[') || !adminJs.includes('await Promise.all(sections.map(async([label,load])=>')) {
+    errors.push('Super Admin boot must isolate failures by section instead of failing as one batch');
+  }
+  if (!adminJs.includes("console.error('HAMSAT admin section failed:',label,error)")) {
+    errors.push('Super Admin section failures must be logged with their section name');
+  }
+  if (!adminJs.includes("$('#'+ids[i]).textContent='—'")) {
+    errors.push('Super Admin statistics must show a safe fallback when an individual count fails');
+  }
+}
+if (fs.existsSync(adminHtmlPath)) {
+  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  if (!adminHtml.includes('js/admin.js?v=20261120-admin-section-isolation-v1')) {
+    errors.push('Super Admin script must use the current cache-busting version');
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
