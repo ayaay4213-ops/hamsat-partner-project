@@ -1953,3 +1953,160 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   border-top:0!important;
   box-shadow:none!important;
 }
+
+
+/* HAMSAT room full-screen composition: preserve seat/mic dimensions, compact vertical rhythm */
+.sheet.room-sheet{
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  padding:0!important;
+  background:#080b13!important;
+  border:0!important;
+}
+.room-sheet>.hs-room-canvas{
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:hidden!important;
+  padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)!important;
+  background-color:#090d18!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  isolation:isolate!important;
+}
+.room-sheet .hs-room-head{
+  flex:0 0 auto!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.room-sheet .hs-room-cover{
+  min-height:clamp(116px,19dvh,158px)!important;
+  padding:8px 9px 7px!important;
+  border:0!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  gap:8px!important;
+}
+.room-sheet .hs-room-head-row{min-height:32px!important}
+.room-sheet .hs-room-close{width:32px!important;height:32px!important;border:0!important}
+.room-sheet .hs-room-title-row{gap:8px!important}
+.room-sheet .hs-room-owner{padding:2px!important}
+.room-sheet .hs-room-title-row h2{font-size:17px!important;line-height:1.25!important}
+.room-sheet .hs-room-title-row p{margin-top:2px!important;font-size:10px!important}
+.room-sheet .hs-room-meta{
+  min-height:34px!important;
+  padding:5px 2px!important;
+  gap:8px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  flex-wrap:nowrap!important;
+}
+.room-sheet .hs-room-meta-actions{gap:5px!important}
+.room-sheet .hs-room-meta-actions button{width:27px!important;height:27px!important;border:0!important;background:rgba(0,0,0,.18)!important}
+.room-sheet .hs-room-quick-actions{
+  display:flex!important;
+  gap:7px!important;
+  margin:0!important;
+  padding:3px 0 5px!important;
+  border:0!important;
+  background:transparent!important;
+}
+.room-sheet .hs-room-quick-actions>a,
+.room-sheet .hs-room-quick-actions>button{width:29px!important;height:29px!important;border:0!important}
+.room-sheet .hs-room-unified{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  gap:0!important;
+  min-height:0!important;
+  width:100%!important;
+  margin:0!important;
+  padding:2px 0 0!important;
+  overflow:hidden!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage,
+.room-sheet .hs-room-unified>.hs-room-people,
+.room-sheet .hs-room-unified>.hs-room-chat-area{
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:3px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-section-title,
+.room-sheet .hs-room-chat-heading{min-height:19px!important;margin:0!important;padding:0 2px!important;border:0!important;background:transparent!important}
+.room-sheet .hs-room-seats{gap:5px 8px!important}
+.room-sheet .hs-room-seat{
+  min-height:0!important;
+  padding:3px 2px 2px!important;
+  gap:3px!important;
+  border:0!important;
+  background:rgba(6,10,19,.18)!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-people{padding-top:2px!important;padding-bottom:2px!important}
+.room-sheet .hs-room-members{gap:4px!important;max-height:34px!important;overflow:hidden!important}
+.room-sheet .hs-room-person{padding:3px 6px!important;border:0!important;background:rgba(4,8,16,.2)!important}
+.room-sheet .hs-room-chat-area{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:2px 0 0!important;
+}
+.room-sheet .hs-room-chat-tabs{margin:2px 0!important}
+.room-sheet .hs-room-chat{
+  flex:1 1 auto!important;
+  min-height:28px!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  padding:3px 2px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:rgba(3,8,18,.12)!important;
+}
+.room-sheet .hs-room-bottom-bar{
+  position:relative!important;
+  flex:0 0 auto!important;
+  bottom:auto!important;
+  padding:5px 0 calc(4px + env(safe-area-inset-bottom))!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.room-sheet .hs-room-tools-row{gap:5px!important;margin:0 0 5px!important}
+.room-sheet .hs-room-tools-row button{height:37px!important}
+.room-sheet .hs-room-compose-wrap{margin:0!important;padding:3px!important;border:0!important;background:rgba(3,8,18,.38)!important}
+.room-sheet .hs-room-compose input{padding:8px 10px!important}
+.room-sheet .hs-room-compose button{width:36px!important;height:34px!important}
+.room-sheet .hs-room-stage-note{margin-top:3px!important;padding:3px 5px!important}
+.room-sheet .hs-room-panel-backdrop{position:fixed!important}
+@media(max-height:740px){
+ .room-sheet .hs-room-cover{min-height:108px!important;padding-top:5px!important;padding-bottom:4px!important}
+ .room-sheet .hs-room-title-row h2{font-size:15px!important}
+ .room-sheet .hs-room-meta{min-height:29px!important;padding:2px!important}
+ .room-sheet .hs-room-quick-actions{padding:1px 0 3px!important}
+ .room-sheet .hs-room-unified>.hs-room-stage,
+ .room-sheet .hs-room-unified>.hs-room-people{padding-top:1px!important;padding-bottom:1px!important}
+ .room-sheet .hs-room-tools-row button{height:34px!important}
+}
