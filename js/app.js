@@ -582,22 +582,14 @@ function emptyBox(icon, title, sub = '') {
 
 function roomCard(r) {
   const vip = Number(r.ownerVipLevel || 0) > 0;
-  const count = Number.isFinite(Number(r.memberCount)) ? num(r.memberCount) : '—';
-  return `<button data-room="${esc(r.id)}" class="room-card hs-room-discovery-card text-right overflow-hidden transition">
+  return `<button data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-square text-right overflow-hidden transition" aria-label="دخول غرفة ${esc(r.title)}">
     <div class="hs-room-discovery-media">
       ${r.coverUrl ? `<img src="${esc(r.coverUrl)}" alt="${esc(r.title)}" loading="lazy">` : '<div class="hs-room-discovery-placeholder"><i data-lucide="audio-lines"></i></div>'}
-      <div class="hs-room-discovery-shade"></div>
       <span class="hs-room-discovery-live"><i></i> مباشرة</span>
-      <span class="hs-room-discovery-topic">${esc(r.topic)}</span>
       ${vip ? '<span class="hs-room-discovery-vip"><i data-lucide="crown"></i> VIP</span>' : ''}
-      ${r.eventBadge ? '<span class="hs-room-discovery-event">'+esc(r.eventBadge)+'</span>' : ''}
     </div>
     <div class="hs-room-discovery-body">
-      <div class="hs-room-discovery-owner">
-        ${avatar({displayName:r.ownerName,color:r.ownerColor},38)}
-        <div class="min-w-0 flex-1"><b>${esc(r.title)}</b><small>بواسطة ${esc(r.ownerName)}</small></div>
-      </div>
-      <div class="hs-room-discovery-meta"><span><i data-lucide="users"></i>${count} موجود</span><span><i data-lucide="mic-2"></i>${esc(r.seatLimit || 8)} مقاعد</span></div>
+      <b class="hs-home-room-square-title">${esc(r.title)}</b>
       <span class="hs-room-discovery-enter" aria-label="دخول الغرفة" title="دخول الغرفة"><i data-lucide="log-in"></i></span>
     </div>
   </button>`;
@@ -711,12 +703,24 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const canvas=sheet.querySelector('.hs-room-canvas');
-      if(!canvas)return;
-      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
-      canvas.style.setProperty('background-size','cover','important');
-      canvas.style.setProperty('background-position','center center','important');
-      canvas.style.setProperty('background-repeat','no-repeat','important');
+      const stage=sheet.querySelector('.hs-room-stage');
+      if(!stage)return;
+      let image=stage.querySelector(':scope > .hs-room-shared-bg');
+      if(!url){
+        image?.remove();
+        stage.classList.remove('has-shared-background');
+        return;
+      }
+      if(!image){
+        image=document.createElement('img');
+        image.className='hs-room-shared-bg';
+        image.alt='';
+        image.setAttribute('aria-hidden','true');
+        image.draggable=false;
+        stage.prepend(image);
+      }
+      image.src=String(url);
+      stage.classList.add('has-shared-background');
     };
     applyRoomBackground(null);
     if(r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))applyRoomBackground(r.backgroundItemId);else api.shopItems().then(({items})=>applyRoomBackground(items.find(item=>item.id===r.backgroundItemId)?.image_url||null)).catch(()=>{});}
@@ -907,7 +911,7 @@ async function openRoom(r) {
     };
     let roomJoinedAt=Date.now();
     const drawMessages=async()=>{
-      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
@@ -1466,7 +1470,7 @@ function profileView(p, own) {
     </div>`;
   return `
     <section class="hs-profile-page" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
-      <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl)})` : ''}">
+      <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.58)),url(${JSON.stringify(p.coverUrl)});background-size:cover;background-position:center;background-repeat:no-repeat` : ''}">
         <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
       </div>
       <div class="hs-profile-main">
