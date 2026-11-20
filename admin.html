@@ -24,7 +24,7 @@
 <button class="tab" data-tab="gifts">الهدايا</button>
 <button class="tab" data-tab="users">الأعضاء وID</button>
 <button class="tab" data-tab="rooms">الغرف</button>
-<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button>
+<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="staff">المسؤولون</button>
 </nav>
 <section id="catalog" class="panel space-y-4">
 <div><h2 class="text-xl font-bold">إدارة المقتنيات والتأثيرات</h2><p class="muted text-sm">إضافة عناصر المتجر وتحديد السعر والنوع وإظهارها أو إخفاؤها.</p></div>
@@ -139,5 +139,24 @@
 <div><h2 class="text-xl font-bold">بلاغات المستخدمين والغرف</h2><p class="muted text-sm">راجعي البلاغات وغيّري حالتها بعد اتخاذ الإجراء المناسب.</p></div>
 <div id="report-list" class="space-y-2"></div>
 </section>
+<section id="staff" class="panel space-y-4 hidden">
+  <div><h2 class="text-xl font-bold">المسؤولون وصلاحياتهم</h2><p class="muted text-sm">ابحثي عن عضو ثم اختاري صلاحيات محددة. لا تمنح هذه الصلاحيات وصولاً للمحفظة أو الشحن أو السحب أو الوكالات أو إعدادات السوبر أدمن.</p></div>
+  <form id="staff-search" class="flex flex-col sm:flex-row gap-2"><input id="staff-search-term" class="field" name="term" placeholder="ID العضو أو اسم المستخدم أو الاسم الظاهر" required><button class="btn" type="submit">بحث عن عضو</button></form>
+  <div id="staff-candidates" class="space-y-2"><p class="muted text-sm">ابحثي عن عضو لإسناد صلاحيات محدودة له.</p></div>
+  <div id="staff-selected-panel" class="border border-amber-300/20 rounded-xl p-4 space-y-3 hidden">
+    <div><p class="muted text-xs">العضو المحدد</p><b id="staff-selected-name"></b><p id="staff-selected-id" class="muted text-xs"></p></div>
+    <form id="staff-form" class="space-y-3">
+      <div class="grid sm:grid-cols-2 gap-3">
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="staff-permission" value="room_moderation" class="mt-1"> <span><b>إشراف الغرف</b><small class="block muted">مساعدة في إدارة سلوك الغرف والمشاركين</small></span></label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="staff-permission" value="report_review" class="mt-1"> <span><b>مراجعة البلاغات</b><small class="block muted">مراجعة البلاغات واتخاذ الإجراء المسموح</small></span></label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="staff-permission" value="member_support" class="mt-1"> <span><b>مساعدة الأعضاء</b><small class="block muted">دعم الأعضاء دون الوصول لبياناتهم الحساسة</small></span></label>
+        <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="staff-permission" value="event_management" class="mt-1"> <span><b>إدارة الفعاليات</b><small class="block muted">إعداد الفعاليات ومتابعتها</small></span></label>
+      </div>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="staff-active" checked> تفعيل صلاحيات المسؤول</label>
+      <button class="btn w-full" type="submit">حفظ صلاحيات المسؤول</button>
+    </form>
+  </div>
+  <div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">المسؤولون الحاليون</h3><div id="staff-list" class="space-y-2"><p class="muted text-sm">جارٍ التحميل...</p></div></div>
+</section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261120-admin-bomb-validation-v1"></script></body></html>
+<script type="module" src="js/admin.js?v=20261120-shared-background-staff-pwa-v1"></script></body></html>
