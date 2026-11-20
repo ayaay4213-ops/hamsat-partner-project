@@ -598,7 +598,7 @@ function roomCard(r) {
         <div class="min-w-0 flex-1"><b>${esc(r.title)}</b><small>بواسطة ${esc(r.ownerName)}</small></div>
       </div>
       <div class="hs-room-discovery-meta"><span><i data-lucide="users"></i>${count} موجود</span><span><i data-lucide="mic-2"></i>${esc(r.seatLimit || 8)} مقاعد</span></div>
-      <div class="hs-room-discovery-enter">دخول الغرفة <i data-lucide="arrow-left"></i></div>
+      <span class="hs-room-discovery-enter" aria-label="دخول الغرفة" title="دخول الغرفة"><i data-lucide="log-in"></i></span>
     </div>
   </button>`;
 }
