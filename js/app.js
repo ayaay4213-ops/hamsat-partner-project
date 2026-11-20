@@ -581,20 +581,24 @@ function emptyBox(icon, title, sub = '') {
 }
 
 function roomCard(r) {
-  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition">
-    <div class="room-cover" ${r.coverUrl ? `style="background-image:linear-gradient(180deg,rgba(4,5,8,.12),rgba(4,5,8,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
-      <div class="room-cover-glow"></div>
-      <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
-      <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
-      <span class="room-cover-topic">${esc(r.topic)}</span>
+  const vip = Number(r.ownerVipLevel || 0) > 0;
+  const count = Number.isFinite(Number(r.memberCount)) ? num(r.memberCount) : '—';
+  return `<button data-room="${esc(r.id)}" class="room-card hs-room-discovery-card text-right overflow-hidden transition">
+    <div class="hs-room-discovery-media">
+      ${r.coverUrl ? `<img src="${esc(r.coverUrl)}" alt="${esc(r.title)}" loading="lazy">` : '<div class="hs-room-discovery-placeholder"><i data-lucide="audio-lines"></i></div>'}
+      <div class="hs-room-discovery-shade"></div>
+      <span class="hs-room-discovery-live"><i></i> مباشرة</span>
+      <span class="hs-room-discovery-topic">${esc(r.topic)}</span>
+      ${vip ? '<span class="hs-room-discovery-vip"><i data-lucide="crown"></i> VIP</span>' : ''}
+      ${r.eventBadge ? '<span class="hs-room-discovery-event">'+esc(r.eventBadge)+'</span>' : ''}
     </div>
-    <div class="room-card-body">
-      <div class="flex items-center gap-2 min-w-0">
-        <div class="min-w-0 flex-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><p class="text-xs text-[#b7b2a5] mt-1 truncate">بواسطة ${esc(r.ownerName)}</p></div>
+    <div class="hs-room-discovery-body">
+      <div class="hs-room-discovery-owner">
         ${avatar({displayName:r.ownerName,color:r.ownerColor},38)}
+        <div class="min-w-0 flex-1"><b>${esc(r.title)}</b><small>بواسطة ${esc(r.ownerName)}</small></div>
       </div>
-      <p class="room-description">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف ومشاركة الأحاديث')}</p>
-      <div class="room-card-footer"><span><i data-lucide="clock-3"></i>${timeAgo(r.createdAt)}</span><span class="room-enter">دخول الغرفة <i data-lucide="arrow-left"></i></span></div>
+      <div class="hs-room-discovery-meta"><span><i data-lucide="users"></i>${count} موجود</span><span><i data-lucide="mic-2"></i>${esc(r.seatLimit || 8)} مقاعد</span></div>
+      <div class="hs-room-discovery-enter">دخول الغرفة <i data-lucide="arrow-left"></i></div>
     </div>
   </button>`;
 }
@@ -1164,7 +1168,7 @@ async function roomsScreen(params) {
     draw();
   });
   try {
-    rooms = (await api.rooms()).rooms;const ownedRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());const roomAction=$('#new-room');if(ownedRoom&&roomAction){roomAction.id='my-room-enter';roomAction.innerHTML='<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';roomAction.onclick=()=>openRoom(ownedRoom);icons_();}else if(roomAction){roomAction.onclick=newRoomSheet;}draw();
+    rooms = (await api.rooms()).rooms;try{const counts=await api.roomMemberCounts(rooms.map(room=>room.id));rooms=rooms.map(room=>({...room,memberCount:counts[room.id]??0}));}catch(countError){console.warn('Room member count RPC not yet migrated:',countError);rooms=rooms.map(room=>({...room,memberCount:null}));}const ownedRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());const roomAction=$('#new-room');if(ownedRoom&&roomAction){roomAction.id='my-room-enter';roomAction.innerHTML='<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';roomAction.onclick=()=>openRoom(ownedRoom);icons_();}else if(roomAction){roomAction.onclick=newRoomSheet;}draw();
     const inviteId=params.get('invite');
     if(inviteId){
       const {room}=await api.roomById(inviteId);
