@@ -105,21 +105,14 @@ tailwind.config = { theme: { extend: {
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         const isAndroid = /android/i.test(navigator.userAgent);
         if (isStandalone()) return;
-        // Keep a visible manual-install path on Android when Chrome does not emit
-        // beforeinstallprompt (for example, before engagement criteria are met).
-        if (isAndroid) button.hidden = false;
+        // Show the install control only when the browser exposes a real install prompt.
         window.addEventListener('beforeinstallprompt', event => {
           event.preventDefault();
           installEvent = event;
           button.hidden = false;
         });
         button.addEventListener('click', async () => {
-          if (!installEvent) {
-            alert(isAndroid
-              ? 'لتثبيت همسات: افتحي قائمة Chrome (⋮) ثم اختاري «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، افتحي الرابط في Chrome وحدّثي الصفحة بعد التأكد من اتصال الإنترنت.'
-              : 'افتحي قائمة المتصفح ثم اختاري «إضافة إلى الشاشة الرئيسية» لتثبيت همسات.');
-            return;
-          }
+          if (!installEvent) return;
           const promptEvent = installEvent;
           installEvent = null;
           try {
