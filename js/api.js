@@ -346,7 +346,7 @@ export const api = {
     const { data, error } = await client().from('room_backgrounds')
       .select('image_url,updated_at,updated_by').eq('room_id', roomId).maybeSingle();
     fail(error);
-    return { url: data?.image_url || null, updatedAt: data?.updated_at || null };
+    return { exists: Boolean(data), url: data?.image_url || null, updatedAt: data?.updated_at || null };
   },
   setRoomBackground: async (roomId, imageUrl) => {
     const user = await currentUser();
