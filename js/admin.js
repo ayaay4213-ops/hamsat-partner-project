@@ -195,8 +195,7 @@ async function searchStaffUsers(term){
  const {data,error}=await q;if(error)throw error;
  const root=$('#staff-candidates');
  root.innerHTML=(data||[]).length?(data||[]).map(x=>'<button type="button" class="item w-full text-right" data-staff-user="'+esc(x.id)+'"><span><b>'+esc(x.display_name||'عضو')+'</b><small class="block muted">HAMSAT-'+esc(x.public_id||'—')+' · @'+esc(x.handle||'—')+'</small></span><span class="pill">اختيار</span></button>').join(''):'<p class="muted text-sm">لم يتم العثور على عضو مطابق.</p>';
- root.querySelectorAll('[data-staff-user]').forEach(b=>b.onclick=()=>{const user=data.find(x=>x.id===b.dataset.staffUser);if(user){const existing=(window.hamsatStaffRoles||[]).find(x=>x.user_id===user.id);selectStaffUser(user,existing?.permissions||[],existing?.active!==false);}});
- window.hamsatStaffRoles=data||[];
+ root.querySelectorAll('[data-staff-user]').forEach(b=>b.onclick=async()=>{const user=data.find(x=>x.id===b.dataset.staffUser);if(!user)return;b.disabled=true;try{const {data:role,error}=await supabase.from('staff_roles').select('permissions,active').eq('user_id',user.id).maybeSingle();if(error)throw error;selectStaffUser(user,role?.permissions||[],role?.active!==false);}catch(err){message(err.message,true);}finally{b.disabled=false;}});
 }
 async function loadUsers(term=''){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
