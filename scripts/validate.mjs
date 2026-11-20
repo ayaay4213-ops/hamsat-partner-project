@@ -667,6 +667,45 @@ if (!fs.existsSync(oneRoomMigrationPath)) {
   }
 }
 
+
+const integratedRoomPath = path.join(root, 'js/app.js');
+const integratedApiPath = path.join(root, 'js/api.js');
+const integratedCssPath = path.join(root, 'css/styles.css');
+const integratedHtmlPath = path.join(root, 'index.html');
+if (fs.existsSync(integratedRoomPath)) {
+  const js = fs.readFileSync(integratedRoomPath, 'utf8');
+  for (const token of ['hs-room-unified','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
+    if (!js.includes(token)) errors.push('Missing integrated room, join-time chat or independent friends loading: ' + token);
+  }
+}
+if (fs.existsSync(integratedApiPath)) {
+  const js = fs.readFileSync(integratedApiPath, 'utf8');
+  for (const token of ['roomMessages: async (roomId, since = null)','roomEvents: async (roomId, since = null)',"query.gte('created_at', new Date(since).toISOString())"]) {
+    if (!js.includes(token)) errors.push('Missing join-time filtering for room history: ' + token);
+  }
+}
+if (fs.existsSync(integratedCssPath)) {
+  const css = fs.readFileSync(integratedCssPath, 'utf8');
+  for (const token of ['.hs-room-unified{display:flex!important','.hs-room-unified>.hs-room-chat-area','.hs-home-hero-art-large img','grid-template-columns:repeat(6,minmax(0,1fr))!important']) {
+    if (!css.includes(token)) errors.push('Missing integrated room and moments navigation styling: ' + token);
+  }
+}
+if (fs.existsSync(integratedHtmlPath)) {
+  const htmlSource = fs.readFileSync(integratedHtmlPath, 'utf8');
+  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-6 pb-safe')) {
+    errors.push('Bottom navigation must include the moments shortcut beside the profile tab');
+  }
+}
+const roomHistoryMigrationPath = path.join(root, 'supabase/migrations/0061_room_chat_history_since_join.sql');
+if (!fs.existsSync(roomHistoryMigrationPath)) {
+  errors.push('Missing room chat history since-join migration 0061');
+} else {
+  const sql = fs.readFileSync(roomHistoryMigrationPath, 'utf8').toLowerCase();
+  if (!sql.includes('room_messages.created_at >= m.joined_at') || !sql.includes('auth.uid()')) {
+    errors.push('Room chat history policy must restrict messages to the current membership period');
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
