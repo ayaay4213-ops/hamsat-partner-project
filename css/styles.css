@@ -2586,3 +2586,48 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hs-moment-comment-form{display:flex;gap:7px;margin-top:9px}
 .hs-moment-comment-form input{flex:1;min-width:0;padding:8px 10px;border-radius:9px;background:#090b11;color:#f7f0e3;border:1px solid #c9a64b33;font-size:12px}
 .hs-moment-comment-form button{position:static;padding:7px 12px;border-radius:9px;background:#c9a64b;color:#17140b;font-weight:700;font-size:11px}
+
+
+/* HAMSAT home — calm, compact and uncluttered */
+.hs-home-refined{padding:0 0 24px!important;background:radial-gradient(ellipse at 50% -12%,#6a51251c,transparent 42%),linear-gradient(180deg,#0c0d10,#08090b 72%)!important}
+.hs-home-refined .hs-home-top{position:sticky;top:0;margin:0;padding:10px 16px;min-height:62px;height:auto;background:rgba(10,11,14,.94);border-bottom:1px solid rgba(212,175,55,.13)}
+.hs-home-refined .hs-home-brand{gap:9px}
+.hs-home-refined .hs-home-brand>div:last-child span{font-size:10px;color:#a99f89}
+.hs-home-refined .hs-home-brand>div:last-child strong{font-size:13px;max-width:150px}
+.hs-home-refined .hs-home-avatar{padding:2px}
+.hs-home-refined .hs-home-wallet{padding:7px 10px;font-size:11px}
+.hs-home-refined .hs-home-hero-refined{min-height:148px;margin:13px 14px 12px;padding:17px 16px;border-radius:19px;background:radial-gradient(ellipse at 10% 5%,#b28a2b22,transparent 48%),linear-gradient(120deg,#211d16,#111216 72%);box-shadow:0 9px 22px #0005}
+.hs-home-refined .hs-home-hero-copy{width:100%;max-width:100%}
+.hs-home-refined .hs-home-kicker{font-size:7px;letter-spacing:1.35px}
+.hs-home-refined .hs-home-hero h1{font-size:22px;line-height:1.35;margin:7px 0 5px}
+.hs-home-refined .hs-home-hero p{font-size:10px;line-height:1.65;max-width:260px}
+.hs-home-refined .hs-home-create{margin-top:9px;padding:8px 12px;border-radius:10px;font-size:10px}
+.hs-home-refined .hs-home-orbit{opacity:.5}
+.hs-home-shortcuts-refined{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:0 14px;margin:0 0 19px}
+.hs-home-shortcuts-refined a{gap:5px;padding:9px 2px 8px;border-radius:13px;background:#121316;border-color:#d4af371b}
+.hs-home-shortcuts-refined .shortcut-icon{width:35px;height:35px;border-radius:11px;background:#d4af3712;border-color:#d4af3728}
+.hs-home-shortcuts-refined svg{width:18px;height:18px}
+.hs-home-shortcuts-refined b{font-size:9px}
+.hs-home-shortcuts-refined small{display:none}
+.hs-home-refined .hs-home-section,.hs-home-refined .hs-home-members{padding:0 14px;margin-bottom:18px}
+.hs-home-refined .hs-home-section-head{margin-bottom:9px}
+.hs-home-refined .hs-home-section-head h2{font-size:15px}
+.hs-home-refined .hs-home-section-head>div span{font-size:7px;letter-spacing:1.6px}
+.hs-home-refined .hs-home-section-head>a{font-size:9px}
+.hs-home-refined .hs-home-room-list{gap:9px}
+.hs-home-refined .hs-home-room-list .room-card{border-radius:14px;border-color:#d4af3725;background:#121316}
+.hs-home-refined .hs-home-room-list .room-cover{aspect-ratio:16/7;min-height:104px;max-height:132px}
+.hs-home-refined .hs-home-room-list .room-card-body{padding:9px 11px}
+.hs-home-refined .hs-home-room-list .room-card-body .font-extrabold{font-size:13px}
+.hs-home-refined .hs-home-room-list .room-card-footer{margin-top:7px;padding-top:7px;font-size:9px}
+.hs-home-refined .hs-home-user-list{gap:12px;padding:2px 1px 6px}
+.hs-home-refined .hs-home-user{width:58px;gap:5px}
+.hs-home-refined .hs-home-user>span{font-size:9px;color:#c9bea6}
+.hs-home-refined .hs-home-footnote{font-size:9px;padding:0 0 12px}
+@media(max-width:380px){
+ .hs-home-refined .hs-home-hero-refined{min-height:140px;padding:14px}
+ .hs-home-refined .hs-home-hero h1{font-size:20px}
+ .hs-home-shortcuts-refined{gap:4px;padding-inline:11px}
+ .hs-home-shortcuts-refined a{padding-inline:1px}
+ .hs-home-shortcuts-refined .shortcut-icon{width:32px;height:32px}
+}
