@@ -110,12 +110,12 @@ function openSheet(html, onMount) {
   onMount && onMount(root.querySelector('.sheet'));
 }
 function applyRoomBackground(url) {
-  const stage = $('#room-seats')?.closest('.hs-room-stage');
-  if (!stage) return;
-  let image = stage.querySelector(':scope > .hs-room-shared-bg');
+  const room = $('#room-seats')?.closest('.hs-room-unified');
+  if (!room) return;
+  let image = room.querySelector(':scope > .hs-room-shared-bg');
   if (!url) {
     image?.remove();
-    stage.classList.remove('has-shared-background');
+    room.classList.remove('has-shared-background');
     return;
   }
   if (!image) {
@@ -124,10 +124,10 @@ function applyRoomBackground(url) {
     image.alt = '';
     image.setAttribute('aria-hidden', 'true');
     image.draggable = false;
-    stage.prepend(image);
+    room.prepend(image);
   }
   image.src = String(url);
-  stage.classList.add('has-shared-background');
+  room.classList.add('has-shared-background');
 }
 function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBackgroundChannel) { api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
@@ -703,12 +703,12 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const stage=sheet.querySelector('.hs-room-stage');
-      if(!stage)return;
-      let image=stage.querySelector(':scope > .hs-room-shared-bg');
+      const room=sheet.querySelector('.hs-room-unified');
+      if(!room)return;
+      let image=room.querySelector(':scope > .hs-room-shared-bg');
       if(!url){
         image?.remove();
-        stage.classList.remove('has-shared-background');
+        room.classList.remove('has-shared-background');
         return;
       }
       if(!image){
@@ -717,10 +717,10 @@ async function openRoom(r) {
         image.alt='';
         image.setAttribute('aria-hidden','true');
         image.draggable=false;
-        stage.prepend(image);
+        room.prepend(image);
       }
       image.src=String(url);
-      stage.classList.add('has-shared-background');
+      room.classList.add('has-shared-background');
     };
     applyRoomBackground(null);
     if(r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))applyRoomBackground(r.backgroundItemId);else api.shopItems().then(({items})=>applyRoomBackground(items.find(item=>item.id===r.backgroundItemId)?.image_url||null)).catch(()=>{});}
@@ -1470,7 +1470,8 @@ function profileView(p, own) {
     </div>`;
   return `
     <section class="hs-profile-page" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
-      <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.58)),url(${JSON.stringify(p.coverUrl)});background-size:cover;background-position:center;background-repeat:no-repeat` : ''}">
+      <div class="hs-profile-cover" style="${p.coverUrl ? '' : 'background-image:linear-gradient(135deg,#39283d,#15131d 58%,#292319)'}">
+        ${p.coverUrl ? `<img class="hs-profile-cover-image" src="${esc(p.coverUrl)}" alt="غلاف الحساب" loading="eager" decoding="async">` : ''}
         <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
       </div>
       <div class="hs-profile-main">
