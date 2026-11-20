@@ -2439,3 +2439,40 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .room-sheet .hs-room-bottom-bar{background:rgba(5,8,14,.90)!important;backdrop-filter:blur(8px)!important}
 @media(max-width:360px){.room-sheet #room-seats.hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px 3px!important}.room-sheet #room-seats>.hs-room-seat{min-height:64px!important;padding:3px 1px!important}.room-sheet #room-seats>.hs-room-seat .hs-seat-ring{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;flex-basis:40px!important}}
 @media(max-height:740px){.room-sheet #room-seats.hs-room-seats{grid-auto-rows:minmax(62px,auto)!important;gap:5px 4px!important}.room-sheet #room-seats>.hs-room-seat{min-height:62px!important}.room-sheet #room-seats>.hs-room-seat .hs-seat-ring{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;flex-basis:40px!important}}
+
+
+/* HAMSAT: content sits directly on the room image, with no blurred/solid panels */
+.room-sheet>.hs-room-canvas{
+  background-color:transparent!important;
+  background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage,
+.room-sheet .hs-room-unified>.hs-room-people,
+.room-sheet .hs-room-unified>.hs-room-chat-area,
+.room-sheet .hs-room-unified .hs-room-stage,
+.room-sheet .hs-room-unified .hs-room-people,
+.room-sheet .hs-room-unified .hs-room-chat-area,
+.room-sheet #room-seats>.hs-room-seat{
+  background:transparent!important;
+  background-color:transparent!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage{
+  border-color:transparent!important;
+}
+.room-sheet #room-seats>.hs-room-seat{
+  border-color:transparent!important;
+}
+.room-sheet .hs-room-bottom-bar,
+.room-sheet .hs-room-bottom-bar *{
+  -webkit-backdrop-filter:none!important;
+}
+.room-sheet .hs-room-bottom-bar{
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  border-color:transparent!important;
+  backdrop-filter:none!important;
+}
