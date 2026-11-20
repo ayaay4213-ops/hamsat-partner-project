@@ -661,7 +661,7 @@ async function openRoom(r) {
         </div>
         <p id="voice-status" class="hs-room-voice-status sr-only" role="status">الصوت غير متصل</p>
         <div class="hs-room-compose-wrap">
-          <button type="button" id="room-emoji-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق التفاعلات"></button><div id="room-emoji-panel" class="hs-room-emoji-panel hidden" role="dialog" aria-label="اختيار تفاعل"><div class="hs-room-panel-handle"></div><div class="hs-room-emoji-head"><b>التفاعلات</b><button type="button" id="room-emoji-close" aria-label="إغلاق">×</button></div><div class="hs-room-emoji-categories"><button type="button" class="active" data-emoji-category="default">Default</button></div><div id="room-emoji-grid" class="hs-room-emoji-grid"></div><div id="room-emoji-pagination" class="hs-room-emoji-pagination"></div></div>
+          
           <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
         </div>
         <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
@@ -669,6 +669,7 @@ async function openRoom(r) {
     </section>
     </div>
     </div>
+    <button type="button" id="room-emoji-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق التفاعلات"></button><div id="room-emoji-panel" class="hs-room-emoji-panel hidden" role="dialog" aria-label="اختيار تفاعل"><div class="hs-room-panel-handle"></div><div class="hs-room-emoji-head"><b>التفاعلات</b><button type="button" id="room-emoji-close" aria-label="إغلاق">×</button></div><div class="hs-room-emoji-categories"><button type="button" class="active" data-emoji-category="default">Default</button></div><div id="room-emoji-grid" class="hs-room-emoji-grid"></div><div id="room-emoji-pagination" class="hs-room-emoji-pagination"></div></div>
     ${isRoomOwner ? `<button id="del-room" class="btn-danger w-full mt-3"><i data-lucide="trash-2" class="w-5 h-5"></i> حذف الغرفة</button>` : ''}
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
