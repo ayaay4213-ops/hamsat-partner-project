@@ -342,6 +342,35 @@ export const api = {
     fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
   },
 
+  getRoomBackground: async (roomId) => {
+    const { data, error } = await client().from('room_backgrounds')
+      .select('image_url,updated_at,updated_by').eq('room_id', roomId).maybeSingle();
+    fail(error);
+    return { url: data?.image_url || null, updatedAt: data?.updated_at || null };
+  },
+  setRoomBackground: async (roomId, imageUrl) => {
+    const user = await currentUser();
+    const url = imageUrl ? String(imageUrl).trim() : null;
+    if (url && (!/^https:\/\//i.test(url) || url.length > 2048)) {
+      throw new Error('رابط الخلفية غير صالح. اختاري صورة من هاتفك أو رابط HTTPS آمن.');
+    }
+    const { data, error } = await client().from('room_backgrounds').upsert({
+      room_id: roomId,
+      image_url: url,
+      updated_by: user.id,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'room_id' }).select('image_url,updated_at').single();
+    fail(error);
+    return { url: data.image_url || null, updatedAt: data.updated_at };
+  },
+  subscribeRoomBackground: (roomId, callback) => client()
+    .channel('room-background-' + roomId)
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'room_backgrounds',
+      filter: 'room_id=eq.' + roomId
+    }, callback)
+    .subscribe(),
+
   leaveRoom: async (roomId) => {
     const user = await currentUser();
     // Free the speaker seat as well as the room membership so abandoned rooms
