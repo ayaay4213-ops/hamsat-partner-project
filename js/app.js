@@ -110,7 +110,7 @@ function openSheet(html, onMount) {
   onMount && onMount(root.querySelector('.sheet'));
 }
 function applyRoomBackground(url) {
-  const room = $('#room-seats')?.closest('.hs-room-unified');
+  const room = $('#room-seats')?.closest('.hs-room-stage');
   if (!room) return;
   let image = room.querySelector(':scope > .hs-room-shared-bg');
   if (!url) {
@@ -628,7 +628,7 @@ async function openRoom(r) {
       <header class="hs-room-settings-header"><button type="button" id="room-background-close" aria-label="إغلاق"><i data-lucide="arrow-right"></i></button><h3>خلفية المايكات للجميع</h3><span></span></header>
       <p class="hs-room-settings-hint px-4">أي عضو داخل الغرفة يستطيع اختيار صورة من هاتفه. الخلفية تظهر للجميع وتبقى محفوظة حتى بعد مغادرة صاحبها.</p>
       <div class="p-4 space-y-3">
-        <label class="photo-picker hs-room-background-picker" for="shared-room-background-file"><i data-lucide="images"></i><span>اختيار صورة من الهاتف</span><input id="shared-room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+        <label class="photo-picker hs-room-background-picker" for="shared-room-background-file"><i data-lucide="images"></i><span>اختيار صورة من الهاتف</span><input id="shared-room-background-file" type="file" accept="image/*" hidden></label>
         <div id="shared-room-background-preview" class="hs-room-background-preview" aria-live="polite"><div>جارٍ تحميل الخلفية الحالية...</div></div>
         <button type="button" id="shared-room-background-reset" class="btn-ghost w-full">إزالة الخلفية الحالية</button>
         <button type="button" id="shared-room-background-save" class="btn-gold w-full">حفظ الخلفية للجميع</button>
@@ -678,7 +678,7 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const room=sheet.querySelector('.hs-room-canvas');
+      const room=sheet.querySelector('.hs-room-stage');
       if(!room)return;
       let image=room.querySelector(':scope > .hs-room-shared-bg');
       if(!url){
@@ -733,7 +733,7 @@ async function openRoom(r) {
     sheet.querySelector('#room-background-close')?.addEventListener('click',()=>sharedBgPanel?.classList.add('hidden'));
     if(sharedBgFile)sharedBgFile.onchange=()=>{
       const file=sharedBgFile.files?.[0];if(!file)return;
-      if(!['image/png','image/jpeg','image/webp'].includes(file.type)){toast('اختاري صورة PNG أو JPG أو WEBP.','error');sharedBgFile.value='';return;}
+      const ext=(file.name?.split('.').pop()||'').toLowerCase(),mime=(file.type||'').toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)&&!['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'].includes(mime)){toast('اختاري صورة JPG أو PNG أو WEBP من المعرض.','error');sharedBgFile.value='';return;}
       if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.','error');sharedBgFile.value='';return;}
       if(sharedBgPreviewUrl)URL.revokeObjectURL(sharedBgPreviewUrl);
       pendingSharedBgFile=file;pendingSharedBgUrl=null;sharedBgPreviewUrl=URL.createObjectURL(file);
@@ -846,7 +846,7 @@ async function openRoom(r) {
         }catch(e){toast(e.message,'error');}
         finally{btn.disabled=false;btn.textContent='حفظ خلفية الغرفة';}
       };
-       sheet.querySelector('#room-background-file').onchange=()=>{const input=sheet.querySelector('#room-background-file'),file=input.files?.[0];if(!file)return;const label=sheet.querySelector('.room-cover-picker span');if(!['image/png','image/jpeg','image/webp'].includes(file.type)){toast('اختاري صورة بصيغة PNG أو JPG أو WEBP','error');input.value='';return;}if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');input.value='';return;}if(coverPreviewUrl)URL.revokeObjectURL(coverPreviewUrl);chosenCoverFile=file;coverPreviewUrl=URL.createObjectURL(file);label.textContent='معاينة جاهزة — ستُرفع عند الحفظ';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(coverPreviewUrl)+'" alt="معاينة غلاف الغرفة">';};
+       sheet.querySelector('#room-background-file').onchange=()=>{const input=sheet.querySelector('#room-background-file'),file=input.files?.[0];if(!file)return;const label=sheet.querySelector('.room-cover-picker span');const ext=(file.name?.split('.').pop()||'').toLowerCase(),mime=(file.type||'').toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)&&!['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'].includes(mime)){toast('اختاري صورة JPG أو PNG أو WEBP من المعرض.','error');input.value='';return;}if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');input.value='';return;}if(coverPreviewUrl)URL.revokeObjectURL(coverPreviewUrl);chosenCoverFile=file;coverPreviewUrl=URL.createObjectURL(file);label.textContent='معاينة جاهزة — ستُرفع عند الحفظ';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(coverPreviewUrl)+'" alt="معاينة غلاف الغرفة">';};
       sheet.querySelector('#room-settings-save').onclick=async()=>{const btn=sheet.querySelector('#room-settings-save');btn.disabled=true;try{if(chosenCoverFile){btn.textContent='جارٍ رفع غلاف الغرفة...';const uploaded=await api.uploadMedia(chosenCoverFile,'room-covers');chosenCover=uploaded.url;chosenCoverFile=null;if(coverPreviewUrl){URL.revokeObjectURL(coverPreviewUrl);coverPreviewUrl=null;}sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(chosenCover)+'" alt="معاينة غلاف الغرفة">';}if(chosenBackgroundFile){btn.textContent='جارٍ رفع خلفية المايكات...';const bgUpload=await api.uploadMedia(chosenBackgroundFile,'room-backgrounds');chosenBackgroundId=bgUpload.url;chosenBackgroundUrl=bgUpload.url;chosenBackgroundFile=null;if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}}btn.textContent='جارٍ حفظ الإعدادات...';const saved=await api.updateRoomSettings(r.id,{title:sheet.querySelector('#room-edit-title')?.value||r.title,topic:sheet.querySelector('#room-edit-topic')?.value||r.topic,description:sheet.querySelector('#room-edit-description')?.value??r.description,coverUrl:chosenCover,backgroundItemId:chosenBackgroundId,roomEmoji:chosenEmoji,seatLimit:Number(sheet.querySelector('#room-seat-limit')?.value||r.seatLimit||8)});r.title=saved.title;r.topic=saved.topic;r.description=saved.description;r.coverUrl=saved.coverUrl;r.backgroundItemId=saved.backgroundItemId;r.roomEmoji=saved.roomEmoji;r.seatLimit=saved.seatLimit;const coverThumb=sheet.querySelector('.hs-room-cover-thumb');if(coverThumb){coverThumb.style.backgroundImage=chosenCover?'url('+JSON.stringify(chosenCover)+')':'none';coverThumb.innerHTML=chosenCover?'':'<i data-lucide="image"></i>';icons_();}sheet.querySelector('.hs-room-title-emoji').textContent=chosenEmoji;sheet.querySelector('.hs-room-title-row h2').lastChild.textContent=' '+r.title;sheet.querySelector('.hs-room-title-row p').textContent=r.topic+' · بواسطة '+(r.ownerName||'عضو');applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('.hs-room-seat-count').textContent=r.seatLimit+' مقاعد';await drawMembers();if(chosenCover){sheet.querySelector('.room-cover-picker span').textContent='تم حفظ غلاف الغرفة ✓';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(chosenCover)+'" alt="غلاف الغرفة المحفوظ">';}else{sheet.querySelector('.room-cover-picker span').textContent='اختيار صورة غلاف الغرفة من الهاتف';sheet.querySelector('#room-cover-preview').innerHTML='<span>لم يتم اختيار غلاف بعد</span>';}toast('تم حفظ إعدادات غرفتك');panel.classList.add('hidden');}catch(e){toast(e.message,'error');}finally{btn.disabled=false;btn.textContent='حفظ الإعدادات';}};
     }
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
