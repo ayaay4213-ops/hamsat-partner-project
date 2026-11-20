@@ -674,7 +674,7 @@ async function openRoom(r) {
     const applyRoomBackground=(url)=>{
       const canvas=sheet.querySelector('.hs-room-canvas');
       if(!canvas)return;
-      canvas.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(4,8,15,.48),rgba(4,8,15,.72)),url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
+      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
       canvas.style.setProperty('background-size','cover','important');
       canvas.style.setProperty('background-position','center center','important');
       canvas.style.setProperty('background-repeat','no-repeat','important');
