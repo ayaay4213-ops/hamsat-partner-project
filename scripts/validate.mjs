@@ -580,6 +580,22 @@ if (fs.existsSync(adminHtmlPath)) {
   }
 }
 
+if (fs.existsSync(adminJsPath)) {
+  const adminJs = fs.readFileSync(adminJsPath, 'utf8');
+  if (!adminJs.includes("if(error)throw error;") || !adminJs.includes("نقاط الوصول يجب أن تكون عدداً صحيحاً أكبر من صفر")) {
+    errors.push('Room bomb admin must surface load errors and validate a positive integer threshold');
+  }
+  if (!adminJs.includes("قيم المكافأة يجب أن تكون أعداداً صحيحة غير سالبة")) {
+    errors.push('Room bomb admin must reject invalid negative or non-integer reward amounts');
+  }
+}
+if (fs.existsSync(adminHtmlPath)) {
+  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  if (!adminHtml.includes('js/admin.js?v=20261120-admin-bomb-validation-v1')) {
+    errors.push('Admin script cache-busting must match the room bomb validation update');
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
