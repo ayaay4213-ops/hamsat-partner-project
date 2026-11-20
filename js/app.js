@@ -6,7 +6,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBackgroundChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -107,7 +107,7 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBackgroundChannel) { api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 function renderRoomMiniBubble() {
   const root = $('#room-mini-root');
@@ -128,6 +128,7 @@ function renderRoomMiniBubble() {
     root.innerHTML = '';
     if (state.roomChannel) { await api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; }
     if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; }
+    if (state.roomBackgroundChannel) { await api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; }
     if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; }
     await openRoom(current);
   };
@@ -598,7 +599,7 @@ async function openRoom(r) {
           <span class="hs-room-owner-tag" aria-label="المضيفة"><i data-lucide="crown"></i></span>
         ${'</div>'}
       </div>
-      <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-minimize" class="hs-room-minimize" aria-label="الاحتفاظ بالغرفة" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
+      <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-background-open" class="hs-room-settings-launch" aria-label="تغيير خلفية المايكات" title="تغيير خلفية المايكات"><i data-lucide="image"></i></button><button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-minimize" class="hs-room-minimize" aria-label="الاحتفاظ بالغرفة" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
     <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><a href="#/games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></a><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
     </div>
     ${isRoomOwner ? `
@@ -630,6 +631,16 @@ async function openRoom(r) {
         <div class="hs-room-settings-group"><h4>إدارة الأعضاء</h4><p class="hs-room-settings-hint">كتم المتحدث أو إنزاله من المايك أو إخراجه من الغرفة.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div>
         <button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button>
       </section>` : ''}
+    <section id="room-background-panel" class="hs-room-settings hs-room-background-settings hidden" aria-label="تغيير خلفية المايكات">
+      <header class="hs-room-settings-header"><button type="button" id="room-background-close" aria-label="إغلاق"><i data-lucide="arrow-right"></i></button><h3>خلفية المايكات للجميع</h3><span></span></header>
+      <p class="hs-room-settings-hint px-4">أي عضو داخل الغرفة يستطيع اختيار صورة من هاتفه. الخلفية تظهر للجميع وتبقى محفوظة حتى بعد مغادرة صاحبها.</p>
+      <div class="p-4 space-y-3">
+        <label class="photo-picker hs-room-background-picker" for="shared-room-background-file"><i data-lucide="images"></i><span>اختيار صورة من الهاتف</span><input id="shared-room-background-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+        <div id="shared-room-background-preview" class="hs-room-background-preview" aria-live="polite"><div>جارٍ تحميل الخلفية الحالية...</div></div>
+        <button type="button" id="shared-room-background-reset" class="btn-ghost w-full">إزالة الخلفية الحالية</button>
+        <button type="button" id="shared-room-background-save" class="btn-gold w-full">حفظ الخلفية للجميع</button>
+      </div>
+    </section>
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
     <button type="button" id="room-gift-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق الهدايا"></button><div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><p id="room-gift-balance" class="hs-gift-balance">رصيدك الحالي: —</p><form id="room-gift-form" class="space-y-3"><div class="flex items-center justify-between gap-2"><label class="label">إلى أحد الجالسين على المايك</label><button type="button" id="room-gift-all" class="hs-gift-all">All</button></div><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-categories" class="hs-room-gift-categories"><button type="button" data-gift-category="app" class="active">هدية التطبيق</button><button type="button" data-gift-category="event">هدية الحدث</button><button type="button" data-gift-category="lucky">الهدايا المحظوظة</button><button type="button" data-gift-category="special">هدية خاصة</button></div><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
@@ -683,6 +694,61 @@ async function openRoom(r) {
     };
     applyRoomBackground(null);
     if(r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))applyRoomBackground(r.backgroundItemId);else api.shopItems().then(({items})=>applyRoomBackground(items.find(item=>item.id===r.backgroundItemId)?.image_url||null)).catch(()=>{});}
+    const sharedBgPanel=sheet.querySelector('#room-background-panel');
+    const sharedBgOpen=sheet.querySelector('#room-background-open');
+    const sharedBgFile=sheet.querySelector('#shared-room-background-file');
+    const sharedBgPreview=sheet.querySelector('#shared-room-background-preview');
+    const sharedBgSave=sheet.querySelector('#shared-room-background-save');
+    let pendingSharedBgFile=null, pendingSharedBgUrl=null, sharedBgPreviewUrl=null;
+    const drawSharedBgPreview=(url,note='الخلفية الحالية')=>{
+      if(!sharedBgPreview)return;
+      sharedBgPreview.innerHTML=url
+        ? '<img src="'+esc(url)+'" alt="معاينة خلفية المايكات" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">'+esc(note)+'</p>'
+        : '<div class="h-20 grid place-items-center text-xs opacity-70">'+esc(note)+'</div>';
+    };
+    const openSharedBgPanel=async()=>{
+      if(!sharedBgPanel)return;
+      const opening=sharedBgPanel.classList.contains('hidden');
+      sharedBgPanel.classList.toggle('hidden',!opening);
+      if(!opening)return;
+      try{
+        const current=await api.getRoomBackground(r.id);
+        r.backgroundUrl=current.url;
+        pendingSharedBgUrl=current.url;
+        applyRoomBackground(current.url);
+        drawSharedBgPreview(current.url,current.url?'الخلفية المشتركة الحالية':'لا توجد خلفية مخصصة بعد');
+      }catch(error){drawSharedBgPreview(null,'تعذّر تحميل الخلفية: '+error.message);}
+    };
+    if(sharedBgOpen)sharedBgOpen.onclick=openSharedBgPanel;
+    sheet.querySelector('#room-background-close')?.addEventListener('click',()=>sharedBgPanel?.classList.add('hidden'));
+    if(sharedBgFile)sharedBgFile.onchange=()=>{
+      const file=sharedBgFile.files?.[0];if(!file)return;
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type)){toast('اختاري صورة PNG أو JPG أو WEBP.','error');sharedBgFile.value='';return;}
+      if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.','error');sharedBgFile.value='';return;}
+      if(sharedBgPreviewUrl)URL.revokeObjectURL(sharedBgPreviewUrl);
+      pendingSharedBgFile=file;pendingSharedBgUrl=null;sharedBgPreviewUrl=URL.createObjectURL(file);
+      applyRoomBackground(sharedBgPreviewUrl);drawSharedBgPreview(sharedBgPreviewUrl,'معاينة خاصة بك — اضغطي حفظ الخلفية للجميع');
+    };
+    sheet.querySelector('#shared-room-background-reset')?.addEventListener('click',()=>{
+      pendingSharedBgFile=null;pendingSharedBgUrl=null;if(sharedBgFile)sharedBgFile.value='';
+      if(sharedBgPreviewUrl){URL.revokeObjectURL(sharedBgPreviewUrl);sharedBgPreviewUrl=null;}
+      applyRoomBackground(null);drawSharedBgPreview(null,'ستتم إزالة الخلفية للجميع عند الحفظ');
+    });
+    if(sharedBgSave)sharedBgSave.onclick=async()=>{
+      sharedBgSave.disabled=true;sharedBgSave.textContent='جارٍ حفظ الخلفية...';
+      try{
+        if(pendingSharedBgFile){
+          const uploaded=await api.uploadMedia(pendingSharedBgFile,'room-backgrounds');
+          pendingSharedBgUrl=uploaded.url;pendingSharedBgFile=null;
+          if(sharedBgPreviewUrl){URL.revokeObjectURL(sharedBgPreviewUrl);sharedBgPreviewUrl=null;}
+        }
+        const saved=await api.setRoomBackground(r.id,pendingSharedBgUrl);
+        r.backgroundUrl=saved.url;applyRoomBackground(saved.url);
+        drawSharedBgPreview(saved.url,saved.url?'تم حفظ الخلفية وظهورها للجميع ✓':'تمت إزالة الخلفية للجميع');
+        toast('تم تحديث خلفية الغرفة لجميع الموجودين.');
+      }catch(error){toast(error.message||'تعذّر حفظ الخلفية.','error');}
+      finally{sharedBgSave.disabled=false;sharedBgSave.textContent='حفظ الخلفية للجميع';}
+    };
     const copyRoomId=sheet.querySelector('#room-copy-id');
     if(copyRoomId)copyRoomId.onclick=async()=>{try{await navigator.clipboard.writeText(r.publicId||r.id);toast('تم نسخ ID الغرفة');}catch(e){toast(r.publicId||r.id);}};
     const copyRoomLink=sheet.querySelector('#room-copy-link');
@@ -885,7 +951,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;const sharedBackground=await api.getRoomBackground(r.id);r.backgroundUrl=sharedBackground.url;applyRoomBackground(sharedBackground.url);state.roomBackgroundChannel=api.subscribeRoomBackground(r.id,payload=>{const next=payload?.new?.image_url||null;r.backgroundUrl=next;applyRoomBackground(next);if(sharedBgPanel&&!sharedBgPanel.classList.contains('hidden')){pendingSharedBgUrl=next;pendingSharedBgFile=null;drawSharedBgPreview(next,next?'تم تحديث الخلفية من عضو آخر':'أزيلت الخلفية من عضو آخر');}});await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
