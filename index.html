@@ -103,16 +103,23 @@ tailwind.config = { theme: { extend: {
         if (!button) return;
         let installEvent = null;
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const isAndroid = /android/i.test(navigator.userAgent);
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+        const isIOSBrowser = isIOS && /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
         if (isStandalone()) return;
-        // Show the install control only when the browser exposes a real install prompt.
+        // Native prompt on supported browsers; iOS Safari gets its genuine manual Add to Home Screen path.
         window.addEventListener('beforeinstallprompt', event => {
           event.preventDefault();
           installEvent = event;
           button.hidden = false;
         });
+        if (isIOSBrowser) button.hidden = false;
         button.addEventListener('click', async () => {
-          if (!installEvent) return;
+          if (!installEvent) {
+            if (isIOSBrowser) {
+              alert('لتثبيت همسات على iPhone أو iPad:\\n1) اضغطي زر المشاركة في Safari.\\n2) اختاري «إضافة إلى الشاشة الرئيسية».\\n3) اضغطي «إضافة».');
+            }
+            return;
+          }
           const promptEvent = installEvent;
           installEvent = null;
           try {
