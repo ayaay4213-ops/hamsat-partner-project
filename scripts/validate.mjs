@@ -575,7 +575,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261120-admin-section-isolation-v1')) {
+  if (!adminHtml.includes('js/admin.js?v=20261120-admin-bomb-validation-v1')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
