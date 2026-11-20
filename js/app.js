@@ -1799,7 +1799,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
-    else if (route === 'moments') { meScreen(); document.querySelector('[data-profile-tab="moments"]')?.click(); }
+    else if (route === 'moments') await momentsFeedScreen();
     else if (route === 'agency') await agencyScreen();
     else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
@@ -1808,6 +1808,61 @@ async function directMessageScreen(conversationId) {
     screen.innerHTML = `<div class="p-5">${emptyBox('triangle-alert', 'حدث خطأ', e.message)}</div>`;
     icons_();
   }
+}
+
+
+async function momentsFeedScreen() {
+  screen.innerHTML = header('اللحظات') + `
+    <section class="hs-moments-feed-page">
+      <div class="hs-moments-feed-list" id="hs-moments-feed-list"><div class="hs-moment-empty">جارٍ تحميل اللحظات…</div></div>
+    </section>`;
+  icons_();
+  const host = $('#hs-moments-feed-list');
+  let feedItems = [];
+  const draw = () => {
+    if (!host) return;
+    host.innerHTML = feedItems.length ? feedItems.map(item => {
+      const m=item.moment, p=item.profile;
+      return `<article class="hs-moment-card hs-moment-feed-card" data-moment-card="${esc(m.id)}">
+        <div class="hs-moment-feed-author">${avatar(p,38)}<div><b>${esc(p.displayName||'عضو')}</b><small>@${esc(p.handle||'')}</small></div></div>
+        ${m.image_url?'<img src="'+esc(m.image_url)+'" alt="صورة لحظة" loading="lazy">':''}
+        ${m.body?'<p>'+esc(m.body)+'</p>':''}
+        <small>${dateAr(new Date(m.created_at).getTime())}</small>
+        <div class="hs-moment-social"><button type="button" data-moment-like="${esc(m.id)}" data-liked="${m.likedByMe?'true':'false'}">${m.likedByMe?'♥':'♡'} إعجاب · ${num(m.likesCount)}</button><span>التعليقات · ${num(m.comments.length)}</span></div>
+        <div class="hs-moment-comments">${m.comments.map(c=>'<p><b>'+esc(c.profile?.display_name||'عضو')+'</b> '+esc(c.body)+'</p>').join('')}</div>
+        <form data-moment-comment="${esc(m.id)}" class="hs-moment-comment-form"><input name="body" maxlength="500" placeholder="اكتبي تعليقاً…" required><button type="submit">إرسال</button></form>
+      </article>`;
+    }).join('') : '<div class="hs-moment-empty">لا توجد لحظات منشورة بعد.</div>';
+    host.querySelectorAll('[data-moment-like]').forEach(button=>button.onclick=async()=>{
+      button.disabled=true;
+      try{await api.toggleMomentLike(button.dataset.momentLike,button.dataset.liked==='true');await refresh();}
+      catch(error){toast(error.message,'error');button.disabled=false;}
+    });
+    host.querySelectorAll('[data-moment-comment]').forEach(form=>form.onsubmit=async event=>{
+      event.preventDefault();const button=form.querySelector('button');button.disabled=true;
+      try{await api.addMomentComment(form.dataset.momentComment,form.elements.body.value);await refresh();}
+      catch(error){toast(error.message,'error');button.disabled=false;}
+    });
+    icons_();
+  };
+  const refresh = async () => {
+    host.innerHTML='<div class="hs-moment-empty">جارٍ تحديث اللحظات…</div>';
+    try {
+      const {users=[]}=await api.users();
+      const profiles=users.slice(0,40);
+      const results=await Promise.allSettled(profiles.map(profile=>api.moments(profile.uuid)));
+      feedItems=[];
+      results.forEach((result,index)=>{
+        if(result.status!=='fulfilled')return;
+        (result.value.moments||[]).forEach(moment=>feedItems.push({moment,profile:profiles[index]}));
+      });
+      feedItems.sort((a,b)=>new Date(b.moment.created_at)-new Date(a.moment.created_at));
+      draw();
+    } catch(error) {
+      host.innerHTML='<div class="hs-moment-empty">تعذر تحميل اللحظات: '+esc(error.message)+'</div>';
+    }
+  };
+  await refresh();
 }
 
 function dismissHamsatSplash() {
