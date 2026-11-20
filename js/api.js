@@ -309,8 +309,15 @@ export const api = {
       return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
-        ownerColor: p.color || '#7c3aed' };
+        ownerColor: p.color || '#7c3aed', ownerVipLevel: p.vipLevel || 0 };
     }) };
+  },
+  roomMemberCounts: async (roomIds) => {
+    const ids = [...new Set((roomIds || []).filter(Boolean))].slice(0,1000);
+    if (!ids.length) return {};
+    const { data, error } = await client().rpc('get_public_room_member_counts', { p_room_ids: ids });
+    fail(error);
+    return Object.fromEntries((data || []).map(row => [row.room_id, Number(row.member_count || 0)]));
   },
   createRoom: async (r) => {
     const user = await currentUser();
