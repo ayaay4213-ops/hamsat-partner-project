@@ -564,9 +564,9 @@ function emptyBox(icon, title, sub = '') {
 }
 
 function roomCard(r) {
-  return `<button type="button" data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-minimal" aria-label="دخول غرفة ${esc(r.title)}">
-    <span class="hs-home-room-minimal-title">${esc(r.title)}</span>
-    <span class="hs-room-discovery-enter" aria-label="دخول الغرفة" title="دخول الغرفة"><i data-lucide="log-in"></i></span>
+  return `<button type="button" data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-photo" aria-label="دخول غرفة ${esc(r.title)}">
+    <span class="hs-home-room-photo-media">${r.coverUrl ? `<img src="${esc(r.coverUrl)}" alt="${esc(r.title)}" loading="lazy">` : '<span class="hs-home-room-photo-placeholder"><i data-lucide="audio-lines"></i></span>'}</span>
+    <span class="hs-home-room-photo-footer"><b>${esc(r.title)}</b><span class="hs-room-discovery-enter" aria-label="دخول الغرفة"><i data-lucide="log-in"></i></span></span>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
@@ -1749,6 +1749,46 @@ async function inviteScreen() {
   icons_();
   $('#copy-invite-link').onclick=async()=>{try{await navigator.clipboard.writeText(inviteUrl);toast('تم نسخ رابط ملفك لمشاركته');}catch(e){toast(inviteUrl);}};
 }
+async function momentsScreen(){
+  screen.innerHTML = `
+    <main class="hs-moments-only fade-in" dir="rtl">
+      <header class="hs-moments-top"><h1>لحظاتي</h1><p>منشوراتك التي شاركتِها في همسات</p></header>
+      <form data-moment-form class="hs-moment-compose">
+        <textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea>
+        <label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label>
+        <button type="submit" class="btn-gold">نشر اللحظة</button>
+      </form>
+      <div data-moments-list class="hs-moments-list"><div class="hs-moment-empty">جارٍ تحميل لحظاتك…</div></div>
+    </main>`;
+  icons_();
+  const form=screen.querySelector('[data-moment-form]');
+  form.onsubmit=async e=>{
+    e.preventDefault();const body=form.elements.body.value.trim(),file=form.elements.momentImage.files?.[0],btn=form.querySelector('[type=submit]');
+    btn.disabled=true;
+    try{let imageUrl=null;if(file)imageUrl=(await api.uploadMedia(file,'moments')).url;if(!body&&!imageUrl)throw new Error('اكتبي شيئاً أو أضيفي صورة');await api.createMoment(body,imageUrl);form.reset();toast('تم نشر لحظتك');await loadOwnMoments();}
+    catch(err){toast(err.message,'error');}finally{btn.disabled=false;}
+  };
+  await loadOwnMoments();
+}
+async function loadOwnMoments(){
+  const host=screen.querySelector('[data-moments-list]');if(!host)return;
+  host.innerHTML='<div class="hs-moment-empty">جارٍ تحميل لحظاتك…</div>';
+  try{
+    const {moments}=await api.moments(state.profile.uuid);
+    if(!moments.length){host.innerHTML='<div class="hs-moment-empty">لم تنشري أي لحظة بعد.</div>';return;}
+    const engagement=await api.momentEngagement(moments.map(m=>m.id));
+    host.innerHTML=moments.map(m=>{
+      const liked=engagement.liked.includes(m.id),likes=engagement.likes[m.id]||0,comments=engagement.comments[m.id]||[];
+      return '<article class="hs-moment-card" data-moment-card="'+esc(m.id)+'">'+(m.image_url?'<img src="'+esc(m.image_url)+'" alt="صورة لحظة" loading="lazy">':'')+(m.body?'<p>'+esc(m.body)+'</p>':'')+'<small>'+dateAr(new Date(m.created_at).getTime())+'</small><div class="hs-moment-actions"><button type="button" data-moment-like="'+esc(m.id)+'" class="'+(liked?'liked':'')+'"><i data-lucide="heart"></i><span>'+num(likes)+'</span></button><button type="button" data-moment-comments="'+esc(m.id)+'"><i data-lucide="message-circle"></i><span>'+num(comments.length)+'</span></button></div><div class="hs-moment-comments" data-moment-comments-list="'+esc(m.id)+'">'+comments.map(c=>'<p><b>تعليق</b> '+esc(c.body)+'</p>').join('')+'</div><form class="hs-moment-comment-form" data-moment-comment-form="'+esc(m.id)+'"><input name="comment" maxlength="500" placeholder="اكتبي تعليقاً…"><button type="submit" aria-label="إرسال التعليق"><i data-lucide="send"></i></button></form><button type="button" class="hs-moment-delete" data-delete-moment="'+esc(m.id)+'">حذف اللحظة</button></article>';
+    }).join('');
+    icons_();
+    host.querySelectorAll('[data-moment-like]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const on=await api.toggleMomentLike(b.dataset.momentLike);b.classList.toggle('liked',on);const n=b.querySelector('span');n.textContent=String(Math.max(0,Number(n.textContent)+(on?1:-1)));}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
+    host.querySelectorAll('[data-moment-comment-form]').forEach(f=>f.onsubmit=async e=>{e.preventDefault();const input=f.elements.comment,body=input.value.trim();if(!body)return;const btn=f.querySelector('button');btn.disabled=true;try{await api.addMomentComment(f.dataset.momentCommentForm,body);input.value='';await loadOwnMoments();}catch(err){toast(err.message,'error');}finally{btn.disabled=false;}});
+    host.querySelectorAll('[data-moment-comments]').forEach(b=>b.onclick=()=>{const panel=host.querySelector('[data-moment-comments-list="'+CSS.escape(b.dataset.momentComments)+'"]');if(panel)panel.classList.toggle('expanded');});
+    host.querySelectorAll('[data-delete-moment]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذه اللحظة؟'))return;try{await api.deleteMoment(b.dataset.deleteMoment);await loadOwnMoments();}catch(e){toast(e.message,'error');}});
+  }catch(e){host.innerHTML='<div class="hs-moment-empty">تعذر تحميل اللحظات: '+esc(e.message)+'</div>';}
+}
+
 function comingSoonScreen(route) {
   const pages={moments:['لحظة','مساحة الصور واليوميات ومشاركة اللحظات مع المجتمع','images'],aristocracy:['الأرستقراطية VIP','عضويات كبار الشخصيات ومزاياها الحصرية','crown'],tasks:['المهام','التحديات اليومية والأسبوعية ومكافآت النشاط','target'],agency:['مركز الوكالة','إدارة المضيفين والوكلاء والتقارير','building-2'],family:['العائلة','مجتمعك ومجموعتك داخل همسات','users-round'],invite:['دعوة الأصدقاء','شاركي رابط ملفك وادعي أصدقاءك إلى همسات','user-plus']};
   const [title,description,icon]=pages[route]||['قريباً','هذه الميزة قيد التجهيز','sparkles'];
@@ -1858,7 +1898,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
-    else if (route === 'moments') { meScreen(); document.querySelector('[data-profile-tab="moments"]')?.click(); }
+    else if (route === 'moments') await momentsScreen();
     else if (route === 'agency') await agencyScreen();
     else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
