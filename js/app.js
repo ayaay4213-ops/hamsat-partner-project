@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261120-private-handle-fix-v2';
+import { api } from './api.js?v=20261120-room-chat-friends-v3';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -522,7 +522,7 @@ async function homeScreen() {
     '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
     '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
     '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
-    '<div class="hs-home-hero-art"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
+    '<div class="hs-home-hero-art hs-home-hero-art-large"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
     '<section class="hs-home-shortcuts">' +
     '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
     '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
