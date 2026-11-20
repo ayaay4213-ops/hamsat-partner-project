@@ -157,7 +157,22 @@ async function loadUsers(term=''){
  }
  const {data,error}=await q;if(error)throw error;
  const out=$('#user-results');
- out.innerHTML=data.length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>').join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
+ let activityByUser={};
+ if(data.length){
+  const activity=await supabase.rpc('admin_user_activity',{p_user_ids:data.map(x=>x.id)});
+  if(!activity.error)activityByUser=Object.fromEntries((activity.data||[]).map(x=>[x.user_id,x]));
+  else console.warn('HAMSAT admin user activity is unavailable:',activity.error.message);
+ }
+ const dateText=value=>value?new Date(value).toLocaleString('ar-DZ'):'غير متاح';
+ out.innerHTML=data.length?data.map(x=>{
+  const activity=activityByUser[x.id]||{};
+  const publicId=String(x.public_id??'').padStart(6,'0');
+  const name=String(x.display_name||'').trim();
+  const handle=String(x.handle||'').trim();
+  const registered=activity.account_created_at||x.created_at;
+  const lastLogin=activity.last_sign_in_at;
+  return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>';
+ }).join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
  out.querySelectorAll('[data-moderate-user]').forEach(b=>b.onclick=async()=>{
   const next=b.dataset.banned!=='true';
   if(next&&!confirm('هل تريدين حظر هذا الحساب من HAMSAT؟'))return;
