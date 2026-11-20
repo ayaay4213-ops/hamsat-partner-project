@@ -2617,3 +2617,105 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: #ead59a;
 }
 .hs-room-background-picker:focus-within { outline: 2px solid rgba(231,198,90,.75); outline-offset: 3px; }
+
+
+/* HAMSAT room discovery — two-column visual cards based on the approved reference */
+.hs-room-discovery-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+.hs-room-discovery-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(212,175,55,.20);
+  border-radius: 18px;
+  background: linear-gradient(155deg,rgba(30,31,35,.96),rgba(13,14,17,.98));
+  box-shadow: 0 9px 24px rgba(0,0,0,.25);
+}
+.hs-room-discovery-card:active { transform: scale(.985); }
+.hs-room-discovery-media {
+  position: relative;
+  height: clamp(118px,31vw,158px);
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%,rgba(112,76,151,.45),rgba(18,17,25,.96) 72%);
+}
+.hs-room-discovery-media > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.hs-room-discovery-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(231,198,90,.72);
+}
+.hs-room-discovery-placeholder svg { width: 46px; height: 46px; }
+.hs-room-discovery-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,rgba(4,5,8,.08),rgba(4,5,8,.72));
+}
+.hs-room-discovery-live,
+.hs-room-discovery-topic,
+.hs-room-discovery-vip,
+.hs-room-discovery-event {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 9px;
+  line-height: 1;
+  color: #fff;
+  background: rgba(8,9,12,.68);
+  backdrop-filter: blur(8px);
+}
+.hs-room-discovery-live { top: 8px; right: 8px; }
+.hs-room-discovery-live i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #42d58b; box-shadow: 0 0 8px rgba(66,213,139,.7);
+}
+.hs-room-discovery-topic { bottom: 8px; right: 8px; }
+.hs-room-discovery-vip { top: 8px; left: 8px; color: #f5df9a; border-color: rgba(212,175,55,.45); }
+.hs-room-discovery-vip svg { width: 11px; height: 11px; }
+.hs-room-discovery-event { bottom: 8px; left: 8px; color: #e8c7ff; border-color: rgba(174,122,220,.45); }
+.hs-room-discovery-body { padding: 10px; }
+.hs-room-discovery-owner { display:flex; align-items:center; gap:8px; min-width:0; }
+.hs-room-discovery-owner > div:last-child { min-width:0; }
+.hs-room-discovery-owner b {
+  display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:#f8edcf; font-size:12px; font-weight:800;
+}
+.hs-room-discovery-owner small {
+  display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:#aaa39a; font-size:10px; margin-top:3px;
+}
+.hs-room-discovery-meta {
+  display:flex; align-items:center; justify-content:space-between; gap:4px;
+  margin-top:10px; padding-top:8px; border-top:1px solid rgba(212,175,55,.12);
+  color:#c8c0aa; font-size:10px;
+}
+.hs-room-discovery-meta span { display:inline-flex; align-items:center; gap:4px; min-width:0; }
+.hs-room-discovery-meta svg { width:12px; height:12px; color:#e2c45d; }
+.hs-room-discovery-enter {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  margin-top:9px; padding:8px 5px; border-radius:10px;
+  color:#17140b; font-size:11px; font-weight:800;
+  background:linear-gradient(120deg,#ead59a,#b88c2d);
+}
+.hs-room-discovery-enter svg { width:13px; height:13px; }
+@media (max-width:350px) {
+  .hs-room-discovery-grid { gap:8px; }
+  .hs-room-discovery-body { padding:8px; }
+  .hs-room-discovery-meta { font-size:9px; }
+}
