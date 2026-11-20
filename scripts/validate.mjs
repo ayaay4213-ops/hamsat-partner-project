@@ -648,7 +648,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261120-room-layout-balanced-v2','js/app.js?v=20261120-room-owner-limit-v2']) {
+  for (const token of ['css/styles.css?v=20261120-room-discovery-grid-v1','js/app.js?v=20261120-room-discovery-cards-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
