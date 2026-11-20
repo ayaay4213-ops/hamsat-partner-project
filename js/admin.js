@@ -61,21 +61,23 @@ async function loadStats(){
 }
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
- const mediaItems=data.filter(x=>['room_background','profile_frame'].includes(x.item_type));
+ const legacyFrames=data.filter(x=>String(x.id).startsWith('profile_orig_'));
+ const visibleData=data.filter(x=>!String(x.id).startsWith('profile_orig_'));
+ const mediaItems=visibleData.filter(x=>['room_background','profile_frame'].includes(x.item_type));
  const withImages=mediaItems.filter(x=>!!x.image_url).length;
  const missingImages=mediaItems.length-withImages;
  const summary='<div class="grid grid-cols-3 gap-2 mb-3">'+
   '<div class="stat"><span class="muted text-xs">الخلفيات والإطارات</span><b>'+mediaItems.length+'</b></div>'+
   '<div class="stat"><span class="muted text-xs">صور مرفوعة</span><b>'+withImages+'</b></div>'+
   '<div class="stat"><span class="muted text-xs">بانتظار الرفع</span><b>'+missingImages+'</b></div></div>';
- $('#item-list').innerHTML=summary+(data.length?data.map(x=>{
+ $('#item-list').innerHTML=summary+(legacyFrames.length?'<p class="muted text-xs mb-3">تم إبقاء '+legacyFrames.length+' إطاراً من المجموعة القديمة محفوظاً خارج المجموعة المعتمدة، دون حذف أو نشر.</p>':'')+(visibleData.length?visibleData.map(x=>{
   const media=['room_background','profile_frame'].includes(x.item_type);
   const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-amber-300/20">':'<div class="w-16 h-16 rounded-xl border border-dashed border-amber-300/30 grid place-items-center text-[10px] text-amber-200/70">'+(media?'بانتظار الصورة':'بدون صورة')+'</div>';
   const publishBlocked=media&&!x.image_url&&!x.active;
    const replaceControl=media?'<div class="flex items-center gap-2 mt-2"><input class="field text-xs" type="file" accept="image/png,image/jpeg,image/webp" data-replace-file="'+esc(x.id)+'"><button class="ghost text-xs" type="button" data-replace-image="'+esc(x.id)+'">استبدال الصورة</button></div>':'';
   return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p>'+replaceControl+'</div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item" '+(publishBlocked?'disabled title="ارفعي الصورة وراجعيها قبل النشر"':'')+'>'+(publishBlocked?'ارفع الصورة أولاً':x.active?'إخفاء':'نشر')+'</button></div>';
  }).join(''):'<p class="muted">لا توجد عناصر بعد.</p>');
- bindToggles('#item-list',data,'item');
+ bindToggles('#item-list',visibleData,'item');
   $('#item-list').querySelectorAll('[data-replace-image]').forEach(button=>button.onclick=()=>replaceMediaImage(button.dataset.replaceImage,$('[data-replace-file="'+button.dataset.replaceImage+'"]'),button));
 }
 async function loadGifts(){
@@ -249,13 +251,13 @@ function renderAssetPreviews(kind,files,items,targetId){
  const target=$(targetId),list=Array.from(files||[]);clearAssetPreviews(kind);selectedAssets[kind]=list;
  if(!list.length){target.innerHTML='<p class="muted text-xs">لم يتم اختيار صور بعد.</p>';return;}
  target.innerHTML=list.map((file,index)=>{
-  const options=items.map(([id,label],i)=>'<option value="'+esc(id)+'" '+(i===index?'selected':'')+'>'+esc(label)+'</option>').join('');
+  const options='<option value="" selected disabled>اختاري العنصر المطابق لهذه الصورة</option>'+items.map(([id,label])=>'<option value="'+esc(id)+'">'+esc(label)+'</option>').join('');
   const preview=URL.createObjectURL(file);previewObjectUrls[kind].push(preview);
   const valid=['image/png','image/jpeg','image/webp'].includes(file.type)&&file.size<=5*1024*1024;
   return '<div class="item !items-start"><div class="min-w-0 w-full"><img src="'+preview+'" alt="معاينة '+(index+1)+'" class="w-full h-36 object-contain rounded-lg bg-black/30"><p class="text-xs mt-2 break-all">'+esc(file.name)+'</p><label class="text-xs muted block mt-2">ربط الصورة بالعنصر<select class="field mt-1" data-asset-kind="'+kind+'" data-asset-index="'+index+'">'+options+'</select></label><p class="text-xs mt-1 '+(valid?'text-emerald-300':'text-red-300')+'">'+(file.size/1024/1024).toFixed(2)+' MB · '+(valid?'الملف صالح':'صيغة غير مقبولة أو الحجم أكبر من 5MB')+'</p></div></div>';
  }).join('');
 }
-function assetMappings(kind){return Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]')).map(select=>({id:select.value,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));}
+function assetMappings(kind){const type=kind==='backgrounds'?'room_background':'profile_frame';return Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]')).map(select=>({id:select.value,type,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));}
 function mediaFolder(type){return type==='room_background'?'catalog/room-backgrounds':'catalog/profile-frames';}
 async function replaceMediaImage(id,input,button){
  const file=input.files?.[0];if(!file)return;button.disabled=true;
@@ -276,16 +278,16 @@ $('#asset-batch-upload').onclick=async()=>{
  const all=[...backgrounds,...frames],invalid=all.find(f=>!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>5*1024*1024);
  if(invalid){result.textContent='الملف '+invalid.name+' غير صالح. الصيغ المقبولة PNG/JPG/WEBP وبحد أقصى 5MB للصورة.';message(result.textContent,true);return;}
  const bgMap=assetMappings('backgrounds'),frameMap=assetMappings('frames'),mappings=[...bgMap,...frameMap];
- if(bgMap.length!==12||frameMap.length!==9||new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يوجد عنصر مكرر أو ربط ناقص. اربطي كل صورة بعنصر مختلف.';message(result.textContent,true);return;}
+ if(bgMap.length!==12||frameMap.length!==9||bgMap.some(x=>!x.id)||frameMap.some(x=>!x.id)||new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يجب اختيار العنصر الصحيح لكل صورة. لا يتم التخمين حسب ترتيب الملفات، ويجب أن يكون كل ربط فريداً.';message(result.textContent,true);return;}
  if(bgMap.some(x=>!ROOM_BACKGROUND_ASSETS.some(y=>y[0]===x.id))||frameMap.some(x=>!PROFILE_FRAME_ASSETS.some(y=>y[0]===x.id))){result.textContent='الربط المحدد غير صحيح.';message(result.textContent,true);return;}
  button.disabled=true;let uploaded=0;const failed=[],status=[];
  try{
   const {data:catalog,error}=await supabase.from('shop_items').select('id,item_type').in('id',mappings.map(x=>x.id));if(error)throw error;
   const byId=new Map((catalog||[]).map(x=>[x.id,x]));
-  const mismatch=mappings.find((m,i)=>!byId.has(m.id)||byId.get(m.id).item_type!==(i<12?'room_background':'profile_frame'));
+  const mismatch=mappings.find(m=>!byId.has(m.id)||byId.get(m.id).item_type!==m.type);
   if(mismatch)throw Error('توقف الرفع قبل البدء: عنصر الكتالوج غير موجود أو نوعه غير مطابق: '+mismatch.id);
   for(let i=0;i<mappings.length;i++){
-   const {id,file}=mappings[i],type=i<12?'room_background':'profile_frame';
+   const {id,file,type}=mappings[i];
    try{
     result.textContent='جارٍ رفع '+(i+1)+' من 21: '+file.name;
     const url=await upload(file,mediaFolder(type),id);
