@@ -1,5 +1,6 @@
 import { supabase } from './supabase-auth.js';
 const $=s=>document.querySelector(s), notice=$('#notice'), admin=$('#admin');
+let selectedStaffUser=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function message(s,bad=false){notice.textContent=s;notice.style.borderColor=bad?'#a33':'#39734a';}
 async function boot(){
@@ -14,7 +15,7 @@ async function boot(){
  const sections=[
   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],
   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports]
+  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports],['المسؤولون',loadStaff]
  ];
  await Promise.all(sections.map(async([label,load])=>{
   try{await load();}
@@ -23,7 +24,7 @@ async function boot(){
    const target=({
     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
     'الغرف':'#room-list','الأعضاء':'#user-results','قنبلة الغرفة':'#bomb-level-list',
-    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list'
+    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list','المسؤولون':'#staff-list'
    })[label];
    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
    message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
@@ -60,21 +61,23 @@ async function loadStats(){
 }
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
- const mediaItems=data.filter(x=>['room_background','profile_frame'].includes(x.item_type));
+ const legacyFrames=data.filter(x=>String(x.id).startsWith('profile_orig_'));
+ const visibleData=data.filter(x=>!String(x.id).startsWith('profile_orig_'));
+ const mediaItems=visibleData.filter(x=>['room_background','profile_frame'].includes(x.item_type));
  const withImages=mediaItems.filter(x=>!!x.image_url).length;
  const missingImages=mediaItems.length-withImages;
  const summary='<div class="grid grid-cols-3 gap-2 mb-3">'+
   '<div class="stat"><span class="muted text-xs">الخلفيات والإطارات</span><b>'+mediaItems.length+'</b></div>'+
   '<div class="stat"><span class="muted text-xs">صور مرفوعة</span><b>'+withImages+'</b></div>'+
   '<div class="stat"><span class="muted text-xs">بانتظار الرفع</span><b>'+missingImages+'</b></div></div>';
- $('#item-list').innerHTML=summary+(data.length?data.map(x=>{
+ $('#item-list').innerHTML=summary+(legacyFrames.length?'<p class="muted text-xs mb-3">تم إبقاء '+legacyFrames.length+' إطاراً من المجموعة القديمة محفوظاً خارج المجموعة المعتمدة، دون حذف أو نشر.</p>':'')+(visibleData.length?visibleData.map(x=>{
   const media=['room_background','profile_frame'].includes(x.item_type);
   const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-amber-300/20">':'<div class="w-16 h-16 rounded-xl border border-dashed border-amber-300/30 grid place-items-center text-[10px] text-amber-200/70">'+(media?'بانتظار الصورة':'بدون صورة')+'</div>';
   const publishBlocked=media&&!x.image_url&&!x.active;
    const replaceControl=media?'<div class="flex items-center gap-2 mt-2"><input class="field text-xs" type="file" accept="image/png,image/jpeg,image/webp" data-replace-file="'+esc(x.id)+'"><button class="ghost text-xs" type="button" data-replace-image="'+esc(x.id)+'">استبدال الصورة</button></div>':'';
   return '<div class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+esc(x.item_type)+' · '+Number(x.price).toLocaleString('en-US')+' عملة</p><p class="text-[11px] '+(x.image_url?'text-emerald-300':'text-amber-200')+'">'+(x.image_url?'الصورة مرتبطة':'الصورة لم تُرفع بعد')+' · '+(x.active?'منشور':'مخفي للمراجعة')+'</p>'+replaceControl+'</div></div><button class="ghost text-sm shrink-0" data-toggle="'+esc(x.id)+'" data-kind="item" '+(publishBlocked?'disabled title="ارفعي الصورة وراجعيها قبل النشر"':'')+'>'+(publishBlocked?'ارفع الصورة أولاً':x.active?'إخفاء':'نشر')+'</button></div>';
  }).join(''):'<p class="muted">لا توجد عناصر بعد.</p>');
- bindToggles('#item-list',data,'item');
+ bindToggles('#item-list',visibleData,'item');
   $('#item-list').querySelectorAll('[data-replace-image]').forEach(button=>button.onclick=()=>replaceMediaImage(button.dataset.replaceImage,$('[data-replace-file="'+button.dataset.replaceImage+'"]'),button));
 }
 async function loadGifts(){
@@ -147,17 +150,77 @@ async function loadReports(){
  root.innerHTML=(data||[]).map(x=>'<article class="item block"><div class="flex justify-between gap-3"><div><b>بلاغ #'+esc(x.id)+'</b><p class="muted text-xs">'+(x.subject_user_id?'مستخدم #'+esc(byId[x.subject_user_id]?.public_id||'—'):'غرفة '+esc(byRoom[x.room_id]?.name||'—'))+' · المبلّغ #'+esc(byId[x.reporter_id]?.public_id||'—')+'</p></div><span class="pill">'+esc(x.status)+'</span></div><p class="text-sm mt-2">'+esc(x.reason)+'</p><p class="muted text-xs mt-1">'+esc(x.details||'لا توجد تفاصيل إضافية')+'</p><div class="flex gap-2 mt-3"><button class="ghost text-xs" data-report-status="reviewing" data-id="'+esc(x.id)+'">قيد المراجعة</button><button class="ghost text-xs" data-report-status="resolved" data-id="'+esc(x.id)+'">تم الحل</button><button class="ghost text-xs" data-report-status="dismissed" data-id="'+esc(x.id)+'">إغلاق</button></div></article>').join('')||'<p class="muted">لا توجد بلاغات حالياً.</p>';
  root.querySelectorAll('[data-report-status]').forEach(b=>b.onclick=async()=>{const {error}=await supabase.rpc('admin_update_user_report',{p_report_id:Number(b.dataset.id),p_status:b.dataset.reportStatus});if(error){message(error.message,true);return;}await loadReports();message('تم تحديث حالة البلاغ.');});
 }
-async function loadUsers(term=''){
+const STAFF_PERMISSION_LABELS={
+ room_moderation:'إشراف الغرف',
+ report_review:'مراجعة البلاغات',
+ member_support:'مساعدة الأعضاء',
+ event_management:'إدارة الفعاليات'
+};
+async function loadStaff(){
+ const root=$('#staff-list');
+ const {data,error}=await supabase.from('staff_roles').select('user_id,permissions,active,updated_at').order('updated_at',{ascending:false});
+ if(error)throw error;
+ const ids=[...new Set((data||[]).map(x=>x.user_id))];
+ let profiles=[];
+ if(ids.length){const r=await supabase.from('profiles').select('id,public_id,display_name,handle').in('id',ids);if(r.error)throw r.error;profiles=r.data||[];}
+ const byId=Object.fromEntries(profiles.map(x=>[x.id,x]));
+ root.innerHTML=(data||[]).length?(data||[]).map(x=>{
+  const p=byId[x.user_id]||{};
+  const labels=(x.permissions||[]).map(k=>STAFF_PERMISSION_LABELS[k]||k).join('، ')||'بلا صلاحيات';
+  return '<div class="item"><div class="min-w-0"><b>'+esc(p.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(p.public_id||'—')+' · @'+esc(p.handle||'—')+'</p><p class="text-xs mt-1 '+(x.active?'text-emerald-300':'text-amber-200')+'">'+(x.active?'مسؤول نشط':'موقوف')+' · '+esc(labels)+'</p></div><div class="flex gap-2"><button class="ghost text-xs" data-staff-edit="'+esc(x.user_id)+'">تعديل</button><button class="ghost text-xs" data-staff-disable="'+esc(x.user_id)+'" '+(!x.active?'disabled':'')+'>إيقاف</button></div></div>';
+ }).join(''):'<p class="muted text-sm">لا يوجد مسؤولون معينون حالياً.</p>';
+ root.querySelectorAll('[data-staff-edit]').forEach(b=>b.onclick=()=>{
+  const role=data.find(x=>x.user_id===b.dataset.staffEdit),person=byId[b.dataset.staffEdit];
+  if(person)selectStaffUser(person,role?.permissions||[],role?.active!==false);
+ });
+ root.querySelectorAll('[data-staff-disable]').forEach(b=>b.onclick=async()=>{
+  if(!confirm('هل تريدين إيقاف صلاحيات هذا المسؤول؟'))return;
+  b.disabled=true;
+  try{const {error}=await supabase.rpc('assign_staff_permissions',{p_user_id:b.dataset.staffDisable,p_permissions:[],p_active:false});if(error)throw error;await loadStaff();message('تم إيقاف صلاحيات المسؤول.');}
+  catch(e){message(e.message,true);b.disabled=false;}
+ });
+}
+function selectStaffUser(user,permissions=[],active=true){
+ selectedStaffUser=user;
+ $('#staff-selected-name').textContent=user.display_name||'عضو';
+ $('#staff-selected-id').textContent='HAMSAT-'+(user.public_id||'—')+' · @'+(user.handle||'—');
+ $('#staff-selected-panel').classList.remove('hidden');
+ document.querySelectorAll('[name="staff-permission"]').forEach(x=>x.checked=permissions.includes(x.value));
+ $('#staff-active').checked=active;
+}
+async function searchStaffUsers(term){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
- let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).limit(200);
+ if(!clean)throw new Error('اكتبي ID أو اسم المستخدم أولاً.');
+ let q=supabase.from('profiles').select('id,public_id,display_name,handle').limit(20);
+ const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
+ q=/^\d+$/.test(numeric)?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
+ const {data,error}=await q;if(error)throw error;
+ const root=$('#staff-candidates');
+ root.innerHTML=(data||[]).length?(data||[]).map(x=>'<button type="button" class="item w-full text-right" data-staff-user="'+esc(x.id)+'"><span><b>'+esc(x.display_name||'عضو')+'</b><small class="block muted">HAMSAT-'+esc(x.public_id||'—')+' · @'+esc(x.handle||'—')+'</small></span><span class="pill">اختيار</span></button>').join(''):'<p class="muted text-sm">لم يتم العثور على عضو مطابق.</p>';
+ root.querySelectorAll('[data-staff-user]').forEach(b=>b.onclick=async()=>{const user=data.find(x=>x.id===b.dataset.staffUser);if(!user)return;b.disabled=true;try{const {data:role,error}=await supabase.from('staff_roles').select('permissions,active').eq('user_id',user.id).maybeSingle();if(error)throw error;selectStaffUser(user,role?.permissions||[],role?.active!==false);}catch(err){message(err.message,true);}finally{b.disabled=false;}});
+}
+async function loadUsers(term='',page=0){
+ const clean=String(term||'').trim().replace(/[,%()]/g,'');
+ const pageSize=50,currentPage=Math.max(0,Number(page)||0);
+ let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned',{count:'exact'}).order('created_at',{ascending:false}).range(currentPage*pageSize,currentPage*pageSize+pageSize-1);
  if(clean){
   const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
   const isId=/^\d+$/.test(numeric);
   q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
  }
- const {data,error}=await q;if(error)throw error;
- const out=$('#user-results');
- out.innerHTML=data.length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>').join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
+ const {data,error,count}=await q;if(error)throw error;
+ const out=$('#user-results'),total=Number(count||0),pages=Math.max(1,Math.ceil(total/pageSize));
+ let loginByUser={};
+ if(data.length){
+  const {data:loginRows,error:loginError}=await supabase.from('admin_user_login_summary').select('user_id,login_count,last_sign_in_at').in('user_id',data.map(x=>x.id));
+  if(!loginError)loginByUser=Object.fromEntries((loginRows||[]).map(x=>[x.user_id,x]));
+  else console.warn('HAMSAT login summary is awaiting the staged database migration:',loginError.message);
+ }
+ out.innerHTML=(data.length?data.map(x=>{
+  const login=loginByUser[x.id],last=login?.last_sign_in_at?new Date(login.last_sign_in_at).toLocaleString('ar-DZ'):'بانتظار تفعيل سجل الدخول';
+  return '<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="text-xs text-amber-200/80 mt-1">مرات الدخول: '+(login?Number(login.login_count):'—')+' · آخر دخول: '+esc(last)+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>';
+ }).join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>')+'<div class="flex items-center justify-between gap-2 pt-3"><button type="button" class="ghost text-xs" data-users-page="'+(currentPage-1)+'" '+(currentPage<=0?'disabled':'')+'>السابق</button><span class="muted text-xs">صفحة '+(currentPage+1)+' من '+pages+' · '+total+' حساباً</span><button type="button" class="ghost text-xs" data-users-page="'+(currentPage+1)+'" '+(currentPage+1>=pages?'disabled':'')+'>التالي</button></div>';
+ out.querySelectorAll('[data-users-page]').forEach(b=>b.onclick=()=>loadUsers(clean,Number(b.dataset.usersPage)));
  out.querySelectorAll('[data-moderate-user]').forEach(b=>b.onclick=async()=>{
   const next=b.dataset.banned!=='true';
   if(next&&!confirm('هل تريدين حظر هذا الحساب من HAMSAT؟'))return;
@@ -199,13 +262,13 @@ function renderAssetPreviews(kind,files,items,targetId){
  const target=$(targetId),list=Array.from(files||[]);clearAssetPreviews(kind);selectedAssets[kind]=list;
  if(!list.length){target.innerHTML='<p class="muted text-xs">لم يتم اختيار صور بعد.</p>';return;}
  target.innerHTML=list.map((file,index)=>{
-  const options=items.map(([id,label],i)=>'<option value="'+esc(id)+'" '+(i===index?'selected':'')+'>'+esc(label)+'</option>').join('');
+  const options='<option value="" selected disabled>اختاري العنصر المطابق لهذه الصورة</option>'+items.map(([id,label])=>'<option value="'+esc(id)+'">'+esc(label)+'</option>').join('');
   const preview=URL.createObjectURL(file);previewObjectUrls[kind].push(preview);
   const valid=['image/png','image/jpeg','image/webp'].includes(file.type)&&file.size<=5*1024*1024;
   return '<div class="item !items-start"><div class="min-w-0 w-full"><img src="'+preview+'" alt="معاينة '+(index+1)+'" class="w-full h-36 object-contain rounded-lg bg-black/30"><p class="text-xs mt-2 break-all">'+esc(file.name)+'</p><label class="text-xs muted block mt-2">ربط الصورة بالعنصر<select class="field mt-1" data-asset-kind="'+kind+'" data-asset-index="'+index+'">'+options+'</select></label><p class="text-xs mt-1 '+(valid?'text-emerald-300':'text-red-300')+'">'+(file.size/1024/1024).toFixed(2)+' MB · '+(valid?'الملف صالح':'صيغة غير مقبولة أو الحجم أكبر من 5MB')+'</p></div></div>';
  }).join('');
 }
-function assetMappings(kind){return Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]')).map(select=>({id:select.value,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));}
+function assetMappings(kind){const type=kind==='backgrounds'?'room_background':'profile_frame';return Array.from(document.querySelectorAll('[data-asset-kind="'+kind+'"]')).map(select=>({id:select.value,type,file:selectedAssets[kind][Number(select.dataset.assetIndex)]}));}
 function mediaFolder(type){return type==='room_background'?'catalog/room-backgrounds':'catalog/profile-frames';}
 async function replaceMediaImage(id,input,button){
  const file=input.files?.[0];if(!file)return;button.disabled=true;
@@ -226,16 +289,16 @@ $('#asset-batch-upload').onclick=async()=>{
  const all=[...backgrounds,...frames],invalid=all.find(f=>!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>5*1024*1024);
  if(invalid){result.textContent='الملف '+invalid.name+' غير صالح. الصيغ المقبولة PNG/JPG/WEBP وبحد أقصى 5MB للصورة.';message(result.textContent,true);return;}
  const bgMap=assetMappings('backgrounds'),frameMap=assetMappings('frames'),mappings=[...bgMap,...frameMap];
- if(bgMap.length!==12||frameMap.length!==9||new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يوجد عنصر مكرر أو ربط ناقص. اربطي كل صورة بعنصر مختلف.';message(result.textContent,true);return;}
+ if(bgMap.length!==12||frameMap.length!==9||bgMap.some(x=>!x.id)||frameMap.some(x=>!x.id)||new Set(bgMap.map(x=>x.id)).size!==12||new Set(frameMap.map(x=>x.id)).size!==9){result.textContent='يجب اختيار العنصر الصحيح لكل صورة. لا يتم التخمين حسب ترتيب الملفات، ويجب أن يكون كل ربط فريداً.';message(result.textContent,true);return;}
  if(bgMap.some(x=>!ROOM_BACKGROUND_ASSETS.some(y=>y[0]===x.id))||frameMap.some(x=>!PROFILE_FRAME_ASSETS.some(y=>y[0]===x.id))){result.textContent='الربط المحدد غير صحيح.';message(result.textContent,true);return;}
  button.disabled=true;let uploaded=0;const failed=[],status=[];
  try{
   const {data:catalog,error}=await supabase.from('shop_items').select('id,item_type').in('id',mappings.map(x=>x.id));if(error)throw error;
   const byId=new Map((catalog||[]).map(x=>[x.id,x]));
-  const mismatch=mappings.find((m,i)=>!byId.has(m.id)||byId.get(m.id).item_type!==(i<12?'room_background':'profile_frame'));
+  const mismatch=mappings.find(m=>!byId.has(m.id)||byId.get(m.id).item_type!==m.type);
   if(mismatch)throw Error('توقف الرفع قبل البدء: عنصر الكتالوج غير موجود أو نوعه غير مطابق: '+mismatch.id);
   for(let i=0;i<mappings.length;i++){
-   const {id,file}=mappings[i],type=i<12?'room_background':'profile_frame';
+   const {id,file,type}=mappings[i];
    try{
     result.textContent='جارٍ رفع '+(i+1)+' من 21: '+file.name;
     const url=await upload(file,mediaFolder(type),id);
@@ -289,7 +352,9 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games','bomb','agencies','reports'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
+$('#staff-search').onsubmit=async e=>{e.preventDefault();try{await searchStaffUsers(e.currentTarget.elements.term.value);}catch(err){$('#staff-candidates').innerHTML='<p class="text-red-300 text-sm">'+esc(err.message)+'</p>';}};
+$('#staff-form').onsubmit=async e=>{e.preventDefault();if(!selectedStaffUser){message('اختاري عضواً أولاً.',true);return;}const form=e.currentTarget,button=form.querySelector('[type=submit]');button.disabled=true;try{const permissions=[...form.querySelectorAll('[name="staff-permission"]:checked')].map(x=>x.value);const {error}=await supabase.rpc('assign_staff_permissions',{p_user_id:selectedStaffUser.id,p_permissions:permissions,p_active:$('#staff-active').checked});if(error)throw error;await loadStaff();message('تم حفظ صلاحيات '+(selectedStaffUser.display_name||'المسؤول')+'.');}catch(err){message(err.message,true);}finally{button.disabled=false;}};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['catalog','gifts','users','rooms','games','bomb','agencies','reports','staff'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));});
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));

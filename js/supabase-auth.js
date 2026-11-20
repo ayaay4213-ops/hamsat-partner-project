@@ -63,7 +63,31 @@ export async function getSupabaseSession() {
   return data.session;
 }
 
+function recordSignInOutsideAuthCallback(session) {
+  if (!supabase || !session?.user?.id || !session?.access_token) return;
+  try {
+    const encoded = session.access_token.split('.')[1];
+    if (!encoded) return;
+    const payload = JSON.parse(atob(encoded.replace(/-/g, '+').replace(/_/g, '/')));
+    const sessionId = payload.session_id;
+    if (typeof sessionId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(sessionId)) return;
+    const userId = session.user.id;
+    // Defer the database call until after Supabase's synchronous auth callback returns.
+    setTimeout(() => {
+      supabase.from('login_events')
+        .upsert({ user_id: userId, session_id: sessionId }, { onConflict: 'user_id,session_id', ignoreDuplicates: true })
+        .then(({ error }) => { if (error) console.warn('HAMSAT sign-in audit is not available yet:', error.message); })
+        .catch(error => console.warn('HAMSAT sign-in audit failed:', error));
+    }, 0);
+  } catch (error) {
+    console.warn('HAMSAT sign-in audit could not read the session id:', error);
+  }
+}
+
 export function onAuthStateChange(callback) {
-  const { data } = requireClient().auth.onAuthStateChange((event, session) => callback(event, session));
+  const { data } = requireClient().auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+    if (event === 'SIGNED_IN') recordSignInOutsideAuthCallback(session);
+  });
   return () => data.subscription.unsubscribe();
 }

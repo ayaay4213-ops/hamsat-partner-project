@@ -1,12 +1,12 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261120-room-chat-friends-v3';
+import { api } from './api.js?v=20261120-room-discovery-staff-v3';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
+const state = { account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBackgroundChannel: null, roomBombTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
@@ -81,9 +81,11 @@ async function openSideMenu() {
   const root = $('#side-drawer-root'); if (!root) return;
   // Show the Super Admin entry only after the database confirms the fixed owner identity.
   const showAdmin = state.account ? await api.isAdmin().catch(() => false) : false;
+  const staffRole = state.account ? await api.myStaffRole().catch(() => ({active:false,permissions:[]})) : {active:false,permissions:[]};
+  const showStaff = Boolean(staffRole.active && staffRole.permissions?.length);
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>HAMSAT ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}</nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}${showStaff ? '<a href="staff.html"><i data-lucide="shield-check"></i>مساحة المسؤول</a>' : ''}</nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -107,7 +109,27 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
-function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
+function applyRoomBackground(url) {
+  const room = $('#room-seats')?.closest('.hs-room-stage');
+  if (!room) return;
+  let image = room.querySelector(':scope > .hs-room-shared-bg');
+  if (!url) {
+    image?.remove();
+    room.classList.remove('has-shared-background');
+    return;
+  }
+  if (!image) {
+    image = document.createElement('img');
+    image.className = 'hs-room-shared-bg';
+    image.alt = '';
+    image.setAttribute('aria-hidden', 'true');
+    image.draggable = false;
+    room.prepend(image);
+  }
+  image.src = String(url);
+  room.classList.add('has-shared-background');
+}
+function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBackgroundChannel) { api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 function renderRoomMiniBubble() {
   const root = $('#room-mini-root');
@@ -128,6 +150,7 @@ function renderRoomMiniBubble() {
     root.innerHTML = '';
     if (state.roomChannel) { await api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; }
     if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; }
+    if (state.roomBackgroundChannel) { await api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; }
     if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; }
     await openRoom(current);
   };
@@ -514,65 +537,36 @@ function onboardingScreen() {
 }
 
 async function homeScreen() {
-  const p = state.profile;
-  screen.innerHTML = '<div class="hs-home fade-in">' +
-    '<header class="hs-home-top"><div class="hs-home-brand">' +
-    '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' +
-    '<a href="#/me" class="hs-home-avatar">' + avatar(p,44) + '</a>' +
-    '<div><span>أهلًا بكِ في HAMSAT</span><strong>' + esc(p.displayName || 'صديقتنا') + '</strong></div></div>' +
-    '<a href="#/wallet" class="hs-home-wallet">' + coin(19) + '<span>' + num(state.wallet?.balance) + '</span><i data-lucide="plus"></i></a></header>' +
-    '<section class="hs-home-hero"><div class="hs-home-hero-copy"><span class="hs-home-kicker">H A M S A T · VOICE COMMUNITY</span>' +
-    '<h1>هنا تبدأ<br><em>أجمل الحكايات</em></h1><p>اقتربي من الأصدقاء، اكتشفي المجتمعات الصوتية، وشاركي لحظاتك.</p>' +
-    '<a href="#/rooms?new=1" class="hs-home-create"><i data-lucide="plus"></i> إنشاء غرفة</a></div>' +
-    '<div class="hs-home-hero-art hs-home-hero-art-large"><img src="https://cdn.pika.art/v2/creation/uploads/977d3915-12e7-4356-bf67-68b351020f52/27e2ac02b32f42f4ba7ff67c344d31ff.webp" alt="همسات"></div><span class="hs-home-orbit orbit-one"></span><span class="hs-home-orbit orbit-two"></span></section>' +
-    '<section class="hs-home-shortcuts">' +
-    '<a href="#/rooms"><span class="shortcut-icon"><i data-lucide="audio-lines"></i></span><b>الغرف</b><small>استمعي وشاركي</small></a>' +
-    '<a href="#/gifts"><span class="shortcut-icon"><i data-lucide="gift"></i></span><b>الهدايا</b><small>أرسلي المحبة</small></a>' +
-    '<a href="#/shop"><span class="shortcut-icon"><i data-lucide="gem"></i></span><b>المتجر</b><small>زيني حسابك</small></a>' +
-    '<a href="#/wallet"><span class="shortcut-icon"><i data-lucide="wallet"></i></span><b>المحفظة</b><small>رصيدك ومكافآتك</small></a><a href="#/games"><span class="shortcut-icon"><i data-lucide="gamepad-2"></i></span><b>الألعاب</b><small>تحديات ممتعة</small></a></section>' +
-    '<section class="hs-home-section"><div class="hs-home-section-head"><div><span>DISCOVER</span><h2>اكتشفي الغرف</h2></div><a href="#/rooms">عرض الكل <i data-lucide="arrow-left"></i></a></div>' +
-    '<div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></section>' +
-    '<section class="hs-home-members"><div class="hs-home-section-head"><div><span>NEW FRIENDS</span><h2>أعضاء مجتمعنا</h2></div><span id="members-count"></span></div>' +
-    '<div id="home-users" class="hs-home-user-list"><div class="skeleton w-16 h-20 shrink-0"></div><div class="skeleton w-16 h-20 shrink-0"></div></div></section>' +
-    '<div class="hs-home-footnote"><span>✦</span> همسات، مساحة تجمعنا <span>✦</span></div></div>';
+  screen.innerHTML = `
+    <main class="hs-home hs-home-minimal fade-in" dir="rtl">
+      <div class="hs-home-ad-slot" role="region" aria-label="مساحة إعلانية"></div>
+      <section class="hs-home-section hs-home-minimal-rooms" aria-label="الغرف الصوتية">
+        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-12"></div><div class="skeleton h-12"></div></div>
+      </section>
+    </main>`;
   icons_();
-  const [rooms, users] = await Promise.allSettled([api.rooms(), api.users()]);
-  const hr = $('#home-rooms'); if (!hr) return;
-  if (rooms.status === 'fulfilled') {
-    const list = rooms.value.rooms.slice(0, 3);
-    hr.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'أنشئي أول غرفة وابدئي سهرتك مع الأصدقاء');
-    const myRoom = rooms.value.rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
-    const homeCreate = screen.querySelector('.hs-home-create');
-    if (myRoom && homeCreate) { homeCreate.href = '#/rooms'; homeCreate.innerHTML = '<i data-lucide="door-open"></i> الدخول إلى غرفتك'; homeCreate.onclick = (event) => { event.preventDefault(); openRoom(myRoom); }; icons_(); }
-    bindRoomCards(hr, rooms.value.rooms);
-  } else hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', rooms.reason.message);
-  const hu = $('#home-users');
-  if (users.status === 'fulfilled') {
-    $('#members-count').textContent = num(users.value.total) + ' عضو';
-    hu.innerHTML = users.value.users.slice(0,12).map(u => `<a href="#/u/${esc(u.handle)}" class="hs-home-user"><span class="hs-home-user-cover" style="${u.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.08),rgba(7,8,12,.38)),url(${JSON.stringify(u.coverUrl)})` : ''}"></span>${avatar(u,56)}<span>${esc(u.displayName)}</span></a>`).join('') || '<p class="text-xs text-[#a993c8]">سيظهر الأعضاء هنا بعد إنشاء ملفاتهم الشخصية.</p>';
-  } else hu.innerHTML = '<p class="text-sm text-[#a993c8]">تعذّر تحميل الأعضاء</p>';
-  icons_();
+  const hr = $('#home-rooms');
+  try {
+    const rooms = await api.rooms();
+    if (!hr || !screen.contains(hr)) return;
+    const list = rooms.rooms || [];
+    hr.innerHTML = list.length
+      ? list.map(roomCard).join('')
+      : '<div class="hs-home-no-rooms">لا توجد غرف حالياً</div>';
+    bindRoomCards(hr, list);
+    icons_();
+  } catch (err) {
+    if (hr) hr.innerHTML = '<div class="hs-home-no-rooms">تعذّر تحميل الغرف، حاولي تحديث الصفحة</div>';
+  }
 }
 function emptyBox(icon, title, sub = '') {
   return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
 }
 
 function roomCard(r) {
-  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition">
-    <div class="room-cover" ${r.coverUrl ? `style="background-image:linear-gradient(180deg,rgba(4,5,8,.12),rgba(4,5,8,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
-      <div class="room-cover-glow"></div>
-      <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
-      <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
-      <span class="room-cover-topic">${esc(r.topic)}</span>
-    </div>
-    <div class="room-card-body">
-      <div class="flex items-center gap-2 min-w-0">
-        <div class="min-w-0 flex-1"><p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p><p class="text-xs text-[#b7b2a5] mt-1 truncate">بواسطة ${esc(r.ownerName)}</p></div>
-        ${avatar({displayName:r.ownerName,color:r.ownerColor},38)}
-      </div>
-      <p class="room-description">${esc(r.description || 'مساحة مفتوحة للقاء والتعارف ومشاركة الأحاديث')}</p>
-      <div class="room-card-footer"><span><i data-lucide="clock-3"></i>${timeAgo(r.createdAt)}</span><span class="room-enter">دخول الغرفة <i data-lucide="arrow-left"></i></span></div>
-    </div>
+  return `<button type="button" data-room="${esc(r.id)}" class="room-card hs-room-discovery-card hs-home-room-photo" aria-label="دخول غرفة ${esc(r.title)}">
+    <span class="hs-home-room-photo-media">${r.coverUrl ? `<img src="${esc(r.coverUrl)}" alt="${esc(r.title)}" loading="lazy">` : '<span class="hs-home-room-photo-placeholder"><i data-lucide="audio-lines"></i></span>'}</span>
+    <span class="hs-home-room-photo-footer"><b>${esc(r.title)}</b><span class="hs-room-discovery-enter" aria-label="دخول الغرفة"><i data-lucide="log-in"></i></span></span>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
@@ -598,7 +592,7 @@ async function openRoom(r) {
           <span class="hs-room-owner-tag" aria-label="المضيفة"><i data-lucide="crown"></i></span>
         ${'</div>'}
       </div>
-      <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-minimize" class="hs-room-minimize" aria-label="الاحتفاظ بالغرفة" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
+      <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-background-open" class="hs-room-settings-launch" aria-label="تغيير خلفية المايكات" title="تغيير خلفية المايكات"><i data-lucide="image"></i></button><button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-minimize" class="hs-room-minimize" aria-label="الاحتفاظ بالغرفة" title="الاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
     <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><a href="#/games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></a><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
     </div>
     ${isRoomOwner ? `
@@ -630,6 +624,16 @@ async function openRoom(r) {
         <div class="hs-room-settings-group"><h4>إدارة الأعضاء</h4><p class="hs-room-settings-hint">كتم المتحدث أو إنزاله من المايك أو إخراجه من الغرفة.</p><div id="room-admin-members" class="space-y-2"><p class="text-xs opacity-60">جارٍ تحميل قائمة الأعضاء...</p></div></div>
         <button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button>
       </section>` : ''}
+    <section id="room-background-panel" class="hs-room-settings hs-room-background-settings hidden" aria-label="تغيير خلفية المايكات">
+      <header class="hs-room-settings-header"><button type="button" id="room-background-close" aria-label="إغلاق"><i data-lucide="arrow-right"></i></button><h3>خلفية المايكات للجميع</h3><span></span></header>
+      <p class="hs-room-settings-hint px-4">أي عضو داخل الغرفة يستطيع اختيار صورة من هاتفه. الخلفية تظهر للجميع وتبقى محفوظة حتى بعد مغادرة صاحبها.</p>
+      <div class="p-4 space-y-3">
+        <label class="photo-picker hs-room-background-picker" for="shared-room-background-file"><i data-lucide="images"></i><span>اختيار صورة من الهاتف</span><input id="shared-room-background-file" type="file" accept="image/*" hidden></label>
+        <div id="shared-room-background-preview" class="hs-room-background-preview" aria-live="polite"><div>جارٍ تحميل الخلفية الحالية...</div></div>
+        <button type="button" id="shared-room-background-reset" class="btn-ghost w-full">إزالة الخلفية الحالية</button>
+        <button type="button" id="shared-room-background-save" class="btn-gold w-full">حفظ الخلفية للجميع</button>
+      </div>
+    </section>
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
     <button type="button" id="room-gift-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق الهدايا"></button><div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><div><span>HAMSAT GIFTS</span><h3>اختاري هديتك</h3></div><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><p id="room-gift-balance" class="hs-gift-balance">رصيدك الحالي: —</p><form id="room-gift-form" class="space-y-3"><div class="flex items-center justify-between gap-2"><label class="label">إلى أحد الجالسين على المايك</label><button type="button" id="room-gift-all" class="hs-gift-all">All</button></div><select name="recipient" class="field"></select><input type="hidden" name="gift" value=""><div id="room-gift-categories" class="hs-room-gift-categories"><button type="button" data-gift-category="app" class="active">هدية التطبيق</button><button type="button" data-gift-category="event">هدية الحدث</button><button type="button" data-gift-category="lucky">الهدايا المحظوظة</button><button type="button" data-gift-category="special">هدية خاصة</button></div><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" class="btn-gold w-full" disabled>إرسال الهدية</button></form></div>
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
@@ -674,15 +678,87 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const canvas=sheet.querySelector('.hs-room-canvas');
-      if(!canvas)return;
-      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
-      canvas.style.setProperty('background-size','cover','important');
-      canvas.style.setProperty('background-position','center center','important');
-      canvas.style.setProperty('background-repeat','no-repeat','important');
+      const room=sheet.querySelector('.hs-room-stage');
+      if(!room)return;
+      let image=room.querySelector(':scope > .hs-room-shared-bg');
+      if(!url){
+        image?.remove();
+        room.classList.remove('has-shared-background');
+        return;
+      }
+      if(!image){
+        image=document.createElement('img');
+        image.className='hs-room-shared-bg';
+        image.alt='';
+        image.setAttribute('aria-hidden','true');
+        image.draggable=false;
+        room.prepend(image);
+      }
+      image.src=String(url);
+      room.classList.add('has-shared-background');
     };
     applyRoomBackground(null);
     if(r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))applyRoomBackground(r.backgroundItemId);else api.shopItems().then(({items})=>applyRoomBackground(items.find(item=>item.id===r.backgroundItemId)?.image_url||null)).catch(()=>{});}
+    const sharedBgPanel=sheet.querySelector('#room-background-panel');
+    const sharedBgOpen=sheet.querySelector('#room-background-open');
+    const sharedBgFile=sheet.querySelector('#shared-room-background-file');
+    const sharedBgPreview=sheet.querySelector('#shared-room-background-preview');
+    const sharedBgSave=sheet.querySelector('#shared-room-background-save');
+    let pendingSharedBgFile=null, pendingSharedBgUrl=null, sharedBgPreviewUrl=null;
+    const drawSharedBgPreview=(url,note='الخلفية الحالية')=>{
+      if(!sharedBgPreview)return;
+      sharedBgPreview.innerHTML=url
+        ? '<img src="'+esc(url)+'" alt="معاينة خلفية المايكات" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">'+esc(note)+'</p>'
+        : '<div class="h-20 grid place-items-center text-xs opacity-70">'+esc(note)+'</div>';
+    };
+    const openSharedBgPanel=async()=>{
+      if(!sharedBgPanel)return;
+      const opening=sharedBgPanel.classList.contains('hidden');
+      sharedBgPanel.classList.toggle('hidden',!opening);
+      if(!opening)return;
+      try{
+        const current=await api.getRoomBackground(r.id);
+        let currentUrl=current.url;
+        if(!current.exists&&r.backgroundItemId){
+          if(/^https?:\/\//i.test(r.backgroundItemId))currentUrl=r.backgroundItemId;
+          else{const {items}=await api.shopItems();currentUrl=items.find(item=>item.id===r.backgroundItemId)?.image_url||null;}
+        }
+        r.backgroundUrl=currentUrl;
+        pendingSharedBgUrl=currentUrl;
+        applyRoomBackground(currentUrl);
+        drawSharedBgPreview(currentUrl,currentUrl?'الخلفية المشتركة الحالية':'لا توجد خلفية مخصصة بعد');
+      }catch(error){drawSharedBgPreview(null,'تعذّر تحميل الخلفية: '+error.message);}
+    };
+    if(sharedBgOpen)sharedBgOpen.onclick=openSharedBgPanel;
+    sheet.querySelector('#room-background-close')?.addEventListener('click',()=>sharedBgPanel?.classList.add('hidden'));
+    if(sharedBgFile)sharedBgFile.onchange=()=>{
+      const file=sharedBgFile.files?.[0];if(!file)return;
+      const ext=(file.name?.split('.').pop()||'').toLowerCase(),mime=(file.type||'').toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)&&!['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'].includes(mime)){toast('اختاري صورة JPG أو PNG أو WEBP من المعرض.','error');sharedBgFile.value='';return;}
+      if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت.','error');sharedBgFile.value='';return;}
+      if(sharedBgPreviewUrl)URL.revokeObjectURL(sharedBgPreviewUrl);
+      pendingSharedBgFile=file;pendingSharedBgUrl=null;sharedBgPreviewUrl=URL.createObjectURL(file);
+      applyRoomBackground(sharedBgPreviewUrl);drawSharedBgPreview(sharedBgPreviewUrl,'معاينة خاصة بك — اضغطي حفظ الخلفية للجميع');
+    };
+    sheet.querySelector('#shared-room-background-reset')?.addEventListener('click',()=>{
+      pendingSharedBgFile=null;pendingSharedBgUrl=null;if(sharedBgFile)sharedBgFile.value='';
+      if(sharedBgPreviewUrl){URL.revokeObjectURL(sharedBgPreviewUrl);sharedBgPreviewUrl=null;}
+      applyRoomBackground(null);drawSharedBgPreview(null,'ستتم إزالة الخلفية للجميع عند الحفظ');
+    });
+    if(sharedBgSave)sharedBgSave.onclick=async()=>{
+      sharedBgSave.disabled=true;sharedBgSave.textContent='جارٍ حفظ الخلفية...';
+      try{
+        if(pendingSharedBgFile){
+          const uploaded=await api.uploadMedia(pendingSharedBgFile,'room-backgrounds');
+          pendingSharedBgUrl=uploaded.url;pendingSharedBgFile=null;
+          if(sharedBgPreviewUrl){URL.revokeObjectURL(sharedBgPreviewUrl);sharedBgPreviewUrl=null;}
+        }
+        const saved=await api.setRoomBackground(r.id,pendingSharedBgUrl);
+        r.backgroundUrl=saved.url;applyRoomBackground(saved.url);
+        drawSharedBgPreview(saved.url,saved.url?'تم حفظ الخلفية وظهورها للجميع ✓':'تمت إزالة الخلفية للجميع');
+        toast('تم تحديث خلفية الغرفة لجميع الموجودين.');
+      }catch(error){toast(error.message||'تعذّر حفظ الخلفية.','error');}
+      finally{sharedBgSave.disabled=false;sharedBgSave.textContent='حفظ الخلفية للجميع';}
+    };
     const copyRoomId=sheet.querySelector('#room-copy-id');
     if(copyRoomId)copyRoomId.onclick=async()=>{try{await navigator.clipboard.writeText(r.publicId||r.id);toast('تم نسخ ID الغرفة');}catch(e){toast(r.publicId||r.id);}};
     const copyRoomLink=sheet.querySelector('#room-copy-link');
@@ -733,8 +809,8 @@ async function openRoom(r) {
           const catalog=sheet.querySelector('#room-background-catalog');
           catalog.innerHTML='<p class="text-xs opacity-60">جارٍ تحميل الخلفيات...</p>';
           try{
-            const [catalogResult,inventoryResult]=await Promise.all([api.shopItems(),api.inventory()]);
-            const backgrounds=catalogResult.items.filter(item=>item.item_type==='room_background');chosenBackgroundUrl=/^https?:\/\//i.test(chosenBackgroundId||'')?chosenBackgroundId:(backgrounds.find(item=>item.id===chosenBackgroundId)?.image_url||null);applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML=chosenBackgroundUrl?'<img src="'+esc(chosenBackgroundUrl)+'" alt="معاينة خلفية الغرفة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">الخلفية المحفوظة</p>':'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';
+            const [catalogResult,inventoryResult,sharedBgResult]=await Promise.all([api.shopItems(),api.inventory(),api.getRoomBackground(r.id)]);
+            const backgrounds=catalogResult.items.filter(item=>item.item_type==='room_background');if(sharedBgResult.exists){chosenBackgroundId=sharedBgResult.url||null;chosenBackgroundUrl=sharedBgResult.url||null;}else{chosenBackgroundUrl=/^https?:\/\//i.test(chosenBackgroundId||'')?chosenBackgroundId:(backgrounds.find(item=>item.id===chosenBackgroundId)?.image_url||null);}applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML=chosenBackgroundUrl?'<img src="'+esc(chosenBackgroundUrl)+'" alt="معاينة خلفية الغرفة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">الخلفية المحفوظة</p>':'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';
             const ownedIds=new Set(inventoryResult.items.filter(item=>item.item_type==='room_background'&&(!item.expiresAt||new Date(item.expiresAt).getTime()>Date.now())).map(item=>item.id));
             catalog.innerHTML=backgrounds.length?'<div class="grid grid-cols-2 gap-2">'+backgrounds.map(item=>{const owned=ownedIds.has(item.id);return '<article class="rounded-xl border border-gold-600/30 p-2 text-center"><div class="h-20 rounded-lg overflow-hidden bg-black/30">'+(item.image_url?'<img src="'+esc(item.image_url)+'" alt="'+esc(item.name)+'" class="w-full h-full object-cover">':'<div class="h-full grid place-items-center">🌌</div>')+'</div><b class="block text-xs mt-2">'+esc(item.name)+'</b><small class="text-[10px] text-gold-300">'+(owned?'مملوكة':Number(item.price)===0?'مجانية':num(item.price)+' عملة')+'</small><button type="button" data-room-bg-item="'+esc(item.id)+'" data-owned="'+owned+'" class="btn-ghost w-full mt-2 text-xs">'+(owned?'اختيار':'شراء')+'</button></article>';}).join('')+'</div>':'<p class="text-xs opacity-60">لا توجد خلفيات في المتجر حالياً.</p>';
             catalog.querySelectorAll('[data-room-bg-item]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const item=backgrounds.find(x=>x.id===button.dataset.roomBgItem);if(!item)return;if(button.dataset.owned!=='true'){await api.purchaseShopItem(item.id);toast('تم شراء الخلفية وإضافتها إلى مقتنياتك');button.dataset.owned='true';button.textContent='اختيار';button.closest('article').querySelector('small').textContent='مملوكة';}else{chosenBackgroundFile=null;const galleryInput=sheet.querySelector('#room-background-gallery-file');if(galleryInput)galleryInput.value='';if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}chosenBackgroundId=item.id;chosenBackgroundUrl=item.image_url||null;sheet.querySelector('#room-background-preview').innerHTML=item.image_url?'<img src="'+esc(item.image_url)+'" alt="معاينة خلفية المتجر" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">معاينة — ستُطبّق بعد حفظ الإعدادات</p>':'<div class="h-20 grid place-items-center text-xs">الخلفية المختارة</div>';sheet.querySelector('#room-background-preview').innerHTML=item.image_url?'<img src="'+esc(item.image_url)+'" alt="معاينة خلفية المتجر" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">معاينة — ستُطبّق بعد حفظ الإعدادات</p>':'<div class="h-20 grid place-items-center text-xs">الخلفية المختارة</div>';toast('تم اختيار الخلفية');}}catch(error){toast(error.message,'error');}finally{button.disabled=false;}});
@@ -752,8 +828,25 @@ async function openRoom(r) {
       sheet.querySelector('#room-background-reset').onclick=()=>{chosenBackgroundId=null;chosenBackgroundUrl=null;chosenBackgroundFile=null;const picker=sheet.querySelector('#room-background-gallery-file');if(picker)picker.value='';if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}applyRoomBackground(null);sheet.querySelector('#room-background-preview').innerHTML='<div class="h-20 grid place-items-center text-xs opacity-60">تمت إزالة خلفية المايكات — اضغطي حفظ خلفية الغرفة لتأكيد الإزالة</div>';};
       sheet.querySelector('#room-background-gallery-file').onchange=()=>{const input=sheet.querySelector('#room-background-gallery-file'),file=input.files?.[0];if(!file)return;const ext=(file.name.split('.').pop()||'').toLowerCase(),mime=(file.type||'').toLowerCase();const allowed=['jpg','jpeg','png','webp'].includes(ext)||['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'].includes(mime);if(!allowed){toast('الصيغ المدعومة: JPG وPNG وWEBP. إذا كانت الصورة بصيغة HEIC حوّليها إلى JPG أولاً.','error');input.value='';return;}if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');input.value='';return;}if(backgroundPreviewUrl)URL.revokeObjectURL(backgroundPreviewUrl);chosenBackgroundFile=file;backgroundPreviewUrl=URL.createObjectURL(file);chosenBackgroundId=null;chosenBackgroundUrl=backgroundPreviewUrl;applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML='<img src="'+esc(backgroundPreviewUrl)+'" alt="معاينة خلفية الغرفة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">معاينة من معرض الهاتف — اضغطي حفظ خلفية الغرفة</p>';};
       sheet.querySelector('#room-cover-save').onclick=async()=>{const btn=sheet.querySelector('#room-cover-save');btn.disabled=true;try{if(chosenCoverFile){btn.textContent='جارٍ رفع الغلاف...';const uploaded=await api.uploadMedia(chosenCoverFile,'room-covers');chosenCover=uploaded.url;chosenCoverFile=null;if(coverPreviewUrl){URL.revokeObjectURL(coverPreviewUrl);coverPreviewUrl=null;}}const saved=await api.updateRoomSettings(r.id,{title:r.title,topic:r.topic,description:r.description,coverUrl:chosenCover,backgroundItemId:r.backgroundItemId,roomEmoji:r.roomEmoji,seatLimit:r.seatLimit});r.coverUrl=saved.coverUrl??chosenCover;const thumb=sheet.querySelector('.hs-room-cover-thumb');if(thumb){thumb.style.backgroundImage=r.coverUrl?'url('+JSON.stringify(r.coverUrl)+')':'none';thumb.innerHTML=r.coverUrl?'':'<i data-lucide="image"></i>';icons_();}sheet.querySelector('#room-cover-preview').innerHTML=r.coverUrl?'<img src="'+esc(r.coverUrl)+'" alt="غلاف الغرفة المحفوظ">':'<span>لم يتم اختيار غلاف بعد</span>';sheet.querySelector('.room-cover-picker span').textContent='تم حفظ غلاف الغرفة ✓';toast('تم حفظ غلاف الغرفة بشكل مستقل');}catch(e){toast(e.message,'error');}finally{btn.disabled=false;btn.textContent='حفظ غلاف الغرفة';}};
-      sheet.querySelector('#room-background-save').onclick=async()=>{const btn=sheet.querySelector('#room-background-save');btn.disabled=true;try{if(chosenBackgroundFile){btn.textContent='جارٍ رفع خلفية المايكات...';const uploaded=await api.uploadMedia(chosenBackgroundFile,'room-backgrounds');chosenBackgroundId=uploaded.url;chosenBackgroundUrl=uploaded.url;chosenBackgroundFile=null;if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}}const saved=await api.updateRoomSettings(r.id,{title:r.title,topic:r.topic,description:r.description,coverUrl:r.coverUrl,backgroundItemId:chosenBackgroundId,roomEmoji:r.roomEmoji,seatLimit:r.seatLimit});r.backgroundItemId=saved.backgroundItemId??chosenBackgroundId;applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('#room-background-preview').innerHTML=chosenBackgroundUrl?'<img src="'+esc(chosenBackgroundUrl)+'" alt="خلفية الغرفة المحفوظة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">تم حفظ خلفية الغرفة ✓</p>':'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';toast('تم حفظ خلفية الغرفة بشكل مستقل');}catch(e){toast(e.message,'error');}finally{btn.disabled=false;btn.textContent='حفظ خلفية الغرفة';}};
-      sheet.querySelector('#room-background-file').onchange=()=>{const input=sheet.querySelector('#room-background-file'),file=input.files?.[0];if(!file)return;const label=sheet.querySelector('.room-cover-picker span');if(!['image/png','image/jpeg','image/webp'].includes(file.type)){toast('اختاري صورة بصيغة PNG أو JPG أو WEBP','error');input.value='';return;}if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');input.value='';return;}if(coverPreviewUrl)URL.revokeObjectURL(coverPreviewUrl);chosenCoverFile=file;coverPreviewUrl=URL.createObjectURL(file);label.textContent='معاينة جاهزة — ستُرفع عند الحفظ';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(coverPreviewUrl)+'" alt="معاينة غلاف الغرفة">';};
+      sheet.querySelector('#room-background-save').onclick=async()=>{
+        const btn=sheet.querySelector('#room-background-save');btn.disabled=true;
+        try{
+          if(chosenBackgroundFile){
+            btn.textContent='جارٍ رفع خلفية المايكات...';
+            const uploaded=await api.uploadMedia(chosenBackgroundFile,'room-backgrounds');
+            chosenBackgroundUrl=uploaded.url;chosenBackgroundFile=null;
+            if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}
+          }
+          const saved=await api.setRoomBackground(r.id,chosenBackgroundUrl);
+          r.backgroundUrl=saved.url;applyRoomBackground(saved.url);
+          sheet.querySelector('#room-background-preview').innerHTML=saved.url
+            ?'<img src="'+esc(saved.url)+'" alt="خلفية الغرفة المحفوظة" class="w-full h-36 object-cover"><p class="px-3 py-2 text-xs text-center text-gold-300">تم حفظ خلفية الغرفة للجميع ✓</p>'
+            :'<div class="h-20 grid place-items-center text-xs">لا توجد خلفية محفوظة للمايكات</div>';
+          toast('تم حفظ خلفية الغرفة لجميع الموجودين.');
+        }catch(e){toast(e.message,'error');}
+        finally{btn.disabled=false;btn.textContent='حفظ خلفية الغرفة';}
+      };
+       sheet.querySelector('#room-background-file').onchange=()=>{const input=sheet.querySelector('#room-background-file'),file=input.files?.[0];if(!file)return;const label=sheet.querySelector('.room-cover-picker span');const ext=(file.name?.split('.').pop()||'').toLowerCase(),mime=(file.type||'').toLowerCase();if(!['jpg','jpeg','png','webp'].includes(ext)&&!['image/jpeg','image/jpg','image/pjpeg','image/png','image/webp'].includes(mime)){toast('اختاري صورة JPG أو PNG أو WEBP من المعرض.','error');input.value='';return;}if(file.size>5*1024*1024){toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');input.value='';return;}if(coverPreviewUrl)URL.revokeObjectURL(coverPreviewUrl);chosenCoverFile=file;coverPreviewUrl=URL.createObjectURL(file);label.textContent='معاينة جاهزة — ستُرفع عند الحفظ';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(coverPreviewUrl)+'" alt="معاينة غلاف الغرفة">';};
       sheet.querySelector('#room-settings-save').onclick=async()=>{const btn=sheet.querySelector('#room-settings-save');btn.disabled=true;try{if(chosenCoverFile){btn.textContent='جارٍ رفع غلاف الغرفة...';const uploaded=await api.uploadMedia(chosenCoverFile,'room-covers');chosenCover=uploaded.url;chosenCoverFile=null;if(coverPreviewUrl){URL.revokeObjectURL(coverPreviewUrl);coverPreviewUrl=null;}sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(chosenCover)+'" alt="معاينة غلاف الغرفة">';}if(chosenBackgroundFile){btn.textContent='جارٍ رفع خلفية المايكات...';const bgUpload=await api.uploadMedia(chosenBackgroundFile,'room-backgrounds');chosenBackgroundId=bgUpload.url;chosenBackgroundUrl=bgUpload.url;chosenBackgroundFile=null;if(backgroundPreviewUrl){URL.revokeObjectURL(backgroundPreviewUrl);backgroundPreviewUrl=null;}}btn.textContent='جارٍ حفظ الإعدادات...';const saved=await api.updateRoomSettings(r.id,{title:sheet.querySelector('#room-edit-title')?.value||r.title,topic:sheet.querySelector('#room-edit-topic')?.value||r.topic,description:sheet.querySelector('#room-edit-description')?.value??r.description,coverUrl:chosenCover,backgroundItemId:chosenBackgroundId,roomEmoji:chosenEmoji,seatLimit:Number(sheet.querySelector('#room-seat-limit')?.value||r.seatLimit||8)});r.title=saved.title;r.topic=saved.topic;r.description=saved.description;r.coverUrl=saved.coverUrl;r.backgroundItemId=saved.backgroundItemId;r.roomEmoji=saved.roomEmoji;r.seatLimit=saved.seatLimit;const coverThumb=sheet.querySelector('.hs-room-cover-thumb');if(coverThumb){coverThumb.style.backgroundImage=chosenCover?'url('+JSON.stringify(chosenCover)+')':'none';coverThumb.innerHTML=chosenCover?'':'<i data-lucide="image"></i>';icons_();}sheet.querySelector('.hs-room-title-emoji').textContent=chosenEmoji;sheet.querySelector('.hs-room-title-row h2').lastChild.textContent=' '+r.title;sheet.querySelector('.hs-room-title-row p').textContent=r.topic+' · بواسطة '+(r.ownerName||'عضو');applyRoomBackground(chosenBackgroundUrl);sheet.querySelector('.hs-room-seat-count').textContent=r.seatLimit+' مقاعد';await drawMembers();if(chosenCover){sheet.querySelector('.room-cover-picker span').textContent='تم حفظ غلاف الغرفة ✓';sheet.querySelector('#room-cover-preview').innerHTML='<img src="'+esc(chosenCover)+'" alt="غلاف الغرفة المحفوظ">';}else{sheet.querySelector('.room-cover-picker span').textContent='اختيار صورة غلاف الغرفة من الهاتف';sheet.querySelector('#room-cover-preview').innerHTML='<span>لم يتم اختيار غلاف بعد</span>';}toast('تم حفظ إعدادات غرفتك');panel.classList.add('hidden');}catch(e){toast(e.message,'error');}finally{btn.disabled=false;btn.textContent='حفظ الإعدادات';}};
     }
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
@@ -793,7 +886,7 @@ async function openRoom(r) {
     };
     let roomJoinedAt=Date.now();
     const drawMessages=async()=>{
-      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
@@ -885,7 +978,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;try{const sharedBackground=await api.getRoomBackground(r.id);let activeBackground=sharedBackground.url;if(!sharedBackground.exists&&r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))activeBackground=r.backgroundItemId;else{const catalog=await api.shopItems();activeBackground=catalog.items.find(item=>item.id===r.backgroundItemId)?.image_url||null;}}if(sharedBackground.exists||activeBackground){r.backgroundUrl=activeBackground;applyRoomBackground(activeBackground);}state.roomBackgroundChannel=api.subscribeRoomBackground(r.id,payload=>{const next=payload?.new?.image_url||null;r.backgroundUrl=next;applyRoomBackground(next);if(sharedBgPanel&&!sharedBgPanel.classList.contains('hidden')){pendingSharedBgUrl=next;pendingSharedBgFile=null;drawSharedBgPreview(next,next?'تم تحديث الخلفية من عضو آخر':'أزيلت الخلفية من عضو آخر');}});}catch(backgroundError){console.warn('Shared room backgrounds need migration 0062:',backgroundError);try{if(r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))applyRoomBackground(r.backgroundItemId);else{const legacyCatalog=await api.shopItems();applyRoomBackground(legacyCatalog.items.find(item=>item.id===r.backgroundItemId)?.image_url||null);}}}catch(legacyBackgroundError){console.warn('Legacy room background unavailable:',legacyBackgroundError);}}await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
@@ -1036,7 +1129,7 @@ async function roomsScreen(params) {
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
         ${['الكل', ...TOPICS].map(t => `<button data-t="${t}" class="chip ${t === roomFilter ? 'active' : ''}">${t}</button>`).join('')}
       </div>
-      <div id="rooms-list" class="space-y-3 pt-1 pb-6">${loading()}</div>
+      <div id="rooms-list" class="hs-room-discovery-grid pt-1 pb-6">${loading()}</div>
     </div>`;
   icons_();
   $('#new-room').onclick = newRoomSheet;
@@ -1054,7 +1147,7 @@ async function roomsScreen(params) {
     draw();
   });
   try {
-    rooms = (await api.rooms()).rooms;const ownedRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());const roomAction=$('#new-room');if(ownedRoom&&roomAction){roomAction.id='my-room-enter';roomAction.innerHTML='<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';roomAction.onclick=()=>openRoom(ownedRoom);icons_();}else if(roomAction){roomAction.onclick=newRoomSheet;}draw();
+    rooms = (await api.rooms()).rooms;try{const counts=await api.roomMemberCounts(rooms.map(room=>room.id));rooms=rooms.map(room=>({...room,memberCount:counts[room.id]??0}));}catch(countError){console.warn('Room member count RPC not yet migrated:',countError);rooms=rooms.map(room=>({...room,memberCount:null}));}const ownedRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());const roomAction=$('#new-room');if(ownedRoom&&roomAction){roomAction.id='my-room-enter';roomAction.innerHTML='<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';roomAction.onclick=()=>openRoom(ownedRoom);icons_();}else if(roomAction){roomAction.onclick=newRoomSheet;}draw();
     const inviteId=params.get('invite');
     if(inviteId){
       const {room}=await api.roomById(inviteId);
@@ -1352,7 +1445,8 @@ function profileView(p, own) {
     </div>`;
   return `
     <section class="hs-profile-page" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
-      <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl)})` : ''}">
+      <div class="hs-profile-cover" style="${p.coverUrl ? '' : 'background-image:linear-gradient(135deg,#39283d,#15131d 58%,#292319)'}">
+        ${p.coverUrl ? `<img class="hs-profile-cover-image" src="${esc(p.coverUrl)}" alt="غلاف الحساب" loading="eager" decoding="async">` : ''}
         <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
       </div>
       <div class="hs-profile-main">
@@ -1655,6 +1749,46 @@ async function inviteScreen() {
   icons_();
   $('#copy-invite-link').onclick=async()=>{try{await navigator.clipboard.writeText(inviteUrl);toast('تم نسخ رابط ملفك لمشاركته');}catch(e){toast(inviteUrl);}};
 }
+async function momentsScreen(){
+  screen.innerHTML = `
+    <main class="hs-moments-only fade-in" dir="rtl">
+      <header class="hs-moments-top"><h1>لحظاتي</h1><p>منشوراتك التي شاركتِها في همسات</p></header>
+      <form data-moment-form class="hs-moment-compose">
+        <textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea>
+        <label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label>
+        <button type="submit" class="btn-gold">نشر اللحظة</button>
+      </form>
+      <div data-moments-list class="hs-moments-list"><div class="hs-moment-empty">جارٍ تحميل لحظاتك…</div></div>
+    </main>`;
+  icons_();
+  const form=screen.querySelector('[data-moment-form]');
+  form.onsubmit=async e=>{
+    e.preventDefault();const body=form.elements.body.value.trim(),file=form.elements.momentImage.files?.[0],btn=form.querySelector('[type=submit]');
+    btn.disabled=true;
+    try{let imageUrl=null;if(file)imageUrl=(await api.uploadMedia(file,'moments')).url;if(!body&&!imageUrl)throw new Error('اكتبي شيئاً أو أضيفي صورة');await api.createMoment(body,imageUrl);form.reset();toast('تم نشر لحظتك');await loadOwnMoments();}
+    catch(err){toast(err.message,'error');}finally{btn.disabled=false;}
+  };
+  await loadOwnMoments();
+}
+async function loadOwnMoments(){
+  const host=screen.querySelector('[data-moments-list]');if(!host)return;
+  host.innerHTML='<div class="hs-moment-empty">جارٍ تحميل لحظاتك…</div>';
+  try{
+    const {moments}=await api.moments(state.profile.uuid);
+    if(!moments.length){host.innerHTML='<div class="hs-moment-empty">لم تنشري أي لحظة بعد.</div>';return;}
+    const engagement=await api.momentEngagement(moments.map(m=>m.id));
+    host.innerHTML=moments.map(m=>{
+      const liked=engagement.liked.includes(m.id),likes=engagement.likes[m.id]||0,comments=engagement.comments[m.id]||[];
+      return '<article class="hs-moment-card" data-moment-card="'+esc(m.id)+'">'+(m.image_url?'<img src="'+esc(m.image_url)+'" alt="صورة لحظة" loading="lazy">':'')+(m.body?'<p>'+esc(m.body)+'</p>':'')+'<small>'+dateAr(new Date(m.created_at).getTime())+'</small><div class="hs-moment-actions"><button type="button" data-moment-like="'+esc(m.id)+'" class="'+(liked?'liked':'')+'"><i data-lucide="heart"></i><span>'+num(likes)+'</span></button><button type="button" data-moment-comments="'+esc(m.id)+'"><i data-lucide="message-circle"></i><span>'+num(comments.length)+'</span></button></div><div class="hs-moment-comments" data-moment-comments-list="'+esc(m.id)+'">'+comments.map(c=>'<p><b>تعليق</b> '+esc(c.body)+'</p>').join('')+'</div><form class="hs-moment-comment-form" data-moment-comment-form="'+esc(m.id)+'"><input name="comment" maxlength="500" placeholder="اكتبي تعليقاً…"><button type="submit" aria-label="إرسال التعليق"><i data-lucide="send"></i></button></form><button type="button" class="hs-moment-delete" data-delete-moment="'+esc(m.id)+'">حذف اللحظة</button></article>';
+    }).join('');
+    icons_();
+    host.querySelectorAll('[data-moment-like]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const on=await api.toggleMomentLike(b.dataset.momentLike);b.classList.toggle('liked',on);const n=b.querySelector('span');n.textContent=String(Math.max(0,Number(n.textContent)+(on?1:-1)));}catch(e){toast(e.message,'error');}finally{b.disabled=false;}});
+    host.querySelectorAll('[data-moment-comment-form]').forEach(f=>f.onsubmit=async e=>{e.preventDefault();const input=f.elements.comment,body=input.value.trim();if(!body)return;const btn=f.querySelector('button');btn.disabled=true;try{await api.addMomentComment(f.dataset.momentCommentForm,body);input.value='';await loadOwnMoments();}catch(err){toast(err.message,'error');}finally{btn.disabled=false;}});
+    host.querySelectorAll('[data-moment-comments]').forEach(b=>b.onclick=()=>{const panel=host.querySelector('[data-moment-comments-list="'+CSS.escape(b.dataset.momentComments)+'"]');if(panel)panel.classList.toggle('expanded');});
+    host.querySelectorAll('[data-delete-moment]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف هذه اللحظة؟'))return;try{await api.deleteMoment(b.dataset.deleteMoment);await loadOwnMoments();}catch(e){toast(e.message,'error');}});
+  }catch(e){host.innerHTML='<div class="hs-moment-empty">تعذر تحميل اللحظات: '+esc(e.message)+'</div>';}
+}
+
 function comingSoonScreen(route) {
   const pages={moments:['لحظة','مساحة الصور واليوميات ومشاركة اللحظات مع المجتمع','images'],aristocracy:['الأرستقراطية VIP','عضويات كبار الشخصيات ومزاياها الحصرية','crown'],tasks:['المهام','التحديات اليومية والأسبوعية ومكافآت النشاط','target'],agency:['مركز الوكالة','إدارة المضيفين والوكلاء والتقارير','building-2'],family:['العائلة','مجتمعك ومجموعتك داخل همسات','users-round'],invite:['دعوة الأصدقاء','شاركي رابط ملفك وادعي أصدقاءك إلى همسات','user-plus']};
   const [title,description,icon]=pages[route]||['قريباً','هذه الميزة قيد التجهيز','sparkles'];
@@ -1764,7 +1898,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
-    else if (route === 'moments') { meScreen(); document.querySelector('[data-profile-tab="moments"]')?.click(); }
+    else if (route === 'moments') await momentsScreen();
     else if (route === 'agency') await agencyScreen();
     else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));

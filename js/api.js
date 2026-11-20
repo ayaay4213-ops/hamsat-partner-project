@@ -214,6 +214,9 @@ export const api = {
   },
   moments: async (profileId) => { const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);return {moments:data||[]}; },
   createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
+  momentEngagement: async (momentIds) => { const user=await currentUser();if(!momentIds.length)return {likes:{},liked:[],comments:{}};const [likes,comments]=await Promise.all([client().from('moment_likes').select('moment_id,user_id').in('moment_id',momentIds),client().from('moment_comments').select('id,moment_id,user_id,body,created_at').in('moment_id',momentIds).order('created_at',{ascending:true})]);fail(likes.error);fail(comments.error);const counts={},liked=[];for(const row of likes.data||[]){counts[row.moment_id]=(counts[row.moment_id]||0)+1;if(row.user_id===user.id)liked.push(row.moment_id);}const grouped={};for(const row of comments.data||[])(grouped[row.moment_id]??=[]).push(row);return {likes:counts,liked,comments:grouped}; },
+  toggleMomentLike: async (momentId) => { const user=await currentUser();const {data,error}=await client().from('moment_likes').select('moment_id').eq('moment_id',momentId).eq('user_id',user.id).maybeSingle();fail(error);if(data){const result=await client().from('moment_likes').delete().eq('moment_id',momentId).eq('user_id',user.id);fail(result.error);return false;}const result=await client().from('moment_likes').insert({moment_id:momentId,user_id:user.id});fail(result.error);return true; },
+  addMomentComment: async (momentId,body) => { const user=await currentUser();const {data,error}=await client().from('moment_comments').insert({moment_id:momentId,user_id:user.id,body:String(body||'').trim()}).select('id').single();fail(error);return data; },
   deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
   coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:await mapProfileWithFrame(partner)}; },
   inviteCouple: async (partnerId) => { const user=await currentUser();const {data,error}=await client().from('couple_spaces').insert({owner_id:user.id,partner_id:partnerId,status:'pending'}).select('*').single();fail(error);return data; },
@@ -309,8 +312,15 @@ export const api = {
       return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
-        ownerColor: p.color || '#7c3aed' };
+        ownerColor: p.color || '#7c3aed', ownerVipLevel: p.vipLevel || 0 };
     }) };
+  },
+  roomMemberCounts: async (roomIds) => {
+    const ids = [...new Set((roomIds || []).filter(Boolean))].slice(0,1000);
+    if (!ids.length) return {};
+    const { data, error } = await client().rpc('get_public_room_member_counts', { p_room_ids: ids });
+    fail(error);
+    return Object.fromEntries((data || []).map(row => [row.room_id, Number(row.member_count || 0)]));
   },
   createRoom: async (r) => {
     const user = await currentUser();
@@ -341,6 +351,42 @@ export const api = {
     const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit').single();
     fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
   },
+
+  myStaffRole: async () => {
+    const user = await currentUser();
+    const { data, error } = await client().from('staff_roles')
+      .select('permissions,active,updated_at').eq('user_id', user.id).maybeSingle();
+    fail(error);
+    return data || { permissions: [], active: false };
+  },
+  getRoomBackground: async (roomId) => {
+    const { data, error } = await client().from('room_backgrounds')
+      .select('image_url,updated_at,updated_by').eq('room_id', roomId).maybeSingle();
+    fail(error);
+    return { exists: Boolean(data), url: data?.image_url || null, updatedAt: data?.updated_at || null };
+  },
+  setRoomBackground: async (roomId, imageUrl) => {
+    const user = await currentUser();
+    const url = imageUrl ? String(imageUrl).trim() : null;
+    if (url && (!/^https:\/\//i.test(url) || url.length > 2048)) {
+      throw new Error('رابط الخلفية غير صالح. اختاري صورة من هاتفك أو رابط HTTPS آمن.');
+    }
+    const { data, error } = await client().from('room_backgrounds').upsert({
+      room_id: roomId,
+      image_url: url,
+      updated_by: user.id,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'room_id' }).select('image_url,updated_at').single();
+    fail(error);
+    return { url: data.image_url || null, updatedAt: data.updated_at };
+  },
+  subscribeRoomBackground: (roomId, callback) => client()
+    .channel('room-background-' + roomId)
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'room_backgrounds',
+      filter: 'room_id=eq.' + roomId
+    }, callback)
+    .subscribe(),
 
   leaveRoom: async (roomId) => {
     const user = await currentUser();
