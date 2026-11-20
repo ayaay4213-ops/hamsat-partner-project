@@ -3539,3 +3539,31 @@ button, a { -webkit-tap-highlight-color: transparent; }
   min-width:23px!important;margin:0!important;border:0!important;border-radius:50%!important;
   background:transparent!important;box-shadow:none!important;
 }
+
+
+/* HAMSAT FIX: room overlay must sit above the app's persistent top/navigation bars */
+.sheet-backdrop:has(+ .sheet.room-sheet){
+  position:fixed!important;
+  inset:0!important;
+  z-index:2000!important;
+}
+.sheet.room-sheet{
+  position:fixed!important;
+  inset:0!important;
+  top:0!important;right:0!important;bottom:0!important;left:0!important;
+  z-index:2001!important;
+  width:100vw!important;max-width:none!important;
+  height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;padding:0!important;
+  transform:none!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;
+}
+.sheet.room-sheet>.hs-room-canvas{
+  position:relative!important;
+  display:flex!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-height:0!important;
+  box-sizing:border-box!important;
+  padding: max(env(safe-area-inset-top), 8px) 10px max(env(safe-area-inset-bottom), 8px)!important;
+  margin:0!important;overflow:hidden!important;
+}
