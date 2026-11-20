@@ -2774,3 +2774,62 @@ button, a { -webkit-tap-highlight-color: transparent; }
   font-size: 0 !important;
 }
 .hs-room-discovery-enter svg { width: 14px !important; height: 14px !important; }
+
+
+/* HAMSAT home room cards — balanced image/text proportions */
+.hs-home-room-list .hs-room-discovery-card{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.02fr) minmax(0,1fr)!important;
+  align-items:stretch!important;
+  min-height:164px!important;
+  gap:0!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,rgba(35,25,43,.96),rgba(14,12,19,.98))!important;
+}
+.hs-home-room-list .hs-room-discovery-media{
+  width:100%!important;
+  height:100%!important;
+  min-height:164px!important;
+  aspect-ratio:auto!important;
+  border-radius:0!important;
+  background:#100d17!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.hs-home-room-list .hs-room-discovery-media>img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+.hs-home-room-list .hs-room-discovery-body{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  padding:13px 12px!important;
+  gap:3px!important;
+}
+.hs-home-room-list .hs-room-discovery-owner{gap:9px!important}
+.hs-home-room-list .hs-room-discovery-owner .avatar{width:42px!important;height:42px!important;flex:none}
+.hs-home-room-list .hs-room-discovery-owner b{font-size:13px!important;line-height:1.5}
+.hs-home-room-list .hs-room-discovery-owner small{font-size:10px!important}
+.hs-home-room-list .hs-room-discovery-meta{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:9px!important;
+  margin-top:10px!important;
+  font-size:10px!important;
+}
+.hs-home-room-list .hs-room-discovery-enter{
+  width:30px!important;height:30px!important;margin:8px 0 0 auto!important;
+}
+@media(max-width:390px){
+  .hs-home-room-list .hs-room-discovery-card{grid-template-columns:minmax(0,.92fr) minmax(0,1fr)!important;min-height:146px!important}
+  .hs-home-room-list .hs-room-discovery-media{min-height:146px!important}
+  .hs-home-room-list .hs-room-discovery-body{padding:10px 9px!important}
+  .hs-home-room-list .hs-room-discovery-owner .avatar{width:36px!important;height:36px!important}
+  .hs-home-room-list .hs-room-discovery-owner b{font-size:12px!important}
+}
