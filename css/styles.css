@@ -1781,3 +1781,31 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hs-home-hero-art-large{grid-column:2!important;grid-row:1!important;width:100%!important;height:100%!important;min-height:260px!important;max-height:none!important;margin:0!important;overflow:hidden!important;border:0!important;border-radius:18px!important}
 .hs-home-hero-art-large img{width:100%!important;height:100%!important;min-height:260px!important;max-height:none!important;object-fit:cover!important;object-position:center!important;display:block!important}
 @media(max-width:390px){.hs-home-hero{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;min-height:230px!important}.hs-home-hero-art-large,.hs-home-hero-art-large img{min-height:230px!important}.hs-home-hero-copy h1{font-size:22px!important}}
+
+
+/* HAMSAT 20 Nov 2026 — full-bleed room scene inspired by the supplied reference */
+.room-sheet{background-color:#071426!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:center center!important;background-attachment:scroll!important}
+.room-sheet .hs-room-head,.room-sheet .hs-room-cover{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important}
+.room-sheet .hs-room-cover{min-height:300px!important}
+.room-sheet .hs-room-head-row{background:transparent!important}
+.room-sheet .hs-room-meta,.room-sheet .hs-room-meta-compact{background:rgba(5,13,27,.28)!important;border:1px solid rgba(223,196,135,.2)!important;backdrop-filter:blur(8px)!important;box-shadow:none!important}
+.room-sheet .hs-room-quick-actions{background:transparent!important;border:0!important;box-shadow:none!important}
+.room-sheet .hs-room-unified{display:flex!important;flex-direction:column!important;gap:0!important;margin:0!important;padding:12px 10px 18px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.room-sheet .hs-room-unified>.hs-room-stage,.room-sheet .hs-room-unified>.hs-room-people,.room-sheet .hs-room-unified>.hs-room-chat-area{margin:0!important;padding:12px 4px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;min-width:0!important;width:100%!important}
+.room-sheet .hs-room-unified>.hs-room-stage{padding-top:8px!important}
+.room-sheet .hs-room-unified>.hs-room-people{border-top:0!important;border-bottom:0!important}
+.room-sheet .hs-room-unified>.hs-room-chat-area{padding-top:4px!important}
+.room-sheet .hs-room-section-title,.room-sheet .hs-room-chat-heading{background:transparent!important;border:0!important;box-shadow:none!important}
+.room-sheet .hs-room-seats{background:transparent!important;padding:12px 2px!important}
+.room-sheet .hs-room-seat,.room-sheet .hs-room-seat.empty{background:transparent!important;border:0!important;box-shadow:none!important}
+.room-sheet .hs-room-chat{background:rgba(3,12,25,.18)!important;border:0!important;border-radius:18px!important;box-shadow:none!important;backdrop-filter:blur(3px)!important}
+.room-sheet .hs-room-chat-tabs{background:rgba(5,14,29,.24)!important;border:1px solid rgba(220,190,120,.18)!important;border-radius:999px!important;padding:5px!important}
+.room-sheet .hs-room-bottom-bar{background:linear-gradient(180deg,transparent,rgba(3,10,23,.58))!important;border:0!important;box-shadow:none!important}
+.room-sheet .hs-room-tools-row,.room-sheet .hs-room-compose{background:rgba(4,14,29,.55)!important;border:1px solid rgba(220,190,120,.2)!important;backdrop-filter:blur(10px)!important}
+.room-sheet .hs-room-members{background:transparent!important;border:0!important}
+@media(max-width:520px){
+ .room-sheet .hs-room-cover{min-height:270px!important}
+ .room-sheet .hs-room-unified{padding:8px 7px 16px!important}
+ .room-sheet .hs-room-seats{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:24px 8px!important}
+ .room-sheet .hs-room-seat .hs-seat-ring{width:clamp(62px,18vw,82px)!important;height:clamp(62px,18vw,82px)!important;min-width:clamp(62px,18vw,82px)!important}
+}
