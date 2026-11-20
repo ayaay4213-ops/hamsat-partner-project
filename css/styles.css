@@ -2476,3 +2476,53 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   border-color:transparent!important;
   backdrop-filter:none!important;
 }
+
+
+/* HAMSAT final polish: make occupied mic avatars clearly visible on phones */
+.room-sheet #room-seats.hs-room-seats{
+  grid-auto-rows:minmax(88px,auto)!important;
+  row-gap:12px!important;
+}
+.room-sheet #room-seats>.hs-room-seat{
+  min-height:88px!important;
+  height:auto!important;
+  max-height:none!important;
+  gap:5px!important;
+  overflow:visible!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring{
+  flex:0 0 64px!important;
+  width:64px!important;height:64px!important;
+  min-width:64px!important;min-height:64px!important;max-width:64px!important;
+  display:grid!important;place-items:center!important;
+  overflow:visible!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar,
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar-photo,
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>div.avatar{
+  width:58px!important;height:58px!important;
+  min-width:58px!important;min-height:58px!important;
+  max-width:58px!important;max-height:58px!important;
+  flex:0 0 58px!important;
+  border-radius:50%!important;overflow:hidden!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar img{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-live-mic{
+  width:21px!important;height:21px!important;
+}
+@media(max-width:380px){
+  .room-sheet #room-seats.hs-room-seats{grid-auto-rows:minmax(84px,auto)!important;row-gap:10px!important}
+  .room-sheet #room-seats>.hs-room-seat{min-height:84px!important}
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring{
+    flex-basis:60px!important;width:60px!important;height:60px!important;
+    min-width:60px!important;min-height:60px!important;max-width:60px!important;
+  }
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar,
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar-photo,
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>div.avatar{
+    width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;
+    max-width:54px!important;max-height:54px!important;flex-basis:54px!important;
+  }
+}
