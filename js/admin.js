@@ -199,17 +199,19 @@ async function searchStaffUsers(term){
  root.innerHTML=(data||[]).length?(data||[]).map(x=>'<button type="button" class="item w-full text-right" data-staff-user="'+esc(x.id)+'"><span><b>'+esc(x.display_name||'عضو')+'</b><small class="block muted">HAMSAT-'+esc(x.public_id||'—')+' · @'+esc(x.handle||'—')+'</small></span><span class="pill">اختيار</span></button>').join(''):'<p class="muted text-sm">لم يتم العثور على عضو مطابق.</p>';
  root.querySelectorAll('[data-staff-user]').forEach(b=>b.onclick=async()=>{const user=data.find(x=>x.id===b.dataset.staffUser);if(!user)return;b.disabled=true;try{const {data:role,error}=await supabase.from('staff_roles').select('permissions,active').eq('user_id',user.id).maybeSingle();if(error)throw error;selectStaffUser(user,role?.permissions||[],role?.active!==false);}catch(err){message(err.message,true);}finally{b.disabled=false;}});
 }
-async function loadUsers(term=''){
+async function loadUsers(term='',page=0){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
- let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).limit(200);
+ const pageSize=50,currentPage=Math.max(0,Number(page)||0);
+ let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned',{count:'exact'}).order('created_at',{ascending:false}).range(currentPage*pageSize,currentPage*pageSize+pageSize-1);
  if(clean){
   const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
   const isId=/^\d+$/.test(numeric);
   q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
  }
- const {data,error}=await q;if(error)throw error;
- const out=$('#user-results');
- out.innerHTML=data.length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>').join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
+ const {data,error,count}=await q;if(error)throw error;
+ const out=$('#user-results'),total=Number(count||0),pages=Math.max(1,Math.ceil(total/pageSize));
+ out.innerHTML=(data.length?data.map(x=>'<div class="item"><div class="min-w-0"><b>'+esc(x.display_name||'عضو')+'</b><p class="muted text-xs">HAMSAT-'+esc(x.public_id)+' · @'+esc(x.handle||'—')+' · '+esc(x.role)+' · '+(x.is_banned?'محظور':'نشط')+'</p></div><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div>').join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>')+'<div class="flex items-center justify-between gap-2 pt-3"><button type="button" class="ghost text-xs" data-users-page="'+(currentPage-1)+'" '+(currentPage<=0?'disabled':'')+'>السابق</button><span class="muted text-xs">صفحة '+(currentPage+1)+' من '+pages+' · '+total+' حساباً</span><button type="button" class="ghost text-xs" data-users-page="'+(currentPage+1)+'" '+(currentPage+1>=pages?'disabled':'')+'>التالي</button></div>';
+ out.querySelectorAll('[data-users-page]').forEach(b=>b.onclick=()=>loadUsers(clean,Number(b.dataset.usersPage)));
  out.querySelectorAll('[data-moderate-user]').forEach(b=>b.onclick=async()=>{
   const next=b.dataset.banned!=='true';
   if(next&&!confirm('هل تريدين حظر هذا الحساب من HAMSAT؟'))return;
