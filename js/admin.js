@@ -11,7 +11,24 @@ async function boot(){
  const {data:isOwner,error:ownerError}=await supabase.rpc('is_admin');
  if(ownerError||isOwner!==true){message('هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
  admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
- await Promise.all([loadStats(),loadItems(),loadGifts(),loadGames(),loadRooms(),loadUsers(),loadBombLevels(),loadAgencies(),loadTopupPackages(),loadReports()]);
+ const sections=[
+  ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],
+  ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
+  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports]
+ ];
+ await Promise.all(sections.map(async([label,load])=>{
+  try{await load();}
+  catch(error){
+   console.error('HAMSAT admin section failed:',label,error);
+   const target=({
+    'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
+    'الغرف':'#room-list','الأعضاء':'#user-results','قنبلة الغرفة':'#bomb-level-list',
+    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list'
+   })[label];
+   if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
+   message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
+  }
+ }));
 }
 async function upload(file,folder,stableName=null){
  if(!file)return null;
@@ -26,7 +43,20 @@ async function upload(file,folder,stableName=null){
 function row(title,sub,id,active,kind){return '<div class="item"><div class="min-w-0"><b>'+esc(title)+'</b><p class="muted text-xs">'+esc(sub)+' · '+(active?'منشور':'مخفي')+'</p></div><button class="ghost text-sm" data-toggle="'+esc(id)+'" data-kind="'+kind+'">'+(active?'إخفاء':'نشر')+'</button></div>'}
 async function loadStats(){
  const tables=['profiles','rooms','gifts','shop_items'],ids=['stat-users','stat-rooms','stat-gifts','stat-items'];
- await Promise.all(tables.map(async(t,i)=>{const query=supabase.from(t).select(t==='profiles'?'id':'*',{count:'exact',head:true});const {count,error}=await query;if(error)throw error;$('#'+ids[i]).textContent=count??0;}));
+ const results=await Promise.all(tables.map(async(t,i)=>{
+  try{
+   const {count,error}=await supabase.from(t).select('id',{count:'exact',head:true});
+   if(error)throw error;
+   $('#'+ids[i]).textContent=count??0;
+   return null;
+  }catch(error){
+   $('#'+ids[i]).textContent='—';
+   console.error('HAMSAT admin statistic failed:',t,error);
+   return t;
+  }
+ }));
+ const failed=results.filter(Boolean);
+ if(failed.length)throw new Error('تعذر جلب إحصاءات: '+failed.join('، '));
 }
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
