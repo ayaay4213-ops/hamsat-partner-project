@@ -662,12 +662,12 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const canvas=sheet.querySelector('.hs-room-canvas');
-      if(!canvas)return;
-      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
-      canvas.style.setProperty('background-size','cover','important');
-      canvas.style.setProperty('background-position','center center','important');
-      canvas.style.setProperty('background-repeat','no-repeat','important');
+      const stage=sheet.querySelector('.hs-room-stage');
+      if(!stage)return;
+      stage.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(5,6,9,.28),rgba(5,6,9,.56)),url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
+      stage.style.setProperty('background-size','cover','important');
+      stage.style.setProperty('background-position','center center','important');
+      stage.style.setProperty('background-repeat','no-repeat','important');
     };
     applyRoomBackground(r.backgroundUrl||null);
     api.roomBackground(r.id).then(({imageUrl})=>{r.backgroundUrl=imageUrl;applyRoomBackground(imageUrl);}).catch(error=>console.warn('تعذر تحميل خلفية الغرفة المشتركة:',error));
@@ -882,7 +882,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
