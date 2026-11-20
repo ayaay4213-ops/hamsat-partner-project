@@ -56,6 +56,21 @@ for (const ref of localRefs) {
   if (clean && !fs.existsSync(path.join(root, clean))) errors.push(`Broken local reference in index.html: ${ref}`);
 }
 
+// Keep a room's microphone background intact when its owner saves only the room cover.
+const appSource = fs.readFileSync(path.join(root, 'js/app.js'), 'utf8');
+const coverSaveCall = appSource.match(/#room-cover-save[\\s\\S]*?api\\.updateRoomSettings\\(r\\.id,\\{([^}]*)\\}\\)/);
+if (!coverSaveCall || !/backgroundUrl\\s*:\\s*r\\.backgroundUrl/.test(coverSaveCall[1])) {
+  errors.push('Room cover save must preserve the currently selected microphone background URL');
+}
+
+const sharedBackgroundMigrationPath = path.join(root, 'supabase/migrations/0062_room_shared_background_url.sql');
+if (fs.existsSync(sharedBackgroundMigrationPath)) {
+  const sql = fs.readFileSync(sharedBackgroundMigrationPath, 'utf8').toLowerCase();
+  for (const token of ['add column if not exists background_url text', 'grant update (background_url) on public.rooms to authenticated', 'alter publication supabase_realtime add table public.rooms']) {
+    if (!sql.includes(token)) errors.push(`Missing shared room background SQL: ${token}`);
+  }
+}
+
 const hardeningMigrationPath = path.join(root, 'supabase/migrations/0010_room_policy_and_trigger_hardening.sql');
 if (fs.existsSync(hardeningMigrationPath)) {
   const sql = fs.readFileSync(hardeningMigrationPath, 'utf8').toLowerCase();
