@@ -621,6 +621,41 @@ if (fs.existsSync(adminHtmlPath)) {
   }
 }
 
+
+const roomOwnerLimitPath = path.join(root, 'js/app.js');
+if (fs.existsSync(roomOwnerLimitPath)) {
+  const js = fs.readFileSync(roomOwnerLimitPath, 'utf8');
+  if (!js.includes("const isRoomOwner = String(r.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase()")) {
+    errors.push('Room owner controls must compare normalized owner/profile identifiers');
+  }
+  if (!js.includes('يمكن لكل عضو إنشاء غرفة واحدة فقط. هذه غرفتك الحالية.')) {
+    errors.push('Room creation UI must direct a member to their existing room');
+  }
+}
+if (fs.existsSync(apiFilePath)) {
+  const js = fs.readFileSync(apiFilePath, 'utf8');
+  if (!js.includes("from('rooms').select('id').eq('owner_id', user.id).limit(1)")) {
+    errors.push('Room creation API must reject a second room owned by the same member');
+  }
+}
+if (fs.existsSync(roomStylePath)) {
+  const css = fs.readFileSync(roomStylePath, 'utf8');
+  if (!css.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important')) {
+    errors.push('Room seats must use a balanced three-column mobile layout');
+  }
+  if (!css.includes('#tabbar .tab{display:flex!important;align-items:center!important;justify-content:center!important')) {
+    errors.push('Bottom navigation tabs must be evenly centered');
+  }
+}
+if (fs.existsSync(html)) {
+  for (const token of ['css/styles.css?v=20261120-room-layout-balanced-v2','js/app.js?v=20261120-room-owner-limit-v2']) {
+    if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
+  }
+}
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-private-handle-fix-v2")) {
+  errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
