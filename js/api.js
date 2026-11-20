@@ -212,7 +212,30 @@ export const api = {
       items:(inventory.data||[]).map(x=>({...x.item,purchasedAt:x.purchased_at})).filter(x=>x.id)
     };
   },
-  moments: async (profileId) => { const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);return {moments:data||[]}; },
+  moments: async (profileId) => {
+    const user=await currentUser();
+    const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);
+    const ids=(data||[]).map(x=>x.id);if(!ids.length)return {moments:[]};
+    const [likes,comments]=await Promise.all([
+      client().from('moment_likes').select('moment_id,user_id').in('moment_id',ids),
+      client().from('moment_comments').select('id,moment_id,user_id,body,created_at').in('moment_id',ids).order('created_at',{ascending:true})
+    ]);fail(likes.error);fail(comments.error);
+    const userIds=[...new Set((comments.data||[]).map(x=>x.user_id))];
+    const people=userIds.length?await client().from('profiles').select('id,display_name,handle,avatar_url').in('id',userIds):{data:[],error:null};fail(people.error);
+    const byUser=Object.fromEntries((people.data||[]).map(x=>[x.id,x]));
+    const likeRows=likes.data||[],commentRows=comments.data||[];
+    return {moments:data.map(m=>({...m,likesCount:likeRows.filter(x=>x.moment_id===m.id).length,likedByMe:likeRows.some(x=>x.moment_id===m.id&&x.user_id===user.id),comments:commentRows.filter(x=>x.moment_id===m.id).map(c=>({...c,profile:byUser[c.user_id]||null}))}))};
+  },
+  toggleMomentLike: async (momentId,liked) => {
+    const user=await currentUser();
+    if(liked){const {error}=await client().from('moment_likes').delete().eq('moment_id',momentId).eq('user_id',user.id);fail(error);}
+    else{const {error}=await client().from('moment_likes').insert({moment_id:momentId,user_id:user.id});if(error&&error.code!=='23505')fail(error);}
+  },
+  addMomentComment: async (momentId,body) => {
+    const user=await currentUser(),text=String(body||'').trim();
+    if(!text||text.length>500)throw new Error('اكتبي تعليقاً من 1 إلى 500 حرف.');
+    const {data,error}=await client().from('moment_comments').insert({moment_id:momentId,user_id:user.id,body:text}).select('id,moment_id,user_id,body,created_at').single();fail(error);return data;
+  },
   createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
   deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
   coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:await mapProfileWithFrame(partner)}; },
