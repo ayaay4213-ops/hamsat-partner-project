@@ -301,7 +301,10 @@ export const api = {
     }) };
   },
   createRoom: async (r) => {
-    await currentUser();
+    const user = await currentUser();
+    const { data: existingRooms, error: existingError } = await client().from('rooms').select('id').eq('owner_id', user.id).limit(1);
+    fail(existingError);
+    if (existingRooms?.length) throw new Error('يمكن لكل عضو إنشاء غرفة واحدة فقط. يمكنك إدارة غرفتك الحالية بدلاً من إنشاء غرفة ثانية.');
     const { data, error } = await client().rpc('create_owned_room', {
       p_title: String(r.title || '').trim(),
       p_topic: r.topic || 'عام',
