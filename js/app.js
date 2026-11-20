@@ -814,10 +814,14 @@ async function openRoom(r) {
       // This keeps the real avatar_url and equipped frame visible on every occupied microphone seat.
       const memberById=Object.fromEntries(members.map(member=>[member.userId,member]));
       const adminMembersEl=sheet.querySelector('#room-admin-members');
-      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host?`<button type="button" class="hs-room-member-action danger" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button>`:``}${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${m.handle?`<button type="button" class="hs-member-avatar-link" data-open-member-profile="${esc(m.handle)}" aria-label="عرض ملف ${esc(m.displayName)}">${avatar(m,34)}</button>`:avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host?`<button type="button" class="hs-room-member-action danger" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button>`:``}${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.innerHTML=renderMemberRows();
       if(adminMembersEl)adminMembersEl.innerHTML=renderMemberRows();
       const actionRoots=[membersEl,adminMembersEl].filter(Boolean);
+      actionRoots.forEach(root=>root.querySelectorAll('[data-open-member-profile]').forEach(button=>button.addEventListener('click',event=>{
+        event.stopPropagation();
+        location.hash='#/u/'+encodeURIComponent(button.dataset.openMemberProfile);
+      })));
       actionRoots.forEach(root=>root.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
         const uid=b.dataset.localMute,muted=!mutedRoomUsers.has(uid);
         if(muted)mutedRoomUsers.add(uid);else mutedRoomUsers.delete(uid);
@@ -848,9 +852,13 @@ async function openRoom(r) {
       seatsEl.innerHTML=Array.from({length:Math.max(1,Math.min(12,Number(r.seatLimit)||8))},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?(seat.member||memberById[seat.user_id]||null):null,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-chair"><i data-lucide="armchair"></i></span><i class="hs-seat-center-mic" data-lucide="mic"></i></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
-        return `<button type="button" data-seat="${n}" data-user-id="${esc(seat.user_id)}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" ${own?'':'disabled'}><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
+        return `<button type="button" data-seat="${n}" data-user-id="${esc(seat.user_id)}" data-user-handle="${esc(m?.handle||'')}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" aria-label="${own?'مقعدك على المايك':'عرض ملف '+esc(m?.displayName||'العضو')}"><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
       }).join('');
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
+        if(b.dataset.own!=='true'&&b.dataset.userHandle){
+          location.hash='#/u/'+encodeURIComponent(b.dataset.userHandle);
+          return;
+        }
         const leaving=b.dataset.own==='true';
         try{
           b.disabled=true;
