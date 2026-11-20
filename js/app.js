@@ -885,7 +885,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);if(r.ownerUuid===state.profile?.uuid){try{await api.requestRoomSeat(r.id,1);}catch(seatError){console.warn('Could not reserve the host microphone seat',seatError);}}const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
