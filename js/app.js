@@ -107,6 +107,26 @@ function openSheet(html, onMount) {
   icons_();
   onMount && onMount(root.querySelector('.sheet'));
 }
+function applyRoomBackground(url) {
+  const stage = $('#room-seats')?.closest('.hs-room-stage');
+  if (!stage) return;
+  let image = stage.querySelector(':scope > .hs-room-shared-bg');
+  if (!url) {
+    image?.remove();
+    stage.classList.remove('has-shared-background');
+    return;
+  }
+  if (!image) {
+    image = document.createElement('img');
+    image.className = 'hs-room-shared-bg';
+    image.alt = '';
+    image.setAttribute('aria-hidden', 'true');
+    image.draggable = false;
+    stage.prepend(image);
+  }
+  image.src = String(url);
+  stage.classList.add('has-shared-background');
+}
 function closeSheet(force = false) { if (state.roomGameTimer) { clearInterval(state.roomGameTimer); state.roomGameTimer = null; } if (state.roomMinimized && !force) { $('#sheet-root').innerHTML = ''; return; } if (force) { state.roomMinimized = false; state.minimizedRoom = null; $('#room-mini-root').innerHTML = ''; } if (state.voiceRoom) { const voice=state.voiceRoom; state.voiceRoom=null; voice.leave().catch(e=>console.warn('Could not stop room audio',e)); } if (state.roomChannel) { api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; } if (state.roomEventChannel) { api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; } if (state.roomBackgroundChannel) { api.unsubscribeRoomChannel(state.roomBackgroundChannel); state.roomBackgroundChannel = null; } if (state.roomBombTimer) { clearInterval(state.roomBombTimer); state.roomBombTimer = null; } if (state.hostSessionTimer) { clearInterval(state.hostSessionTimer); state.hostSessionTimer = null; } if (state.hostSessionId) { const sessionId=state.hostSessionId; state.hostSessionId=null; api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e)); } if (state.activeRoomId) { const id=state.activeRoomId; state.activeRoomId=null; api.leaveRoom(id).catch(e=>console.warn('Could not leave room',e)); } $('#sheet-root').innerHTML = ''; }
 
 function renderRoomMiniBubble() {
@@ -973,7 +993,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;try{const sharedBackground=await api.getRoomBackground(r.id);if(sharedBackground.exists){r.backgroundUrl=sharedBackground.url;applyRoomBackground(sharedBackground.url);}state.roomBackgroundChannel=api.subscribeRoomBackground(r.id,payload=>{const next=payload?.new?.image_url||null;r.backgroundUrl=next;applyRoomBackground(next);if(sharedBgPanel&&!sharedBgPanel.classList.contains('hidden')){pendingSharedBgUrl=next;pendingSharedBgFile=null;drawSharedBgPreview(next,next?'تم تحديث الخلفية من عضو آخر':'أزيلت الخلفية من عضو آخر');}});}catch(backgroundError){console.warn('Shared room backgrounds need migration 0012:',backgroundError);}await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;try{const sharedBackground=await api.getRoomBackground(r.id);let activeBackground=sharedBackground.url;if(!sharedBackground.exists&&r.backgroundItemId){if(/^https?:\/\//i.test(r.backgroundItemId))activeBackground=r.backgroundItemId;else{const catalog=await api.shopItems();activeBackground=catalog.items.find(item=>item.id===r.backgroundItemId)?.image_url||null;}}if(sharedBackground.exists||activeBackground){r.backgroundUrl=activeBackground;applyRoomBackground(activeBackground);}state.roomBackgroundChannel=api.subscribeRoomBackground(r.id,payload=>{const next=payload?.new?.image_url||null;r.backgroundUrl=next;applyRoomBackground(next);if(sharedBgPanel&&!sharedBgPanel.classList.contains('hidden')){pendingSharedBgUrl=next;pendingSharedBgFile=null;drawSharedBgPreview(next,next?'تم تحديث الخلفية من عضو آخر':'أزيلت الخلفية من عضو آخر');}});}catch(backgroundError){console.warn('Shared room backgrounds need migration 0062:',backgroundError);}await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error')));state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
