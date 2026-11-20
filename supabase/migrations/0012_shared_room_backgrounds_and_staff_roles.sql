@@ -152,7 +152,7 @@ begin
   if p_user_id is null then
     raise exception 'يجب تحديد حساب المسؤول';
   end if;
-  if coalesce(p_permissions, '{}'::text[]) - v_allowed <> '{}'::text[] then
+  if not (coalesce(p_permissions, '{}'::text[]) <@ v_allowed) then
     raise exception 'تتضمن الصلاحيات اختياراً غير مسموح';
   end if;
 
