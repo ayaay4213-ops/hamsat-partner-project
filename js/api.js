@@ -435,6 +435,9 @@ export const api = {
     fail(error);
     return { success: true };
   },
+  subscribeRoomSettings: (roomId, callback) => client().channel('room-settings-' + roomId)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: 'id=eq.' + roomId }, callback)
+    .subscribe(),
   subscribeRoomMessages: (roomId, callback) => client().channel('room-chat-' + roomId)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_messages', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_seats', filter: 'room_id=eq.' + roomId }, callback)
