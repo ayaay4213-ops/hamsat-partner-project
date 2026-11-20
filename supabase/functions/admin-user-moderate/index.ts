@@ -23,10 +23,11 @@ Deno.serve(async (req: Request) => {
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   if (!token) return json(401, { error: "سجّلي الدخول أولاً." });
 
-  let body: { user_id?: unknown; banned?: unknown; reason?: unknown };
+  let body: { user_id?: unknown; banned?: unknown; reason?: unknown; action?: unknown };
   try { body = await req.json(); } catch { return json(400, { error: "بيانات الطلب غير صالحة." }); }
   const userId = typeof body.user_id === "string" ? body.user_id : "";
   const banned = body.banned === true;
+  const action = body.action === 'kick' ? 'kick' : 'moderate';
   const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 300) : "";
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!uuid.test(userId)) return json(400, { error: "معرّف العضو غير صالح." });
@@ -47,10 +48,20 @@ Deno.serve(async (req: Request) => {
   if (!target) return json(404, { error: "الحساب غير موجود." });
   if (target.role === "admin") return json(403, { error: "لا يمكن حظر حساب إداري." });
 
+  if (action === "kick") {
+    const { error: kickError } = await service.auth.admin.signOut(userId, "global");
+    if (kickError) return json(502, { error: "تعذّر إنهاء جلسة العضو: " + kickError.message });
+    return json(200, { success: true, user_id: userId, kicked: true });
+  }
+
   const { error: authBanError } = await service.auth.admin.updateUserById(userId, {
     ban_duration: banned ? "876000h" : "none",
   });
   if (authBanError) return json(502, { error: "تعذّر تحديث حالة تسجيل الدخول: " + authBanError.message });
+  if (banned) {
+    const { error: revokeError } = await service.auth.admin.signOut(userId, "global");
+    if (revokeError) return json(502, { error: "تم تحديث الحظر لكن تعذّر إنهاء الجلسات الحالية: " + revokeError.message });
+  }
 
   const { error: profileError } = await service.from("profiles").update({
     is_banned: banned,
