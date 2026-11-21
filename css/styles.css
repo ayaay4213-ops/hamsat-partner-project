@@ -4898,3 +4898,39 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
   #sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:36px!important;height:36px!important}
   #sheet-root .room-sheet .hs-room-chat-area{min-height:64px!important}
 }
+
+
+/* HAMSAT ROOM — final targeted fix: clear mic area and visible composer */
+#sheet-root .room-sheet .hs-room-stage,
+#sheet-root .room-sheet .hs-room-stage::before,
+#sheet-root .room-sheet .hs-room-stage::after,
+#sheet-root .room-sheet .hs-room-seats,
+#sheet-root .room-sheet .hs-room-seat,
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+#sheet-root .room-sheet .hs-room-unified{
+  flex:1 1 0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+#sheet-root .room-sheet .hs-room-stage{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  background:rgba(8,11,18,.22)!important;
+}
+#sheet-root .room-sheet .hs-room-chat-area{
+  flex:1 1 0!important;
+  min-height:54px!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+#sheet-root .room-sheet .hs-room-chat{min-height:0!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  position:relative!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  z-index:20!important;
+}
