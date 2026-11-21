@@ -4832,3 +4832,69 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 @media(min-width:600px){
  #sheet-root .room-sheet .hs-room-canvas{max-width:560px!important;margin-inline:auto!important}
 }
+
+
+/* HAMSAT ROOM — final spacing and clarity pass only */
+#sheet-root .room-sheet,
+#sheet-root .room-sheet *{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+#sheet-root .room-sheet .hs-room-canvas{
+  height:100dvh!important;
+  max-height:100dvh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  gap:6px!important;
+  padding-top:calc(env(safe-area-inset-top) + 6px)!important;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 5px)!important;
+}
+#sheet-root .room-sheet .hs-room-unified{
+  flex:1 1 0!important;
+  min-height:0!important;
+  gap:5px!important;
+}
+#sheet-root .room-sheet .hs-room-stage{
+  flex:0 0 auto!important;
+  padding:5px 6px!important;
+}
+#sheet-root .room-sheet .hs-room-seats{
+  gap:3px 4px!important;
+  padding:2px 0!important;
+}
+#sheet-root .room-sheet .hs-room-seat{
+  min-height:clamp(56px,13.8vw,72px)!important;
+  gap:1px!important;
+}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring{
+  width:clamp(38px,10.5vw,50px)!important;
+  height:clamp(38px,10.5vw,50px)!important;
+}
+#sheet-root .room-sheet .hs-room-chat-area{
+  flex:1 1 0!important;
+  min-height:76px!important;
+  max-height:none!important;
+  padding:5px 7px!important;
+}
+#sheet-root .room-sheet .hs-room-chat-tabs{
+  padding:0 3px 4px!important;
+}
+#sheet-root .room-sheet .hs-room-chat-tabs button{
+  height:24px!important;
+}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  position:relative!important;
+  flex:0 0 auto!important;
+  margin-top:0!important;
+  padding:5px 0 calc(env(safe-area-inset-bottom) + 3px)!important;
+  background:#080b12!important;
+}
+@media(max-height:740px){
+  #sheet-root .room-sheet .hs-room-canvas{gap:4px!important}
+  #sheet-root .room-sheet .hs-room-title-row{min-height:54px!important;padding:5px 8px!important}
+  #sheet-root .room-sheet .hs-room-title-row .hs-room-owner,
+  #sheet-root .room-sheet .hs-room-title-row .hs-room-owner .avatar{width:38px!important;height:38px!important}
+  #sheet-root .room-sheet .hs-room-seat{min-height:54px!important}
+  #sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:36px!important;height:36px!important}
+  #sheet-root .room-sheet .hs-room-chat-area{min-height:64px!important}
+}
