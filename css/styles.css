@@ -5184,7 +5184,7 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 /* HAMSAT final interaction repair — gift picker, settings, profiles, bombs and timers */
 .hs-room-settings.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
 .hs-room-settings[aria-hidden="true"]{display:none!important}
-.hs-room-settings:not(.hidden){display:block!important;visibility:visible!important;pointer-events:auto!important}
+.hs-room-settings:not(.hidden){visibility:visible!important;pointer-events:auto!important}
 .hs-room-settings-header{position:sticky;top:0;z-index:5;background:#0d1020f2;backdrop-filter:blur(14px)}
 #room-gift-panel .hs-gift-submit{display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;width:100%!important;height:auto!important;min-height:48px!important;padding:11px 16px!important;position:sticky!important;bottom:0!important;z-index:4!important;border:1px solid #f4dc93!important;border-radius:14px!important;background:linear-gradient(120deg,#f6e3a4,#c99d3e)!important;color:#1b160b!important;box-shadow:0 -8px 24px #050609bb!important}
 #room-gift-panel .hs-gift-submit span{display:inline!important;font-size:13px!important;font-weight:900!important;letter-spacing:.1px!important}
