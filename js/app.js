@@ -1074,7 +1074,7 @@ async function openRoom(r) {
   });
 }
 let roomFilter = 'الكل';
-const RECENT_ROOMS_LIMIT = 30;
+const RECENT_ROOMS_LIMIT = 50;
 function recentRoomsStorageKey() {
   const userId = state.profile?.uuid || state.account?.id || 'guest';
   return 'hamsat:recent-rooms:' + String(userId);
@@ -1124,13 +1124,17 @@ async function recentRoomsScreen() {
       }
       const { rooms = [] } = await api.rooms();
       const byId = new Map(rooms.map(room => [String(room.id), room]));
-      const available = recent.map(entry => byId.get(entry.id)).filter(Boolean);
-      if (available.length !== recent.length) {
-        const validIds = new Set(available.map(room => String(room.id)));
-        try { localStorage.setItem(recentRoomsStorageKey(), JSON.stringify(recent.filter(entry => validIds.has(entry.id)))); } catch {}
-      }
-      root.innerHTML = available.length ? available.map(roomCard).join('') : emptyBox('history', 'لا توجد غرف محفوظة متاحة الآن', 'قد تكون بعض الغرف قد أُغلقت أو حُذفت.');
-      bindRoomCards(root, available);
+      const ordered = recent.map(entry => ({ entry, room: byId.get(entry.id) || null }));
+      root.innerHTML = ordered.map(({ entry, room }) => {
+        if (room) return roomCard(room);
+        const dateLabel = entry.visitedAt ? new Date(entry.visitedAt).toLocaleDateString('ar-DZ') : '';
+        return `<article class="card recent-unavailable-card flex items-center gap-3 p-3" aria-label="غرفة زرتها سابقًا وغير متاحة الآن">
+          <div class="recent-unavailable-icon">${esc(entry.roomEmoji || '🎙️')}</div>
+          <div class="min-w-0 flex-1"><b class="block truncate">${esc(entry.title || 'غرفة همسات')}</b><p class="text-xs mt-1">${esc(entry.topic || 'عام')}${dateLabel ? ' · ' + esc(dateLabel) : ''}</p><small class="block mt-1">زرتِ هذه الغرفة سابقًا · غير متاحة الآن</small></div>
+          <i data-lucide="clock-3" class="w-4 h-4"></i>
+        </article>`;
+      }).join('');
+      bindRoomCards(root, ordered.filter(item => item.room).map(item => item.room));
       icons_();
     } catch (error) {
       root.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل غرفك الأخيرة', error.message || 'حاولي مرة أخرى');
