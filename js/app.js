@@ -720,6 +720,8 @@ async function openRoom(r) {
       const unified=sheet.querySelector('.hs-room-unified');
       const stage=sheet.querySelector('.hs-room-stage');
       if(!canvas||!unified||!stage)return;
+      const floatingBomb=sheet.querySelector('#room-bomb-floating');
+      if(floatingBomb&&floatingBomb.parentElement!==stage)stage.appendChild(floatingBomb);
       if(url) canvas.style.setProperty('background-image','url('+JSON.stringify(String(url))+')','important');
       canvas.style.setProperty('background-size','cover','important');
       canvas.style.setProperty('background-position','center center','important');
