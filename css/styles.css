@@ -2711,7 +2711,7 @@ html,body{background:#08090c!important;color:#f5f0e4}
 #screen .btn-ghost{border-color:rgba(216,182,91,.32);background:rgba(216,182,91,.045);color:#eee4c9}
 #screen h1,#screen h2,#screen h3{ text-wrap:balance }
 #screen .hs-profile-page{background-color:#090a0d}
-#screen .hs-profile-cover{border-bottom:1px solid rgba(216,182,91,.25)}
+#screen .hs-profile-own .hs-profile-cover{border-bottom:1px solid rgba(216,182,91,.25)}
 #screen .hs-profile-info-chip{background:linear-gradient(135deg,rgba(216,182,91,.16),rgba(255,255,255,.025));border-color:rgba(216,182,91,.34);color:#f2e3b8}
 #screen .room-card{background:#101115!important;border-color:rgba(216,182,91,.3)!important;box-shadow:0 10px 28px rgba(0,0,0,.3)!important}
 #screen .room-enter{background:linear-gradient(145deg,rgba(216,182,91,.2),rgba(216,182,91,.07))!important;border-color:rgba(216,182,91,.5)!important;color:#f4dc91!important}
@@ -2860,7 +2860,7 @@ html,body{background:#08090c!important;color:#f5f0e4}
 #screen .hs-dm-compose input{flex:1;min-width:0;border:0!important;background:transparent!important;color:#fff;padding:8px}
 #screen .hs-dm-compose button{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#f2dfa0,#cba64d);color:#17140b}
 #screen .hs-profile-page{color:#f4eddf}
-#screen .hs-profile-cover{overflow:hidden;border-radius:0 0 20px 20px}
+#screen .hs-profile-own .hs-profile-cover{overflow:hidden;border-radius:0 0 20px 20px}
 #screen .hs-profile-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:14px 15px}
 #screen .hs-profile-stats button{display:grid;gap:4px;min-width:0;padding:10px 3px;border:1px solid var(--hs-stroke);border-radius:12px;background:linear-gradient(145deg,#1c1d20,#111216);color:#cfc3a5}
 #screen .hs-profile-stats b{color:var(--hs-gold-bright);font-size:15px}
@@ -2902,7 +2902,7 @@ html,body{background:#08090c!important;color:#f5f0e4}
 #screen .room-enter{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid rgba(223,189,104,.36);border-radius:11px;background:linear-gradient(145deg,#f0d99b,#bd9540);color:#17130a}
 #screen .room-enter svg{width:17px;height:17px}
 #screen .hs-profile-page{position:relative;overflow:hidden;background-color:#101115;background-image:radial-gradient(ellipse at 50% 15%,rgba(223,189,104,.12),transparent 44%)!important;background-size:cover;background-position:center}
-#screen .hs-profile-cover{position:relative;min-height:152px;background-color:#211f1a;background-image:radial-gradient(ellipse at 50% 10%,rgba(223,189,104,.2),transparent 60%),linear-gradient(135deg,#30291b,#111216);background-size:cover;background-position:center}
+#screen .hs-profile-own .hs-profile-cover{position:relative;min-height:152px;background-color:#211f1a;background-image:radial-gradient(ellipse at 50% 10%,rgba(223,189,104,.2),transparent 60%),linear-gradient(135deg,#30291b,#111216);background-size:cover;background-position:center}
 #screen .hs-profile-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,12,.03),rgba(7,8,12,.55));pointer-events:none}
 #screen .hs-profile-cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #screen .hs-cover-actions{z-index:2}
@@ -2961,7 +2961,7 @@ html,body{background:#08090c!important;color:#f5f0e4}
 #screen .hs-room-chat-area{border-top:1px solid rgba(223,189,104,.15);background:#0e0f12}
 @media(max-width:380px){
  #screen .room-cover{min-height:164px}
- #screen .hs-profile-cover{min-height:128px}
+ #screen .hs-profile-own .hs-profile-cover{min-height:128px}
  #screen .hs-profile-main{padding-inline:12px}
  #screen .hs-profile-identity h2{font-size:18px}
  #screen .hs-profile-info-chip{padding:6px 7px;font-size:9px}
@@ -3225,7 +3225,7 @@ body.bg-ink-950{background:#f5f4ef!important;color:#29261f!important}
 
 /* WHITE LUXE v7.1 — preserve selected cover/background images while lightening surfaces */
 #screen .hs-profile-page{background-color:#fbfaf7!important;color:#29261f!important}
-#screen .hs-profile-cover{background-color:#f4eedf!important}
+#screen .hs-profile-own .hs-profile-cover{background-color:#f4eedf!important}
 #sheet-root .room-sheet>.hs-room-canvas{background-color:#fbfaf7!important;color:#29261f!important}
 #sheet-root .room-sheet .hs-room-unified{background-color:rgba(255,255,255,.62)!important;color:#29261f!important}
 #sheet-root .room-sheet .hs-room-stage,
@@ -3421,8 +3421,8 @@ html,body,#app{background:#f3f2ee!important;color:#28251e!important}
 /* My profile follows the reference order: identity, wallet, wealth/VIP, rewards, shortcuts */
 #screen .hs-me-screen{background:#f3f2ee!important;color:#29261f!important}
 #screen .hs-profile-page{background:#f3f2ee!important;color:#29261f!important;border-bottom:1px solid #e6dfd0}
-#screen .hs-profile-cover{height:154px!important;background:radial-gradient(ellipse at 50% 5%,#e8d49c 0%,transparent 48%),linear-gradient(120deg,#0b6337,#0b8b4a 55%,#d0ae5d)!important}
-#screen .hs-profile-cover:before,#screen .hs-profile-cover:after{color:#fff1c5!important}
+#screen .hs-profile-own .hs-profile-cover{height:154px!important;background:radial-gradient(ellipse at 50% 5%,#e8d49c 0%,transparent 48%),linear-gradient(120deg,#0b6337,#0b8b4a 55%,#d0ae5d)!important}
+#screen .hs-profile-own .hs-profile-cover:before,#screen .hs-profile-own .hs-profile-cover:after{color:#fff1c5!important}
 #screen .hs-profile-frame{box-shadow:0 0 0 5px #f3f2ee,0 0 24px #b58a3240!important;background:conic-gradient(from 15deg,#fff4c5,#c49a45,#fff0b0,#8a6420,#fff4c5)!important}
 #screen .hs-profile-frame:before{border-color:#f4df9d!important}
 #screen .hs-profile-avatar{border-color:#f3f2ee!important;background:#fff!important}
@@ -4189,7 +4189,7 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 
 
 /* HAMSAT focused layout refinement: profile cover and compact room header/stage */
-#screen .hs-profile-cover{height:142px!important;min-height:142px!important;overflow:hidden!important}
+#screen .hs-profile-own .hs-profile-cover{height:142px!important;min-height:142px!important;overflow:hidden!important}
 #screen .hs-profile-cover-image{object-fit:contain!important;object-position:center center!important;background:rgba(12,12,16,.28)!important}
 
 #sheet-root .room-sheet .hs-room-head{background:transparent!important;flex:none!important}
@@ -4261,22 +4261,22 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 
 
 /* HAMSAT reference corrections — cover fit, centered seats, true bomb control */
-#screen .hs-profile-cover{
+#screen .hs-profile-own .hs-profile-cover{
   height:clamp(132px,34vw,158px)!important;min-height:132px!important;
   width:100%!important;overflow:hidden!important;
   background-size:cover!important;background-position:center center!important;
   background-repeat:no-repeat!important;
 }
-#screen .hs-profile-cover:before,#screen .hs-profile-cover:after{display:none!important}
-#screen .hs-profile-cover .hs-profile-cover-image{
+#screen .hs-profile-own .hs-profile-cover:before,#screen .hs-profile-own .hs-profile-cover:after{display:none!important}
+#screen .hs-profile-own .hs-profile-cover .hs-profile-cover-image{
   position:absolute!important;inset:0!important;z-index:1!important;
   display:block!important;width:100%!important;height:100%!important;
   object-fit:contain!important;object-position:center center!important;
   background:transparent!important;
 }
-#screen .hs-profile-cover .hs-cover-shine{z-index:2!important;pointer-events:none!important}
-#screen .hs-profile-cover .hs-cover-star{display:none!important}
-#screen .hs-profile-cover .hs-cover-actions{z-index:3!important}
+#screen .hs-profile-own .hs-profile-cover .hs-cover-shine{z-index:2!important;pointer-events:none!important}
+#screen .hs-profile-own .hs-profile-cover .hs-cover-star{display:none!important}
+#screen .hs-profile-own .hs-profile-cover .hs-cover-actions{z-index:3!important}
 
 #sheet-root .room-sheet .hs-room-stage{
   padding:7px 66px 9px 7px!important;
