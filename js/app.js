@@ -716,18 +716,20 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
-      const canvas=sheet.querySelector('.hs-room-unified');
+      const canvas=sheet.querySelector('.hs-room-canvas');
+      const unified=sheet.querySelector('.hs-room-unified');
       const stage=sheet.querySelector('.hs-room-stage');
-      if(!canvas||!stage)return;
-      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
+      if(!canvas||!unified||!stage)return;
+      if(url) canvas.style.setProperty('background-image','url('+JSON.stringify(String(url))+')','important');
       canvas.style.setProperty('background-size','cover','important');
       canvas.style.setProperty('background-position','center center','important');
       canvas.style.setProperty('background-repeat','no-repeat','important');
+      unified.style.setProperty('background','transparent','important');
       stage.style.setProperty('background','transparent','important');
       stage.style.setProperty('min-height','min(72dvh,760px)','important');
       stage.style.setProperty('flex','1 1 auto','important');
-      const tools=sheet.querySelector('.hs-room-tools-row');
-      if(tools&&tools.parentElement!==stage)stage.appendChild(tools);
+      const bottomBar=sheet.querySelector('.hs-room-bottom-bar');
+      if(bottomBar&&bottomBar.parentElement!==canvas)canvas.appendChild(bottomBar);
     };
     applyRoomBackground(r.backgroundUrl||null);
     api.roomBackground(r.id).then(({imageUrl})=>{r.backgroundUrl=imageUrl;applyRoomBackground(imageUrl);}).catch(error=>console.warn('تعذر تحميل خلفية الغرفة المشتركة:',error));
@@ -1391,20 +1393,23 @@ function renderProfileRewards(host, rewards, profile) {
   const percent=level>=10?100:Math.max(0,Math.min(100,((xp-start)/Math.max(1,next-start))*100));
   const badges=rewards.badges||[], items=rewards.items||[];
   const typeNames={frame:'إطار',emoji_pack:'زينة',entrance:'دخولية',sound_frame:'إطار صوتي',voice_wave:'موجة صوت'};
-  host.innerHTML=`
+  const levelDetails=`
     <div class="hs-level-card">
       <div class="hs-level-top"><span class="hs-level-emblem">✦</span><div><small>مستوى العضو</small><b>المستوى ${num(level)}</b></div><strong>${num(xp)} XP</strong></div>
       <div class="hs-level-track"><span style="width:${percent}%"></span></div>
       <div class="hs-level-foot"><span>${level>=10?'وصلتِ إلى أعلى مستوى حالياً':num(xp-start)+' نقطة في هذا المستوى'}</span><span>${level>=10?'MAX':num(next-xp)+' XP للمستوى التالي'}</span></div>
-    </div>
-    <div class="hs-reward-section">
-      <div class="hs-reward-heading"><b>الشارات والإنجازات</b><small>${num(badges.length)} شارة</small></div>
-      ${badges.length?'<div class="hs-badge-grid">'+badges.map(b=>`<div class="hs-badge-chip" title="${esc(b.description||'')}"><span>${esc(b.icon||'✦')}</span><b>${esc(b.name)}</b><small>${esc(b.rarity||'')}</small></div>`).join('')+'</div>':'<p class="hs-reward-empty">إنجازاتك الأولى بانتظارك — شاركي في الغرف وكوني صداقات.</p>'}
-    </div>
-    <div class="hs-reward-section">
-      <div class="hs-reward-heading"><b>المقتنيات</b><small>${num(items.length)} عنصر</small></div>
-      ${items.length?'<div class="hs-collection-grid">'+items.slice(0,8).map(item=>`<div class="hs-collection-item">${item.image_url?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="hs-collection-symbol">✧</span>'}<b>${esc(item.name)}</b><small>${esc(typeNames[item.item_type]||'عنصر')} · ${esc(item.rarity||'عادي')}</small>${(profile.equippedFrameId===item.id||profile.equippedEmojiPackId===item.id)?'<em>مجهز</em>':''}</div>`).join('')+'</div>':'<p class="hs-reward-empty">لا توجد مقتنيات بعد. اكتشفي المتجر لإضافة أول زينة إلى حسابك.</p>'}
     </div>`;
+  const badgeDetails=badges.length?'<div class="hs-badge-grid">'+badges.map(b=>`<div class="hs-badge-chip" title="${esc(b.description||'')}"><span>${esc(b.icon||'✦')}</span><b>${esc(b.name)}</b><small>${esc(b.rarity||'')}</small></div>`).join('')+'</div>':'<p class="hs-reward-empty">إنجازاتك الأولى بانتظارك — شاركي في الغرف وكوني صداقات.</p>';
+  const itemDetails=items.length?'<div class="hs-collection-grid">'+items.map(item=>`<div class="hs-collection-item">${item.image_url?'<img src="'+esc(item.image_url)+'" alt="" loading="lazy">':'<span class="hs-collection-symbol">✧</span>'}<b>${esc(item.name)}</b><small>${esc(typeNames[item.item_type]||'عنصر')} · ${esc(item.rarity||'عادي')}</small>${(profile.equippedFrameId===item.id||profile.equippedEmojiPackId===item.id)?'<em>مجهز</em>':''}</div>`).join('')+'</div>':'<p class="hs-reward-empty">لا توجد مقتنيات بعد. اكتشفي المتجر لإضافة أول زينة إلى حسابك.</p>';
+  host.innerHTML=`
+    <div class="hs-profile-shortcuts" aria-label="اختصارات الحساب">
+      <button type="button" data-reward-open="level"><i data-lucide="chart-no-axes-column-increasing"></i><b>المستوى</b><small>LV.${num(level)}</small></button>
+      <button type="button" data-reward-open="badges"><i data-lucide="award"></i><b>الشارات والإنجازات</b><small>${num(badges.length)} شارة</small></button>
+      <button type="button" data-reward-open="items"><i data-lucide="gem"></i><b>المقتنيات</b><small>${num(items.length)} عنصر</small></button>
+    </div>`;
+  host.querySelector('[data-reward-open="level"]').onclick=()=>openSheet('<h2 class="hs-profile-detail-title">المستوى</h2>'+levelDetails);
+  host.querySelector('[data-reward-open="badges"]').onclick=()=>openSheet('<h2 class="hs-profile-detail-title">الشارات والإنجازات</h2>'+badgeDetails);
+  host.querySelector('[data-reward-open="items"]').onclick=()=>openSheet('<h2 class="hs-profile-detail-title">المقتنيات</h2>'+itemDetails);
 }
 async function loadProfileRewards(profileId, profile) {
   const host=document.querySelector('[data-profile-rewards]');
@@ -1520,8 +1525,8 @@ function profileView(p, own) {
       ${own ? `
         <div class="hs-profile-dashboard">
           ${profileRewardsMarkup()}
-          <section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>عرض المنشورات فقط · النشر من تبويب لحظة</small></div>
-            <div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div>
+          <section class="hs-moments-card hs-moments-shortcut">
+            <button type="button" id="open-my-moments"><i data-lucide="images"></i><b>لحظاتي</b><small>عرض المنشورات</small></button>
           </section>
         </div>` : `
         <div class="hs-profile-ribbon"><span>✧</span><b>H A M S A T</b><span>♡</span></div>
@@ -1573,6 +1578,10 @@ function meScreen() {
   loadProfileStats(p.uuid, false);
   loadProfileRewards(p.uuid,p);
   bindProfileSocial(p,true);
+  $('#open-my-moments')?.addEventListener('click',()=>{
+    openSheet('<h2 class="hs-profile-detail-title">لحظاتي</h2><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div>');
+    loadProfileMoments(p.uuid,true);
+  });
   const idCopy=$('[data-copy-public-id]');
   if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
   const editProfileAction = () => openSheet(`<h2 class="text-lg font-bold mb-2">تعديل الملف الشخصي</h2>${profileForm(p, false)}`, (s) => {
