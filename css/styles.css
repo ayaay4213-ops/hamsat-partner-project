@@ -4018,3 +4018,78 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
  #sheet-root .room-sheet .hs-room-seats{gap:10px 4px!important}
  #sheet-root .room-sheet .hs-room-chat{height:90px!important}
 }
+
+
+/* HAMSAT correction: preserve the full room background and keep all room controls reachable */
+#sheet-root .room-sheet .hs-room-canvas{
+  background-color:transparent!important;
+  background-attachment:scroll!important;
+}
+#sheet-root .room-sheet .hs-room-head,
+#sheet-root .room-sheet .hs-room-cover,
+#sheet-root .room-sheet .hs-room-meta,
+#sheet-root .room-sheet .hs-room-quick-actions,
+#sheet-root .room-sheet .hs-room-unified,
+#sheet-root .room-sheet .hs-room-stage,
+#sheet-root .room-sheet .hs-room-people,
+#sheet-root .room-sheet .hs-room-chat-area{
+  background-color:transparent!important;
+  box-shadow:none!important;
+}
+#sheet-root .room-sheet .hs-room-cover{background-image:none!important;border:0!important}
+#sheet-root .room-sheet .hs-room-meta{border:0!important}
+#sheet-root .room-sheet .hs-room-quick-actions{border:0!important}
+#sheet-root .room-sheet .hs-room-stage{
+  border:0!important;border-radius:0!important;overflow:visible!important;
+  margin:0!important;min-height:clamp(390px,58dvh,680px)!important;
+}
+#sheet-root .room-sheet .hs-room-stage:before{display:none!important;content:none!important}
+#sheet-root .room-sheet .hs-room-people{border:0!important;padding:5px 8px!important}
+#sheet-root .room-sheet .hs-room-person{background:rgba(12,10,7,.26)!important;backdrop-filter:blur(3px)!important}
+#sheet-root .room-sheet .hs-room-chat-area{
+  border:0!important;border-radius:0!important;padding:7px 10px!important;
+  background:transparent!important;
+}
+#sheet-root .room-sheet .hs-room-chat{background:rgba(7,7,6,.18)!important;border:0!important;border-radius:10px!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  position:sticky!important;bottom:0!important;z-index:50!important;
+  background:rgba(5,5,4,.22)!important;backdrop-filter:blur(5px)!important;
+  border-top:1px solid rgba(225,193,111,.45)!important;
+  padding:7px 8px calc(8px + env(safe-area-inset-bottom))!important;
+}
+#sheet-root .room-sheet .hs-room-compose{
+  background:rgba(12,10,7,.34)!important;border:1px solid rgba(231,199,121,.8)!important;
+  box-shadow:0 2px 12px rgba(0,0,0,.12)!important;
+}
+#sheet-root .room-sheet .hs-room-compose input{color:#fff!important;text-shadow:0 1px 3px #000!important}
+#sheet-root .room-sheet .hs-room-compose input::placeholder{color:#fff0c5!important;text-shadow:0 1px 3px #000!important}
+#sheet-root .room-sheet .hs-room-tools-row{background:transparent!important;border:0!important}
+#sheet-root .room-sheet .hs-room-tools-row button{background:rgba(18,14,7,.35)!important;backdrop-filter:blur(4px)!important}
+#sheet-root .room-sheet .hs-room-tools-row #voice-start,
+#sheet-root .room-sheet .hs-room-tools-row #room-send-gift{background:linear-gradient(145deg,#f5df9c,#b88a30)!important}
+#sheet-root .room-sheet .hs-room-chat-tabs button{background:rgba(16,12,6,.34)!important}
+#sheet-root .room-sheet .hs-room-title-row h2,
+#sheet-root .room-sheet .hs-room-title-row p,
+#sheet-root .room-sheet .hs-room-chat-heading,
+#sheet-root .room-sheet .hs-room-section-title{ text-shadow:0 1px 4px #000!important}
+
+/* Compact, vertical profile shortcuts; details open only when tapped */
+#screen .hs-profile-dashboard{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:9px!important}
+#screen .hs-profile-shortcuts{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;width:min(100%,190px)!important}
+#screen .hs-profile-shortcuts button,
+#screen .hs-moments-shortcut button{
+  display:grid!important;grid-template-columns:28px minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+  align-items:center!important;gap:1px 8px!important;width:100%!important;min-height:48px!important;
+  padding:6px 9px!important;text-align:right!important;border:1px solid #d8c58f!important;
+  border-radius:11px!important;background:linear-gradient(120deg,#fffefa,#f5f0e3)!important;
+  color:#3c321e!important;box-shadow:0 3px 9px rgba(50,38,12,.07)!important;
+}
+#screen .hs-profile-shortcuts button>i,
+#screen .hs-moments-shortcut button>i{grid-row:1/3;width:22px!important;height:22px!important;color:#ad842b!important}
+#screen .hs-profile-shortcuts button b,
+#screen .hs-moments-shortcut button b{font-size:12px!important;line-height:1.3!important}
+#screen .hs-profile-shortcuts button small,
+#screen .hs-moments-shortcut button small{font-size:10px!important;color:#8d7b55!important}
+#screen .hs-moments-shortcut{width:min(100%,190px)!important;margin:0!important}
+#screen .hs-profile-detail-title{font-size:18px;font-weight:800;color:#d8b45d;margin:4px 0 14px}
+#sheet-root .hs-profile-detail-title{color:#d9b65f}
