@@ -5155,3 +5155,27 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 .hs-moment-comment-form input{flex:1;min-width:0;border:1px solid rgba(212,175,55,.2);border-radius:10px;background:#101015;color:#fff;padding:9px;font-size:11px;}
 .hs-moment-comment-form button{padding:0 13px;border-radius:10px;background:#c7a34a;color:#17130a;font-size:11px;}
 .hs-moment-empty{text-align:center;padding:30px 16px;border:1px dashed rgba(212,175,55,.22);border-radius:16px;color:#b7a987;font-size:12px;}
+
+
+/* HAMSAT gifts — compact recipient picker and visible profile portraits */
+#sheet-root .room-sheet .hs-gift-picker{padding:10px 12px max(9px,env(safe-area-inset-bottom))!important;max-height:min(70dvh,560px)!important;overflow-y:auto!important;border-radius:20px 20px 0 0!important}
+#sheet-root .room-sheet .hs-gift-picker-head{display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:24px!important;margin:0 0 5px!important;padding:0!important}
+#sheet-root .room-sheet .hs-gift-picker-head>span{font-size:12px!important;color:#e6c66c!important}
+#sheet-root .room-sheet .hs-gift-picker-head button{width:28px!important;height:28px!important;font-size:20px!important}
+#sheet-root .room-sheet #room-gift-form{gap:7px!important}
+#sheet-root .room-sheet #room-gift-form>.flex.items-center{min-height:25px!important}
+#sheet-root .room-sheet #room-gift-form .label{font-size:10px!important;margin:0!important}
+#sheet-root .room-sheet .hs-gift-recipient-grid{min-height:50px!important;max-height:58px!important;margin:0!important}
+#sheet-root .room-sheet .hs-gift-recipient{width:42px!important;height:42px!important;min-width:42px!important;flex-basis:42px!important}
+#sheet-root .room-sheet .hs-gift-recipient .avatar{position:relative!important;width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
+#sheet-root .room-sheet .hs-gift-recipient-self{border-color:#f0cf73!important;box-shadow:0 0 0 2px #f0cf7330!important}
+#sheet-root .room-sheet .hs-gift-grid{gap:6px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#sheet-root .room-sheet .hs-gift-choice{padding:5px!important;min-height:82px!important}
+#sheet-root .room-sheet .hs-gift-choice-art{width:42px!important;height:42px!important;margin:0 auto 3px!important}
+#sheet-root .room-sheet #room-gift-categories{gap:4px!important;margin:2px 0!important}
+#sheet-root .room-sheet #room-gift-categories button{padding:6px 7px!important;font-size:9px!important}
+#sheet-root .room-sheet #room-gift-form>select[name="quantity"]{min-height:32px!important;padding:4px 8px!important;font-size:11px!important}
+#sheet-root .room-sheet .hs-gift-selection{font-size:10px!important;padding:5px 7px!important;margin:0!important}
+#sheet-root .room-sheet .hs-gift-wallet-footer{padding:5px 8px!important;margin-top:0!important}
+#sheet-root .room-sheet #room-gift-form>[type="submit"]{width:38px!important;height:38px!important;min-height:38px!important}
+#sheet-root .room-sheet .hs-room-settings{overscroll-behavior:contain!important}
