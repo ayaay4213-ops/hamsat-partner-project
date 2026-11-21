@@ -1,10 +1,10 @@
 /* HAMSAT PWA shell worker — versioned cache, never caches authenticated API responses. */
-const CACHE_NAME = 'hamsat-shell-v19';
+const CACHE_NAME = 'hamsat-shell-v20';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './css/styles.css?v=20261121-white-luxe-v10',
+  './css/styles.css?v=20261121-reference-royal-v1',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',
