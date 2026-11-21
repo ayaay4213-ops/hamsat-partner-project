@@ -4360,3 +4360,33 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 #sheet-root .room-sheet .hs-room-seat.hs-seat-arrive{animation:hs-seat-arrival .52s cubic-bezier(.2,.8,.2,1) both!important}
 @keyframes hs-seat-arrival{0%{opacity:0;transform:translateY(9px) scale(.94);filter:brightness(1.5)}100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 @media(max-width:390px){#sheet-root .room-sheet .hs-room-stage{padding:7px 5px 9px 62px!important}}
+
+/* HAMSAT room tidy + visual gift recipient picker */
+#sheet-root .room-sheet .hs-room-canvas{display:flex!important;flex-direction:column!important;min-height:0!important;height:min(92dvh,900px)!important;overflow:hidden!important}
+#sheet-root .room-sheet .hs-room-head{flex:0 0 auto!important}
+#sheet-root .room-sheet .hs-room-unified{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;padding:0 8px 4px!important}
+#sheet-root .room-sheet .hs-room-stage{flex:0 0 auto!important;min-height:0!important;margin:2px 0 5px!important;padding-top:5px!important;padding-bottom:6px!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{flex:0 0 auto!important;position:relative!important;z-index:15!important;margin-top:auto!important;padding:6px 8px max(8px,env(safe-area-inset-bottom))!important;background:rgba(9,10,13,.96)!important;border-top:1px solid rgba(216,182,91,.25)!important}
+#sheet-root .room-sheet .hs-room-bomb-floating{top:auto!important;bottom:8px!important;left:5px!important;right:auto!important;z-index:14!important}
+#sheet-root .room-sheet .hs-room-head .hs-room-title-row{margin-top:2px!important}
+#sheet-root .room-sheet .hs-room-quick-actions{padding:4px 8px 6px!important;gap:8px!important}
+#sheet-root .hs-gift-recipient-picker{display:grid;gap:8px}
+#sheet-root .hs-gift-targets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#sheet-root .hs-gift-targets button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:55px;padding:6px 3px;border:1px solid rgba(205,169,83,.3);border-radius:12px;background:rgba(18,17,20,.85);color:#d8c9a5;font-size:10px}
+#sheet-root .hs-gift-targets button.active{border-color:#e6c66e;background:linear-gradient(145deg,rgba(194,151,58,.25),rgba(44,34,18,.75));color:#ffe7a0;box-shadow:0 0 0 1px rgba(230,198,110,.18)}
+#sheet-root .hs-gift-targets svg{width:18px;height:18px}
+#sheet-root .hs-gift-people{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;min-height:86px;scrollbar-width:thin}
+#sheet-root .hs-gift-person{flex:0 0 64px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 2px;border:1px solid transparent;border-radius:12px;background:transparent;color:inherit;min-width:0}
+#sheet-root .hs-gift-person.selected{border-color:#e8c66b;background:rgba(201,159,68,.13)}
+#sheet-root .hs-gift-person-avatar{width:48px;height:48px;display:grid;place-items:center;overflow:hidden;border-radius:50%;border:2px solid rgba(218,183,99,.75);background:#242128;color:#e9cf83}
+#sheet-root .hs-gift-person-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+#sheet-root .hs-gift-person b{max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+#sheet-root .hs-gift-person small{font-size:8px;opacity:.7}
+#sheet-root .hs-gift-empty{font-size:11px;opacity:.65;padding:12px}
+#sheet-root .hs-gift-group-summary{display:flex;align-items:center;gap:9px;padding:13px;border:1px solid rgba(218,183,99,.35);border-radius:13px;background:rgba(190,145,55,.12);font-size:11px}
+#sheet-root .hs-gift-group-summary svg{width:20px;height:20px;color:#e8c66b}
+#sheet-root .hs-gift-group-summary b{margin-inline-start:auto;color:#ffe7a0}
+#sheet-root .hs-gift-native-select{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#sheet-root .hs-gift-choice-art img{width:100%;height:100%;object-fit:contain;display:block}
+#sheet-root .hs-gift-choice-art{overflow:hidden}
+@media(max-width:390px){#sheet-root .room-sheet .hs-room-canvas{height:94dvh!important}#sheet-root .room-sheet .hs-room-head .hs-room-title-row{min-height:48px!important}#sheet-root .room-sheet .hs-room-seat{min-height:66px!important}#sheet-root .room-sheet .hs-room-bottom-bar{padding-inline:5px!important}}
