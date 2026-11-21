@@ -529,9 +529,9 @@ function onboardingScreen() {
 async function homeScreen(params = new URLSearchParams()) {
   screen.innerHTML = header('الرئيسية', '<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء غرفة</button>') + `
     <div class="px-4 pt-4 pb-6 fade-in">
-      <section class="hs-weekly-banner mb-3" aria-label="فعاليات همسات الأسبوعية">
-        <div><small>HAMSAT · WEEKLY EVENTS</small><strong>نجوم همسات</strong><span>شاركي في الفعاليات واكتشفي أصدقاء جدد</span></div><i data-lucide="crown"></i>
-      </section>
+      <a href="#/activities" class="hs-weekly-banner mb-3" aria-label="استكشفي فعاليات همسات الأسبوعية">
+        <div><small>HAMSAT · WEEKLY EVENTS</small><strong>نجوم همسات</strong><span>فعاليات، تحديات، وغرف مميزة بانتظارك</span><em class="hs-banner-action">اكتشفي الأنشطة <i data-lucide="arrow-left"></i></em></div><i data-lucide="crown"></i>
+      </a>
       <div class="hs-home-categories mb-4">
         <a href="#/family"><i data-lucide="users-round"></i><span>عائلة</span></a>
         <a href="#/agency"><i data-lucide="gem"></i><span>قائمة CP</span></a>
@@ -1538,6 +1538,7 @@ function meScreen() {
   screen.innerHTML = `
     <div class="hs-me-screen fade-in">
       <div class="hs-me-topbar"><span>H A M S A T</span><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div>
+      ${profileView(p, true)}
       <a href="#/wallet" class="hs-wallet-gold-banner mx-4 mt-4">
         <span><small>محفظة همسات</small><b>${coin(22)} ${num(state.wallet?.balance)}</b><em>Coins · عرض المحفظة</em></span><i data-lucide="wallet"></i>
       </a>
@@ -1546,7 +1547,6 @@ function meScreen() {
         <a href="#/aristocracy" class="hs-me-level-card hs-vip-card"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'لم تحصل بعد'}</b></a>
       </div>
       <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
-      ${profileView(p, true)}
       <div class="hs-me-content">
         <div class="hs-me-section-title"><span>الخدمات والمزايا</span><small>كل عالم همسات في مكان واحد</small></div>
         ${menu}
@@ -1882,6 +1882,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'me') meScreen();
     else if (route === 'invite') await inviteScreen();
     else if (route === 'moments') await momentsFeedScreen();
+    else if (route === 'activities') await activitiesScreen();
     else if (route === 'agency') await agencyScreen();
     else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
@@ -1892,6 +1893,37 @@ async function directMessageScreen(conversationId) {
   }
 }
 
+
+async function activitiesScreen() {
+  screen.innerHTML = header('الأنشطة', '<a href="#/recent-rooms" class="text-xs text-gold-300">غرفي الأخيرة</a>') + `
+    <section class="hs-activities-page">
+      <div class="hs-activities-hero"><small>H A M S A T · DISCOVER</small><h2>عالم همسات مليء بالحياة</h2><p>اكتشفي الفعاليات والغرف والأصدقاء الجدد</p></div>
+      <div class="hs-activity-banners">
+        <a href="#/games" class="hs-activity-banner hs-activity-games"><span><small>PLAY & WIN</small><b>تحديات وألعاب</b><em>ادخلي أجواء المنافسة</em></span><i data-lucide="gamepad-2"></i></a>
+        <a href="#/moments" class="hs-activity-banner hs-activity-moments"><span><small>SHARE YOUR MOMENT</small><b>لحظات الأصدقاء</b><em>شاهدي وشاركي أجمل اللحظات</em></span><i data-lucide="images"></i></a>
+        <a href="#/wallet" class="hs-activity-banner hs-activity-rewards"><span><small>DAILY REWARDS</small><b>مكافآت همسات</b><em>تابعي رصيدك ومكافآتك</em></span><i data-lucide="gift"></i></a>
+      </div>
+      <div class="hs-activities-section-head"><div><small>LIVE NOW</small><h3>أحدث الغرف</h3></div><button id="activities-refresh" type="button" aria-label="تحديث الغرف"><i data-lucide="refresh-cw"></i></button></div>
+      <div id="activities-latest-rooms" class="hs-home-room-list space-y-3"><div class="skeleton h-36"></div></div>
+    </section>`;
+  icons_();
+  const root = $('#activities-latest-rooms');
+  const load = async () => {
+    root.innerHTML = loading();
+    try {
+      const { rooms = [] } = await api.rooms();
+      const latest = rooms.slice(0, 8);
+      root.innerHTML = latest.length ? latest.map(roomCard).join('') : emptyBox('audio-lines', 'لا توجد غرف مباشرة الآن', 'يمكنك إنشاء غرفة والبدء باستقبال الأصدقاء.');
+      bindRoomCards(root, latest);
+      icons_();
+    } catch (error) {
+      root.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', error.message || 'حاولي مرة أخرى');
+      icons_();
+    }
+  };
+  $('#activities-refresh').onclick = load;
+  await load();
+}
 
 async function momentsFeedScreen() {
   screen.innerHTML = header('اللحظات') + `
