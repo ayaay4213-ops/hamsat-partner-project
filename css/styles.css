@@ -4093,3 +4093,96 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 #screen .hs-moments-shortcut{width:min(100%,190px)!important;margin:0!important}
 #screen .hs-profile-detail-title{font-size:18px;font-weight:800;color:#d8b45d;margin:4px 0 14px}
 #sheet-root .hs-profile-detail-title{color:#d9b65f}
+
+
+/* FINAL RECOVERY: restore every original room control and message composer */
+#sheet-root .room-sheet .hs-room-bottom-bar{
+ display:flex!important;position:relative!important;inset:auto!important;
+ flex:0 0 auto!important;flex-direction:column!important;gap:8px!important;
+ width:100%!important;min-height:0!important;height:auto!important;
+ padding:8px 10px calc(10px + env(safe-area-inset-bottom))!important;
+ overflow:visible!important;background:rgba(12,10,8,.10)!important;
+ border:0!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+#sheet-root .room-sheet .hs-room-compose-wrap{display:block!important;position:relative!important;width:100%!important;flex:none!important}
+#sheet-root .room-sheet #room-chat-form.hs-room-compose{
+ display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;
+ min-height:48px!important;height:auto!important;padding:5px 9px!important;
+ background:rgba(18,14,8,.35)!important;border:1px solid rgba(236,205,130,.85)!important;
+ border-radius:24px!important;visibility:visible!important;opacity:1!important;
+}
+#sheet-root .room-sheet #room-chat-form .hs-compose-emoji{
+ display:flex!important;visibility:visible!important;opacity:1!important;
+ align-items:center!important;justify-content:center!important;flex:0 0 36px!important;
+ width:36px!important;height:36px!important;background:transparent!important;border:0!important;
+ color:#ffe6a3!important;
+}
+#sheet-root .room-sheet #room-chat-form input{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ flex:1 1 auto!important;min-width:0!important;width:auto!important;height:38px!important;
+ background:transparent!important;border:0!important;outline:0!important;
+ color:#fff!important;font-size:14px!important;text-shadow:0 1px 3px #000!important;
+}
+#sheet-root .room-sheet #room-chat-form input::placeholder{color:#fff!important;opacity:1!important}
+#sheet-root .room-sheet #room-chat-form button[type="submit"]{
+ display:flex!important;flex:0 0 36px!important;width:36px!important;height:36px!important;
+ align-items:center!important;justify-content:center!important;background:#d7b45e!important;
+ color:#211808!important;border:0!important;border-radius:50%!important;
+}
+#sheet-root .room-sheet .hs-room-tools-row{
+ display:flex!important;position:relative!important;inset:auto!important;
+ flex:0 0 auto!important;align-items:center!important;justify-content:space-around!important;
+ gap:7px!important;width:100%!important;min-height:48px!important;height:auto!important;
+ padding:3px 0!important;visibility:visible!important;opacity:1!important;
+ background:transparent!important;border:0!important;overflow:visible!important;
+}
+#sheet-root .room-sheet .hs-room-tools-row button{
+ display:flex!important;visibility:visible!important;opacity:1!important;
+ flex:1 1 0!important;min-width:0!important;max-width:54px!important;
+ height:44px!important;align-items:center!important;justify-content:center!important;
+ border-radius:14px!important;background:rgba(24,18,9,.38)!important;
+ border:1px solid rgba(230,196,113,.75)!important;color:#ffe8ad!important;
+}
+#sheet-root .room-sheet .hs-room-tools-row button:disabled{opacity:.55!important}
+#sheet-root .room-sheet .hs-room-unified{
+ display:flex!important;position:relative!important;flex:1 1 auto!important;
+ min-height:0!important;flex-direction:column!important;overflow-y:auto!important;
+ background:transparent!important;
+}
+#sheet-root .room-sheet .hs-room-stage{
+ display:flex!important;flex:1 0 auto!important;min-height:clamp(330px,48dvh,580px)!important;
+ background:transparent!important;padding-bottom:12px!important;
+}
+#sheet-root .room-sheet .hs-room-people,
+#sheet-root .room-sheet .hs-room-chat-area{flex:0 0 auto!important;background:transparent!important}
+#sheet-root .room-sheet .hs-room-chat{background:rgba(18,14,8,.12)!important}
+#sheet-root .room-sheet .hs-room-canvas{
+ display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;
+ background-color:transparent!important;background-size:cover!important;background-position:center!important;
+}
+#sheet-root .room-sheet .hs-room-head,
+#sheet-root .room-sheet .hs-room-meta,
+#sheet-root .room-sheet .hs-room-quick-actions,
+#sheet-root .room-sheet .hs-room-stage,
+#sheet-root .room-sheet .hs-room-people,
+#sheet-root .room-sheet .hs-room-chat-area{background-color:transparent!important}
+#sheet-root .room-sheet .hs-room-compose-emoji{display:flex!important}
+
+/* Profile: each shortcut gets a full vertical row; collection contents sit side by side */
+#screen .hs-profile-dashboard{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important}
+#screen .hs-profile-shortcuts{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;gap:6px!important}
+#screen .hs-profile-shortcuts button,
+#screen .hs-moments-shortcut button{
+ width:100%!important;min-height:44px!important;max-width:none!important;
+}
+#screen .hs-moments-shortcut{width:100%!important;max-width:none!important}
+#screen .hs-profile-shortcuts button[data-reward-open="level"]{width:100%!important}
+#sheet-root .hs-collection-grid{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:7px!important;align-items:stretch!important;
+}
+#sheet-root .hs-collection-item{
+ display:flex!important;flex-direction:column!important;align-items:center!important;
+ justify-content:center!important;min-width:0!important;text-align:center!important;
+ padding:8px 4px!important;
+}
