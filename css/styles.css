@@ -3268,3 +3268,42 @@ body.bg-ink-950{background:#f5f4ef!important;color:#29261f!important}
 #screen .recent-unavailable-card p{color:#827967!important}
 #screen .recent-unavailable-card small{color:#9a711f!important}
 #screen .recent-unavailable-icon{width:54px;height:54px;flex:none;display:grid;place-items:center;border-radius:16px;background:#f5ecd7;border:1px solid #e8d9b7;font-size:25px}
+
+
+/* WHITE LUXE v7.2 — include welcome/auth and the outer room sheet */
+#screen .hs-welcome{
+  background:radial-gradient(ellipse at 50% 10%,rgba(216,189,120,.18),transparent 42%),linear-gradient(165deg,#fff,#f5f1e8 80%)!important;
+  color:#29261f!important;
+}
+#screen .hs-welcome-head{background:rgba(255,255,255,.9)!important;color:#9a711f!important;border-color:#e8e1d3!important}
+#screen .hs-welcome-intro p{color:#766f62!important}
+#screen .hs-welcome-line{background:linear-gradient(90deg,transparent,#c7a65b)!important}
+#screen .hs-welcome-panel,#screen .auth-panel{
+  background:linear-gradient(145deg,#fff,#f8f5ed)!important;
+  color:#29261f!important;border:1px solid #e8d9b7!important;
+  box-shadow:0 16px 38px rgba(77,62,36,.08),inset 0 1px 0 #fff!important;
+}
+#screen .hs-welcome-panel-head h2,#screen .auth-panel h2{color:#30291f!important}
+#screen .hs-welcome-panel-head p,#screen .auth-divider{color:#766f62!important}
+#screen .hs-welcome-panel .field,#screen .auth-panel .field{
+  background:#fff!important;color:#29261f!important;border-color:#e2dacb!important;
+}
+#screen .hs-welcome-panel .auth-method,#screen .auth-method{
+  background:#fff!important;color:#716957!important;border:1px solid #e5dece!important;
+}
+#screen .hs-welcome-panel .auth-method.active,#screen .auth-method.active{
+  background:linear-gradient(135deg,#f3e4bb,#d9bd78)!important;color:#4b3918!important;border-color:#d4b66d!important;
+}
+#screen .hs-welcome-panel .text-gold-300,#screen .hs-welcome-panel .text-gold-400{color:#9a711f!important}
+#screen .hs-welcome-panel .text-\[\#9c9686\],#screen .hs-welcome-panel .text-\[\#b7b2a5\]{color:#766f62!important}
+#screen .hs-welcome-footer{color:#766f62!important}
+#screen .hs-welcome-footer span{color:#b58a32!important}
+#sheet-root .room-sheet{
+  background:linear-gradient(180deg,#fff,#f6f2e9)!important;
+  color:#29261f!important;border-color:#e8d9b7!important;
+  box-shadow:0 -12px 40px rgba(77,62,36,.12)!important;
+}
+#sheet-root .room-sheet>.w-10.h-1{background:linear-gradient(90deg,#c5a45a,#f0dfb0,#c5a45a)!important}
+#sheet-root .room-sheet .hs-room-head{background:linear-gradient(145deg,#fff,#f8f5ed)!important;border-color:#e8e1d3!important;box-shadow:0 8px 20px rgba(77,62,36,.06)!important}
+#sheet-root .room-sheet .hs-room-cover[style=""]{background-image:linear-gradient(145deg,#faf7ef,#eee6d5)!important;background-color:#f6f1e6!important}
+#sheet-root .room-sheet .hs-room-title-row :is(h1,h2,h3,p,span,b,small){color:#29261f!important}
