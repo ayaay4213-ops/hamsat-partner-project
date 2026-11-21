@@ -3221,3 +3221,42 @@ body.bg-ink-950{background:#f5f4ef!important;color:#29261f!important}
   #tabbar .tab{padding-top:9px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
   #screen .rooms-welcome{border-radius:20px}
 }
+
+
+/* WHITE LUXE v7.1 — preserve selected cover/background images while lightening surfaces */
+#screen .hs-profile-page{background-color:#fbfaf7!important;color:#29261f!important}
+#screen .hs-profile-cover{background-color:#f4eedf!important}
+#sheet-root .room-sheet>.hs-room-canvas{background-color:#fbfaf7!important;color:#29261f!important}
+#sheet-root .room-sheet .hs-room-unified{background-color:rgba(255,255,255,.62)!important;color:#29261f!important}
+#sheet-root .room-sheet .hs-room-stage,
+#sheet-root .room-sheet .hs-room-people,
+#sheet-root .room-sheet .hs-room-chat-area,
+#sheet-root .room-sheet .hs-room-chat,
+#sheet-root .room-sheet .hs-room-members{
+  background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(249,247,241,.97))!important;
+  color:#29261f!important;border-color:#e8e1d3!important;
+  box-shadow:0 8px 22px rgba(77,62,36,.055)!important;
+}
+#sheet-root .room-sheet .hs-room-stage :is(h1,h2,h3,p,span,b,small),
+#sheet-root .room-sheet .hs-room-people :is(h1,h2,h3,p,span,b,small),
+#sheet-root .room-sheet .hs-room-chat-area :is(h1,h2,h3,p,span,b,small){color:inherit}
+#sheet-root .room-sheet .hs-room-seat{background:transparent!important;color:#29261f!important}
+#sheet-root .room-sheet .hs-room-seat:before{background:radial-gradient(circle,#fff,#f2ecdf)!important;border-color:#d8bd78!important}
+#sheet-root .room-sheet .hs-seat-ring{background:#fff!important;border-color:#c9a34b!important}
+#screen .hs-profile-stats{background:linear-gradient(135deg,#fff,#f7f2e7)!important;border-color:#e8dfcd!important}
+#screen .hs-rewards,#screen .hs-level-card,#screen .hs-badge-grid,
+#screen .hs-account-group,#screen .hs-me-balance,#screen .hs-me-section,
+#screen .hs-profile-info-chip,#screen .hs-profile-tags span{
+  background:linear-gradient(145deg,#fff,#f8f5ed)!important;color:#29261f!important;border-color:#e8e1d3!important;
+  box-shadow:0 7px 20px rgba(77,62,36,.045)!important;
+}
+#screen .hs-level-emblem,#screen .hs-account-icon.gold,#screen .hs-account-icon.pink,
+#screen .hs-account-icon.violet{background:#f7f0df!important;color:#9a711f!important;border-color:#e8d9b7!important}
+#screen .hs-account-row{background:transparent!important;color:#29261f!important;border-color:#eee8dd!important}
+#screen .hs-account-row :is(span,b,strong,p){color:inherit}
+#screen .hs-me-topbar{background:#fff!important;color:#29261f!important;border-color:#e8e1d3!important}
+#screen .hs-me-topbar-mark{color:#9a711f!important}
+#screen .hs-profile-tags span{color:#75602f!important}
+#screen .hs-room-unified .hs-room-stage,
+#screen .hs-room-unified .hs-room-people,
+#screen .hs-room-unified .hs-room-chat-area{background:#fff!important;color:#29261f!important}
