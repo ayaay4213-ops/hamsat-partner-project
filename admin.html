@@ -8,6 +8,82 @@
 <style>
 :root{color-scheme:dark;--gold:#c9a64b;--gold2:#ead59a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1c1a15 0,#090a0d 48%);color:#f7f2e8;font-family:Tajawal,system-ui}.wrap{max-width:1100px;margin:auto;padding:16px}.panel{background:linear-gradient(145deg,#15171c,#101115);border:1px solid #34302a;border-radius:18px;padding:16px;box-shadow:0 12px 36px #0005}.field{width:100%;background:#090a0d;border:1px solid #393e48;border-radius:11px;padding:12px;color:white}.field:focus{outline:1px solid var(--gold)}.btn{background:linear-gradient(120deg,#ead59a,#b88c2d);color:#17140b;border-radius:11px;padding:11px 16px;font-weight:800}.ghost{border:1px solid #51472f;border-radius:11px;padding:10px 14px;color:#ead59a}.muted{color:#aaa39a}.tab{padding:10px 14px;border-radius:10px;border:1px solid #343943;color:#cfc7b7}.tab.active{background:#302713;border-color:var(--gold);color:#f5df9a}.item{border:1px solid #303640;border-radius:13px;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between}.hidden{display:none!important}.stat{border:1px solid #393329;border-radius:14px;padding:14px;background:#0c0d10}.stat b{display:block;font-size:25px;color:#ead59a}.pill{font-size:11px;border:1px solid #65532c;border-radius:99px;padding:3px 8px;color:#ead59a}
  .admin-menu-button{min-width:44px;min-height:44px;font-size:24px;line-height:1} #admin-menu{position:sticky;top:8px;z-index:50;background:#15171cf5;backdrop-filter:blur(12px)} #admin-menu .tab{flex:1 1 auto}
+
+/* HAMSAT SUPER ADMIN LUXE v2 — responsive control center */
+:root{--gold:#d8bd78;--gold2:#f0dfad;--line:rgba(216,189,120,.2);--panel:#15161a}
+body{background:radial-gradient(ellipse at 50% -12%,rgba(185,145,62,.17),transparent 42%),linear-gradient(180deg,#0b0c0f,#08090c 68%);background-attachment:fixed}
+.wrap{width:min(100%,1120px);padding:clamp(12px,2.5vw,24px);padding-bottom:max(24px,env(safe-area-inset-bottom))}
+header{border-bottom:1px solid rgba(216,189,120,.13);padding-bottom:17px!important}
+header h1{letter-spacing:-.025em;color:#f4e8c9}
+header .tracking-\[\.35em\]{color:#e4c77e}
+.panel{border-color:var(--line);background:linear-gradient(145deg,rgba(26,27,31,.97),rgba(13,14,17,.98));box-shadow:0 14px 36px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.025)}
+.stat{border-color:rgba(216,189,120,.2);background:linear-gradient(145deg,#1a1915,#101115);min-width:0}
+.stat b{color:#efd99d;font-variant-numeric:tabular-nums}
+.field{min-height:45px;border-color:rgba(216,189,120,.2);background:#0c0d10;transition:border-color .18s,box-shadow .18s}
+.field:focus{outline:0;border-color:#d8bd78;box-shadow:0 0 0 3px rgba(216,189,120,.1)}
+textarea.field{min-height:76px;resize:vertical}
+.btn,.ghost,.tab{min-height:42px;transition:transform .16s,border-color .16s,background .16s,opacity .16s}
+.btn{background:linear-gradient(120deg,#f0dfad,#c49b48);box-shadow:0 5px 16px rgba(196,155,72,.12)}
+.btn:active,.ghost:active,.tab:active{transform:scale(.98)}
+.ghost{border-color:rgba(216,189,120,.28);background:rgba(216,189,120,.035);color:#ead8a7}
+.ghost:disabled,.btn:disabled{opacity:.45;cursor:not-allowed}
+.tab{border-color:rgba(216,189,120,.18);background:rgba(255,255,255,.018);color:#cfc5b1}
+.tab.active{background:linear-gradient(135deg,rgba(216,189,120,.19),rgba(216,189,120,.07));border-color:#c9a64b;color:#f4df9f;box-shadow:inset 0 0 0 1px rgba(216,189,120,.08)}
+.item{border-color:rgba(216,189,120,.15);background:rgba(255,255,255,.018);min-width:0;flex-wrap:wrap}
+.item>div:first-child{min-width:0}
+.item b{color:#f0e5cf}
+.pill{border-color:rgba(216,189,120,.3);background:rgba(216,189,120,.07);white-space:nowrap}
+#notice{border-inline-start:3px solid #c9a64b;line-height:1.8}
+#admin-menu{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:50;box-shadow:0 12px 32px #0009}
+#admin-menu:not(.hidden){display:flex;animation:adminMenuIn .18s ease-out}
+#admin-menu .tab{flex:1 1 130px}
+#admin>nav{padding:3px 0 7px;scrollbar-width:none}
+#admin>nav::-webkit-scrollbar{display:none}
+#admin>nav .tab{flex:1 1 105px}
+#overview .stat{min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+#catalog>div,#gifts>div,#games>div,#agencies>div,#reports>div{min-width:0}
+#item-list,#gift-list,#game-list,#user-results,#login-events,#room-list,#bomb-level-list,#agency-list,#report-list,#topup-package-list{display:grid;gap:9px}
+#item-list .item,#user-results .item,#room-list .item,#login-events .item{padding:13px;border-radius:15px}
+#item-list img{flex:none}
+#user-results .item>div:last-child{justify-content:flex-end}
+#asset-batch-upload{width:100%}
+#room-background-preview img,#profile-frame-preview img{border:1px solid var(--line);border-radius:12px}
+section>div>h2{color:#f1e4c5}
+section>div>p{line-height:1.8}
+label{line-height:1.75}
+input[type=checkbox]{accent-color:#d8bd78;width:17px;height:17px}
+button:focus-visible,a:focus-visible{outline:2px solid #ead59a;outline-offset:3px}
+@keyframes adminMenuIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){
+ .wrap{padding:11px;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+ header{align-items:flex-start!important}
+ header>div:first-child{align-items:flex-start!important;gap:10px}
+ header h1{font-size:19px;line-height:1.4}
+ header p{font-size:11px}
+ header .pill{display:none}
+ header #logout{padding:8px 10px;font-size:12px}
+ #admin-menu{top:5px;padding:10px;gap:7px}
+ #admin-menu .tab{flex:1 1 calc(50% - 7px);padding:9px 8px;font-size:12px}
+ #admin>nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #admin>nav .tab{width:100%;padding:9px 7px;font-size:12px}
+ #overview{gap:8px}
+ #overview .stat{min-height:78px;padding:11px}
+ #overview .stat b{font-size:21px}
+ .panel{padding:13px;border-radius:16px}
+ form.grid{gap:11px}
+ .item{align-items:flex-start;gap:9px}
+ .item>div:first-child{flex:1 1 100%;width:100%}
+ .item>button{flex:1 1 auto}
+ #item-list .item>div:first-child{flex:1 1 100%}
+ #item-list .item>div:first-child>div{overflow-wrap:anywhere}
+ #user-results .item>div:last-child{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #user-results .item>div:last-child button{width:100%;font-size:11px}
+ #room-background-preview,#profile-frame-preview{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:641px){
+ #admin>nav{position:sticky;top:8px;z-index:20;background:rgba(9,10,13,.92);backdrop-filter:blur(12px);padding:8px 0}
+}
+
 </style>
 </head>
 <body><div class="wrap space-y-4">
