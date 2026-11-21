@@ -1454,7 +1454,7 @@ async function bindProfileSocial(profile,own){
   picker.click();
  };
  const share=root.querySelector('#share-profile-cover');if(share)share.onclick=async()=>{const url=location.origin+location.pathname+'#/u/'+encodeURIComponent(profile.handle||profile.publicId||'');try{if(navigator.share)await navigator.share({title:'HAMSAT',url});else{await navigator.clipboard.writeText(url);toast('تم نسخ رابط الحساب');}}catch(e){if(e.name!=='AbortError')toast(url);}};
- await loadCoupleSpace(profile,own);
+ if(!own) await loadCoupleSpace(profile,own); else loadProfileMoments(profile.uuid,true);
  const form=root.querySelector('[data-moment-form]');if(form)form.onsubmit=async e=>{e.preventDefault();const body=form.elements.body.value.trim(),file=form.elements.momentImage.files?.[0],btn=form.querySelector('[type=submit]');btn.disabled=true;try{let imageUrl=null;if(file)imageUrl=(await api.uploadMedia(file,'moments')).url;if(!body&&!imageUrl)throw new Error('اكتبي شيئاً أو أضيفي صورة');await api.createMoment(body,imageUrl);form.reset();toast('تم نشر لحظتك');await loadProfileMoments(profile.uuid,true);}catch(err){toast(err.message,'error');}finally{btn.disabled=false;}};
 }
 async function loadProfileMoments(id,own){
@@ -1481,7 +1481,7 @@ function profileView(p, own) {
       <span class="hs-frame-spark hs-frame-spark-a">✦</span><span class="hs-frame-spark hs-frame-spark-b">✧</span>
     </div>`;
   return `
-    <section class="hs-profile-page" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
+    <section class="hs-profile-page ${own?'hs-profile-own':''}" style="${p.backgroundUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.38),rgba(7,8,12,.72)),url(${JSON.stringify(p.backgroundUrl)})` : ''}">
       <div class="hs-profile-cover" style="${p.coverUrl ? `background-image:linear-gradient(180deg,rgba(7,8,12,.02),rgba(7,8,12,.82)),url(${JSON.stringify(p.coverUrl)})` : ''}">
         ${p.coverUrl ? `<img class="hs-profile-cover-image" src="${esc(p.coverUrl)}" alt="غلاف الحساب" loading="eager">` : ''}
         <div class="hs-cover-shine"></div><span class="hs-cover-star">✧</span><div class="hs-cover-actions">${own?'<button type="button" id="edit-profile-cover"><i data-lucide="camera"></i></button>':''}<button type="button" id="share-profile-cover"><i data-lucide="share-2"></i></button></div>
@@ -1493,6 +1493,7 @@ function profileView(p, own) {
           <p class="hs-profile-demographics">${p.age?num(p.age)+' سنة':''}${p.gender==='female'?' · ♀':p.gender==='male'?' · ♂':''}</p>
           <p dir="ltr">@${esc(p.handle)}</p>
           ${p.publicId ? `<div class="hs-profile-id-row" dir="ltr">${p.country ? `<span class="hs-profile-country-flag" title="${esc(p.country)}">${/الجزائر|algeria/i.test(p.country)?'🇩🇿':/tunisia/i.test(p.country)?'🇹🇳':/morocco/i.test(p.country)?'🇲🇦':/egypt/i.test(p.country)?'🇪🇬':'🌍'}</span>`:''}<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button></div>` : ''}
+          ${own ? profileStatsMarkup() : ''}
           ${own ? `<div class="hs-profile-quick-info">
             <a href="#/wallet" class="hs-profile-wallet-mini"><span><small>المحفظة</small><b>${coin(20)} ${num(state.wallet?.balance)}</b></span><i data-lucide="wallet"></i></a>
             <div class="hs-profile-level-mini">
@@ -1501,29 +1502,32 @@ function profileView(p, own) {
               <a href="#/me" class="hs-profile-level-charisma"><i data-lucide="sparkles"></i><span>الكاريزما</span><b>LV.${num(p.charismaLevel || 0)}</b></a>
             </div>
           </div>` : ''}
-          ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
-          ${own ? '' : '<div class="hs-profile-tags hs-profile-info-chips">
+          ${!own && p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : ''}
+          ${!own ? `<div class="hs-profile-tags hs-profile-info-chips">
             ${p.role==='admin'?'<span class="hs-profile-info-chip"><i data-lucide="shield-check"></i> إدارة همسات</span>':''}
             ${p.vipLevel>0?'<span class="hs-profile-info-chip"><i data-lucide="crown"></i> VIP '+num(p.vipLevel)+'</span>':''}
             <span class="hs-profile-info-chip"><i data-lucide="gem"></i> ثروة ${num(p.wealthLevel)}</span>
             <span class="hs-profile-info-chip"><i data-lucide="sparkles"></i> كاريزما ${num(p.charismaLevel)}</span>
             <span class="hs-profile-info-chip"><i data-lucide="badge-check"></i> عضو في همسات</span>
             ${p.createdAt ? `<span class="hs-profile-info-chip"><i data-lucide="calendar-days"></i> منذ ${dateAr(p.createdAt)}</span>` : ''}
-          </div>
+          </div>` : ''}
         </div>
-        ${!own ? '' : '<button type="button" class="hs-profile-edit-hint hs-bio-edit" id="edit-profile-inline"><i data-lucide="pencil"></i> تعديل النبذة والملف</button>'}
       </div>
       ${own ? `
-        ${own ? '' : '<div class="hs-profile-ribbon"><span>✧</span><b>H A M S A T</b><span>♡</span></div>'}
-      <div class="${own?'hs-profile-dashboard':'hs-profile-public-content'}">
-        ${profileStatsMarkup()}
-        ${profileRewardsMarkup()}
-        ${own ? '<section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>مشاركاتك</small></div><form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر</button></form><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>' : '<section data-profile-panel="moments" class="hs-moments-panel"><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>'}
-        ${own ? '' : '<section class="hs-cp-card" data-couple-space><div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div><div class="hs-cp-loading">جارٍ تحميل مساحة CP…</div></section>'}
-      </div>
+        <div class="hs-profile-dashboard">
+          ${profileRewardsMarkup()}
+          <section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>مشاركاتك</small></div>
+            <form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر</button></form>
+            <div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div>
+          </section>
+        </div>` : `
+        <div class="hs-profile-ribbon"><span>✧</span><b>H A M S A T</b><span>♡</span></div>
+        <div class="hs-profile-tabs"><button class="active" type="button" data-profile-tab="profile">الملف الشخصي</button><button type="button" data-profile-tab="moments">لحظة</button></div>
+        <div data-profile-panel="profile">${profileStatsMarkup()}${profileRewardsMarkup()}<section class="hs-cp-card" data-couple-space><div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div><div class="hs-cp-loading">جارٍ تحميل مساحة CP…</div></section></div>
+        <section data-profile-panel="moments" class="hs-moments-panel" hidden><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>
+      `}
     </section>`;
 }
-
 function meScreen() {
   const p = state.profile;
   const menuGroups = [
