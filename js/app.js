@@ -1502,7 +1502,7 @@ function profileView(p, own) {
             </div>
           </div>` : ''}
           ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
-          <div class="hs-profile-tags hs-profile-info-chips">
+          ${own ? '' : '<div class="hs-profile-tags hs-profile-info-chips">
             ${p.role==='admin'?'<span class="hs-profile-info-chip"><i data-lucide="shield-check"></i> إدارة همسات</span>':''}
             ${p.vipLevel>0?'<span class="hs-profile-info-chip"><i data-lucide="crown"></i> VIP '+num(p.vipLevel)+'</span>':''}
             <span class="hs-profile-info-chip"><i data-lucide="gem"></i> ثروة ${num(p.wealthLevel)}</span>
@@ -1514,12 +1514,13 @@ function profileView(p, own) {
         ${!own ? '' : '<button type="button" class="hs-profile-edit-hint hs-bio-edit" id="edit-profile-inline"><i data-lucide="pencil"></i> تعديل النبذة والملف</button>'}
       </div>
       ${own ? `
-        <div class="hs-profile-ribbon">
-          <span>✧</span><b>H A M S A T</b><span>♡</span>
-        </div>` : ''}
-      <div class="hs-profile-tabs"><button class="active" type="button" data-profile-tab="profile">الملف الشخصي</button><button type="button" data-profile-tab="moments">لحظة</button></div>
-      <div data-profile-panel="profile">${profileStatsMarkup()}${profileRewardsMarkup()}<section class="hs-cp-card" data-couple-space><div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div><div class="hs-cp-loading">جارٍ تحميل مساحة CP…</div></section></div>
-      <section data-profile-panel="moments" class="hs-moments-panel" hidden>${own?'<form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر اللحظة</button></form>':''}<div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>
+        ${own ? '' : '<div class="hs-profile-ribbon"><span>✧</span><b>H A M S A T</b><span>♡</span></div>'}
+      <div class="${own?'hs-profile-dashboard':'hs-profile-public-content'}">
+        ${profileStatsMarkup()}
+        ${profileRewardsMarkup()}
+        ${own ? '<section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>مشاركاتك</small></div><form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر</button></form><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>' : '<section data-profile-panel="moments" class="hs-moments-panel"><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div></section>'}
+        ${own ? '' : '<section class="hs-cp-card" data-couple-space><div class="hs-cp-title"><b>مساحة CP</b><small>مساحتكما المشتركة</small></div><div class="hs-cp-loading">جارٍ تحميل مساحة CP…</div></section>'}
+      </div>
     </section>`;
 }
 
