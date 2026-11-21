@@ -2673,3 +2673,61 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hs-home-room-list .room-card-title-row>p{min-width:0;flex:1;margin:0;color:#f5e8c2;font-size:14px;font-weight:800}
 .hs-home-room-list .room-card-title-row .room-enter{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:1px solid rgba(212,175,55,.42);border-radius:10px;background:rgba(212,175,55,.12);color:#f3d77e}
 .hs-home-room-list .room-card-title-row .room-enter svg{width:17px;height:17px}
+
+
+/* HAMSAT luxury visual pass v1 — presentation only; no room logic or settings changed */
+:root{
+  --gold:#d8b65b;
+  --hamsat-gold-soft:#f2df9c;
+  --hamsat-black:#08090c;
+  --hamsat-panel:#111216;
+  --hamsat-panel-2:#17181d;
+  --hamsat-line:rgba(216,182,91,.27);
+}
+html,body{background:#08090c!important;color:#f5f0e4}
+#screen{background:radial-gradient(ellipse at 50% -18%,rgba(180,143,55,.12),transparent 43%),linear-gradient(180deg,#0b0c10 0%,#08090c 100%)}
+#tabbar{background:rgba(8,9,12,.94)!important;border-top:1px solid rgba(216,182,91,.3)!important;box-shadow:0 -12px 36px rgba(0,0,0,.48)!important}
+#tabbar .tab{color:#9d988a}
+#tabbar .tab.active{color:#f0d786}
+#tabbar .tab.active svg{filter:drop-shadow(0 0 7px rgba(216,182,91,.35))}
+#screen .card{
+  background:linear-gradient(145deg,rgba(27,28,31,.97),rgba(12,13,16,.98))!important;
+  border:1px solid rgba(216,182,91,.22)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035)
+}
+#screen .field, #screen input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),#screen select,#screen textarea{
+  background-color:#0b0c0f;
+  border-color:rgba(216,182,91,.25);
+  color:#f5f0e4;
+}
+#screen .field:focus,#screen input:focus,#screen select:focus,#screen textarea:focus{border-color:#d8b65b;box-shadow:0 0 0 3px rgba(216,182,91,.09);outline:none}
+#screen .label{color:#d2c39c}
+#screen .btn-gold{
+  background:linear-gradient(135deg,#f4e2a0 0%,#d8b65b 48%,#a9822f 100%);
+  border:1px solid rgba(255,235,174,.45);
+  color:#17140c;
+  box-shadow:0 8px 22px rgba(180,143,55,.16),inset 0 1px 0 rgba(255,255,255,.42)
+}
+#screen .btn-ghost{border-color:rgba(216,182,91,.32);background:rgba(216,182,91,.045);color:#eee4c9}
+#screen h1,#screen h2,#screen h3{ text-wrap:balance }
+#screen .hs-profile-page{background-color:#090a0d}
+#screen .hs-profile-cover{border-bottom:1px solid rgba(216,182,91,.25)}
+#screen .hs-profile-info-chip{background:linear-gradient(135deg,rgba(216,182,91,.16),rgba(255,255,255,.025));border-color:rgba(216,182,91,.34);color:#f2e3b8}
+#screen .room-card{background:#101115!important;border-color:rgba(216,182,91,.3)!important;box-shadow:0 10px 28px rgba(0,0,0,.3)!important}
+#screen .room-enter{background:linear-gradient(145deg,rgba(216,182,91,.2),rgba(216,182,91,.07))!important;border-color:rgba(216,182,91,.5)!important;color:#f4dc91!important}
+.room-sheet .hs-room-canvas{background-color:#08090d!important}
+.room-sheet .hs-room-stage,.room-sheet .hs-room-people,.room-sheet .hs-room-chat-area{
+  background:linear-gradient(145deg,rgba(25,26,29,.97),rgba(10,11,14,.98))!important;
+  border-color:rgba(216,182,91,.27)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.025)
+}
+.room-sheet .hs-room-settings{background:linear-gradient(145deg,rgba(31,28,22,.98),rgba(10,11,14,.98))!important;border-color:rgba(216,182,91,.38)!important}
+.room-sheet .hs-room-settings-group{border-color:rgba(216,182,91,.18)}
+.room-sheet .hs-room-seat{border-color:rgba(216,182,91,.25)}
+.room-sheet .hs-room-seat.occupied{background:linear-gradient(160deg,rgba(216,182,91,.12),rgba(12,13,16,.94))}
+.room-sheet .hs-room-seat.empty{background:rgba(255,255,255,.018)}
+.room-sheet .hs-room-chat{background:rgba(5,6,8,.28)}
+.room-sheet .hs-room-bottom-bar{border-top-color:rgba(216,182,91,.22)}
+@media(prefers-reduced-motion:no-preference){
+  #screen .card,#tabbar .tab,#screen .btn-gold,#screen .btn-ghost{transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,color .2s ease}
+}
