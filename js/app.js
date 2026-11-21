@@ -1564,7 +1564,6 @@ function meScreen() {
     <div class="hs-me-screen fade-in">
       <div class="hs-me-topbar"><span>H A M S A T</span><div class="hs-me-topbar-actions"><button type="button" id="account-settings" class="hs-account-settings-button" aria-label="إعدادات الحساب" title="إعدادات الحساب"><i data-lucide="settings"></i></button><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div></div>
       ${profileView(p, true)}
-      <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
 
     </div>`;
   icons_();
