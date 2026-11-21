@@ -4988,3 +4988,80 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
+
+
+/* HAMSAT ROOM — show selected background and keep composer in viewport */
+#sheet-root .room-sheet,
+#sheet-root .room-sheet .hs-room-canvas{
+  background-color:transparent!important;
+}
+#sheet-root .room-sheet .hs-room-canvas{
+  display:flex!important;
+  flex-direction:column!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  gap:4px!important;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 4px)!important;
+}
+#sheet-root .room-sheet .hs-room-head{flex:0 0 auto!important}
+#sheet-root .room-sheet .hs-room-unified{
+  flex:1 1 0!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  gap:3px!important;
+}
+#sheet-root .room-sheet .hs-room-stage,
+#sheet-root .room-sheet .hs-room-stage::before,
+#sheet-root .room-sheet .hs-room-stage::after,
+#sheet-root .room-sheet .hs-room-seats,
+#sheet-root .room-sheet .hs-room-seat,
+#sheet-root .room-sheet .hs-room-people,
+#sheet-root .room-sheet .hs-room-chat-area,
+#sheet-root .room-sheet .hs-room-chat-tabs,
+#sheet-root .room-sheet .hs-room-chat{
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+}
+#sheet-root .room-sheet .hs-room-stage{
+  border-color:#ffffff18!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#sheet-root .room-sheet .hs-room-chat-area{
+  flex:1 1 0!important;
+  min-height:0!important;
+  max-height:none!important;
+  border-color:#ffffff18!important;
+  padding:3px 6px!important;
+  overflow:hidden!important;
+}
+#sheet-root .room-sheet .hs-room-chat{min-height:0!important;max-height:none!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  position:relative!important;
+  inset:auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  margin:0!important;
+  padding:4px 0 calc(env(safe-area-inset-bottom) + 4px)!important;
+  border:0!important;
+  border-top:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  z-index:30!important;
+}
+#sheet-root .room-sheet .hs-room-compose{
+  background:rgba(10,13,20,.28)!important;
+  border:1px solid #ffffff35!important;
+  box-shadow:none!important;
+}
+#sheet-root .room-sheet .hs-room-compose input{
+  background:transparent!important;
+}
