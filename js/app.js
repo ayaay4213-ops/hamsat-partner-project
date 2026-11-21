@@ -870,6 +870,7 @@ async function openRoom(r) {
     sheet.querySelectorAll('#room-chat-tabs [data-chat-filter]').forEach(button=>button.onclick=()=>{roomChatFilter=button.dataset.chatFilter;sheet.querySelectorAll('#room-chat-tabs [data-chat-filter]').forEach(x=>x.classList.toggle('active',x===button));drawMessages().catch(e=>toast(e.message,'error'));});
     const formatRoomDuration=(milliseconds)=>{const total=Math.max(0,Math.floor(milliseconds/1000)),hours=Math.floor(total/3600),minutes=Math.floor((total%3600)/60),seconds=total%60;return hours?`${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`:`${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;};
     const updateRoomSeatTimers=()=>{const now=Date.now();sheet.querySelectorAll('.hs-seat-duration[data-started-at]').forEach(el=>{const start=Date.parse(el.dataset.startedAt);el.textContent=Number.isFinite(start)?formatRoomDuration(now-start):'—';});const mine=[...sheet.querySelectorAll('#room-seats .hs-room-seat[data-own="true"]')][0];const timer=sheet.querySelector('#room-bomb-sit-time');if(timer){const start=Date.parse(mine?.querySelector('.hs-seat-duration')?.dataset.startedAt||'');timer.textContent=Number.isFinite(start)?formatRoomDuration(now-start):'—';timer.dataset.startedAt=Number.isFinite(start)?String(start):'';}};
+    let previousSeatUsers=new Set();
     const mutedRoomUsers=new Set();
     const remotelyMutedUsers=new Set();
     let muteStateLoaded=false;
@@ -925,6 +926,9 @@ async function openRoom(r) {
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-chair"><i data-lucide="armchair"></i></span><i class="hs-seat-center-mic" data-lucide="mic"></i></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
         return `<button type="button" data-seat="${n}" data-user-id="${esc(seat.user_id)}" data-user-handle="${esc(m?.handle||'')}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" aria-label="${own?'مقعدك على المايك':'عرض ملف '+esc(m?.displayName||'العضو')}"><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small><small class="hs-seat-duration" data-started-at="${esc(seat.seated_at||'')}">00:00</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
       }).join('');
+      const currentSeatUsers=new Set(seats.map(x=>x.user_id));
+      seatsEl.querySelectorAll('.hs-room-seat.occupied[data-user-id]').forEach(el=>{if(!previousSeatUsers.has(el.dataset.userId))el.classList.add('hs-seat-arrive');});
+      previousSeatUsers=currentSeatUsers;
       updateRoomSeatTimers();
       seatsEl.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{
         if(b.dataset.own!=='true'&&b.dataset.userHandle){
