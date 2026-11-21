@@ -1,11 +1,11 @@
 /* HAMSAT PWA shell worker — versioned cache, never caches authenticated API responses. */
-const CACHE_NAME = 'hamsat-shell-v28';
+const CACHE_NAME = 'hamsat-shell-v29';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './css/styles.css?v=20261121-room-tools-profile-shortcuts-v3',
-  './js/app.js?v=20261121-room-tools-profile-shortcuts-v3',
+  './css/styles.css?v=20261121-room-controls-recovery-v4',
+  './js/app.js?v=20261121-room-controls-recovery-v4',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',
