@@ -4354,3 +4354,9 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
   #sheet-root .room-sheet .hs-room-seat.is-speaking .hs-seat-ring{animation:none!important}
   #sheet-root .room-sheet *,#screen .hs-profile-cover *{scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
+
+/* Centered layouts and subtle arrival motion */
+#sheet-root .room-sheet .hs-room-stage{padding:7px 7px 9px 66px!important}
+#sheet-root .room-sheet .hs-room-seat.hs-seat-arrive{animation:hs-seat-arrival .52s cubic-bezier(.2,.8,.2,1) both!important}
+@keyframes hs-seat-arrival{0%{opacity:0;transform:translateY(9px) scale(.94);filter:brightness(1.5)}100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
+@media(max-width:390px){#sheet-root .room-sheet .hs-room-stage{padding:7px 5px 9px 62px!important}}
