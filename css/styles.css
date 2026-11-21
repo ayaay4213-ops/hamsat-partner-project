@@ -3077,3 +3077,54 @@ html,body{background:#08090c!important;color:#f5f0e4}
   #screen .hs-coming-soon>span{animation:hs-feature-glow 4.8s ease-in-out infinite}
   @keyframes hs-feature-glow{0%,100%{box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 22px rgba(223,189,104,.07)}50%{box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 38px rgba(223,189,104,.17)}}
 }
+
+
+/* HAMSAT RESPONSIVE REVIEW v6 — full-width room cards and balanced mobile seats */
+#screen .hs-home-room-list .room-card{
+  display:block!important;width:100%;min-width:0;min-height:0;
+  border-radius:20px!important;overflow:hidden;
+}
+#screen .hs-home-room-list .room-cover{
+  display:flex!important;width:100%;height:auto!important;min-height:150px;
+  max-height:220px;aspect-ratio:16/9;flex-direction:column;
+  align-items:center;justify-content:center;background-size:cover;background-position:center;
+}
+#screen .hs-home-room-list .room-card-body{
+  display:block;min-width:0;padding:12px 15px!important;
+  background:linear-gradient(145deg,#1d1b15,#111215)!important;
+}
+#screen .hs-home-room-list .room-card-title-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
+}
+#screen .hs-home-room-list .room-card-title-row p{
+  min-width:0;flex:1;color:#f2e4bd;font-size:14px;line-height:1.6;
+}
+#screen .hs-home-room-list .room-enter{
+  flex:none;width:38px;height:38px;display:grid;place-items:center;
+  border:1px solid rgba(223,189,104,.3);border-radius:12px;
+  background:rgba(223,189,104,.09);color:#f0d58c!important;
+}
+#screen .hs-home-room-list .room-enter svg{width:18px;height:18px}
+#screen .hs-home-room-list .room-description,
+#screen .hs-home-room-list .room-card-footer{display:none!important}
+@media(max-width:520px){
+  #screen .hs-room-seats{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:14px 8px!important;
+  }
+  #screen .hs-room-seat{min-width:0;min-height:116px;padding-inline:2px}
+  #screen .hs-room-seat:before{width:70px;height:70px}
+  #screen .hs-seat-ring{width:58px;height:58px}
+  #screen .hs-room-seat b{max-width:100%;font-size:10px}
+}
+@media(max-width:360px){
+  #screen .hs-room-seats{gap:12px 6px!important}
+  #screen .hs-room-seat{min-height:108px}
+  #screen .hs-room-seat:before{width:62px;height:62px}
+  #screen .hs-seat-ring{width:52px;height:52px}
+  #screen .hs-room-seat b{font-size:9px}
+  #screen .hs-room-seat small{font-size:8px}
+}
+@media(min-width:521px){
+  #screen .hs-room-seats{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
