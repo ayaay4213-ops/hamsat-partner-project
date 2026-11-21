@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261121-hamsat-final-fix-v1';
+import { api } from './api.js?v=20261121-room-bomb-stack-v2';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -625,7 +625,7 @@ async function openRoom(r) {
           <button type="button" class="hs-room-close" data-close aria-label="إغلاق الغرفة"><i data-lucide="power"></i></button>
           <button type="button" id="room-minimize" class="hs-room-close hs-room-minimize" aria-label="تصغير والاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button>
           <span class="hs-room-state" aria-label="مباشر" title="مباشر"><i></i></span>
-        </div><button type="button" id="room-bomb-floating" class="hs-room-bomb-floating" aria-label="قنبلة الغرفة"><span class="hs-bomb-art" aria-hidden="true"><i class="hs-bomb-orb lv-1">💣</i><i class="hs-bomb-orb lv-2">💣</i><i class="hs-bomb-orb lv-3">💣</i><i class="hs-bomb-orb lv-4">💣</i><i class="hs-bomb-orb lv-5">💣</i><span class="hs-bomb-fuse-spark"></span></span><b id="room-bomb-level">LV.1</b><small id="room-bomb-percent">0%</small><i class="hs-room-bomb-progress"><em id="room-bomb-bar"></em></i></button>
+        </div><button type="button" id="room-bomb-floating" class="hs-room-bomb-floating" aria-label="قنبلة الغرفة"><span class="hs-bomb-art" aria-hidden="true"><span class="hs-bomb-single">💣</span><span class="hs-bomb-fuse-spark"></span></span><b id="room-bomb-level">LV.1</b><small id="room-bomb-percent">0%</small><i class="hs-room-bomb-progress"><em id="room-bomb-bar"></em></i></button>
         <div class="hs-room-title-row">
           <div class="hs-room-owner">${avatar({displayName:r.ownerName,color:r.ownerColor},52)}</div><div class="hs-room-cover-thumb" aria-label="غلاف الغرفة" style="${r.coverUrl ? 'background-image:url('+JSON.stringify(r.coverUrl)+')' : ''}">${r.coverUrl ? '' : '<i data-lucide="image"></i>'}</div>
           <div class="min-w-0 flex-1"><h2><span class="hs-room-title-emoji">${esc(r.roomEmoji||'🎙️')}</span> ${esc(r.title)}</h2><p>${esc(r.topic)} · بواسطة ${esc(r.ownerName||'عضو')}</p></div>
@@ -726,7 +726,11 @@ async function openRoom(r) {
       const stage=sheet.querySelector('.hs-room-stage');
       if(!canvas||!unified||!stage)return;
       const floatingBomb=sheet.querySelector('#room-bomb-floating');
-      if(floatingBomb&&floatingBomb.parentElement!==stage)stage.appendChild(floatingBomb);
+      const sitTimer=sheet.querySelector('.hs-seat-live-timer');
+      let bombStack=stage.querySelector('.hs-room-bomb-stack');
+      if(!bombStack){bombStack=document.createElement('div');bombStack.className='hs-room-bomb-stack';stage.appendChild(bombStack);}
+      if(floatingBomb&&floatingBomb.parentElement!==bombStack)bombStack.appendChild(floatingBomb);
+      if(sitTimer&&sitTimer.parentElement!==bombStack)bombStack.appendChild(sitTimer);
       if(url) canvas.style.setProperty('background-image','url('+JSON.stringify(String(url))+')','important');
       canvas.style.setProperty('background-size','cover','important');
       canvas.style.setProperty('background-position','center center','important');
