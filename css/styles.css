@@ -3033,3 +3033,47 @@ html,body{background:#08090c!important;color:#f5f0e4}
  #screen #friend-requests>div{gap:7px;padding:9px}
  #screen #friend-requests>div button{padding-inline:9px}
 }
+
+
+/* HAMSAT LUXE EXPERIENCE v5 — polished feature placeholder surfaces; visual only */
+#screen .hs-coming-soon{
+  position:relative;isolation:isolate;overflow:hidden;min-height:calc(72dvh - 70px);
+  margin:14px 15px 22px;padding:34px 24px 30px;border:1px solid rgba(223,189,104,.22);
+  border-radius:26px;background:
+    radial-gradient(ellipse at 50% 12%,rgba(223,189,104,.13),transparent 43%),
+    radial-gradient(ellipse at 8% 92%,rgba(223,189,104,.055),transparent 38%),
+    linear-gradient(155deg,rgba(31,31,34,.97),rgba(12,13,16,.98) 72%);
+  box-shadow:0 22px 58px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.045);
+}
+#screen .hs-coming-soon:before,#screen .hs-coming-soon:after{
+  content:"";position:absolute;z-index:-1;pointer-events:none;border:1px solid rgba(223,189,104,.10);border-radius:50%;
+}
+#screen .hs-coming-soon:before{width:260px;height:260px;top:-160px;left:50%;transform:translateX(-50%);box-shadow:0 0 0 18px rgba(223,189,104,.018),0 0 0 38px rgba(223,189,104,.012)}
+#screen .hs-coming-soon:after{width:170px;height:170px;bottom:-120px;right:-80px;box-shadow:0 0 0 16px rgba(223,189,104,.018)}
+#screen .hs-coming-soon>span{
+  width:88px;height:88px;border-radius:28px;border:1px solid rgba(238,211,137,.42);
+  background:linear-gradient(145deg,rgba(223,189,104,.19),rgba(223,189,104,.045));
+  color:#f0d58c;box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 34px rgba(223,189,104,.10)
+}
+#screen .hs-coming-soon>span svg{width:39px;height:39px;stroke-width:1.65}
+#screen .hs-coming-soon h2{margin-top:22px;color:#f3e6c8;font-size:25px;line-height:1.5;letter-spacing:.01em}
+#screen .hs-coming-soon p{max-width:290px;margin-top:10px;color:#c5baa3;font-size:14px;line-height:2}
+#screen .hs-coming-soon small{
+  max-width:290px;margin-top:17px;padding:9px 13px;border:1px solid rgba(223,189,104,.14);
+  border-radius:12px;background:rgba(223,189,104,.045);color:#a99e87;font-size:11px;line-height:1.8
+}
+#screen .hs-coming-soon .btn-gold{
+  min-height:46px;margin-top:25px;padding:12px 27px;border-radius:14px;
+  box-shadow:0 9px 24px rgba(212,175,55,.13),inset 0 1px 0 rgba(255,255,255,.30)
+}
+#screen .hs-coming-soon .btn-gold:focus-visible{outline:2px solid #f0d58c;outline-offset:4px}
+@media(max-width:380px){
+  #screen .hs-coming-soon{min-height:66dvh;margin:10px 11px 18px;padding:27px 17px 24px;border-radius:22px}
+  #screen .hs-coming-soon>span{width:76px;height:76px;border-radius:24px}
+  #screen .hs-coming-soon h2{font-size:22px}
+  #screen .hs-coming-soon p{font-size:13px}
+}
+@media(prefers-reduced-motion:no-preference){
+  #screen .hs-coming-soon>span{animation:hs-feature-glow 4.8s ease-in-out infinite}
+  @keyframes hs-feature-glow{0%,100%{box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 22px rgba(223,189,104,.07)}50%{box-shadow:0 12px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 38px rgba(223,189,104,.17)}}
+}
