@@ -4531,3 +4531,7 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 .hs-shop-products .cosmetic-preview{background:radial-gradient(circle,#324e7d,#0a1732);border:1px solid #a7c9f055}
 .hs-shop-products .cosmetic-card p{color:#f2f6ff}
 @media(max-width:360px){.hs-shop-layout{grid-template-columns:82px minmax(0,1fr);gap:7px}.hs-shop-category-tabs button{font-size:9px;padding:7px 3px}}
+
+.hs-me-checkin{position:absolute;top:18px;left:18px;z-index:2}
+.hs-me-level-cards{direction:ltr}.hs-me-level-cards>a{direction:rtl}
+.hs-me-spin-banner{direction:ltr}.hs-me-cash{direction:rtl}
