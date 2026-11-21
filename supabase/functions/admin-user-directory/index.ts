@@ -49,8 +49,8 @@ Deno.serve(async (req: Request) => {
     .order("created_at", { ascending: false });
 
   if (search) {
-    const normalized = search.toUpperCase().replace(/^HAMSAT[\\s-]*/, "").replace(/^#/, "").replace(/\\s/g, "");
-    if (/^\\d+$/.test(normalized)) {
+    const normalized = search.toUpperCase().replace(/^HAMSAT[\s-]*/, "").replace(/^#/, "").replace(/\s/g, "");
+    if (/^\d+$/.test(normalized)) {
       const publicId = Number(normalized);
       if (!Number.isSafeInteger(publicId)) return json(400, { error: "رقم العضو خارج النطاق الصحيح." });
       query = query.eq("public_id", publicId);
