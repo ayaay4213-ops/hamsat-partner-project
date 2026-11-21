@@ -387,11 +387,6 @@ export const api = {
     const user = await currentUser();
     const { error } = await client().from('room_members').insert({ room_id: roomId, user_id: user.id });
     if (error && error.code !== '23505') fail(error);
-    if (error?.code === '23505') {
-      const refreshed = await client().from('room_members').update({ joined_at: new Date().toISOString() })
-        .eq('room_id', roomId).eq('user_id', user.id);
-      fail(refreshed.error);
-    }
     return api.roomMembers(roomId);
   },
   roomMembers: async (roomId) => {
