@@ -3764,3 +3764,47 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
  #sheet-root .room-sheet .hs-room-seat b{font-size:10px!important}
  #sheet-root .room-sheet .hs-room-chat{height:75px!important;min-height:75px!important}
 }
+
+
+/* HAMSAT REFERENCE REBUILD — discovery grid and profile readability */
+#screen .hs-home-room-list{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;align-items:start!important;
+}
+#screen .hs-home-room-list>.skeleton,#screen .hs-home-room-list>.card:only-child{
+  grid-column:1/-1!important;
+}
+#screen .room-card{display:flex!important;flex-direction:column!important;min-width:0!important;padding:0!important;border-radius:16px!important;overflow:hidden!important;text-align:initial!important}
+#screen .room-card .room-cover{
+  display:block!important;position:relative!important;width:100%!important;height:clamp(145px,43vw,205px)!important;
+  min-height:0!important;border-radius:0!important;background-size:cover!important;background-position:center!important;
+}
+#screen .room-card .room-cover-tag{top:8px!important;inset-inline-start:8px!important;font-size:9px!important}
+#screen .room-card .room-cover-topic{bottom:8px!important;inset-inline-end:8px!important;font-size:9px!important}
+#screen .room-card .room-card-body{padding:9px 10px!important;min-height:42px!important}
+#screen .room-card .room-card-title-row{display:flex!important;align-items:center!important;gap:6px!important}
+#screen .room-card .room-card-title-row p{font-size:12px!important;line-height:1.45!important;white-space:normal!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+#screen .room-card .room-enter{width:28px!important;height:28px!important;flex:none!important;border-radius:50%!important;background:#087b3d!important;color:#fff!important;display:grid!important;place-items:center!important}
+#screen .hs-home-categories{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
+#screen .hs-home-categories>a{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:7px!important;min-width:0!important;padding:12px 6px!important;background:linear-gradient(145deg,#0b8d49,#066634)!important;color:#fff!important;border:1px solid #d5b85f!important}
+#screen .hs-home-categories>a:nth-child(2){background:linear-gradient(145deg,#b44ed1,#7b25a5)!important}
+#screen .hs-home-categories>a:nth-child(3){background:linear-gradient(145deg,#f4b22d,#d67c11)!important}
+#screen .hs-home-categories>a svg{width:26px!important;height:26px!important}
+#screen .hs-weekly-banner{min-height:126px!important;background:linear-gradient(115deg,#4b2a06,#bd8528 48%,#17120b)!important;color:#fff1c7!important;border:1px solid #d6b75b!important}
+#screen .hs-weekly-banner strong{font-size:22px!important}
+#screen .hs-me-screen,#screen .hs-profile-page,#screen .hs-activities-page,#screen .hs-inbox-page,#screen .hs-dm-page{font-family:Tajawal,system-ui,sans-serif!important;line-height:1.65!important}
+#screen .hs-me-screen h1,#screen .hs-me-screen h2,#screen .hs-me-screen h3,#screen .hs-profile-page h1,#screen .hs-profile-page h2,#screen .hs-profile-page h3{line-height:1.45!important;letter-spacing:0!important}
+#screen .hs-account-row{min-height:66px!important;padding:12px 14px!important}
+#screen .hs-account-copy b{font-size:15px!important}
+#screen .hs-account-copy small{font-size:12px!important;line-height:1.5!important}
+#screen .hs-profile-info-chip{font-size:12px!important}
+#screen .hs-profile-tabs button{min-height:48px!important;font-size:14px!important;font-weight:800!important}
+#screen .hs-inbox-row{min-height:82px!important;padding:13px 14px!important}
+#screen .hs-inbox-name{font-size:15px!important;font-weight:800!important}
+#screen .hs-inbox-preview{font-size:12px!important}
+@media(max-width:360px){
+ #screen .hs-home-room-list{gap:8px!important}
+ #screen .room-card .room-cover{height:138px!important}
+ #screen .room-card .room-card-body{padding:7px!important}
+ #screen .room-card .room-card-title-row p{font-size:11px!important}
+}
