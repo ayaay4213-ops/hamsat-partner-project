@@ -575,7 +575,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261120-admin-members-full-list-v3')) {
+  if (!adminHtml.includes('js/admin.js?v=20261121-admin-directory-edge-v4')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -591,7 +591,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261120-admin-members-full-list-v3')) {
+  if (!adminHtml.includes('js/admin.js?v=20261121-admin-directory-edge-v4')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -692,7 +692,7 @@ if (fs.existsSync(integratedCssPath)) {
 }
 if (fs.existsSync(integratedHtmlPath)) {
   const htmlSource = fs.readFileSync(integratedHtmlPath, 'utf8');
-  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-6 pb-safe')) {
+  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-5 pb-safe')) {
     errors.push('Bottom navigation must include the moments shortcut beside the profile tab');
   }
 }
