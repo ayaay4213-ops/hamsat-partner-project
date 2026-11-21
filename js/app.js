@@ -708,10 +708,12 @@ async function openRoom(r) {
     const applyRoomBackground=(url)=>{
       const stage=sheet.querySelector('.hs-room-stage');
       if(!stage)return;
-      stage.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(5,6,9,.28),rgba(5,6,9,.56)),url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
+      stage.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(5,6,9,.06),rgba(5,6,9,.14)),url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
       stage.style.setProperty('background-size','cover','important');
       stage.style.setProperty('background-position','center center','important');
       stage.style.setProperty('background-repeat','no-repeat','important');
+      stage.style.setProperty('min-height','min(48dvh,460px)','important');
+      stage.style.setProperty('flex','1 1 auto','important');
     };
     applyRoomBackground(r.backgroundUrl||null);
     api.roomBackground(r.id).then(({imageUrl})=>{r.backgroundUrl=imageUrl;applyRoomBackground(imageUrl);}).catch(error=>console.warn('تعذر تحميل خلفية الغرفة المشتركة:',error));
