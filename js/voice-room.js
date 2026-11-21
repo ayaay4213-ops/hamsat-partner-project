@@ -232,8 +232,8 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     finally { joining = null; }
   }
 
-  function toggleMute() {
-    if (!localStream) return muted;
+  async function toggleMute() {
+    if (!localStream) throw new Error('ابدئي الاتصال الصوتي أولاً.');
     muted = !muted;
     localStream.getAudioTracks().forEach(track => { track.enabled = !muted; });
     status(muted ? 'الميكروفون مكتوم' : 'الميكروفون يعمل', true);
