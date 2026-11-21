@@ -529,13 +529,14 @@ function onboardingScreen() {
 async function homeScreen(params = new URLSearchParams()) {
   screen.innerHTML = header('الرئيسية', '<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء غرفة</button>') + `
     <div class="px-4 pt-4 pb-6 fade-in">
-      <section class="rooms-welcome card ornament p-4 mb-4">
-        <div class="flex items-center justify-between gap-3">
-          <div><span class="text-[10px] tracking-[.2em] text-gold-400">H A M S A T • LIVE</span><h2 class="text-lg font-extrabold mt-1">مساحات تجمعنا</h2><p class="text-xs mt-1 leading-5">اكتشفي الغرف، اختاري مقعدك، وشاركي الحديث مع الأصدقاء</p></div>
-          <div class="rooms-welcome-icon"><i data-lucide="audio-lines"></i></div>
-        </div>
-        <div class="rooms-live-note"><span></span> الغرف الصوتية · دردشة ومقاعد تفاعلية</div>
+      <section class="hs-weekly-banner mb-3" aria-label="فعاليات همسات الأسبوعية">
+        <div><small>HAMSAT · WEEKLY EVENTS</small><strong>نجوم همسات</strong><span>شاركي في الفعاليات واكتشفي أصدقاء جدد</span></div><i data-lucide="crown"></i>
       </section>
+      <div class="hs-home-categories mb-4">
+        <a href="#/family"><i data-lucide="users-round"></i><span>عائلة</span></a>
+        <a href="#/agency"><i data-lucide="gem"></i><span>قائمة CP</span></a>
+        <a href="#/wallet"><i data-lucide="trophy"></i><span>كارزما</span></a>
+      </div>
       <div class="flex items-center justify-between mb-2"><span class="text-sm font-bold">الغرف الصوتية</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
         ${['الكل', ...TOPICS].map(t => `<button data-t="${esc(t)}" class="chip ${t === roomFilter ? 'active' : ''}">${esc(t)}</button>`).join('')}
@@ -1537,19 +1538,14 @@ function meScreen() {
   screen.innerHTML = `
     <div class="hs-me-screen fade-in">
       <div class="hs-me-topbar"><span>H A M S A T</span><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div>
-      <section class="mx-4 mt-4 rounded-2xl border border-gold-500/35 bg-gradient-to-l from-[#352716] via-[#211b18] to-[#15131a] p-4 shadow-lg">
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="grid place-items-center w-11 h-11 rounded-xl bg-gold-500/15 text-gold-300 border border-gold-500/30"><i data-lucide="crown" class="w-6 h-6"></i></span>
-            <div class="min-w-0"><small class="block text-gold-200/70">عضوية همسات</small><b class="block text-gold-100">${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'عضوية VIP' }</b><span class="text-xs text-[#c8b99e]">${p.vipLevel > 0 ? 'مستوى عضويتك الحالي' : 'اكتشفي مزايا العضوية المميزة'}</span></div>
-          </div>
-          <a href="#/aristocracy" class="shrink-0 text-xs text-gold-200 underline underline-offset-4">التفاصيل</a>
-        </div>
-      </section>
-      <div class="mx-4 mt-3 rounded-2xl border border-gold-500/25 bg-[#19171b] p-4 flex items-center justify-between gap-3">
-        <div><small class="block text-[#b9aa91]">Coins · محفظتي</small><b class="text-xl text-gold-200">${coin(18)} ${num(state.wallet?.balance)}</b></div>
-        <a href="#/wallet" class="text-xs text-gold-200">عرض المحفظة <i data-lucide="arrow-left" class="inline w-4 h-4"></i></a>
+      <a href="#/wallet" class="hs-wallet-gold-banner mx-4 mt-4">
+        <span><small>محفظة همسات</small><b>${coin(22)} ${num(state.wallet?.balance)}</b><em>Coins · عرض المحفظة</em></span><i data-lucide="wallet"></i>
+      </a>
+      <div class="hs-me-levels mx-4 mt-3">
+        <a href="#/wealth" class="hs-me-level-card hs-wealth-card"><i data-lucide="shield"></i><span>مستوى الثروة</span><b>LV.0</b></a>
+        <a href="#/aristocracy" class="hs-me-level-card hs-vip-card"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'لم تحصل بعد'}</b></a>
       </div>
+      <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
       ${profileView(p, true)}
       <div class="hs-me-content">
         <div class="hs-me-section-title"><span>الخدمات والمزايا</span><small>كل عالم همسات في مكان واحد</small></div>
