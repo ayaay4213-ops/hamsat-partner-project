@@ -678,24 +678,34 @@ async function openRoom(r) {
       <div id="room-members" class="hs-room-members"><span class="text-xs">جارٍ تحميل الأعضاء...</span></div>
     </section>
     <section class="hs-room-chat-area">
-      <div class="hs-room-chat-heading"><div><i data-lucide="message-circle" aria-hidden="true"></i><span class="sr-only">الدردشة</span></div><span class="hs-room-people-live" aria-label="متصلون الآن"><i></i></span></div><div id="room-chat-tabs" class="hs-room-chat-tabs hs-room-chat-icon-tabs"><button type="button" data-chat-filter="all" class="active" aria-label="الكل" title="الكل"><i data-lucide="layers"></i></button><button type="button" data-chat-filter="chat" aria-label="الدردشة" title="الدردشة"><i data-lucide="message-square"></i></button><button type="button" data-chat-filter="gifts" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button><button type="button" data-chat-filter="games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></button></div>
-       
+      <div class="hs-room-chat-heading">
+        <div><i data-lucide="message-circle" aria-hidden="true"></i><b>الدردشة</b></div>
+        <span class="hs-room-people-live" aria-label="متصلون الآن"><i></i></span>
+      </div>
+      <div id="room-chat-tabs" class="hs-room-chat-tabs hs-room-chat-icon-tabs">
+        <button type="button" data-chat-filter="all" class="active" aria-label="الكل" title="الكل"><i data-lucide="layers"></i></button>
+        <button type="button" data-chat-filter="chat" aria-label="الدردشة" title="الدردشة"><i data-lucide="message-square"></i></button>
+        <button type="button" data-chat-filter="gifts" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button>
+        <button type="button" data-chat-filter="games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></button>
+      </div>
       <div id="room-chat" class="hs-room-chat"><p class="text-xs text-[#8a76a8] text-center">جارٍ تحميل الرسائل...</p></div>
-      <div class="hs-room-bottom-bar">
-        <div class="hs-room-tools-row">
-          <button type="button" id="voice-start" class="hs-tool-mic" aria-label="الاتصال بالصوت"><i data-lucide="mic"></i></button>
+      <div class="hs-room-bottom-bar" aria-label="أدوات الغرفة والكتابة">
+        <div class="hs-room-compose-wrap">
+          <form id="room-chat-form" class="hs-room-compose">
+            <button type="button" id="room-emoji-toggle" class="hs-compose-emoji" aria-label="إدراج إيموجي"><i data-lucide="smile"></i></button>
+            <input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required>
+            <button type="submit" aria-label="إرسال الرسالة"><i data-lucide="send"></i></button>
+          </form>
+        </div>
+        <div class="hs-room-tools-row" aria-label="أدوات الغرفة">
+          <button type="button" id="voice-start" class="hs-tool-mic" aria-label="تشغيل الميكروفون"><i data-lucide="mic"></i></button>
           <button type="button" id="voice-mute" class="hs-tool-icon" aria-label="كتم الميكروفون" disabled><i data-lucide="mic-off"></i></button>
           <button type="button" id="voice-audio-enable" class="hs-tool-icon" aria-label="سماع المشاركين" disabled><i data-lucide="volume-2"></i></button>
-          <button type="button" id="room-send-gift" class="hs-tool-gift" aria-label="إرسال هدية"><i data-lucide="gift"></i></button>
-          <button type="button" id="room-emoji-toggle" class="hs-tool-icon" aria-label="التفاعلات"><i data-lucide="smile"></i></button>
-          <button type="button" id="room-game-center-toggle" class="hs-tool-icon" aria-label="مركز الألعاب"><i data-lucide="gamepad-2"></i></button>
+          <button type="button" id="room-send-gift" class="hs-tool-gift" aria-label="الهدايا"><i data-lucide="gift"></i></button>
+          <button type="button" id="room-game-center-toggle" class="hs-tool-icon" aria-label="الألعاب"><i data-lucide="gamepad-2"></i></button>
           <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="قائمة الغرفة"><i data-lucide="more-horizontal"></i></button>
         </div>
         <p id="voice-status" class="hs-room-voice-status sr-only" role="status">الصوت غير متصل</p>
-        <div class="hs-room-compose-wrap">
-          
-          <form id="room-chat-form" class="hs-room-compose"><input name="message" maxlength="1000" placeholder="اكتبي رسالة للجميع..." autocomplete="off" required><button type="submit" aria-label="إرسال"><i data-lucide="send"></i></button></form>
-        </div>
         <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
       </div>
     </section>
