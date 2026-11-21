@@ -5086,3 +5086,30 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 #sheet-root .room-sheet .hs-gift-choice em{font-size:8px!important;font-style:normal!important;color:#e7ca78!important}
 #sheet-root .room-sheet #room-gift-form>[type="submit"]{position:sticky!important;bottom:0!important;z-index:3!important;min-height:46px!important;display:block!important;opacity:1!important}
 @media(max-width:390px){#sheet-root .room-sheet .hs-gift-recipient-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+
+
+/* HAMSAT room controls and gift picker — final clear, compact pass */
+#sheet-root .room-sheet .hs-room-bottom-bar,#sheet-root .room-sheet .hs-room-compose-wrap,#sheet-root .room-sheet .hs-room-compose,#sheet-root .room-sheet .hs-room-compose input,#sheet-root .room-sheet .hs-room-compose button{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;filter:none!important;box-shadow:none!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{background:transparent!important;background-image:none!important;border:0!important}
+#sheet-root .room-sheet .hs-room-compose-wrap{background:transparent!important;background-image:none!important;border:1px solid rgba(231,202,120,.38)!important}
+#sheet-root .room-sheet .hs-room-compose,#sheet-root .room-sheet .hs-room-compose input{background:transparent!important}
+#sheet-root .room-sheet .hs-room-compose-wrap:before,#sheet-root .room-sheet .hs-room-compose-wrap:after,#sheet-root .room-sheet .hs-room-compose:before,#sheet-root .room-sheet .hs-room-compose:after{content:none!important;display:none!important;filter:none!important;backdrop-filter:none!important}
+#sheet-root .room-sheet #room-audio-mute{background:rgba(255,255,255,.06)!important}
+#sheet-root .room-sheet #room-audio-mute:disabled{opacity:.45}
+#sheet-root .room-sheet .hs-gift-picker{padding-bottom:max(12px,env(safe-area-inset-bottom))!important}
+#sheet-root .room-sheet .hs-gift-recipient-grid{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;min-height:58px!important;max-height:72px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:4px 2px!important;scrollbar-width:none!important}
+#sheet-root .room-sheet .hs-gift-recipient-grid::-webkit-scrollbar{display:none!important}
+#sheet-root .room-sheet .hs-gift-recipient{flex:0 0 48px!important;width:48px!important;height:48px!important;min-height:48px!important;display:grid!important;place-items:center!important;padding:2px!important;border-radius:50%!important;background:rgba(255,255,255,.04)!important;border:2px solid rgba(255,255,255,.13)!important}
+#sheet-root .room-sheet .hs-gift-recipient.selected{border-color:#f0cf73!important;background:rgba(212,175,55,.22)!important}
+#sheet-root .room-sheet .hs-gift-recipient img{width:40px!important;height:40px!important;object-fit:cover!important;border-radius:50%!important}
+#sheet-root .room-sheet .hs-gift-recipient-all{color:#f0cf73!important}
+#sheet-root .room-sheet .hs-gift-recipient-all svg{width:22px!important;height:22px!important}
+#sheet-root .room-sheet .hs-gift-choice{cursor:pointer!important;touch-action:manipulation!important}
+#sheet-root .room-sheet .hs-gift-choice.selected{border-color:#f0cf73!important;background:rgba(212,175,55,.22)!important;box-shadow:0 0 0 2px rgba(240,207,115,.28)!important}
+#sheet-root .room-sheet .hs-gift-choice.selected em{color:#fff0b7!important}
+#sheet-root .room-sheet .hs-gift-wallet-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:9px 12px!important;margin-top:4px!important;border-top:1px solid rgba(230,198,110,.2)!important;background:rgba(255,255,255,.025)!important;border-radius:12px!important}
+#sheet-root .room-sheet .hs-gift-wallet-footer>span{display:flex!important;align-items:center!important;gap:8px!important;color:#e9d9b7!important}
+#sheet-root .room-sheet .hs-gift-wallet-footer svg{width:19px!important;height:19px!important;color:#e8c66b!important}
+#sheet-root .room-sheet .hs-gift-wallet-footer a{width:36px!important;height:36px!important;display:grid!important;place-items:center!important;border-radius:50%!important;background:rgba(212,175,55,.14)!important}
+#sheet-root .room-sheet #room-gift-form>[type="submit"]{width:44px!important;height:44px!important;min-height:44px!important;margin-inline-start:auto!important;display:grid!important;place-items:center!important;border-radius:50%!important}
+#sheet-root .room-sheet #room-gift-form>[type="submit"] svg{width:19px!important;height:19px!important}
