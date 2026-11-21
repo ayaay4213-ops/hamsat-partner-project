@@ -4636,3 +4636,128 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
   #sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:48px!important;height:48px!important}
   #sheet-root .room-sheet .hs-room-title-row h2{font-size:13px!important}
 }
+
+
+/* HAMSAT ME — rebuilt profile composition */
+.hs-me-reference{background:#f2f4f2;color:#24352c;padding-bottom:24px;overflow:hidden}
+.hs-me-reference .hs-me-hero{padding:17px 17px 25px;border-radius:0 0 30px 30px;background:linear-gradient(150deg,#08784b 0%,#159b61 42%,#72c49a 78%,#f0f5f1 100%);box-shadow:0 12px 28px #174c3020}
+.hs-me-hero-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 82% 12%,#ffffff35,transparent 38%),radial-gradient(ellipse at 10% 85%,#d9f9e322,transparent 45%)}
+.hs-me-hero-top{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:38px}
+.hs-me-brand-mark{font-size:11px;letter-spacing:3px;font-weight:900;color:#effff4;text-shadow:0 2px 12px #064b30}
+.hs-me-brand-mark i,.hs-me-footer i{font-style:normal;color:#ffe5a1}
+.hs-me-reference .hs-me-checkin{position:static;display:flex;align-items:center;gap:7px;border:1px solid #ffffff70;background:linear-gradient(120deg,#ffffff32,#ffffff14);border-radius:999px;padding:8px 12px;font-size:10px;font-weight:800;color:#fff;box-shadow:0 4px 12px #064b3022}
+.hs-me-reference .hs-me-checkin svg{width:16px;height:16px}
+.hs-me-reference .hs-me-user{position:relative;margin-top:22px;gap:13px;align-items:center}
+.hs-me-reference .hs-me-avatar{order:0;flex:none;width:91px;height:91px;border:3px solid #f8e3a1;padding:4px;background:#ffffff35;box-shadow:0 5px 18px #064b3040}
+.hs-me-reference .hs-me-avatar .avatar{width:100%!important;height:100%!important;border-radius:50%;overflow:hidden}
+.hs-me-reference .hs-me-user-copy{order:1;text-align:right}
+.hs-me-reference .hs-me-name{font-size:18px;line-height:1.4;text-shadow:0 1px 8px #064b3040}
+.hs-me-reference .hs-me-handle{font-size:10px;opacity:.88;margin-top:2px}
+.hs-me-reference .hs-me-uid{background:#ffffff24;border:1px solid #ffffff2d;border-radius:8px;color:#fff;padding:5px 8px;font-size:10px}
+.hs-me-reference .hs-me-uid svg{width:12px}
+.hs-me-reference .hs-me-level{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(110deg,#fff0b6,#e2bc5b);color:#563e13;border:1px solid #fff2c4;padding:4px 9px;font-size:9px;letter-spacing:.6px}
+.hs-me-reference .hs-me-level svg{width:11px;height:11px}
+.hs-me-reference .hs-me-stats{margin:20px 0 -39px;z-index:2;box-shadow:0 8px 24px #153a2518;border:1px solid #e8eee9;padding:12px 7px;border-radius:16px}
+.hs-me-reference .hs-me-stats button{gap:4px}
+.hs-me-reference .hs-me-stats b{font-size:18px;color:#1e6f49}
+.hs-me-reference .hs-me-stats span{font-size:9px;letter-spacing:.3px;color:#849188}
+.hs-me-reference .hs-me-wallet-banner{position:relative;display:flex;align-items:center;gap:13px;min-height:112px;margin:53px 14px 12px;padding:18px 15px;border:1px solid #e9cf84;border-radius:20px;overflow:hidden;background:linear-gradient(115deg,#fff0bd 0%,#e8c66e 48%,#c18e38 100%);color:#503912;box-shadow:0 9px 22px #98722c22}
+.hs-me-reference .hs-me-wallet-banner:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(125deg,#ffffff55,transparent 48%,#83591a18)}
+.hs-me-wallet-art{position:relative;width:78px;height:72px;flex:none;display:grid;place-items:center}
+.hs-wallet-bag{width:55px;height:51px;display:grid;place-items:center;border-radius:15px 15px 19px 19px;background:linear-gradient(145deg,#fff0b4,#c68b2d 68%,#8d5a1d);border:2px solid #fff1b7;box-shadow:inset 0 3px 7px #fff8c2,0 8px 13px #714a1d55;transform:rotate(-7deg)}
+.hs-wallet-bag:before{content:"";position:absolute;top:-10px;width:23px;height:15px;border:4px solid #9b6c29;border-bottom:0;border-radius:13px 13px 0 0}
+.hs-wallet-bag svg{width:27px;height:27px;color:#fff1c0;filter:drop-shadow(0 2px 2px #704a1b)}
+.hs-wallet-coin{position:absolute;z-index:2;width:19px;height:19px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#fff4bf,#c28a2c);border:1px solid #fff4bd;color:#93651e;font-size:11px;box-shadow:0 3px 6px #714a1d55}
+.hs-wallet-coin.coin-a{top:2px;right:5px}.hs-wallet-coin.coin-b{bottom:2px;left:0}
+.hs-me-reference .hs-me-wallet-copy{position:relative;z-index:1;display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.hs-me-wallet-copy small{font-size:10px;font-weight:700;color:#76551e}
+.hs-me-wallet-copy strong{font-size:23px;line-height:1.2;color:#49320f}
+.hs-me-wallet-copy strong em{font-size:11px;font-style:normal}
+.hs-me-wallet-copy>span{font-size:9px;color:#795c2a}
+.hs-me-reference .hs-me-first-tag{top:0;right:0;left:auto;background:linear-gradient(90deg,#278b59,#116b40);border-radius:0 0 0 10px;padding:5px 9px;font-size:8px;letter-spacing:.6px}
+.hs-me-wallet-open{position:relative;z-index:1;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#ffffff55;color:#64471a}
+.hs-me-level-cards{gap:10px;margin:0 14px 12px;direction:ltr}
+.hs-me-level-cards>a{position:relative;min-height:102px;padding:12px 13px 10px 54px;overflow:hidden;border:1px solid #ffffff28;box-shadow:0 7px 17px #182d2418}
+.hs-me-vip-card{background:radial-gradient(circle at 80% 0,#727b80,#283039 53%,#11171d);color:#f8e5a5}
+.hs-me-wealth-card{background:radial-gradient(circle at 80% 0,#a2d7ad,#27835a 56%,#145437);color:#f6ffe9}
+.hs-me-metal-icon{position:absolute;left:11px;top:17px;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#ffffff45,#ffffff0a);border:1px solid #ffffff50;box-shadow:inset 0 1px 5px #ffffff30}
+.hs-me-metal-icon svg{width:22px;height:22px;color:#ffe7a2;filter:drop-shadow(0 2px 3px #0007)}
+.hs-me-level-cards>a small,.hs-me-level-cards>a b,.hs-me-level-cards>a em{direction:rtl;text-align:right}
+.hs-me-level-cards>a small{font-size:10px;opacity:.85}
+.hs-me-level-cards>a b{font-size:18px;letter-spacing:.5px}
+.hs-me-level-cards>a em{font-size:8px;font-style:normal;opacity:.72}
+.hs-me-reference .hs-me-spin-banner{position:relative;margin:0 14px 13px;min-height:119px;padding:13px 15px;border:1px solid #b98bdf66;border-radius:19px;background:radial-gradient(circle at 20% 50%,#a66ad7 0,#683a9b 42%,#291d57 100%);box-shadow:0 8px 20px #43216b28}
+.hs-me-wheel-art{position:relative;width:77px;height:77px;flex:none;border-radius:50%;border:5px solid #f4d58a;background:repeating-conic-gradient(from -12deg,#f9d879 0 28deg,#7e4ab4 28deg 56deg,#f2b8d6 56deg 84deg,#6041a0 84deg 112deg);box-shadow:0 0 0 3px #ffffff35,0 5px 14px #170d3c88}
+.hs-me-wheel-art:before{content:"";position:absolute;inset:8px;border:1px solid #fff9;border-radius:50%}
+.hs-wheel-center{position:absolute;inset:0;margin:auto;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#fff0b7,#d39b39);color:#75461e;font-size:15px;box-shadow:0 2px 7px #180d3c88}
+.hs-me-wheel-art>i{position:absolute;top:-9px;left:calc(50% - 7px);border-left:7px solid transparent;border-right:7px solid transparent;border-top:13px solid #fff0b7}
+.hs-me-reference .hs-me-cash{gap:2px;min-width:0}
+.hs-me-cash>small:first-child{font-size:8px;letter-spacing:1.3px;color:#ead8ff}
+.hs-me-cash>b{font-size:19px;line-height:1.2;color:#fff}
+.hs-me-cash>span{font-size:9px;color:#e7d5fa}
+.hs-me-cash>strong{font-size:16px;color:#ffe5a1}
+.hs-me-cash>strong em{font-style:normal;font-size:11px}
+.hs-me-cash>small:last-of-type{font-size:8px;color:#e7d5fa}
+.hs-me-cash .hs-spin-progress{height:5px;background:#ffffff35;border-radius:99px;overflow:hidden;margin-top:4px}
+.hs-spin-progress span{display:block;width:0;height:100%;background:#ffe08b}
+.hs-spin-arrow{flex:none;color:#f6e4ff;width:17px}
+.hs-me-quick-card,.hs-me-settings-card{margin:0 14px 12px;padding:15px;border:1px solid #e9eee9;border-radius:19px;box-shadow:0 7px 20px #193a2510}
+.hs-me-section-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.hs-me-section-heading>div{display:flex;flex-direction:column;gap:2px}
+.hs-me-section-heading small{font-size:8px;letter-spacing:1.3px;color:#a1aaa4;font-weight:800}
+.hs-me-section-heading h2{font-size:15px;font-weight:900;color:#304b3a}
+.hs-me-section-heading>span{font-size:10px;color:#8b9b90;background:#eff5ef;border-radius:99px;padding:4px 8px}
+.hs-me-section-heading>svg{color:#84958a;width:18px}
+.hs-me-reference .hs-me-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px 9px}
+.hs-me-reference .hs-me-quick-grid a{gap:7px;font-size:10px;color:#405649}
+.hs-me-reference .hs-me-quick-grid a span{width:49px;height:49px;border-radius:16px;background:linear-gradient(145deg,#f2f8f2,#e5f0e7);border:1px solid #e0ece2;color:#268354;box-shadow:0 4px 10px #1d684014}
+.hs-me-reference .hs-me-quick-grid a svg{width:23px;height:23px;stroke-width:1.8}
+.hs-me-reference .hs-me-settings-card{padding:14px 15px 5px}
+.hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{gap:11px;padding:12px 0;border-bottom:1px solid #eff2ef}
+.hs-me-reference .hs-me-settings-card>a>span,.hs-me-reference .hs-me-settings-card>button>span{width:35px;height:35px;border-radius:12px;background:#f0f6f1;color:#2a8654}
+.hs-me-reference .hs-me-settings-card b{font-size:11px;color:#415348}
+.hs-me-reference .hs-me-settings-card .hs-me-chevron{color:#a4afa7;width:15px}
+.hs-me-reference .hs-me-settings-card>button:last-child{color:#c34c4c}
+.hs-me-reference .hs-me-footer{padding:12px 8px 4px;color:#a0aaa2;font-size:9px;letter-spacing:3px}
+@media(max-width:360px){
+ .hs-me-reference .hs-me-hero{padding-inline:13px}
+ .hs-me-reference .hs-me-avatar{width:76px;height:76px}
+ .hs-me-reference .hs-me-name{font-size:16px}
+ .hs-me-reference .hs-me-wallet-banner{margin-inline:10px;padding-inline:10px;gap:8px}
+ .hs-me-wallet-art{width:65px}
+ .hs-me-reference .hs-me-level-cards,.hs-me-reference .hs-me-spin-banner,.hs-me-reference .hs-me-quick-card,.hs-me-reference .hs-me-settings-card{margin-inline:10px}
+ .hs-me-reference .hs-me-quick-grid a span{width:44px;height:44px}
+}
+
+/* ROOM CLEANUP — stable vertical zones, no overlapping tools or chat */
+#sheet-root .room-sheet .hs-room-canvas{max-height:calc(100dvh - 14px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;scrollbar-width:thin!important;scrollbar-color:#9a783a #11151c!important}
+#sheet-root .room-sheet .hs-room-unified{display:flex!important;flex-direction:column!important;gap:7px!important;min-height:0!important;padding:0 10px 8px!important}
+#sheet-root .room-sheet .hs-room-stage{flex:none!important;border:1px solid rgba(218,181,83,.16)!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.008))!important;margin:0 0 2px!important}
+#sheet-root .room-sheet .hs-room-section-title{min-height:23px!important;margin:0 2px 3px!important}
+#sheet-root .room-sheet .hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px 4px!important;padding:5px 1px 8px!important}
+#sheet-root .room-sheet .hs-room-seat{min-height:79px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:2px!important;overflow:hidden!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:51px!important;height:51px!important;flex:none!important;position:relative!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring .avatar{width:100%!important;height:100%!important}
+#sheet-root .room-sheet .hs-room-seat>b{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:9px!important;line-height:1.3!important}
+#sheet-root .room-sheet .hs-room-seat>small{font-size:8px!important;line-height:1.25!important;color:#b8ad91!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-duration{font-variant-numeric:tabular-nums!important;color:#e7cd83!important}
+#sheet-root .room-sheet .hs-room-people-compact{flex:none!important;max-height:86px!important;overflow:hidden!important;padding:5px 8px!important;border:1px solid rgba(216,181,91,.14)!important;border-radius:14px!important;background:#ffffff06!important}
+#sheet-root .room-sheet .hs-room-members{display:flex!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;padding:4px 1px!important;scrollbar-width:none!important}
+#sheet-root .room-sheet .hs-room-chat-area{display:flex!important;flex-direction:column!important;min-height:220px!important;max-height:320px!important;flex:1 0 220px!important;overflow:hidden!important;border:1px solid rgba(216,181,91,.16)!important;border-radius:15px!important;background:rgba(7,10,15,.42)!important;padding:8px!important}
+#sheet-root .room-sheet .hs-room-chat-heading{flex:none!important;min-height:24px!important}
+#sheet-root .room-sheet .hs-room-chat-tabs{flex:none!important;display:flex!important;gap:6px!important;margin:5px 0!important}
+#sheet-root .room-sheet .hs-room-chat{flex:1 1 auto!important;min-height:90px!important;max-height:180px!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:4px 2px 8px!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{position:sticky!important;bottom:0!important;z-index:12!important;flex:none!important;margin:0 -8px -8px!important;padding:8px!important;backdrop-filter:blur(14px)!important}
+#sheet-root .room-sheet .hs-room-compose-wrap{min-width:0!important}
+#sheet-root .room-sheet .hs-room-compose{min-height:43px!important}
+#sheet-root .room-sheet .hs-room-tools-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:5px!important;margin-top:7px!important}
+#sheet-root .room-sheet .hs-room-tools-row button{width:39px!important;height:38px!important;min-width:0!important;display:grid!important;place-items:center!important}
+#sheet-root .room-sheet .hs-room-tools-row button svg{width:18px!important;height:18px!important}
+@media(max-width:390px){
+ #sheet-root .room-sheet .hs-room-unified{padding-inline:7px!important}
+ #sheet-root .room-sheet .hs-room-seats{gap:5px 2px!important}
+ #sheet-root .room-sheet .hs-room-seat{min-height:72px!important}
+ #sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:46px!important;height:46px!important}
+ #sheet-root .room-sheet .hs-room-chat-area{min-height:205px!important;max-height:280px!important}
+ #sheet-root .room-sheet .hs-room-tools-row button{width:35px!important;height:35px!important}
+}
