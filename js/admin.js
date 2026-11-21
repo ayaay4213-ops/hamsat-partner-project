@@ -160,13 +160,12 @@ async function loadUsers(term=''){
  const clean=String(term||'').trim().replace(/[,%()]/g,'');
  const data=[];const pageSize=200;
  for(let from=0;;from+=pageSize){
-  let q=supabase.from('profiles').select('id,public_id,display_name,handle,role,created_at,is_banned').order('created_at',{ascending:false}).range(from,from+pageSize-1);
-  if(clean){
-   const numeric=clean.toUpperCase().replace(/^HAMSAT-?/,'').replace(/^#/,'');
-   const isId=/^\d+$/.test(numeric);
-   q=isId?q.eq('public_id',Number(numeric)):q.or('display_name.ilike.%'+clean+'%,handle.ilike.%'+clean+'%');
-  }
-  const {data:page,error}=await q;if(error)throw error;data.push(...(page||[]));if(!page||page.length<pageSize)break;
+  const {data:directory,error}=await supabase.functions.invoke('admin-user-directory',{body:{search:clean,offset:from,limit:pageSize}});
+  if(error)throw error;
+  if(directory?.error)throw new Error(directory.error);
+  const page=directory?.users||[];
+  data.push(...page);
+  if(page.length<pageSize)break;
  }
  const out=$('#user-results');
  let activityByUser={};
