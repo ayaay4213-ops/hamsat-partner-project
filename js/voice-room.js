@@ -268,7 +268,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, enableAudio, setParticipantMuted, get muted() { return muted; } };
+  return { join, leave, toggleMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get canPublish() { return Boolean(localStream); } };
 }
 
 
