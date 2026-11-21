@@ -212,9 +212,27 @@ export const api = {
       items:(inventory.data||[]).map(x=>({...x.item,purchasedAt:x.purchased_at})).filter(x=>x.id)
     };
   },
+  momentsFeed: async () => {
+    const user=await currentUser();
+    const {data,error}=await client().from('moments').select('id,user_id,body,image_url,location,created_at').order('created_at',{ascending:false}).limit(100);fail(error);
+    const rows=data||[];if(!rows.length)return {moments:[]};
+    const ids=rows.map(x=>x.id),userIds=[...new Set(rows.map(x=>x.user_id))];
+    const [people,likes,comments]=await Promise.all([
+      client().from('profiles').select(PROFILE_COLUMNS).in('id',userIds),
+      client().from('moment_likes').select('moment_id,user_id').in('moment_id',ids),
+      client().from('moment_comments').select('id,moment_id,user_id,body,created_at').in('moment_id',ids).order('created_at',{ascending:true})
+    ]);
+    fail(people.error);fail(likes.error);fail(comments.error);
+    const mapped=await mapProfilesWithFrames(people.data||[]),byUser=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
+    const commentUserIds=[...new Set((comments.data||[]).map(x=>x.user_id))];
+    const commentPeople=commentUserIds.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',commentUserIds):{data:[],error:null};fail(commentPeople.error);
+    const commentProfiles=await mapProfilesWithFrames(commentPeople.data||[]),commentByUser=Object.fromEntries(commentProfiles.map(p=>[p.uuid,p]));
+    const likeRows=likes.data||[],commentRows=comments.data||[];
+    return {moments:rows.map(m=>({...m,profile:byUser[m.user_id]||null,likesCount:likeRows.filter(x=>x.moment_id===m.id).length,likedByMe:likeRows.some(x=>x.moment_id===m.id&&x.user_id===user.id),comments:commentRows.filter(x=>x.moment_id===m.id).map(c=>({...c,profile:commentByUser[c.user_id]||null}))}))};
+  },
   moments: async (profileId) => {
     const user=await currentUser();
-    const {data,error}=await client().from('moments').select('id,user_id,body,image_url,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);
+    const {data,error}=await client().from('moments').select('id,user_id,body,image_url,location,created_at').eq('user_id',profileId).order('created_at',{ascending:false}).limit(30);fail(error);
     const ids=(data||[]).map(x=>x.id);if(!ids.length)return {moments:[]};
     const [likes,comments]=await Promise.all([
       client().from('moment_likes').select('moment_id,user_id').in('moment_id',ids),
@@ -236,7 +254,7 @@ export const api = {
     if(!text||text.length>500)throw new Error('اكتبي تعليقاً من 1 إلى 500 حرف.');
     const {data,error}=await client().from('moment_comments').insert({moment_id:momentId,user_id:user.id,body:text}).select('id,moment_id,user_id,body,created_at').single();fail(error);return data;
   },
-  createMoment: async (body,imageUrl=null) => { const user=await currentUser();const {data,error}=await client().from('moments').insert({user_id:user.id,body:String(body||'').trim(),image_url:imageUrl}).select('id,user_id,body,image_url,created_at').single();fail(error);return data; },
+  createMoment: async (body,imageUrl=null,location=null) => { const user=await currentUser();const text=String(body||'').trim(),place=String(location||'').trim().slice(0,120);if(!text&&!imageUrl)throw new Error('أضيفي نصاً أو صورة قبل النشر.');const {data,error}=await client().from('moments').insert({user_id:user.id,body:text,image_url:imageUrl,location:place||null}).select('id,user_id,body,image_url,location,created_at').single();fail(error);return data; },
   deleteMoment: async (momentId) => { const user=await currentUser();const {error}=await client().from('moments').delete().eq('id',momentId).eq('user_id',user.id);fail(error); },
   coupleSpace: async (profileId) => { const {data,error}=await client().from('couple_spaces').select('*').or('owner_id.eq.'+profileId+',partner_id.eq.'+profileId).in('status',['pending','active']).order('created_at',{ascending:false}).limit(1).maybeSingle();fail(error);if(!data)return {space:null,partner:null};const partnerId=data.owner_id===profileId?data.partner_id:data.owner_id;const {data:partner,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',partnerId).maybeSingle();fail(pe);return {space:data,partner:await mapProfileWithFrame(partner)}; },
   inviteCouple: async (partnerId) => { const user=await currentUser();const {data,error}=await client().from('couple_spaces').insert({owner_id:user.id,partner_id:partnerId,status:'pending'}).select('*').single();fail(error);return data; },
@@ -329,7 +347,7 @@ export const api = {
     const mappedOwners=await mapProfilesWithFrames(owners);const byId = Object.fromEntries(mappedOwners.map(p => [p.uuid,p]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
-      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, ownerUuid: r.owner_id, title: r.title, topic: r.topic,
+      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
         ownerColor: p.color || '#7c3aed' };
@@ -368,11 +386,12 @@ export const api = {
       cover_url: settings.coverUrl || null,
       background_item_id: settings.backgroundItemId || null,
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
-      seat_limit: [4,6,8,10,12].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8
+      seat_limit: [4,6,8,10,12,16].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8,
+      seat_layout: ['grid','one-top','two-top'].includes(settings.seatLayout) ? settings.seatLayout : 'grid'
     };
     if (!payload.title) throw new Error('اسم الغرفة مطلوب');
-    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit').single();
-    fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit };
+    const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit,seat_layout').single();
+    fail(error); return { title: data.title, topic: data.topic, description: data.description, coverUrl: data.cover_url, backgroundItemId: data.background_item_id || null, roomEmoji: data.room_emoji, seatLimit: data.seat_limit, seatLayout: data.seat_layout || 'grid' };
   },
 
   leaveRoom: async (roomId) => {
@@ -472,6 +491,7 @@ export const api = {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_seats', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_members', filter: 'room_id=eq.' + roomId }, callback)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'room_backgrounds', filter: 'room_id=eq.' + roomId }, callback)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: 'id=eq.' + roomId }, callback)
     .subscribe(),
   unsubscribeRoomChannel: async (channel) => { if (channel) await client().removeChannel(channel); },
   deleteRoom: async (id) => {
