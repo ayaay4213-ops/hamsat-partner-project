@@ -731,9 +731,11 @@ async function openRoom(r) {
       canvas.style.setProperty('background-position','center center','important');
       canvas.style.setProperty('background-repeat','no-repeat','important');
       unified.style.setProperty('background','transparent','important');
-      stage.style.setProperty('background','transparent','important');
-      stage.style.setProperty('min-height','min(72dvh,760px)','important');
-      stage.style.setProperty('flex','1 1 auto','important');
+      stage.style.setProperty('background','rgba(8,11,18,.22)','important');
+      stage.style.setProperty('backdrop-filter','none','important');
+      stage.style.setProperty('-webkit-backdrop-filter','none','important');
+      stage.style.setProperty('min-height','0','important');
+      stage.style.setProperty('flex','0 0 auto','important');
       const bottomBar=sheet.querySelector('.hs-room-bottom-bar');
       if(bottomBar&&bottomBar.parentElement!==canvas)canvas.appendChild(bottomBar);
     };
