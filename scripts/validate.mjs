@@ -692,7 +692,7 @@ if (fs.existsSync(integratedCssPath)) {
 }
 if (fs.existsSync(integratedHtmlPath)) {
   const htmlSource = fs.readFileSync(integratedHtmlPath, 'utf8');
-  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-5 pb-safe')) {
+  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-6 pb-safe')) {
     errors.push('Bottom navigation must include the moments shortcut beside the profile tab');
   }
 }
