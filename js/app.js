@@ -716,14 +716,18 @@ async function openRoom(r) {
   `, async (sheet) => {
     sheet.classList.add('room-sheet');
     const applyRoomBackground=(url)=>{
+      const canvas=sheet.querySelector('.hs-room-unified');
       const stage=sheet.querySelector('.hs-room-stage');
-      if(!stage)return;
-      stage.style.setProperty('background-image',url?'linear-gradient(180deg,rgba(5,6,9,.06),rgba(5,6,9,.14)),url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
-      stage.style.setProperty('background-size','cover','important');
-      stage.style.setProperty('background-position','center center','important');
-      stage.style.setProperty('background-repeat','no-repeat','important');
-      stage.style.setProperty('min-height','min(48dvh,460px)','important');
+      if(!canvas||!stage)return;
+      canvas.style.setProperty('background-image',url?'url('+JSON.stringify(String(url))+')':'linear-gradient(145deg,#171613,#080a10)','important');
+      canvas.style.setProperty('background-size','cover','important');
+      canvas.style.setProperty('background-position','center center','important');
+      canvas.style.setProperty('background-repeat','no-repeat','important');
+      stage.style.setProperty('background','transparent','important');
+      stage.style.setProperty('min-height','min(72dvh,760px)','important');
       stage.style.setProperty('flex','1 1 auto','important');
+      const tools=sheet.querySelector('.hs-room-tools-row');
+      if(tools&&tools.parentElement!==stage)stage.appendChild(tools);
     };
     applyRoomBackground(r.backgroundUrl||null);
     api.roomBackground(r.id).then(({imageUrl})=>{r.backgroundUrl=imageUrl;applyRoomBackground(imageUrl);}).catch(error=>console.warn('تعذر تحميل خلفية الغرفة المشتركة:',error));
@@ -1516,8 +1520,7 @@ function profileView(p, own) {
       ${own ? `
         <div class="hs-profile-dashboard">
           ${profileRewardsMarkup()}
-          <section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>مشاركاتك</small></div>
-            <form data-moment-form class="hs-moment-compose"><textarea name="body" maxlength="500" placeholder="شاركي لحظة جميلة…"></textarea><label class="photo-picker"><i data-lucide="image-plus"></i><span>إضافة صورة</span><input type="file" name="momentImage" accept="image/jpeg,image/png,image/webp" hidden></label><button type="submit" class="btn-gold">نشر</button></form>
+          <section class="hs-moments-card"><div class="hs-reward-heading"><b>لحظاتي</b><small>عرض المنشورات فقط · النشر من تبويب لحظة</small></div>
             <div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div>
           </section>
         </div>` : `
