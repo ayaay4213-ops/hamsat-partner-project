@@ -1542,7 +1542,7 @@ function meScreen() {
         <span><small>محفظة همسات</small><b>${coin(22)} ${num(state.wallet?.balance)}</b><em>Coins · عرض المحفظة</em></span><i data-lucide="wallet"></i>
       </a>
       <div class="hs-me-levels mx-4 mt-3">
-        <a href="#/wealth" class="hs-me-level-card hs-wealth-card"><i data-lucide="shield"></i><span>مستوى الثروة</span><b>LV.0</b></a>
+        <a href="#/wallet" class="hs-me-level-card hs-wealth-card"><i data-lucide="shield"></i><span>مستوى الثروة</span><b>LV.0</b></a>
         <a href="#/aristocracy" class="hs-me-level-card hs-vip-card"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'لم تحصل بعد'}</b></a>
       </div>
       <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
