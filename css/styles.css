@@ -3392,3 +3392,99 @@ html,body,#app{background:#f3f2ee!important;color:#28251e!important}
 #sheet-root .room-sheet .hs-room-chat-tabs button.active{background:linear-gradient(135deg,#e5c56e,#96702b)!important;color:#211706!important}
 #sheet-root .room-sheet .hs-room-owner-menu,#sheet-root .room-sheet .hs-room-settings{background:#100d09!important;color:#f4e5b8!important;border-color:#8c6b29!important}
 @media(max-width:520px){#screen .hs-weekly-banner{min-height:105px}#screen .hs-me-level-card{padding:9px}#sheet-root .room-sheet .hs-room-seats{gap:9px 5px}}
+
+
+/* HAMSAT reference-match pass 2 — activity cards, profile hierarchy, and royal room details */
+#screen .hs-banner-action{display:inline-flex;align-items:center;gap:6px;width:max-content;margin-top:5px;padding:6px 10px;border-radius:999px;background:linear-gradient(135deg,#f6e3a6,#c69b43);color:#49320d;font-size:10px;font-weight:900;font-style:normal}
+#screen .hs-banner-action svg{width:13px;height:13px}
+#screen .hs-activities-page{min-height:100%;padding:14px 14px 30px;background:#f3f2ee;color:#29261f}
+#screen .hs-activities-hero{position:relative;overflow:hidden;padding:20px 18px;border-radius:18px;color:#fff3c9;background:radial-gradient(circle at 86% 18%,#f7d77c55,transparent 28%),linear-gradient(120deg,#102e24,#087b3c 52%,#163c2d);border:1px solid #c8a34f;box-shadow:0 8px 22px #172f221c}
+#screen .hs-activities-hero:after{content:"✦  ✧  ♛";position:absolute;left:16px;bottom:9px;color:#f1d78c88;font-size:25px;letter-spacing:7px}
+#screen .hs-activities-hero small,#screen .hs-activities-section-head small{font-size:9px;letter-spacing:2px;color:#e5c879;font-weight:800}
+#screen .hs-activities-hero h2{margin-top:7px;font-size:21px;font-weight:900;color:#fff2c8}
+#screen .hs-activities-hero p{margin-top:5px;font-size:11px;color:#f2e8cb}
+#screen .hs-activity-banners{display:grid;gap:10px;margin:14px 0 20px}
+#screen .hs-activity-banner{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:92px;padding:14px 16px;border-radius:16px;overflow:hidden;color:#fff;text-decoration:none;border:1px solid #ffffff35;box-shadow:0 7px 18px #21170e18}
+#screen .hs-activity-banner span{display:flex;flex-direction:column;gap:4px;position:relative;z-index:1}
+#screen .hs-activity-banner small{font-size:9px;letter-spacing:1.7px;opacity:.82}
+#screen .hs-activity-banner b{font-size:18px;font-weight:900}
+#screen .hs-activity-banner em{font-size:10px;font-style:normal;opacity:.9}
+#screen .hs-activity-banner>i{width:48px;height:48px;opacity:.9;filter:drop-shadow(0 3px 5px #0003)}
+#screen .hs-activity-games{background:radial-gradient(circle at 85% 20%,#ffffff35,transparent 30%),linear-gradient(115deg,#172d66,#426fc0)}
+#screen .hs-activity-moments{background:radial-gradient(circle at 85% 20%,#ffffff35,transparent 30%),linear-gradient(115deg,#702b79,#bd5797)}
+#screen .hs-activity-rewards{background:radial-gradient(circle at 85% 20%,#ffffff35,transparent 30%),linear-gradient(115deg,#80521c,#c8953a)}
+#screen .hs-activities-section-head{display:flex;align-items:center;justify-content:space-between;margin:4px 1px 10px}
+#screen .hs-activities-section-head h3{font-size:17px;font-weight:900;color:#29261f;margin-top:2px}
+#screen .hs-activities-section-head button{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#fff;border:1px solid #e5dece;color:#92702b}
+#screen .hs-activities-section-head button svg{width:17px;height:17px}
+
+/* My profile follows the reference order: identity, wallet, wealth/VIP, rewards, shortcuts */
+#screen .hs-me-screen{background:#f3f2ee!important;color:#29261f!important}
+#screen .hs-profile-page{background:#f3f2ee!important;color:#29261f!important;border-bottom:1px solid #e6dfd0}
+#screen .hs-profile-cover{height:154px!important;background:radial-gradient(ellipse at 50% 5%,#e8d49c 0%,transparent 48%),linear-gradient(120deg,#0b6337,#0b8b4a 55%,#d0ae5d)!important}
+#screen .hs-profile-cover:before,#screen .hs-profile-cover:after{color:#fff1c5!important}
+#screen .hs-profile-frame{box-shadow:0 0 0 5px #f3f2ee,0 0 24px #b58a3240!important;background:conic-gradient(from 15deg,#fff4c5,#c49a45,#fff0b0,#8a6420,#fff4c5)!important}
+#screen .hs-profile-frame:before{border-color:#f4df9d!important}
+#screen .hs-profile-avatar{border-color:#f3f2ee!important;background:#fff!important}
+#screen .hs-profile-identity h2{color:#29261f!important}
+#screen .hs-profile-identity>p:first-of-type,#screen .hs-profile-identity>p[dir="ltr"]{color:#8b6a26!important}
+#screen .hs-profile-bio{color:#665e50!important}
+#screen .hs-profile-id{background:#fff!important;color:#7a5a1e!important;border-color:#d9c58d!important}
+#screen .hs-profile-info-chip,#screen .hs-profile-tags span{background:#fff!important;color:#75602f!important;border:1px solid #e8dfcd!important;box-shadow:0 3px 9px #382b1010!important}
+#screen .hs-profile-ribbon{color:#987328!important;border-color:#e4d5af!important}
+#screen .hs-profile-tabs{background:#fff!important;border-color:#e6dfd0!important}
+#screen .hs-profile-tabs button{color:#8a806c!important}
+#screen .hs-profile-tabs button.active{color:#087b3c!important;border-color:#087b3c!important}
+#screen .hs-profile-stats,#screen .hs-rewards,#screen .hs-level-card,#screen .hs-badge-grid{background:#fff!important;color:#29261f!important;border-color:#e8e1d3!important}
+#screen .hs-profile-stats :is(b,strong,span),#screen .hs-rewards :is(b,strong,span),#screen .hs-level-card :is(b,strong,span){color:inherit}
+#screen .hs-cp-card{background:linear-gradient(135deg,#fff,#f7f0df)!important;color:#5a451b!important;border:1px solid #e5d4a6!important}
+#screen .hs-me-content{padding-top:14px}
+#screen .hs-me-section-title{color:#29261f!important}
+#screen .hs-me-section-title small{color:#8b8374!important}
+#screen .hs-account-group{background:#fff!important;border:1px solid #e8e1d3!important;box-shadow:0 5px 15px #382b1010!important}
+#screen .hs-account-row{min-height:62px!important}
+#screen .hs-edit-row{background:#fff!important;border:1px solid #e8e1d3!important;border-radius:13px!important;margin-top:8px;padding:10px 12px!important}
+#screen .hs-logout{background:#fff!important;color:#a13d37!important;border:1px solid #ecd8d5!important}
+
+/* Royal black and gold room: real selector specificity overrides the earlier white-room pass */
+#sheet-root .room-sheet{background:#080807!important;color:#f3e5bd!important;border-color:#a17b2f!important}
+#sheet-root .room-sheet>.hs-room-canvas{background:radial-gradient(ellipse at 50% 8%,#382811 0%,#100d08 48%,#050505 100%)!important;color:#f4e6c0!important}
+#sheet-root .room-sheet .hs-room-head{background:#100d09!important;border:1px solid #8c6b29!important;border-radius:18px!important;overflow:hidden}
+#sheet-root .room-sheet .hs-room-cover{background-color:#17110a!important}
+#sheet-root .room-sheet .hs-room-meta,#sheet-root .room-sheet .hs-room-quick-actions{background:#100d09!important;color:#e8d08c!important;border-color:#8c6b29!important}
+#sheet-root .room-sheet .hs-room-meta button,#sheet-root .room-sheet .hs-room-quick-actions>*{color:#e8d08c!important;border-color:#8c6b29!important}
+#sheet-root .room-sheet .hs-room-unified{display:flex!important;flex-direction:column!important;gap:0!important;margin:12px 0 18px!important;padding:12px!important;border:1px solid #765b2b!important;border-radius:22px!important;background:linear-gradient(155deg,#19140c,#080807)!important;box-shadow:inset 0 1px #ffffff0d,0 14px 35px #0009!important}
+#sheet-root .room-sheet .hs-room-stage,#sheet-root .room-sheet .hs-room-people,#sheet-root .room-sheet .hs-room-chat-area{background:transparent!important;color:#f4e6c0!important;border:0!important;box-shadow:none!important}
+#sheet-root .room-sheet .hs-room-stage{padding:9px 2px 14px!important}
+#sheet-root .room-sheet .hs-room-people{padding:12px 2px!important;border-top:1px solid #765b2b66!important;border-bottom:1px solid #765b2b66!important}
+#sheet-root .room-sheet .hs-room-chat-area{padding:12px 2px 4px!important}
+#sheet-root .room-sheet .hs-room-seat{min-height:0!important;height:auto!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:5px!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#f3e5bd!important}
+#sheet-root .room-sheet .hs-room-seat:before{content:none!important;display:none!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring{position:relative!important;width:clamp(56px,16vw,72px)!important;height:clamp(56px,16vw,72px)!important;min-width:clamp(56px,16vw,72px)!important;border-radius:50%!important;display:grid!important;place-items:center!important;overflow:visible!important;background:radial-gradient(circle at 35% 25%,#473416,#100d08 76%)!important;border:2px solid #d7b45b!important;box-shadow:0 0 0 4px #8a672b55,0 0 18px #d6b45e38!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-ring .avatar{width:calc(100% - 8px)!important;height:calc(100% - 8px)!important;border:2px solid #e5c878!important;box-shadow:0 0 0 2px #4b3618!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-chair{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;color:#f0d37e!important;opacity:.65!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-chair svg{width:27px!important;height:27px!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-center-mic{position:absolute!important;z-index:2!important;right:-3px!important;bottom:-3px!important;width:24px!important;height:24px!important;padding:5px!important;border-radius:50%!important;background:linear-gradient(135deg,#f5dfa0,#a87923)!important;color:#261b08!important;border:2px solid #171109!important}
+#sheet-root .room-sheet .hs-room-seat .hs-seat-live-mic{position:absolute!important;z-index:2!important;right:-3px!important;bottom:-3px!important;width:23px!important;height:23px!important;padding:4px!important;border-radius:50%!important;background:linear-gradient(135deg,#f5dfa0,#a87923)!important;color:#261b08!important;border:2px solid #171109!important}
+#sheet-root .room-sheet .hs-room-seat b{font-size:10px!important;color:#f6e8c5!important;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sheet-root .room-sheet .hs-room-seat small{font-size:9px!important;color:#c5b48d!important}
+#sheet-root .room-sheet .hs-room-seat em{font-size:8px!important;font-style:normal;color:#211807!important;background:linear-gradient(135deg,#f3dc98,#b88c36)!important;border-radius:999px;padding:2px 6px}
+#sheet-root .room-sheet .hs-room-seat-number{color:#c9a54e!important}
+#sheet-root .room-sheet .hs-room-seat.empty .hs-seat-ring{border-style:dashed!important;background:radial-gradient(circle,#30220e,#090807)!important}
+#sheet-root .room-sheet .hs-room-seat.empty .hs-seat-center-mic{color:#2a1d08!important}
+#sheet-root .room-sheet .hs-room-section-title,#sheet-root .room-sheet .hs-room-chat-heading{color:#e9d18c!important;border-color:#765b2a!important}
+#sheet-root .room-sheet .hs-room-members>div{background:#171109!important;border:1px solid #755b2a!important;color:#f4e5b8!important}
+#sheet-root .room-sheet .hs-room-chat{height:min(30dvh,250px)!important;background:#0b0907!important;color:#f3e7c6!important;border:1px solid #6d5223!important;border-radius:14px!important}
+#sheet-root .room-sheet .hs-room-chat-tabs button{background:#21190e!important;color:#e9d18c!important;border:1px solid #755b2a!important}
+#sheet-root .room-sheet .hs-room-chat-tabs button.active{background:linear-gradient(135deg,#e5c56e,#96702b)!important;color:#211706!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{background:linear-gradient(180deg,transparent,#090807 20%)!important}
+#sheet-root .room-sheet .hs-room-tools-row{background:#171109!important;border:1px solid #765b2b!important;border-radius:999px!important;padding:7px!important}
+#sheet-root .room-sheet .hs-room-tools-row button{color:#f0d68e!important}
+#sheet-root .room-sheet .hs-tool-mic,#sheet-root .room-sheet .hs-tool-gift{background:linear-gradient(135deg,#f5dfa0,#b98a32)!important;color:#241a08!important;border:1px solid #f5dfa0!important}
+#sheet-root .room-sheet .hs-room-compose{background:#171109!important;border:1px solid #765b2b!important;border-radius:999px!important}
+#sheet-root .room-sheet .hs-room-compose input{color:#f4e6c0!important}
+#sheet-root .room-sheet .hs-room-compose button{color:#e8cf88!important}
+#sheet-root .room-sheet .hs-room-owner-menu,#sheet-root .room-sheet .hs-room-settings{background:#100d09!important;color:#f4e5b8!important;border-color:#8c6b29!important}
+#tabbar .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#tabbar .tab[data-tab="me"]:before{content:"";display:block;width:19px;height:19px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center/contain no-repeat}
+@media(max-width:520px){#screen .hs-activity-banner{min-height:84px}#screen .hs-activity-banner b{font-size:16px}#sheet-root .room-sheet .hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px 7px!important;padding:12px 1px!important}}
