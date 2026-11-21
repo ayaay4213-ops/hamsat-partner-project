@@ -477,6 +477,10 @@ export const api = {
     const mapped=await mapProfilesWithFrames(profiles);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { messages: data.map(x => ({ id: x.id, body: x.body, userId: x.user_id,
       displayName: byId[x.user_id]?.displayName || 'عضو',
+      handle: byId[x.user_id]?.handle || '',
+      avatarUrl: byId[x.user_id]?.avatarUrl || null,
+      equippedProfileFrameId: byId[x.user_id]?.equippedProfileFrameId || null,
+      equippedProfileFrameUrl: byId[x.user_id]?.equippedProfileFrameUrl || null,
       color: byId[x.user_id]?.color || '#7c3aed',
       createdAt: new Date(x.created_at).getTime() })) };
   },
@@ -605,13 +609,18 @@ export const api = {
     }).filter(c=>c.other) };
   },
   directMessages: async (conversationId) => {
+    const user=await currentUser();
     const { data, error } = await client().from('dm_messages').select('id,sender_id,body,created_at,read_at')
       .eq('conversation_id', conversationId).order('created_at',{ascending:true}).limit(200);
     fail(error);
+    const senderIds=[...new Set((data||[]).map(m=>m.sender_id))];
+    const people=senderIds.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',senderIds):{data:[],error:null};
+    fail(people.error);
+    const mapped=await mapProfilesWithFrames(people.data||[]),byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
     const { error: readError } = await client().from('dm_messages').update({read_at:new Date().toISOString()})
-      .eq('conversation_id',conversationId).neq('sender_id',(await currentUser()).id).is('read_at',null);
+      .eq('conversation_id',conversationId).neq('sender_id',user.id).is('read_at',null);
     fail(readError);
-    return { messages:data };
+    return { messages:(data||[]).map(m=>({...m,profile:byId[m.sender_id]||null})) };
   },
   sendDirectMessage: async (conversationId, body) => {
     const user = await currentUser(), text = String(body || '').trim();
@@ -621,6 +630,9 @@ export const api = {
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+  subscribeInbox: (callback) => client().channel('dm-inbox')
+    .on('postgres_changes',{event:'*',schema:'public',table:'dm_conversations'},callback)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages'},callback).subscribe(),
   blockState: async (targetId) => {
     const user = await currentUser();
     const { data, error } = await client().from('user_blocks').select('blocked_id')
