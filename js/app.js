@@ -94,7 +94,7 @@ async function openSideMenu() {
   const showAdmin = state.account ? await api.isAdmin().catch(() => false) : false;
   root.innerHTML = `<button class="side-drawer-backdrop" aria-label="إغلاق القائمة"></button><aside class="side-drawer" dir="rtl">
     <div class="side-drawer-brand"><span>H A M S A T</span><strong>HAMSAT ✦</strong><small>مساحتك للتواصل واللقاء</small></div>
-    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/rooms"><i data-lucide="mic-2"></i>الغرف</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}</nav>
+    <nav class="side-drawer-links"><a href="#/home"><i data-lucide="house"></i>الرئيسية</a><a href="#/recent-rooms"><i data-lucide="history"></i>غرفي الأخيرة</a><a href="#/inbox"><i data-lucide="message-circle"></i>الرسائل الخاصة</a><a href="#/friends"><i data-lucide="users"></i>الأصدقاء والمتابعة</a><a href="#/notifications"><i data-lucide="bell"></i>الإشعارات</a><a href="#/gifts"><i data-lucide="gift"></i>الهدايا</a><a href="#/games"><i data-lucide="gamepad-2"></i>الألعاب</a><a href="#/shop"><i data-lucide="gem"></i>المتجر والمقتنيات</a><a href="#/wallet"><i data-lucide="wallet"></i>المحفظة</a><a href="#/me"><i data-lucide="user-round"></i>حسابي</a>${showAdmin ? '<a href="admin.html"><i data-lucide="shield"></i>لوحة الإدارة</a>' : ''}</nav>
     <p class="side-drawer-note">همسات · تواصل بأمان واحترام</p></aside>`;
   root.querySelector('.side-drawer-backdrop').onclick = closeSideMenu;
   root.querySelectorAll('a').forEach(a => a.onclick = closeSideMenu); icons_();
@@ -526,31 +526,65 @@ function onboardingScreen() {
   $('#ob-out').onclick = signOut;
 }
 
-async function homeScreen() {
-  const p = state.profile;
-  screen.innerHTML = `
-    <div class="hs-home hs-home-refined hs-home-rooms-only fade-in">
-      <header class="hs-home-top hs-home-top-minimal">
-        <div class="hs-home-brand">
-          ${state.isAdmin ? '<button type="button" class="menu-button" aria-label="القائمة" onclick="window.hamsatOpenMenu()"><i data-lucide="menu"></i></button>' : ''}
-          <span class="hs-home-brand-title">H A M S A T</span>
+async function homeScreen(params = new URLSearchParams()) {
+  screen.innerHTML = header('الرئيسية', '<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء غرفة</button>') + `
+    <div class="px-4 pt-4 pb-6 fade-in">
+      <section class="rooms-welcome card ornament p-4 mb-4">
+        <div class="flex items-center justify-between gap-3">
+          <div><span class="text-[10px] tracking-[.2em] text-gold-400">H A M S A T • LIVE</span><h2 class="text-lg font-extrabold mt-1">مساحات تجمعنا</h2><p class="text-xs mt-1 leading-5">اكتشفي الغرف، اختاري مقعدك، وشاركي الحديث مع الأصدقاء</p></div>
+          <div class="rooms-welcome-icon"><i data-lucide="audio-lines"></i></div>
         </div>
-      </header>
-      <section class="hs-home-section hs-home-section-rooms-only">
-        <div id="home-rooms" class="hs-home-room-list"><div class="skeleton h-40"></div></div>
+        <div class="rooms-live-note"><span></span> الغرف الصوتية · دردشة ومقاعد تفاعلية</div>
       </section>
+      <div class="flex items-center justify-between mb-2"><span class="text-sm font-bold">الغرف الصوتية</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
+      <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
+        ${['الكل', ...TOPICS].map(t => `<button data-t="${esc(t)}" class="chip ${t === roomFilter ? 'active' : ''}">${esc(t)}</button>`).join('')}
+      </div>
+      <div id="rooms-list" class="hs-home-room-list space-y-3 pt-1 pb-6"><div class="skeleton h-40"></div></div>
     </div>`;
   icons_();
-  const hr = $('#home-rooms');
-  try {
-    const { rooms: allRooms = [] } = await api.rooms();
-    if (!hr) return;
-    hr.innerHTML = allRooms.length ? allRooms.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف بعد', 'ستظهر الغرف هنا عند إنشائها');
-    bindRoomCards(hr, allRooms);
-  } catch (error) {
-    if (hr) hr.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', error.message || 'حاولي مرة أخرى');
+  const roomAction = $('#new-room');
+  if (roomAction) roomAction.onclick = newRoomSheet;
+  if (params.get('new')) {
+    history.replaceState(null, '', '#/home');
+    newRoomSheet();
   }
-  icons_();
+  let rooms = [];
+  const draw = () => {
+    const list = roomFilter === 'الكل' ? rooms : rooms.filter(r => r.topic === roomFilter);
+    const el = $('#rooms-list');
+    if (!el) return;
+    el.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف في هذا التصنيف', 'يمكنك اختيار تصنيف آخر أو إنشاء غرفة جديدة');
+    bindRoomCards(el, list);
+    const badge = $('#rooms-real-count');
+    if (badge) badge.textContent = num(list.length) + ' غرفة';
+    icons_();
+  };
+  $('#filters').querySelectorAll('[data-t]').forEach(button => button.onclick = () => {
+    roomFilter = button.dataset.t;
+    $('#filters').querySelectorAll('.chip').forEach(chip => chip.classList.toggle('active', chip === button));
+    draw();
+  });
+  try {
+    rooms = (await api.rooms()).rooms || [];
+    const ownRoom = rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
+    if (ownRoom && roomAction) {
+      roomAction.innerHTML = '<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';
+      roomAction.onclick = () => openRoom(ownRoom);
+      icons_();
+    }
+    draw();
+    const inviteId = params.get('invite');
+    if (inviteId) {
+      const { room } = await api.roomById(inviteId);
+      history.replaceState(null, '', location.pathname + location.search + '#/home');
+      openRoom(room);
+    }
+  } catch (error) {
+    const el = $('#rooms-list');
+    if (el) el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', error.message || 'حاولي مرة أخرى');
+    icons_();
+  }
 }
 function emptyBox(icon, title, sub = '') {
   return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
@@ -891,7 +925,7 @@ async function openRoom(r) {
       });
       icons_();
     };
-    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=myMembership?.joinedAt||Date.now();state.activeRoomId=r.id;const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     sheet.querySelector('#refresh-room').onclick=()=>Promise.all([drawMessages(),drawMembers()]).catch(e=>toast(e.message,'error'));
     sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
@@ -1040,43 +1074,72 @@ async function openRoom(r) {
   });
 }
 let roomFilter = 'الكل';
-async function roomsScreen(params) {
-  screen.innerHTML = header('الغرف الصوتية', `<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء</button>`) + `
-    <div class="px-5 pt-4 fade-in">
-      <section class="rooms-welcome card ornament p-4 mb-4"><div class="flex items-center justify-between gap-3"><div><span class="text-[10px] tracking-[.2em] text-gold-400">H A M S A T  •  LIVE</span><h2 class="text-lg font-extrabold mt-1">مساحات تجمعنا</h2><p class="text-xs text-[#b7b2a5] mt-1 leading-5">ادخلي غرفة، تعرّفي على الأعضاء وشاركي الحديث</p></div><div class="rooms-welcome-icon"><i data-lucide="audio-lines"></i></div></div><div class="rooms-live-note"><span></span> غرف المجتمع · دردشة ومقاعد تفاعلية</div></section>
-      <div class="flex items-center justify-between mb-2"><span class="text-xs text-[#b7b2a5]">الغرف المتاحة</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
-      <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
-        ${['الكل', ...TOPICS].map(t => `<button data-t="${t}" class="chip ${t === roomFilter ? 'active' : ''}">${t}</button>`).join('')}
-      </div>
-      <div id="rooms-list" class="space-y-3 pt-1 pb-6">${loading()}</div>
+const RECENT_ROOMS_LIMIT = 30;
+function recentRoomsStorageKey() {
+  const userId = state.profile?.uuid || state.account?.id || 'guest';
+  return 'hamsat:recent-rooms:' + String(userId);
+}
+function readRecentRooms() {
+  try {
+    const value = JSON.parse(localStorage.getItem(recentRoomsStorageKey()) || '[]');
+    return Array.isArray(value) ? value.filter(item => item && typeof item.id === 'string') : [];
+  } catch { return []; }
+}
+function rememberRecentRoom(room) {
+  if (!room?.id) return;
+  const entries = readRecentRooms().filter(item => item.id !== String(room.id));
+  entries.unshift({
+    id: String(room.id),
+    title: String(room.title || 'غرفة همسات'),
+    topic: String(room.topic || 'عام'),
+    coverUrl: room.coverUrl || null,
+    publicId: room.publicId || null,
+    roomEmoji: room.roomEmoji || '🎙️',
+    ownerName: room.ownerName || '',
+    ownerUuid: room.ownerUuid || '',
+    visitedAt: new Date().toISOString()
+  });
+  try { localStorage.setItem(recentRoomsStorageKey(), JSON.stringify(entries.slice(0, RECENT_ROOMS_LIMIT))); }
+  catch (error) { console.warn('تعذّر حفظ سجل الغرف الأخيرة:', error); }
+}
+async function recentRoomsScreen() {
+  screen.innerHTML = header('غرفي', '<button id="refresh-recent-rooms" class="btn-ghost text-sm py-2 px-3"><i data-lucide="refresh-cw" class="w-4 h-4"></i>تحديث</button>') + `
+    <div class="px-4 pt-4 pb-6 fade-in">
+      <section class="card p-4 mb-4">
+        <span class="text-[10px] tracking-[.2em] text-gold-400">H A M S A T · MY ROOMS</span>
+        <h2 class="text-lg font-extrabold mt-1">الغرف التي زرتِها مؤخرًا</h2>
+        <p class="text-xs mt-1 leading-6">تجدين هنا آخر الغرف التي دخلتِ إليها، ويمكنك العودة إليها بضغطة واحدة.</p>
+      </section>
+      <div id="recent-room-list" class="hs-home-room-list space-y-3"><div class="skeleton h-32"></div></div>
     </div>`;
   icons_();
-  $('#new-room').onclick = newRoomSheet;
-  if (params.get('new')) { history.replaceState(null, '', '#/rooms'); newRoomSheet(); }
-  let rooms = [];
-  const draw = () => {
-    const list = roomFilter === 'الكل' ? rooms : rooms.filter(r => r.topic === roomFilter);
-    const el = $('#rooms-list'); if (!el) return;
-    el.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف هنا', 'أنشئ غرفة جديدة لتبدأ');
-    bindRoomCards(el, rooms); const badge=$('#rooms-real-count'); if(badge)badge.textContent=num(list.length)+' غرفة'; icons_();
-  };
-  $('#filters').querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
-    roomFilter = b.dataset.t;
-    $('#filters').querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === b));
-    draw();
-  });
-  try {
-    rooms = (await api.rooms()).rooms;const ownedRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());const roomAction=$('#new-room');if(ownedRoom&&roomAction){roomAction.id='my-room-enter';roomAction.innerHTML='<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';roomAction.onclick=()=>openRoom(ownedRoom);icons_();}else if(roomAction){roomAction.onclick=newRoomSheet;}draw();
-    const inviteId=params.get('invite');
-    if(inviteId){
-      const {room}=await api.roomById(inviteId);
-      history.replaceState(null,'',location.pathname+location.search+'#/rooms');
-      openRoom(room);
+  const root = $('#recent-room-list');
+  const draw = async () => {
+    root.innerHTML = loading();
+    try {
+      const recent = readRecentRooms();
+      if (!recent.length) {
+        root.innerHTML = emptyBox('history', 'لم تدخلي أي غرفة بعد', 'عندما تدخلين غرفة صوتية ستظهر هنا تلقائيًا لتعودي إليها لاحقًا.');
+        return;
+      }
+      const { rooms = [] } = await api.rooms();
+      const byId = new Map(rooms.map(room => [String(room.id), room]));
+      const available = recent.map(entry => byId.get(entry.id)).filter(Boolean);
+      if (available.length !== recent.length) {
+        const validIds = new Set(available.map(room => String(room.id)));
+        try { localStorage.setItem(recentRoomsStorageKey(), JSON.stringify(recent.filter(entry => validIds.has(entry.id)))); } catch {}
+      }
+      root.innerHTML = available.length ? available.map(roomCard).join('') : emptyBox('history', 'لا توجد غرف محفوظة متاحة الآن', 'قد تكون بعض الغرف قد أُغلقت أو حُذفت.');
+      bindRoomCards(root, available);
+      icons_();
+    } catch (error) {
+      root.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل غرفك الأخيرة', error.message || 'حاولي مرة أخرى');
+      icons_();
     }
-  }
-  catch (e) { const el = $('#rooms-list'); if (el) { el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', e.message); icons_(); } }
+  };
+  $('#refresh-recent-rooms').onclick = draw;
+  await draw();
 }
-
 async function newRoomSheet() {
   try {
     const { rooms } = await api.rooms();
@@ -1810,7 +1873,8 @@ async function directMessageScreen(conversationId) {
     else if (route === 'inbox') await inboxScreen();
     else if (route === 'friends') await friendsScreen();
     else if (route === 'dm' && parts[1]) await directMessageScreen(decodeURIComponent(parts[1]));
-    else if (route === 'rooms') await roomsScreen(params);
+    else if (route === 'rooms') await homeScreen(params);
+    else if (route === 'recent-rooms') await recentRoomsScreen(params);
     else if (route === 'gifts') await giftsScreen();
     else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
