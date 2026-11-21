@@ -3808,3 +3808,6 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
  #screen .room-card .room-card-body{padding:7px!important}
  #screen .room-card .room-card-title-row p{font-size:11px!important}
 }
+
+/* Keep room writing and quick actions anchored while the seat stage scrolls */
+#sheet-root .room-sheet .hs-room-bottom-bar{position:sticky!important;bottom:0!important;z-index:30!important}
