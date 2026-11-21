@@ -9,6 +9,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let room = null;
   let joined = false;
   let muted = false;
+  let activeSpeakerIds = [];
   let canPublish = false;
   let joining = null;
   let disposed = false;
@@ -18,7 +19,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   const mutedParticipants = new Set();
 
   const status = (message, connected = joined) => {
-    if (!disposed) onState({ message, connected, muted });
+    if (!disposed) onState({ message, connected, muted, activeSpeakers: activeSpeakerIds });
   };
 
   async function requestToken() {
@@ -81,6 +82,11 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
           noiseSuppression: true,
           autoGainControl: true
         }
+      });
+
+      room.on(RoomEvent.ActiveSpeakersChanged, speakers => {
+        activeSpeakerIds = (speakers || []).map(participant => participant.identity);
+        status('الصوت المباشر متصل', true);
       });
 
       room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
@@ -214,6 +220,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     audioElements.clear();
     muted = false;
     canPublish = false;
+    activeSpeakerIds = [];
     const root = document.getElementById('voice-audio');
     if (root) root.querySelectorAll('[data-livekit-participant]').forEach(el => el.remove());
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false });
