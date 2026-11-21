@@ -791,7 +791,7 @@ async function openRoom(r) {
     };
     let roomJoinedAt=Date.now();
     const drawMessages=async()=>{
-      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id),api.roomEvents(r.id).catch(()=>({events:[]}))]);
+      const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id,roomJoinedAt).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
