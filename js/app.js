@@ -1481,6 +1481,14 @@ function profileView(p, own) {
           <p class="hs-profile-demographics">${p.age?num(p.age)+' سنة':''}${p.gender==='female'?' · ♀':p.gender==='male'?' · ♂':''}</p>
           <p dir="ltr">@${esc(p.handle)}</p>
           ${p.publicId ? `<div class="hs-profile-id-row" dir="ltr">${p.country ? `<span class="hs-profile-country-flag" title="${esc(p.country)}">${/الجزائر|algeria/i.test(p.country)?'🇩🇿':/tunisia/i.test(p.country)?'🇹🇳':/morocco/i.test(p.country)?'🇲🇦':/egypt/i.test(p.country)?'🇪🇬':'🌍'}</span>`:''}<button type="button" data-copy-public-id="${esc(p.publicId)}" class="hs-profile-id"><i data-lucide="copy"></i> ID: ${esc(p.publicId)}</button></div>` : ''}
+          ${own ? `<div class="hs-profile-quick-info">
+            <a href="#/wallet" class="hs-profile-wallet-mini"><span><small>المحفظة</small><b>${coin(20)} ${num(state.wallet?.balance)}</b></span><i data-lucide="wallet"></i></a>
+            <div class="hs-profile-level-mini">
+              <a href="#/wallet" class="hs-profile-level-wealth"><i data-lucide="shield"></i><span>الثروة</span><b>LV.${num(p.wealthLevel || 0)}</b></a>
+              <a href="#/aristocracy" class="hs-profile-level-vip"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : '—'}</b></a>
+              <a href="#/me" class="hs-profile-level-charisma"><i data-lucide="sparkles"></i><span>الكاريزما</span><b>LV.${num(p.charismaLevel || 0)}</b></a>
+            </div>
+          </div>` : ''}
           ${p.bio ? `<p class="hs-profile-bio">${esc(p.bio)}</p>` : own ? '<p class="hs-profile-bio hs-muted">أضيفي نبذة جميلة عنكِ</p>' : ''}
           <div class="hs-profile-tags hs-profile-info-chips">
             ${p.role==='admin'?'<span class="hs-profile-info-chip"><i data-lucide="shield-check"></i> إدارة همسات</span>':''}
@@ -1537,36 +1545,12 @@ function meScreen() {
     </div>`).join('');
   screen.innerHTML = `
     <div class="hs-me-screen fade-in">
-      <div class="hs-me-topbar"><span>H A M S A T</span><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div>
+      <div class="hs-me-topbar"><span>H A M S A T</span><div class="hs-me-topbar-actions"><button type="button" id="account-settings" class="hs-account-settings-button" aria-label="إعدادات الحساب" title="إعدادات الحساب"><i data-lucide="settings"></i></button><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div></div>
       ${profileView(p, true)}
-      <a href="#/wallet" class="hs-wallet-gold-banner mx-4 mt-4">
-        <span><small>محفظة همسات</small><b>${coin(22)} ${num(state.wallet?.balance)}</b><em>Coins · عرض المحفظة</em></span><i data-lucide="wallet"></i>
-      </a>
-      <div class="hs-me-levels mx-4 mt-3">
-        <a href="#/wallet" class="hs-me-level-card hs-wealth-card"><i data-lucide="shield"></i><span>مستوى الثروة</span><b>LV.${num(p.wealthLevel || 0)}</b></a>
-        <a href="#/aristocracy" class="hs-me-level-card hs-vip-card"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'لم تحصل بعد'}</b></a>
-        <a href="#/me" class="hs-me-level-card hs-charisma-card"><i data-lucide="sparkles"></i><span>الكاريزما</span><b>LV.${num(p.charismaLevel || 0)}</b></a>
-      </div>
       <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
       <div class="hs-me-content">
-        <div class="hs-me-section-title"><span>الخدمات والمزايا</span><small>كل عالم همسات في مكان واحد</small></div>
-        ${menu}
-        <button id="edit-profile" class="hs-account-row hs-edit-row">
-          <span class="hs-account-icon gold"><i data-lucide="user-round-pen"></i></span>
-          <span class="hs-account-copy"><b>تعديل الملف الشخصي</b><small>الصورة والاسم والنبذة والبيانات</small></span>
-          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
-        </button>
-        <button id="share-profile" class="hs-account-row hs-edit-row">
-          <span class="hs-account-icon violet"><i data-lucide="share-2"></i></span>
-          <span class="hs-account-copy"><b>مشاركة حسابي</b><small>انسخي اسم المستخدم لمشاركته</small></span>
-          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
-        </button>
-        <button id="link-phone" class="hs-account-row hs-edit-row">
-          <span class="hs-account-icon gold"><i data-lucide="shield-check"></i></span>
-          <span class="hs-account-copy"><b>ربط رقم الهاتف</b><small>تأكيد ملكية رقمك لحماية حسابك · لا يظهر للآخرين</small></span>
-          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
-        </button>
-        <button id="logout" class="hs-logout"><i data-lucide="log-out"></i> تسجيل الخروج</button>
+        <div class="hs-me-section-title"><span>مساحتك في همسات</span><small>الإعدادات والخدمات من أيقونة الترس</small></div>
+        <button type="button" class="hs-me-settings-hint" id="open-account-settings"><i data-lucide="settings"></i><span><b>إعدادات الحساب</b><small>الملف الشخصي والخصوصية والخدمات</small></span><i data-lucide="chevron-left"></i></button>
       </div>
     </div>`;
   icons_();
@@ -1585,44 +1569,31 @@ function meScreen() {
     location.hash='#/friends';
   }));
   document.querySelectorAll('[data-coming-soon]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();toast('هذه الخدمة قيد التجهيز وستُفعّل لاحقاً');}));
+  const accountSettingsMarkup = `<h2 class="text-lg font-bold mb-3">إعدادات الحساب</h2>
+    <div class="hs-settings-sheet-list">${menu}</div>
+    <div class="hs-account-group">
+      <button id="edit-profile" class="hs-account-row hs-edit-row"><span class="hs-account-icon gold"><i data-lucide="user-round-pen"></i></span><span class="hs-account-copy"><b>تعديل الملف الشخصي</b><small>الصورة والاسم والنبذة والبيانات</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
+      <button id="share-profile" class="hs-account-row hs-edit-row"><span class="hs-account-icon violet"><i data-lucide="share-2"></i></span><span class="hs-account-copy"><b>مشاركة حسابي</b><small>نسخ اسم المستخدم لمشاركته</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
+      <button id="link-phone" class="hs-account-row hs-edit-row"><span class="hs-account-icon gold"><i data-lucide="shield-check"></i></span><span class="hs-account-copy"><b>ربط رقم الهاتف</b><small>حماية الحساب · رقمك لا يظهر للآخرين</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
+      <button id="logout" class="hs-logout"><i data-lucide="log-out"></i> تسجيل الخروج</button>
+    </div>`;
+  const openAccountSettings = () => openSheet(accountSettingsMarkup, settings => {
+    settings.querySelectorAll('[data-coming-soon]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();toast('هذه الخدمة قيد التجهيز وستُفعّل لاحقاً');}));
+    settings.querySelector('#edit-profile').onclick = () => { closeSheet(); editProfileAction(); };
+    settings.querySelector('#share-profile').onclick = async () => { try { await navigator.clipboard.writeText('@' + p.handle); toast('تم النسخ'); } catch (e) { toast('@' + p.handle); } };
+    settings.querySelector('#logout').onclick = () => openSheet(
+      `<h2 class="text-lg font-bold mb-2">تسجيل الخروج</h2><p class="text-sm text-[#bba9d6] mb-5">هل أنت متأكد أنك تريد تسجيل الخروج من همسات؟ بياناتك محفوظة.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-out" class="btn-danger">تسجيل الخروج</button></div>`,
+      confirmSheet => confirmSheet.querySelector('#confirm-out').onclick = signOut);
+    settings.querySelector('#link-phone').onclick = () => openSheet(
+      `<h2 class="text-lg font-bold mb-2">ربط رقم الهاتف بحسابك</h2><p class="text-sm text-[#bba9d6] mb-4">سيبقى رقمك خاصاً ولا يظهر في الملف الشخصي أو الغرف أو البحث. سنرسل رمزاً لتأكيد ملكيتك للرقم.</p><form id="phone-link-form" class="space-y-3"><div id="phone-link-number"><label class="label">رقم الهاتف بالصيغة الدولية</label><input class="field" name="phone" type="tel" inputmode="tel" dir="ltr" placeholder="+213XXXXXXXXX" required></div><div id="phone-link-code" class="hidden"><label class="label">رمز التحقق SMS</label><input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div><p id="phone-link-feedback" class="text-xs text-[#d7c79f]" aria-live="polite"></p><button class="btn-gold w-full" type="submit">إرسال رمز التحقق</button></form>`, sheet => {
+        const form=sheet.querySelector('#phone-link-form'),numberBox=sheet.querySelector('#phone-link-number'),codeBox=sheet.querySelector('#phone-link-code'),feedback=sheet.querySelector('#phone-link-feedback'),submit=form.querySelector('button[type=submit]');
+        let phone=null,sent=false;
+        form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{if(!sent){phone=form.elements.phone.value.trim().replace(/[\\s().-]/g,'');if(/^0\\d{9}$/.test(phone))phone='+213'+phone.slice(1);else if(/^213\\d{9}$/.test(phone))phone='+'+phone;if(!/^\\+[1-9]\\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');await api.requestPhoneLink(phone);sent=true;numberBox.classList.add('hidden');codeBox.classList.remove('hidden');form.elements.code.required=true;submit.textContent='تأكيد وربط الرقم';feedback.textContent='أرسلنا رمز التحقق إلى هاتفك.';}else{await api.verifyPhoneLink(phone,form.elements.code.value);closeSheet();toast('تم ربط رقم الهاتف بحسابك بنجاح.');render();}}catch(err){feedback.textContent=err.message||'تعذر إكمال ربط الهاتف.';}finally{submit.disabled=false;}};
+      });
+  });
+  $('#account-settings').onclick = openAccountSettings;
+  $('#open-account-settings').onclick = openAccountSettings;
   $('#switch-account').onclick = () => openSheet(`<h2 class="text-lg font-bold mb-2">تبديل الحساب</h2><p class="text-sm text-[#bba9d6] mb-5">سيتم تسجيل خروجكِ لتتمكني من الدخول بحساب آخر. لن تُحذف بيانات حسابك.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-switch" class="btn-gold">متابعة</button></div>`,s=>s.querySelector('#confirm-switch').onclick=signOut);
-  $('#logout').onclick = () => openSheet(`
-    <h2 class="text-lg font-bold mb-2">تسجيل الخروج</h2>
-    <p class="text-sm text-[#bba9d6] mb-5">هل أنت متأكد أنك تريد تسجيل الخروج من همسات؟ بياناتك محفوظة.</p>
-    <div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-out" class="btn-danger">تسجيل الخروج</button></div>`,
-    (s) => s.querySelector('#confirm-out').onclick = signOut);
-  $('#edit-profile').onclick = editProfileAction;
-  $('#share-profile').onclick = async () => {
-    try { await navigator.clipboard.writeText('@' + p.handle); toast('تم النسخ'); } catch (e) { toast('@' + p.handle); }
-  };
-  $('#link-phone').onclick = () => openSheet(`
-    <h2 class="text-lg font-bold mb-2">ربط رقم الهاتف بحسابك</h2>
-    <p class="text-sm text-[#bba9d6] mb-4">سيبقى رقمك خاصاً ولا يظهر في الملف الشخصي أو الغرف أو البحث. سنرسل رمزاً لتأكيد ملكيتك للرقم.</p>
-    <form id="phone-link-form" class="space-y-3">
-      <div id="phone-link-number"><label class="label">رقم الهاتف بالصيغة الدولية</label><input class="field" name="phone" type="tel" inputmode="tel" dir="ltr" placeholder="+213XXXXXXXXX" required></div>
-      <div id="phone-link-code" class="hidden"><label class="label">رمز التحقق SMS</label><input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div>
-      <p id="phone-link-feedback" class="text-xs text-[#d7c79f]" aria-live="polite"></p>
-      <button class="btn-gold w-full" type="submit">إرسال رمز التحقق</button>
-    </form>`, sheet => {
-      const form=sheet.querySelector('#phone-link-form'),numberBox=sheet.querySelector('#phone-link-number'),codeBox=sheet.querySelector('#phone-link-code'),feedback=sheet.querySelector('#phone-link-feedback'),submit=form.querySelector('button[type=submit]');
-      let phone=null,sent=false;
-      form.onsubmit=async e=>{
-        e.preventDefault();submit.disabled=true;
-        try{
-          if(!sent){
-            phone=form.elements.phone.value.trim().replace(/[\s().-]/g,'');
-            if(/^0\d{9}$/.test(phone))phone='+213'+phone.slice(1);
-            else if(/^213\d{9}$/.test(phone))phone='+'+phone;
-            if(!/^\+[1-9]\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');
-            await api.requestPhoneLink(phone);sent=true;numberBox.classList.add('hidden');codeBox.classList.remove('hidden');form.elements.code.required=true;submit.textContent='تأكيد وربط الرقم';feedback.textContent='أرسلنا رمز التحقق إلى هاتفك.';
-          }else{
-            await api.verifyPhoneLink(phone,form.elements.code.value);closeSheet();toast('تم ربط رقم الهاتف بحسابك بنجاح.');render();
-          }
-        }catch(err){feedback.textContent=err.message||'تعذر إكمال ربط الهاتف.';}
-        finally{submit.disabled=false;}
-      };
-    });
-
 }
 
 async function userScreen(handle) {
