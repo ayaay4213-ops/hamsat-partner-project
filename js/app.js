@@ -1550,10 +1550,7 @@ function meScreen() {
       <div class="hs-me-topbar"><span>H A M S A T</span><div class="hs-me-topbar-actions"><button type="button" id="account-settings" class="hs-account-settings-button" aria-label="إعدادات الحساب" title="إعدادات الحساب"><i data-lucide="settings"></i></button><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div></div>
       ${profileView(p, true)}
       <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
-      <div class="hs-me-content">
-        <div class="hs-me-section-title"><span>مساحتك في همسات</span><small>الإعدادات والخدمات من أيقونة الترس</small></div>
-        <button type="button" class="hs-me-settings-hint" id="open-account-settings"><i data-lucide="settings"></i><span><b>إعدادات الحساب</b><small>الملف الشخصي والخصوصية والخدمات</small></span><i data-lucide="chevron-left"></i></button>
-      </div>
+
     </div>`;
   icons_();
   loadProfileStats(p.uuid, false);
@@ -1594,7 +1591,6 @@ function meScreen() {
       });
   });
   $('#account-settings').onclick = openAccountSettings;
-  $('#open-account-settings').onclick = openAccountSettings;
   $('#switch-account').onclick = () => openSheet(`<h2 class="text-lg font-bold mb-2">تبديل الحساب</h2><p class="text-sm text-[#bba9d6] mb-5">سيتم تسجيل خروجكِ لتتمكني من الدخول بحساب آخر. لن تُحذف بيانات حسابك.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-switch" class="btn-gold">متابعة</button></div>`,s=>s.querySelector('#confirm-switch').onclick=signOut);
 }
 
