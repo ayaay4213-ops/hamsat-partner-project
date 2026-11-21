@@ -1551,88 +1551,57 @@ function profileView(p, own) {
     </section>`;
 }
 function meScreen() {
-  const p = state.profile;
-  const menuGroups = [
-    [
-      {icon:'wallet',label:'المحفظة',sub:'رصيد العملات وسجل المعاملات',href:'#/wallet',tone:'gold'},
-      {icon:'shopping-bag',label:'المتجر',sub:'الإطارات والهدايا والزينة',href:'#/shop',tone:'pink'},
-      {icon:'crown',label:'الأرستقراطية VIP',sub:'العضويات والمزايا الحصرية',href:'#/aristocracy',tone:'gold',soon:true},
-      {icon:'calendar-check',label:'تسجيل الوصول اليومي',sub:'احصلي على مكافأتك اليومية',href:'#/wallet',tone:'violet'},
-      {icon:'user-plus',label:'دعوة الأصدقاء',sub:'شاركي رابط حسابك',href:'#/invite',tone:'violet',soon:true}
-    ],
-    [
-      {icon:'target',label:'المهام',sub:'تحديات يومية وأسبوعية',href:'#/tasks',tone:'pink',soon:true},
-      {icon:'chart-no-axes-column-increasing',label:'مستواي',sub:'نقاط الخبرة والتقدم',href:'#/me',tone:'gold'},
-      {icon:'award',label:'الشارات والأوسمة',sub:'إنجازاتك ومقتنياتك',href:'#/me',tone:'violet'},
-      {icon:'building-2',label:'مركز الوكالة',sub:'إدارة الوكالة والشحن والعمولات',href:'#/agency',tone:'gold'},
-      {icon:'users-round',label:'العائلة',sub:'مجتمعك ومجموعتك',href:'#/family',tone:'pink',soon:true}
-    ],
-    [
-      {icon:'users',label:'الأصدقاء والمتابعة',sub:'إدارة علاقاتك في همسات',href:'#/friends',tone:'violet'},
-      {icon:'message-circle',label:'الرسائل الخاصة',sub:'محادثاتك مع الأصدقاء',href:'#/inbox',tone:'gold'},
-      {icon:'bell',label:'الإشعارات',sub:'آخر التنبيهات والتحديثات',href:'#/notifications',tone:'pink'}
-    ]
-  ];
-  const menu = menuGroups.map(group => `
-    <div class="hs-account-group">
-      ${group.map(item => `
-        <a href="${item.href}" class="hs-account-row" ${item.soon?'data-coming-soon="1"':""}>
-          <span class="hs-account-icon ${item.tone}"><i data-lucide="${item.icon}"></i></span>
-          <span class="hs-account-copy"><b>${item.label}</b><small>${item.sub}</small></span>
-          <i data-lucide="chevron-left" class="hs-account-chevron"></i>
-        </a>`).join('')}
-    </div>`).join('');
-  screen.innerHTML = `
-    <div class="hs-me-screen fade-in">
-      <div class="hs-me-topbar"><span>H A M S A T</span><div class="hs-me-topbar-actions"><button type="button" id="account-settings" class="hs-account-settings-button" aria-label="إعدادات الحساب" title="إعدادات الحساب"><i data-lucide="settings"></i></button><button type="button" id="switch-account" class="hs-switch-account"><i data-lucide="users"></i> تبديل الحساب</button></div></div>
-      ${profileView(p, true)}
-
-    </div>`;
-  icons_();
-  loadProfileStats(p.uuid, false);
-  loadProfileRewards(p.uuid,p);
-  bindProfileSocial(p,true);
-  $('#open-my-moments')?.addEventListener('click',()=>{
-    openSheet('<h2 class="hs-profile-detail-title">لحظاتي</h2><div data-moments-list class="hs-moments-list">جارٍ تحميل اللحظات…</div>');
-    loadProfileMoments(p.uuid,true);
-  });
-  const idCopy=$('[data-copy-public-id]');
-  if(idCopy) idCopy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId);toast('تم نسخ ID الخاص بك');}catch(e){toast(p.publicId);}};
-  const editProfileAction = () => openSheet(`<h2 class="text-lg font-bold mb-2">تعديل الملف الشخصي</h2>${profileForm(p, false)}`, (s) => {
-    bindProfileForm(s, () => { closeSheet(); toast('تم حفظ التغييرات'); render(); });
-  });
-  $('#edit-profile-inline')?.addEventListener('click',editProfileAction);
-  document.querySelectorAll('[data-profile-stat-go]').forEach(button=>button.addEventListener('click',()=>{
-    const key=button.dataset.profileStatGo;
-    if(key==='visitors'){toast('قائمة الزوار التفصيلية قيد التجهيز');return;}
-    location.hash='#/friends';
-  }));
-  document.querySelectorAll('[data-coming-soon]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();toast('هذه الخدمة قيد التجهيز وستُفعّل لاحقاً');}));
-  const accountSettingsMarkup = `<h2 class="text-lg font-bold mb-3">إعدادات الحساب</h2>
-    <div class="hs-settings-sheet-list">${menu}</div>
-    <div class="hs-account-group">
-      <button id="edit-profile" class="hs-account-row hs-edit-row"><span class="hs-account-icon gold"><i data-lucide="user-round-pen"></i></span><span class="hs-account-copy"><b>تعديل الملف الشخصي</b><small>الصورة والاسم والنبذة والبيانات</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
-      <button id="share-profile" class="hs-account-row hs-edit-row"><span class="hs-account-icon violet"><i data-lucide="share-2"></i></span><span class="hs-account-copy"><b>مشاركة حسابي</b><small>نسخ اسم المستخدم لمشاركته</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
-      <button id="link-phone" class="hs-account-row hs-edit-row"><span class="hs-account-icon gold"><i data-lucide="shield-check"></i></span><span class="hs-account-copy"><b>ربط رقم الهاتف</b><small>حماية الحساب · رقمك لا يظهر للآخرين</small></span><i data-lucide="chevron-left" class="hs-account-chevron"></i></button>
-      <button id="logout" class="hs-logout"><i data-lucide="log-out"></i> تسجيل الخروج</button>
-    </div>`;
-  const openAccountSettings = () => openSheet(accountSettingsMarkup, settings => {
-    settings.querySelectorAll('[data-coming-soon]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();toast('هذه الخدمة قيد التجهيز وستُفعّل لاحقاً');}));
-    settings.querySelector('#edit-profile').onclick = () => { closeSheet(); editProfileAction(); };
-    settings.querySelector('#share-profile').onclick = async () => { try { await navigator.clipboard.writeText('@' + p.handle); toast('تم النسخ'); } catch (e) { toast('@' + p.handle); } };
-    settings.querySelector('#logout').onclick = () => openSheet(
-      `<h2 class="text-lg font-bold mb-2">تسجيل الخروج</h2><p class="text-sm text-[#bba9d6] mb-5">هل أنت متأكد أنك تريد تسجيل الخروج من همسات؟ بياناتك محفوظة.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-out" class="btn-danger">تسجيل الخروج</button></div>`,
-      confirmSheet => confirmSheet.querySelector('#confirm-out').onclick = signOut);
-    settings.querySelector('#link-phone').onclick = () => openSheet(
-      `<h2 class="text-lg font-bold mb-2">ربط رقم الهاتف بحسابك</h2><p class="text-sm text-[#bba9d6] mb-4">سيبقى رقمك خاصاً ولا يظهر في الملف الشخصي أو الغرف أو البحث. سنرسل رمزاً لتأكيد ملكيتك للرقم.</p><form id="phone-link-form" class="space-y-3"><div id="phone-link-number"><label class="label">رقم الهاتف بالصيغة الدولية</label><input class="field" name="phone" type="tel" inputmode="tel" dir="ltr" placeholder="+213XXXXXXXXX" required></div><div id="phone-link-code" class="hidden"><label class="label">رمز التحقق SMS</label><input class="field" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div><p id="phone-link-feedback" class="text-xs text-[#d7c79f]" aria-live="polite"></p><button class="btn-gold w-full" type="submit">إرسال رمز التحقق</button></form>`, sheet => {
-        const form=sheet.querySelector('#phone-link-form'),numberBox=sheet.querySelector('#phone-link-number'),codeBox=sheet.querySelector('#phone-link-code'),feedback=sheet.querySelector('#phone-link-feedback'),submit=form.querySelector('button[type=submit]');
-        let phone=null,sent=false;
-        form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;try{if(!sent){phone=form.elements.phone.value.trim().replace(/[\\s().-]/g,'');if(/^0\\d{9}$/.test(phone))phone='+213'+phone.slice(1);else if(/^213\\d{9}$/.test(phone))phone='+'+phone;if(!/^\\+[1-9]\\d{7,14}$/.test(phone))throw new Error('اكتبي الرقم بالصيغة الدولية مثل +213XXXXXXXXX.');await api.requestPhoneLink(phone);sent=true;numberBox.classList.add('hidden');codeBox.classList.remove('hidden');form.elements.code.required=true;submit.textContent='تأكيد وربط الرقم';feedback.textContent='أرسلنا رمز التحقق إلى هاتفك.';}else{await api.verifyPhoneLink(phone,form.elements.code.value);closeSheet();toast('تم ربط رقم الهاتف بحسابك بنجاح.');render();}}catch(err){feedback.textContent=err.message||'تعذر إكمال ربط الهاتف.';}finally{submit.disabled=false;}};
-      });
-  });
-  $('#account-settings').onclick = openAccountSettings;
-  $('#switch-account').onclick = () => openSheet(`<h2 class="text-lg font-bold mb-2">تبديل الحساب</h2><p class="text-sm text-[#bba9d6] mb-5">سيتم تسجيل خروجكِ لتتمكني من الدخول بحساب آخر. لن تُحذف بيانات حسابك.</p><div class="grid grid-cols-2 gap-3"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-switch" class="btn-gold">متابعة</button></div>`,s=>s.querySelector('#confirm-switch').onclick=signOut);
+ const p=state.profile||{}, wallet=Number(state.wallet?.balance||0), flag=p.country&&/الجزائر|algeria/i.test(p.country)?'🇩🇿':p.country&&/tunisia/i.test(p.country)?'🇹🇳':p.country&&/morocco/i.test(p.country)?'🇲🇦':p.country&&/egypt/i.test(p.country)?'🇪🇬':'🌍';
+ const tiles=[['medal','ميدالية الشرف','#/honor'],['users-round','عائلة','#/family'],['store','المتجر','#/shop'],['heart-handshake','المنزل CP','#/cp'],['mic-2','بيانات المضيف','#/host-data'],['target','مركز المهام','#/tasks']];
+ const rows=[['history','سجل المكافأة','#/wallet'],['backpack','أدوات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','إعدادات','#/settings']];
+ screen.innerHTML='<main class="hs-me-v2" dir="rtl"><section class="hs-me-hero"><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i> تسجيل يومي</button><div class="hs-me-user"><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><span class="hs-me-level">LV.'+num(p.charismaLevel||1)+'</span></div><div class="hs-me-avatar">'+avatar(p,78)+'</div></div></section>'+
+ '<section class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>متابعة</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="fans">—</b><span>معجبين</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>كاريزما</span></button></section>'+
+ '<a href="#/wallet" class="hs-me-wallet-banner"><span class="hs-me-first-tag">اشحن لأول مرة</span><span class="hs-me-money-art">💰</span><span><small>محفظة همسات</small><strong>'+num(wallet)+' <em>عملة</em></strong><small>إدارة رصيدك وشحن المحفظة</small></span><i data-lucide="chevron-left"></i></a>'+
+ '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><i data-lucide="crown"></i><small>حالة VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'VIP')+'</b></a><a href="#/wallet" class="hs-me-wealth-card"><i data-lucide="gem"></i><small>مستوى الثروة</small><b>LV.'+num(p.wealthLevel||0)+'</b></a></div>'+
+ '<a href="#/wallet" class="hs-me-spin-banner"><span class="hs-me-wheel">🎡<small>SPIN / GO</small></span><span class="hs-me-cash"><small>تحويل الماس إلى نقد</small><b>$0 = 0</b><em>المتبقي للسحب: 900000</em><i><span></span></i></span></a>'+
+ '<section class="hs-me-quick-card"><div class="hs-me-section-title">الخدمات السريعة</div><div class="hs-me-quick-grid">'+tiles.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
+ '<section class="hs-me-settings-card">'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T ✦</div></main>';
+ icons_(); loadProfileStats(p.uuid,false);
+ const copy=$('[data-copy-public-id]');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId||'');toast('تم نسخ UID');}catch(e){toast(p.publicId||'لا يوجد UID');}};
+ $('#me-checkin').onclick=dailyCheckinSheet;
+ $('#me-logout').onclick=()=>openSheet('<h2 class="font-bold mb-2">تسجيل الخروج</h2><p class="text-sm mb-4">هل تريدين تسجيل الخروج من همسات؟</p><div class="grid grid-cols-2 gap-2"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-me-logout" class="btn-danger">تسجيل الخروج</button></div>',s=>s.querySelector('#confirm-me-logout').onclick=signOut);
+ document.querySelectorAll('[data-profile-stat-go]').forEach(x=>x.onclick=()=>location.hash='#/friends');
 }
+function dailyCheckinSheet(){
+ const rewards=[24,30,36,45,54,72,90];
+ openSheet('<div class="hs-checkin-sheet"><h2>مكافأة الحضور الأسبوعية</h2><p>اليوم 1 إلى اليوم 7</p><div class="hs-checkin-days">'+rewards.map((v,i)=>'<div class="hs-checkin-day"><small>اليوم '+(i+1)+'</small><b>✦ '+v+'</b><span>عملة</span></div>').join('')+'</div><p class="hs-checkin-note">مكافأة الخادم الحالية: '+num(state.wallet?.dailyReward||20)+' عملة. لم يتم تغيير اقتصاد العملات أو جدول الصرف.</p><button id="claim-current-daily" class="btn-gold w-full">استلام المكافأة اليومية الحالية</button></div>',s=>s.querySelector('#claim-current-daily').onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;try{const r=await api.claimDaily();state.wallet=r.wallet;closeSheet();toast('تم استلام المكافأة');meScreen();}catch(err){toast(err.message,'error');btn.disabled=false;}});
+}
+function mePage(title,body){screen.innerHTML=header(title)+'<main class="hs-me-subpage" dir="rtl">'+body+'</main>';icons_();}
+async function cpHouseScreen(){
+ mePage('المنزل CP','<section class="hs-cp-house"><button id="cp-help" class="hs-cp-help">؟</button><div class="hs-cp-palace">🏰</div><div class="hs-cp-mascot">🥺</div><h2>ليس لديكِ CP بعد</h2><p>ابحثي عن شخص مميز وابدئي مساحة مشتركة.</p><a href="#/friends" class="hs-cp-meet">للقاء أصدقاء جدد</a></section>');
+ $('#cp-help').onclick=()=>openSheet('<h2 class="font-bold">مساحة CP</h2><p class="text-sm">مساحة مشتركة بينك وبين صديق بعد قبول الدعوة.</p>');
+ try{const r=await api.coupleSpace(state.profile.uuid);if(r.space&&r.partner){$('.hs-cp-house h2').textContent=r.space.status==='active'?'لديكِ مساحة CP':'دعوة CP بانتظار الرد';$('.hs-cp-house p').textContent=r.partner.displayName||'شريك CP';}}catch(e){console.warn(e);}
+}
+function honorScreen(){
+ mePage('ميدالية الشرف','<section class="hs-honor-page"><div class="hs-honor-medal">🏅</div><h2>ميدالية الشرف</h2><div class="hs-honor-slots">'+Array.from({length:5},()=>'<span>＋</span>').join('')+'</div><div class="hs-honor-counters"><span><b>C</b><small>0</small></span><span><b>B</b><small>0</small></span><span><b>A</b><small>0</small></span><span><b>S</b><small>0</small></span></div><div class="hs-honor-tabs"><button class="active" data-honor="achievement">ميداليات الإنجاز</button><button data-honor="activity">ميداليات النشاط</button></div><div class="hs-honor-empty">لا توجد ميداليات مسجلة بعد.</div></section>');
+ document.querySelectorAll('[data-honor]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-honor]').forEach(x=>x.classList.toggle('active',x===b));$('.hs-honor-empty').textContent=b.dataset.honor==='achievement'?'لا توجد ميداليات إنجاز بعد.':'لا توجد ميداليات نشاط بعد.';});
+}
+function familyScreen(){
+ mePage('ترتيب العائلة للشهر','<section class="hs-family-page"><div class="hs-family-countdown">الوقت المتبقي <b>— : — : —</b></div><h2>أفضل العائلات</h2><div class="hs-family-podium"><div class="hs-family-place second"><span>🥈</span><b>TOP 2</b><small>— EXP</small></div><div class="hs-family-place first"><span>👑</span><b>TOP 1</b><small>— EXP</small></div><div class="hs-family-place third"><span>🥉</span><b>TOP 3</b><small>— EXP</small></div></div><p class="hs-family-empty">ترتيب العائلات يحتاج إلى ربط بيانات الخادم.</p><div class="hs-family-actions"><button id="family-create">إنشاء</button><button id="family-join">إنضم إلى</button></div></section>');
+ $('#family-create').onclick=()=>toast('خدمة إنشاء العائلات غير مربوطة بالخادم بعد.');$('#family-join').onclick=()=>toast('خدمة العائلات غير مربوطة بالخادم بعد.');
+}
+function tasksScreen(){
+ mePage('مركز المهام','<section class="hs-tasks-page"><div class="hs-task-rewards"><div><small>اليوم</small><b>—</b></div><div><small>الأسبوع الحالي</small><b>—</b></div></div><div class="hs-task-tabs"><button class="active" data-task="host">المضيف</button><button data-task="daily">يومياً</button></div><article class="hs-task-card"><span>🎙️</span><div><b>تحدثي على المايك لمدة ساعة</b><small>0 / 60 دقيقة</small><i><em></em></i></div><button disabled>غير مفعّل</button></article><p class="hs-task-note">واجهة المهام جاهزة؛ احتساب التقدم والمكافآت يحتاج إلى خدمة مهام موثقة.</p></section>');
+ document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-task]').forEach(x=>x.classList.toggle('active',x===b));});
+}
+async function hostDataScreen(){
+ mePage('بيانات المضيف','<section class="hs-host-data"><div class="hs-host-overview"><span>معلومات المضيف</span><b>'+esc(state.profile.displayName||'عضو')+'</b><small>حالة الوكالة: جارٍ التحقق</small><strong>50,000 / ساعة</strong><div class="hs-host-progress"><i></i></div><small>تقدم الترقية</small></div><button id="host-range">آخر 30 يوماً ▾</button><h3>ملخص الماسات</h3><div class="hs-host-grid">'+[['إجمالي الدخل','—'],['الاستهلاك','—'],['الراتب الأساسي','—'],['الهدايا','—'],['المهام','—']].map(x=>'<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="hs-task-note">بيانات المضيف التفصيلية غير متاحة حتى ربط سجل الاستحقاقات.</p></section>');
+ $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">الفترة الزمنية</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
+ try{const r=await api.myAgencies();const ag=(r.agencies||[]).find(x=>['hosts','both'].includes(x.agency_type));if(ag){const s=await api.agencyHostStats(ag.id);const own=(s.stats||[]).filter(x=>x.host_id===state.profile.uuid);const total=own.reduce((n,x)=>n+Number(x.gift_coins||0),0);$('.hs-host-grid div:first-child b').textContent=num(total);$('.hs-host-grid div:nth-child(4) b').textContent=num(total);$('.hs-host-overview small').textContent='حالة الوكالة: '+ag.status;}}catch(e){console.warn(e);}
+}
+function settingsScreen(){
+ const items=[['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
+ mePage('إعدادات','<section class="hs-settings-page">'+items.map(x=>'<button data-setting="'+x[2]+'"><i data-lucide="'+x[0]+'"></i><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button>').join('')+'<button id="settings-logout" class="hs-settings-logout">تسجيل الخروج</button></section>');
+ document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
+ $('#settings-logout').onclick=()=>openSheet('<h2 class="font-bold mb-3">تسجيل الخروج</h2><button id="settings-confirm-out" class="btn-danger w-full">تأكيد تسجيل الخروج</button>',s=>s.querySelector('#settings-confirm-out').onclick=signOut);
+}
+function feedbackScreen(){mePage('التعليقات والاقتراحات','<form id="me-feedback-form" class="hs-feedback-page"><label>نوع الملاحظة<select name="type" class="field"><option>اقتراح</option><option>مشكلة تقنية</option><option>شكوى</option></select></label><label>التفاصيل<textarea name="body" class="field" rows="5" required maxlength="1500" placeholder="اكتبي ملاحظتك"></textarea></label><button class="btn-gold w-full">إرسال</button><p class="hs-task-note">خدمة إرسال الملاحظات تحتاج إلى endpoint دعم.</p></form>');$('#me-feedback-form').onsubmit=e=>{e.preventDefault();toast('خدمة إرسال الملاحظات غير مربوطة بالخادم بعد.','error');};}
+function inventoryScreen(){mePage('أدوات','<div id="me-inventory" class="hs-inventory-list">جارٍ تحميل المقتنيات…</div>');api.inventory().then(r=>{const el=$('#me-inventory');if(!el)return;el.innerHTML=(r.items||[]).length?r.items.map(x=>'<article><b>'+esc(x.name)+'</b><small>'+esc(x.item_type||'عنصر')+'</small></article>').join(''):'لا توجد مقتنيات بعد.';}).catch(e=>{$('#me-inventory').textContent=e.message;});}
 
 async function userScreen(handle) {
   if (handle === state.profile?.handle) { location.hash = '#/me'; return; }
@@ -1890,11 +1859,19 @@ async function directMessageScreen(conversationId) {
     else if (route === 'shop') await shopScreen();
     else if (route === 'wallet') await walletScreen();
     else if (route === 'me') meScreen();
+    else if (route === 'cp') await cpHouseScreen();
+    else if (route === 'honor') honorScreen();
+    else if (route === 'family') familyScreen();
+    else if (route === 'tasks') tasksScreen();
+    else if (route === 'host-data') await hostDataScreen();
+    else if (route === 'settings') settingsScreen();
+    else if (route === 'feedback') feedbackScreen();
+    else if (route === 'inventory') inventoryScreen();
     else if (route === 'invite') await inviteScreen();
     else if (route === 'moments') await momentsFeedScreen();
     else if (route === 'activities') await activitiesScreen();
     else if (route === 'agency') await agencyScreen();
-    else if (['aristocracy','tasks','family'].includes(route)) comingSoonScreen(route);
+    else if (route === 'aristocracy') comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
     else await homeScreen();
   } catch (e) {
