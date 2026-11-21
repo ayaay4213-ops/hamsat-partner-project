@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090a0d"><title>HAMSAT · Super Admin</title>
+<meta name="theme-color" content="#fbfaf7"><title>HAMSAT · Super Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -83,6 +83,25 @@ button:focus-visible,a:focus-visible{outline:2px solid #ead59a;outline-offset:3p
 @media(min-width:641px){
  #admin>nav{position:sticky;top:8px;z-index:20;background:rgba(9,10,13,.92);backdrop-filter:blur(12px);padding:8px 0}
 }
+
+
+/* HAMSAT ADMIN WHITE LUXE — consistent with the new porcelain app theme */
+:root{color-scheme:light;--gold:#b58a32;--gold2:#8f6c25;--line:#e8e1d3;--panel:#fff}
+body{background:linear-gradient(180deg,#fbfaf7,#f1eee6)!important;color:#29261f!important}
+header h1,section>div>h2{color:#30291f!important}
+.panel,.stat,.item{background:linear-gradient(145deg,#fff,#fbfaf7)!important;color:#29261f!important;border-color:#e8e1d3!important;box-shadow:0 8px 24px rgba(77,62,36,.06)!important}
+.field{background:#fff!important;color:#29261f!important;border-color:#e2dacb!important}
+.field::placeholder{color:#9a9386!important}
+.muted{color:#776f62!important}
+.tab{background:#fff!important;color:#716957!important;border-color:#e5dece!important}
+.tab.active{background:#f5ecd7!important;color:#8b651d!important;border-color:#d8bd78!important}
+.ghost{background:#fffdf8!important;color:#806020!important;border-color:#dfd3b9!important}
+.btn{background:linear-gradient(135deg,#f3e4bb,#d9bd78,#bd913d)!important;color:#332814!important;border:1px solid #d4b66d!important}
+.pill{background:#f8f1e2!important;color:#8b651d!important;border-color:#e5d4ad!important}
+#admin-menu{background:rgba(255,255,255,.97)!important;box-shadow:0 12px 28px rgba(77,62,36,.09)!important}
+#notice{background:#fff!important;color:#514a3d!important}
+#admin>nav{background:rgba(251,250,247,.96)!important}
+button:focus-visible,a:focus-visible{outline-color:#b58a32!important}
 
 </style>
 </head>
@@ -219,4 +238,4 @@ button:focus-visible,a:focus-visible{outline:2px solid #ead59a;outline-offset:3p
 <div id="report-list" class="space-y-2"></div>
 </section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261120-admin-members-full-list-v3"></script></body></html>
+<script type="module" src="js/admin.js?v=20261121-admin-directory-edge-v4"></script></body></html>
