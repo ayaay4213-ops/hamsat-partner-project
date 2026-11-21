@@ -2872,3 +2872,97 @@ html,body{background:#08090c!important;color:#f5f0e4}
  #screen .hs-profile-stats button{padding-inline:1px}
  #screen .cosmetic-preview{min-height:98px}
 }
+
+
+/* HAMSAT LUXE EXPERIENCE v3 — home, profile and room visual polish */
+#screen .hs-home{min-height:100%;background:radial-gradient(ellipse at 50% -12%,rgba(196,158,73,.12),transparent 38%),#090a0d}
+#screen .hs-home-top{position:sticky;top:0;z-index:8;min-height:60px;padding:10px 17px;background:rgba(10,11,14,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(223,189,104,.2)}
+#screen .hs-home-brand{display:flex;align-items:center;gap:12px}
+#screen .hs-home-brand-title{color:#f0d99b;font-size:14px;font-weight:900;letter-spacing:.32em;text-shadow:0 0 20px rgba(223,189,104,.2)}
+#screen .hs-home-top .menu-button{width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(223,189,104,.32);border-radius:12px;background:rgba(223,189,104,.08);color:#f0d99b}
+#screen .hs-home-section-rooms-only{padding:13px 13px 24px}
+#screen .hs-home-room-list{display:grid;gap:14px}
+#screen .room-card{
+  position:relative;display:block;padding:0!important;overflow:hidden;border:1px solid rgba(223,189,104,.24)!important;
+  border-radius:19px!important;background:linear-gradient(145deg,#1c1c1e,#101115)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.035);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease
+}
+#screen .room-card:active{transform:scale(.988);border-color:rgba(244,223,160,.65)!important}
+#screen .room-cover{position:relative;min-height:190px;isolation:isolate;background-color:#191a1d;background-image:radial-gradient(ellipse at 50% 10%,rgba(223,189,104,.18),transparent 58%),linear-gradient(135deg,#29251c,#111216);background-size:cover;background-position:center}
+#screen .room-cover:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(5,6,8,.05) 10%,rgba(5,6,8,.18) 46%,rgba(5,6,8,.84) 100%)}
+#screen .room-cover-glow{position:absolute;inset:auto 12% -35px;height:90px;border-radius:50%;background:rgba(223,189,104,.13);filter:blur(32px);pointer-events:none}
+#screen .room-cover-tag{position:absolute;top:12px;right:12px;display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid rgba(244,223,160,.3);border-radius:999px;background:rgba(8,9,11,.72);color:#f0d99b;font-size:10px;backdrop-filter:blur(8px)}
+#screen .room-cover-symbol{position:absolute;inset:0;display:grid;place-items:center;color:rgba(244,223,160,.78);text-shadow:0 4px 25px rgba(0,0,0,.65)}
+#screen .room-cover-symbol svg{width:54px;height:54px;stroke-width:1.15;filter:drop-shadow(0 0 18px rgba(223,189,104,.3))}
+#screen .room-cover-topic{position:absolute;right:14px;bottom:13px;max-width:calc(100% - 28px);padding:5px 9px;border:1px solid rgba(244,223,160,.16);border-radius:8px;background:rgba(8,9,11,.5);color:#e8d8b1;font-size:10px;backdrop-filter:blur(7px)}
+#screen .room-card-body{padding:12px 13px}
+#screen .room-card-title-row{display:flex;align-items:center;gap:12px}
+#screen .room-card-title-row p{flex:1;min-width:0;color:#f4ead4;font-size:14px;font-weight:800}
+#screen .room-enter{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border:1px solid rgba(223,189,104,.36);border-radius:11px;background:linear-gradient(145deg,#f0d99b,#bd9540);color:#17130a}
+#screen .room-enter svg{width:17px;height:17px}
+#screen .hs-profile-page{position:relative;overflow:hidden;background-color:#101115;background-image:radial-gradient(ellipse at 50% 15%,rgba(223,189,104,.12),transparent 44%)!important;background-size:cover;background-position:center}
+#screen .hs-profile-cover{position:relative;min-height:152px;background-color:#211f1a;background-image:radial-gradient(ellipse at 50% 10%,rgba(223,189,104,.2),transparent 60%),linear-gradient(135deg,#30291b,#111216);background-size:cover;background-position:center}
+#screen .hs-profile-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,12,.03),rgba(7,8,12,.55));pointer-events:none}
+#screen .hs-profile-cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#screen .hs-cover-actions{z-index:2}
+#screen .hs-cover-actions button{width:36px;height:36px;display:grid;place-items:center;border:1px solid rgba(244,223,160,.38);border-radius:12px;background:rgba(9,10,12,.68);color:#f4dfa0;backdrop-filter:blur(8px)}
+#screen .hs-profile-main{position:relative;padding:0 17px 18px}
+#screen .hs-profile-frame{filter:drop-shadow(0 8px 20px rgba(0,0,0,.45))}
+#screen .hs-profile-frame-glow{background:radial-gradient(circle,rgba(223,189,104,.24),transparent 68%)}
+#screen .hs-profile-avatar{border-color:#d8b65f!important;box-shadow:0 0 0 4px #111216,0 0 0 5px rgba(223,189,104,.5),0 8px 26px rgba(0,0,0,.4)}
+#screen .hs-profile-identity h2{color:#f5e8c9;font-size:20px;font-weight:900}
+#screen .hs-profile-identity>p[dir="ltr"]{color:#c2b18a;font-size:11px}
+#screen .hs-profile-demographics{color:#aaa18e;font-size:11px}
+#screen .hs-profile-id-row{display:flex;align-items:center;gap:6px;margin-top:9px}
+#screen .hs-profile-id{padding:6px 9px;border:1px solid rgba(223,189,104,.24);border-radius:9px;background:rgba(223,189,104,.07);color:#e6d3a4;font-size:10px}
+#screen .hs-profile-info-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+#screen .hs-profile-info-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid rgba(223,189,104,.2);border-radius:10px;background:linear-gradient(145deg,rgba(223,189,104,.1),rgba(255,255,255,.025));color:#ddcda8;font-size:10px}
+#screen .hs-profile-info-chip svg{width:13px;height:13px;color:#e6c875}
+#screen .hs-profile-bio{margin-top:10px;color:#c6bdac;font-size:12px;line-height:1.8}
+#screen .hs-profile-edit-hint{border:1px solid rgba(223,189,104,.24);border-radius:11px;background:rgba(223,189,104,.07);color:#e7d29c}
+#screen .hs-profile-ribbon{margin:0 15px 13px;padding:11px;border:1px solid rgba(223,189,104,.18);border-radius:12px;background:linear-gradient(90deg,transparent,rgba(223,189,104,.09),transparent);color:#d7bd7a}
+#screen .hs-profile-tabs{display:flex;gap:8px;padding:0 15px 13px;border-bottom:1px solid rgba(223,189,104,.13)}
+#screen .hs-profile-tabs button{flex:1;padding:10px 8px;border:1px solid rgba(223,189,104,.16);border-radius:11px;background:#15161a;color:#b7ad98;font-size:11px}
+#screen .hs-profile-tabs button.active{border-color:rgba(223,189,104,.48);background:linear-gradient(135deg,rgba(223,189,104,.2),rgba(223,189,104,.06));color:#f1d995;font-weight:800}
+#screen .hs-profile-stats{margin-top:14px}
+#screen .hs-level-card{margin:14px 15px;padding:16px;border:1px solid rgba(223,189,104,.25);border-radius:17px;background:radial-gradient(ellipse at 100% 0%,rgba(223,189,104,.13),transparent 52%),linear-gradient(145deg,#202024,#111216)}
+#screen .hs-level-top{color:#e9d8ae}
+#screen .hs-level-emblem{color:#f1d58b}
+#screen .hs-level-track{height:7px;overflow:hidden;border-radius:99px;background:#34312a}
+#screen .hs-level-track span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#a77e2d,#f4dfa0);box-shadow:0 0 12px rgba(223,189,104,.28)}
+#screen .hs-reward-section{margin:12px 15px;padding:15px;border:1px solid rgba(223,189,104,.17);border-radius:16px;background:linear-gradient(145deg,#1b1c20,#111216)}
+#screen .hs-reward-heading{color:#e8d7ae}
+#screen .hs-badge-chip,#screen .hs-collection-item{border:1px solid rgba(223,189,104,.15)!important;border-radius:12px!important;background:rgba(223,189,104,.045)!important;color:#e6dcc6}
+#screen .hs-cp-card{margin:13px 15px 18px;padding:15px;border:1px solid rgba(223,189,104,.18);border-radius:16px;background:linear-gradient(145deg,#1a1b1f,#101115)}
+#screen .hs-cp-title{color:#e8d7ae}
+#screen .hs-room-canvas{overflow:hidden;border:1px solid rgba(223,189,104,.28);border-radius:20px;background:#0a0b0e;color:#f2ead8;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+#screen .hs-room-head{background:#111216}
+#screen .hs-room-cover{background-color:#211f1a;background-size:cover;background-position:center}
+#screen .hs-room-head-row{padding:12px}
+#screen .hs-room-close,#screen .hs-room-meta-actions button,#screen .hs-room-meta-actions a{
+  border:1px solid rgba(223,189,104,.2);border-radius:11px;background:rgba(9,10,12,.76);color:#f0d99b
+}
+#screen .hs-room-state{color:#d8e8b1}
+#screen .hs-room-title-row{padding:10px 14px 16px}
+#screen .hs-room-title-row h2{color:#f3e5c4;font-weight:900}
+#screen .hs-room-title-row p{color:#b4a991}
+#screen .hs-room-owner-tag{color:#f0d58c}
+#screen .hs-room-meta{border-top:1px solid rgba(223,189,104,.15);border-bottom:1px solid rgba(223,189,104,.15);background:#141519}
+#screen .hs-room-meta-actions button,#screen .hs-room-meta-actions a{width:36px;height:36px;display:grid;place-items:center}
+#screen .hs-room-quick-actions{padding:9px 13px;background:#111216}
+#screen .hs-room-quick-actions a,#screen .hs-room-quick-actions button{width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(223,189,104,.22);border-radius:12px;background:rgba(223,189,104,.07);color:#efd99e}
+#screen .hs-room-owner-menu{border:1px solid rgba(223,189,104,.25);border-radius:18px;background:linear-gradient(145deg,#1b1b1e,#101115);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#screen .hs-owner-menu-title{color:#f0d99b}
+#screen .hs-owner-menu-grid button{border:1px solid rgba(223,189,104,.14);border-radius:12px;background:rgba(223,189,104,.045);color:#e5d8bd}
+#screen .hs-room-settings{border-color:rgba(223,189,104,.2)!important;background:#141519!important}
+#screen .hs-room-stage{background:radial-gradient(ellipse at 50% 25%,rgba(223,189,104,.09),transparent 56%),#101115}
+#screen .hs-room-seat{border-color:rgba(223,189,104,.32)!important;box-shadow:0 0 0 3px rgba(223,189,104,.045),0 8px 18px rgba(0,0,0,.3)}
+#screen .hs-room-chat-area{border-top:1px solid rgba(223,189,104,.15);background:#0e0f12}
+@media(max-width:380px){
+ #screen .room-cover{min-height:164px}
+ #screen .hs-profile-cover{min-height:128px}
+ #screen .hs-profile-main{padding-inline:12px}
+ #screen .hs-profile-identity h2{font-size:18px}
+ #screen .hs-profile-info-chip{padding:6px 7px;font-size:9px}
+}
