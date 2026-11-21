@@ -3488,3 +3488,10 @@ html,body,#app{background:#f3f2ee!important;color:#28251e!important}
 #tabbar .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 #tabbar .tab[data-tab="me"]:before{content:"";display:block;width:19px;height:19px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center/contain no-repeat}
 @media(max-width:520px){#screen .hs-activity-banner{min-height:84px}#screen .hs-activity-banner b{font-size:16px}#sheet-root .room-sheet .hs-room-seats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px 7px!important;padding:12px 1px!important}}
+
+/* Three account level tiles shown together as in the HAMSAT account reference */
+#screen .hs-me-levels{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#screen .hs-charisma-card{background:linear-gradient(130deg,#f5e6bd,#c99d45)!important;color:#4c350c!important;border:1px solid #b98b32!important}
+#screen .hs-charisma-card>i{color:#8c641a!important}
+#screen .hs-charisma-card span,#screen .hs-charisma-card b{color:#4c350c!important}
+#sheet-root .room-sheet .hs-seat-number{color:#c9a54e!important;background:#171109!important;border:1px solid #765b2b!important}
