@@ -1842,18 +1842,26 @@ async function inboxScreen() {
   screen.innerHTML = header('الرسائل الخاصة', '<a href="#/friends" class="text-xs text-gold-300">اكتشاف الأعضاء</a>') + `
     <div class="hs-inbox-page"><div class="hs-inbox-intro"><span>HAMSAT · PRIVATE</span><h2>مساحتك الخاصة للحديث</h2><p>محادثاتك تبقى بينك وبين الشخص الذي تراسلينه، بعيداً عن الغرف.</p></div><div id="inbox-list" class="hs-inbox-list">${loading()}</div></div>`;
   icons_();
-  try {
-    const { conversations } = await api.conversations();
-    const root = $('#inbox-list');
-    root.innerHTML = conversations.length ? conversations.map(c => `
-      <a href="#/dm/${encodeURIComponent(c.id)}" class="hs-inbox-row">
-        ${avatar(c.other,52)}
-        <div class="min-w-0 flex-1"><div class="hs-inbox-name">${esc(c.other.displayName || c.other.handle)}</div>
-        <div class="hs-inbox-preview">${esc(c.lastMessage || 'ابدئي المحادثة')}</div></div>
-        <div class="hs-inbox-trailing">${c.unread ? `<span>${num(c.unread)}</span>` : ''}<small>${timeAgo(new Date(c.updatedAt).getTime())}</small></div>
-      </a>`).join('') : emptyBox('message-circle','لا توجد محادثات بعد','افتحي ملف أي عضو واضغطي «رسالة خاصة» لبدء محادثة لا يراها الآخرون.');
-    icons_();
-  } catch(e) { $('#inbox-list').innerHTML=emptyBox('wifi-off','تعذّر تحميل المحادثات',e.message); }
+  const root=$('#inbox-list');let loadingList=false;
+  const refresh=async()=>{
+    if(loadingList||!root?.isConnected)return;loadingList=true;
+    try{
+      const {conversations=[]}=await api.conversations();
+      if(!root.isConnected)return;
+      root.innerHTML=conversations.length?conversations.map(c=>`
+        <a href="#/dm/${encodeURIComponent(c.id)}" class="hs-inbox-row">
+          ${avatar(c.other,52)}
+          <div class="min-w-0 flex-1"><div class="hs-inbox-name">${esc(c.other.displayName||c.other.handle)}</div>
+          <div class="hs-inbox-preview">${esc(c.lastMessage||'ابدئي المحادثة')}</div></div>
+          <div class="hs-inbox-trailing">${c.unread?`<span>${num(c.unread)}</span>`:''}<small>${timeAgo(new Date(c.updatedAt).getTime())}</small></div>
+        </a>`).join(''):emptyBox('message-circle','لا توجد محادثات بعد','افتحي ملف أي عضو واضغطي «رسالة خاصة» لبدء محادثة لا يراها الآخرون.');
+      icons_();
+    }catch(e){if(root?.isConnected)root.innerHTML=emptyBox('wifi-off','تعذّر تحميل المحادثات',e.message);}
+    finally{loadingList=false;}
+  };
+  await refresh();
+  const channel=api.subscribeInbox(()=>refresh().catch(e=>console.warn('Inbox refresh:',e.message)));
+  window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
 }
 async function directMessageScreen(conversationId) {
   let conversation=null;
@@ -1997,7 +2005,7 @@ async function momentsFeedScreen() {
         ${m.location?'<div class="hs-moment-location-label"><i data-lucide="map-pin"></i>'+esc(m.location)+'</div>':''}
         <small>${dateAr(new Date(m.created_at).getTime())}</small>
         <div class="hs-moment-social"><button type="button" data-moment-like="${esc(m.id)}" data-liked="${m.likedByMe?'true':'false'}">${m.likedByMe?'♥':'♡'} إعجاب · ${num(m.likesCount)}</button><span>التعليقات · ${num(m.comments.length)}</span></div>
-        <div class="hs-moment-comments">${m.comments.map(c=>'<p><b>'+esc(c.profile?.displayName||'عضو')+'</b> '+esc(c.body)+'</p>').join('')}</div>
+        <div class="hs-moment-comments">${m.comments.map(c=>'<p class="hs-moment-comment-person">'+avatar(c.profile,24)+'<span><b>'+esc(c.profile?.displayName||'عضو')+'</b> '+esc(c.body)+'</span></p>').join('')}</div>
         <form data-moment-comment="${esc(m.id)}" class="hs-moment-comment-form"><input name="body" maxlength="500" placeholder="اكتبي تعليقاً…" required><button type="submit">إرسال</button></form>
       </article>`;
     }).join('') : '<div class="hs-moment-empty">لا توجد لحظات منشورة بعد.</div>';
