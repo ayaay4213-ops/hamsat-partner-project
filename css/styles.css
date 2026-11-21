@@ -5182,6 +5182,8 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 
 
 /* HAMSAT final interaction repair — gift picker, settings, profiles, bombs and timers */
+.hs-room-stage{position:relative}
+
 .hs-room-settings.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
 .hs-room-settings[aria-hidden="true"]{display:none!important}
 .hs-room-settings:not(.hidden){visibility:visible!important;pointer-events:auto!important}
