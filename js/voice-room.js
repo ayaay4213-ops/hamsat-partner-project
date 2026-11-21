@@ -1,6 +1,6 @@
 import { supabase } from './supabase-auth.js';
 import { AUDIO_PROVIDER } from '../supabase/config.js';
-import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261116-room-controls-v3';
+import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261121-room-audio-v4';
 
 // STUN is sufficient for some peer-to-peer networks. Reliable mobile/carrier
 // connectivity still requires a TURN relay or an SFU with server credentials.
@@ -17,6 +17,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   let localStream = null;
   let joined = false;
   let muted = false;
+  let roomAudioMuted = false;
   let audioUnlocked = false;
   let joining = null;
   const peers = new Map();
@@ -24,7 +25,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   const pendingIce = new Map();
   const mutedParticipants = new Set();
 
-  const status = (message, connected = false) => onState({ message, connected, muted });
+  const status = (message, connected = false) => onState({ message, connected, muted, roomAudioMuted });
 
   async function send(to, kind, data = {}) {
     if (!channel) return;
@@ -39,7 +40,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   function playRemoteAudio(remoteId) {
     const audio = audioNodes.get(remoteId);
     if (!audio || !audio.srcObject) return Promise.resolve(false);
-    audio.muted = false;
+    audio.muted = roomAudioMuted || mutedParticipants.has(remoteId);
     return audio.play().then(() => true).catch(() => {
       status('اضغطي «سماع الآخرين» للسماح بتشغيل الصوت على هاتفك', true);
       return false;
@@ -80,7 +81,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
         audio.setAttribute('playsinline', '');
         audio.setAttribute('aria-label', 'صوت مشارك في الغرفة');
         audio.dataset.voicePeer = remoteId;
-        audio.muted = mutedParticipants.has(remoteId);
+        audio.muted = roomAudioMuted || mutedParticipants.has(remoteId);
         const root = document.getElementById('voice-audio');
         if (root) root.appendChild(audio);
         audioNodes.set(remoteId, audio);
@@ -240,11 +241,18 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     return muted;
   }
 
+  function toggleRoomAudioMute() {
+    roomAudioMuted = !roomAudioMuted;
+    for (const [identity, audio] of audioNodes) audio.muted = roomAudioMuted || mutedParticipants.has(identity);
+    status(roomAudioMuted ? 'تم كتم صوت الغرفة على جهازك' : 'تم تشغيل صوت الغرفة', true);
+    return roomAudioMuted;
+  }
+
   function setParticipantMuted(identity, shouldMute) {
     if (!identity) return false;
     if (shouldMute) mutedParticipants.add(identity); else mutedParticipants.delete(identity);
     const audio = audioNodes.get(identity);
-    if (audio) audio.muted = shouldMute;
+    if (audio) audio.muted = roomAudioMuted || shouldMute;
     return true;
   }
 
@@ -262,13 +270,14 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
       localStream = null;
     }
     muted = false;
+    roomAudioMuted = false;
     audioUnlocked = false;
     const root = document.getElementById('voice-audio');
     if (root) root.innerHTML = '';
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get canPublish() { return Boolean(localStream); } };
+  return { join, leave, toggleMute, toggleRoomAudioMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return Boolean(localStream); } };
 }
 
 
