@@ -182,13 +182,11 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     return true;
   }
 
-  function toggleMute() {
-    if (!room || !joined || !canPublish) return muted;
-    muted = !muted;
-    room.localParticipant.setMicrophoneEnabled(!muted).catch((error) => {
-      muted = !muted;
-      status('تعذّر تغيير حالة الميكروفون: ' + error.message, true);
-    });
+  async function toggleMute() {
+    if (!room || !joined || !canPublish) throw new Error('احجزي مقعداً على المايك أولاً.');
+    const nextMuted = !muted;
+    await room.localParticipant.setMicrophoneEnabled(!nextMuted);
+    muted = nextMuted;
     status(muted ? 'الميكروفون مكتوم' : 'الميكروفون يعمل', true);
     return muted;
   }
