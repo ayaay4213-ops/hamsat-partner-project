@@ -593,7 +593,7 @@ function emptyBox(icon, title, sub = '') {
 
 function roomCard(r) {
   return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition" aria-label="دخول غرفة ${esc(r.title)}">
-    <div class="room-cover" ${r.coverUrl ? `style="background-image:linear-gradient(180deg,rgba(4,5,8,.12),rgba(4,5,8,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
+    <div class="room-cover" ${r.coverUrl ? `style="background-image:url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
       <div class="room-cover-glow"></div>
       <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
       <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
