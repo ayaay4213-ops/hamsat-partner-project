@@ -9,6 +9,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let room = null;
   let joined = false;
   let muted = false;
+  let roomAudioMuted = false;
   let activeSpeakerIds = [];
   let canPublish = false;
   let joining = null;
@@ -19,7 +20,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   const mutedParticipants = new Set();
 
   const status = (message, connected = joined) => {
-    if (!disposed) onState({ message, connected, muted, activeSpeakers: activeSpeakerIds });
+    if (!disposed) onState({ message, connected, muted, roomAudioMuted, activeSpeakers: activeSpeakerIds });
   };
 
   async function requestToken() {
@@ -96,7 +97,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
         element.playsInline = true;
         element.setAttribute('playsinline', '');
         element.dataset.livekitParticipant = participant.identity;
-        element.muted = mutedParticipants.has(participant.identity);
+        element.muted = roomAudioMuted || mutedParticipants.has(participant.identity);
         const root = document.getElementById('voice-audio');
         if (root) root.appendChild(element);
         audioElements.set(track.sid, { track, element });
@@ -191,11 +192,18 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     return muted;
   }
 
+  function toggleRoomAudioMute() {
+    roomAudioMuted = !roomAudioMuted;
+    for (const item of audioElements.values()) item.element.muted = roomAudioMuted || mutedParticipants.has(item.element.dataset.livekitParticipant);
+    status(roomAudioMuted ? 'تم كتم صوت الغرفة على جهازك' : 'تم تشغيل صوت الغرفة', true);
+    return roomAudioMuted;
+  }
+
   function setParticipantMuted(identity, shouldMute) {
     if (!identity) return false;
     if (shouldMute) mutedParticipants.add(identity); else mutedParticipants.delete(identity);
     for (const item of audioElements.values()) {
-      if (item.element.dataset.livekitParticipant === identity) item.element.muted = shouldMute;
+      if (item.element.dataset.livekitParticipant === identity) item.element.muted = roomAudioMuted || shouldMute;
     }
     return true;
   }
@@ -221,8 +229,9 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     activeSpeakerIds = [];
     const root = document.getElementById('voice-audio');
     if (root) root.querySelectorAll('[data-livekit-participant]').forEach(el => el.remove());
-    onState({ message: 'تم إيقاف الصوت', connected: false, muted: false });
+    roomAudioMuted = false;
+    onState({ message: 'تم إيقاف الصوت', connected: false, muted: false, roomAudioMuted: false });
   }
 
-  return { join, leave, toggleMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get canPublish() { return canPublish; } };
+  return { join, leave, toggleMute, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
 }
