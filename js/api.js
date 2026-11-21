@@ -371,11 +371,13 @@ export const api = {
     const {data,error}=await client().from('room_backgrounds').select('image_url,updated_at').eq('room_id',roomId).maybeSingle();
     fail(error);return {imageUrl:data?.image_url||null,updatedAt:data?.updated_at||null};
   },
-  saveRoomBackground: async (roomId,imageUrl) => {
+  saveRoomBackground: async (roomId,imageUrl,backgroundItemId=null) => {
     const user=await currentUser();
     if(imageUrl && (!/^https:\/\//i.test(String(imageUrl)) || String(imageUrl).length>2048))throw new Error('رابط خلفية الغرفة غير صالح.');
     const {error}=await client().from('room_backgrounds').upsert({room_id:roomId,image_url:imageUrl||null,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:'room_id'});
-    fail(error);return {imageUrl:imageUrl||null};
+    fail(error);
+    const {error:roomError}=await client().from('rooms').update({background_item_id:backgroundItemId||null}).eq('id',roomId).eq('owner_id',user.id);
+    fail(roomError);return {imageUrl:imageUrl||null,backgroundItemId:backgroundItemId||null};
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
