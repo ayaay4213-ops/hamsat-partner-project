@@ -534,8 +534,8 @@ async function homeScreen(params = new URLSearchParams()) {
       </a>
       <div class="hs-home-categories mb-4">
         <a href="#/family"><i data-lucide="users-round"></i><span>عائلة</span></a>
-        <a href="#/agency"><i data-lucide="gem"></i><span>قائمة CP</span></a>
-        <a href="#/wallet"><i data-lucide="trophy"></i><span>كارزما</span></a>
+        <a href="#/family"><i data-lucide="gem"></i><span>قائمة CP</span></a>
+        <a href="#/me"><i data-lucide="trophy"></i><span>كارزما</span></a>
       </div>
       <div class="flex items-center justify-between mb-2"><span class="text-sm font-bold">الغرف الصوتية</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
       <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
@@ -1545,6 +1545,7 @@ function meScreen() {
       <div class="hs-me-levels mx-4 mt-3">
         <a href="#/wallet" class="hs-me-level-card hs-wealth-card"><i data-lucide="shield"></i><span>مستوى الثروة</span><b>LV.${num(p.wealthLevel || 0)}</b></a>
         <a href="#/aristocracy" class="hs-me-level-card hs-vip-card"><i data-lucide="gem"></i><span>VIP</span><b>${p.vipLevel > 0 ? `VIP ${num(p.vipLevel)}` : 'لم تحصل بعد'}</b></a>
+        <a href="#/me" class="hs-me-level-card hs-charisma-card"><i data-lucide="sparkles"></i><span>الكاريزما</span><b>LV.${num(p.charismaLevel || 0)}</b></a>
       </div>
       <a href="#/wallet" class="hs-spin-promo mx-4 mt-3"><span><small>مكافآت همسات</small><b>عجلة المكافآت اليومية</b><em>اكتشفي فرصك ومكافآتك</em></span><i data-lucide="disc-3"></i><strong>اذهبي</strong></a>
       <div class="hs-me-content">
@@ -1789,7 +1790,7 @@ async function render() {
   closeSideMenu();
   tabbar.classList.remove('hidden');
   screen.className = 'flex-1 flex flex-col has-tabbar';
-  const activeTab = route === 'inbox' ? 'chat' : route === 'rooms' ? 'home' : route;
+  const activeTab = route === 'inbox' ? 'chat' : ['rooms','activities'].includes(route) ? 'home' : route;
   tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === activeTab));
   window.scrollTo(0, 0);
 
