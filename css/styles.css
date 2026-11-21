@@ -4395,3 +4395,107 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 #screen .hs-profile-own .hs-profile-cover{background:#151515!important;background-image:none!important;overflow:hidden!important}
 #screen .hs-profile-own .hs-profile-cover:before,#screen .hs-profile-own .hs-profile-cover:after{display:none!important;content:none!important}
 #screen .hs-profile-own .hs-profile-cover .hs-profile-cover-image{object-fit:contain!important;object-position:center!important;background:transparent!important}
+
+
+/* HAMSAT final polish — profile cover and room layout */
+#screen .hs-profile-own .hs-profile-cover,
+#screen .hs-profile-page .hs-profile-cover{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:clamp(190px,32vw,230px)!important;
+  min-height:190px!important;
+  aspect-ratio:16/7!important;
+  overflow:hidden!important;
+  border-radius:0 0 22px 22px!important;
+  background-color:#101116!important;
+  background-size:cover!important;
+  background-position:center!important;
+  isolation:isolate!important;
+}
+#screen .hs-profile-page .hs-profile-cover-image{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  z-index:0!important;
+}
+#screen .hs-profile-page .hs-profile-cover:after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:45% 0 0!important;
+  background:linear-gradient(180deg,transparent,rgba(5,6,10,.48))!important;
+  pointer-events:none!important;
+  z-index:1!important;
+}
+#screen .hs-profile-page .hs-cover-shine,
+#screen .hs-profile-page .hs-cover-star{z-index:2!important;pointer-events:none!important}
+#screen .hs-profile-page .hs-cover-actions{position:absolute!important;top:12px!important;inset-inline-end:12px!important;z-index:4!important}
+#screen .hs-profile-page .hs-profile-main{
+  position:relative!important;
+  z-index:3!important;
+  margin-top:-58px!important;
+  padding-inline:16px!important;
+}
+#screen .hs-profile-page .hs-profile-frame,
+#screen .hs-profile-page .hs-profile-avatar{position:relative!important;z-index:3!important}
+#screen .hs-profile-page .hs-profile-identity{
+  position:relative!important;
+  z-index:4!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin-top:5px!important;
+  padding:5px 10px 0!important;
+  text-align:center!important;
+  overflow:visible!important;
+}
+#screen .hs-profile-page .hs-profile-identity h2,
+#screen .hs-profile-page .hs-profile-identity p,
+#screen .hs-profile-page .hs-profile-id-row{position:relative!important;z-index:4!important}
+#screen .hs-profile-page .hs-profile-identity h2{font-size:22px!important;line-height:1.45!important;margin:8px 0 3px!important;color:#fff8e9!important;text-shadow:0 2px 10px #000!important}
+
+.sheet.room-sheet{height:100dvh!important;max-height:100dvh!important;min-height:0!important;padding:0!important;overflow:hidden!important}
+.room-sheet>.hs-room-canvas{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-height:0!important;
+  overflow:hidden!important;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom)!important;
+  background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
+}
+.room-sheet .hs-room-head{flex:0 0 auto!important;min-height:0!important}
+.room-sheet .hs-room-cover{min-height:0!important;padding:6px 8px!important}
+.room-sheet .hs-room-unified{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  min-height:0!important;overflow:hidden!important;margin:0!important;padding:2px 4px 0!important;
+}
+.room-sheet .hs-room-unified>.hs-room-stage{flex:0 0 auto!important;min-height:0!important;height:auto!important;margin:0!important;padding:5px 4px 3px!important}
+.room-sheet .hs-room-stage{min-height:0!important;height:auto!important}
+.room-sheet .hs-room-seats{gap:9px 6px!important;padding:6px 2px!important}
+.room-sheet .hs-room-seat{min-height:0!important;padding:2px!important}
+.room-sheet .hs-room-unified>.hs-room-people{flex:0 0 auto!important;min-height:0!important;padding:3px 4px!important}
+.room-sheet .hs-room-members{max-height:42px!important;overflow-x:auto!important;overflow-y:hidden!important}
+.room-sheet .hs-room-unified>.hs-room-chat-area{flex:1 1 auto!important;min-height:70px!important;overflow:hidden!important;padding:3px 4px!important}
+.room-sheet .hs-room-chat{min-height:45px!important;max-height:none!important;overflow-y:auto!important}
+.room-sheet .hs-room-bottom-bar{
+  position:relative!important;flex:0 0 auto!important;bottom:auto!important;
+  margin-top:auto!important;padding:5px 7px calc(5px + env(safe-area-inset-bottom))!important;
+  background:linear-gradient(180deg,rgba(7,9,16,.18),rgba(7,9,16,.92))!important;
+  border-top:1px solid rgba(212,175,55,.16)!important;z-index:8!important;
+}
+.room-sheet .hs-room-tools-row{display:flex!important;flex-wrap:nowrap!important;justify-content:space-around!important;gap:4px!important}
+.room-sheet .hs-room-tools-row button{flex:1 1 0!important;min-width:0!important;max-width:46px!important;height:38px!important}
+.room-sheet .hs-room-compose-wrap{width:100%!important;margin-top:5px!important}
+.room-sheet .hs-room-compose{display:flex!important;gap:6px!important;min-width:0!important}
+.room-sheet .hs-room-compose input{min-width:0!important;flex:1 1 auto!important}
+.room-sheet .hs-gift-picker{max-height:min(76dvh,640px)!important;overflow-y:auto!important}
+.room-sheet .hs-gift-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.room-sheet .hs-gift-choice{min-width:0!important;overflow:hidden!important}
+@media(max-width:390px){
+ #screen .hs-profile-page .hs-profile-cover{height:190px!important;min-height:190px!important}
+ .room-sheet .hs-room-seats{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px 4px!important}
+ .room-sheet .hs-gift-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
