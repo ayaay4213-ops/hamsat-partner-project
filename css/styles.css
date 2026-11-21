@@ -3495,3 +3495,67 @@ html,body,#app{background:#f3f2ee!important;color:#28251e!important}
 #screen .hs-charisma-card>i{color:#8c641a!important}
 #screen .hs-charisma-card span,#screen .hs-charisma-card b{color:#4c350c!important}
 #sheet-root .room-sheet .hs-seat-number{color:#c9a54e!important;background:#171109!important;border:1px solid #765b2b!important}
+
+
+/* HAMSAT profile hierarchy and image visibility refinements */
+#screen .hs-profile-quick-info{display:grid;gap:8px;width:100%;margin:10px 0 9px}
+#screen .hs-profile-wallet-mini{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:9px 13px;border-radius:13px;background:linear-gradient(110deg,#f8e7a8,#d9b85f 55%,#f6df99)!important;border:1px solid #bd963e;color:#4c350d!important;text-decoration:none;box-shadow:0 5px 14px #8e69231c}
+#screen .hs-profile-wallet-mini span{display:flex;flex-direction:column;gap:2px}
+#screen .hs-profile-wallet-mini small{font-size:10px;font-weight:800;color:#77551c}
+#screen .hs-profile-wallet-mini b{font-size:19px;color:#4c350d}
+#screen .hs-profile-wallet-mini>i{width:30px;height:30px;color:#936a1b}
+#screen .hs-profile-level-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+#screen .hs-profile-level-mini>a{min-width:0;min-height:66px;padding:8px 6px;border-radius:12px;display:grid;grid-template-columns:20px 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 5px;text-decoration:none;border:1px solid #d7c18a;box-shadow:0 3px 9px #382b1010}
+#screen .hs-profile-level-mini>a>i{grid-row:1/3;width:19px;height:19px}
+#screen .hs-profile-level-mini>a span{font-size:9px;font-weight:800;white-space:nowrap}
+#screen .hs-profile-level-mini>a b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#screen .hs-profile-level-wealth{background:linear-gradient(130deg,#087638,#064c2a);color:#fff!important;border-color:#c8a34f!important}
+#screen .hs-profile-level-wealth>i{color:#e8dcae}
+#screen .hs-profile-level-vip{background:linear-gradient(130deg,#161515,#30291f);color:#f7e7b4!important;border-color:#c7a24d!important}
+#screen .hs-profile-level-vip>i{color:#e9d38c}
+#screen .hs-profile-level-charisma{background:linear-gradient(130deg,#f5e6bd,#c99d45);color:#4c350c!important;border-color:#b98b32!important}
+#screen .hs-profile-level-charisma>i{color:#8c641a}
+#screen .hs-me-topbar-actions{display:flex;align-items:center;gap:9px}
+#screen .hs-account-settings-button{width:37px;height:37px;display:grid;place-items:center;border-radius:12px;border:1px solid #d6b75f;background:#fff2c9;color:#76551b}
+#screen .hs-account-settings-button svg{width:19px;height:19px}
+#screen .hs-me-settings-hint{width:100%;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:14px;background:#fff;border:1px solid #e6dfd0;color:#332d20;text-align:right}
+#screen .hs-me-settings-hint>span{display:flex;flex:1;flex-direction:column;gap:3px}
+#screen .hs-me-settings-hint b{font-size:13px}
+#screen .hs-me-settings-hint small{font-size:10px;color:#8b8374}
+#screen .hs-me-settings-hint>i{color:#987328}
+#sheet-root .hs-settings-sheet-list{display:grid;gap:9px;margin-bottom:10px}
+#sheet-root .hs-settings-sheet-list .hs-account-group{margin:0}
+#sheet-root .hs-account-group .hs-account-row{width:100%;text-align:right}
+@media(max-width:380px){#screen .hs-profile-level-mini>a{grid-template-columns:17px 1fr;gap:2px 3px;padding:7px 4px}#screen .hs-profile-level-mini>a>i{width:16px;height:16px}#screen .hs-profile-level-mini>a span{font-size:8px}#screen .hs-profile-level-mini>a b{font-size:10px}}
+
+/* Room photos: remove the dark mask that was hiding cover images on home cards */
+#screen .room-cover:before,#screen .room-cover:after{display:none!important;content:none!important}
+#screen .room-cover-glow{display:none!important}
+#screen .room-cover-symbol{display:none!important}
+#screen .room-cover{background-color:#25221b!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:center!important;filter:none!important}
+#screen .room-cover-tag,#screen .room-cover-topic{backdrop-filter:blur(4px)!important;background:rgba(8,9,11,.45)!important}
+
+/* The selected room background fills the complete microphone seating stage */
+.room-sheet .hs-room-unified>.hs-room-stage{
+  flex:1 1 auto!important;
+  min-height:min(48dvh,460px)!important;
+  width:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  padding:10px 8px 14px!important;
+  border:1px solid rgba(214,180,94,.35)!important;
+  border-radius:18px!important;
+  background-color:#090807!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  overflow:visible!important;
+}
+.room-sheet .hs-room-stage .hs-room-seats{
+  flex:1 1 auto!important;
+  align-content:space-evenly!important;
+  width:100%!important;
+  padding:16px 4px!important;
+}
+.room-sheet .hs-room-seat{background:rgba(8,8,7,.16)!important}
