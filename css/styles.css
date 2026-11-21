@@ -4390,3 +4390,8 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 #sheet-root .hs-gift-choice-art img{width:100%;height:100%;object-fit:contain;display:block}
 #sheet-root .hs-gift-choice-art{overflow:hidden}
 @media(max-width:390px){#sheet-root .room-sheet .hs-room-canvas{height:94dvh!important}#sheet-root .room-sheet .hs-room-head .hs-room-title-row{min-height:48px!important}#sheet-root .room-sheet .hs-room-seat{min-height:66px!important}#sheet-root .room-sheet .hs-room-bottom-bar{padding-inline:5px!important}}
+
+/* Keep the own-profile cover image clean without the inherited green fallback */
+#screen .hs-profile-own .hs-profile-cover{background:#151515!important;background-image:none!important;overflow:hidden!important}
+#screen .hs-profile-own .hs-profile-cover:before,#screen .hs-profile-own .hs-profile-cover:after{display:none!important;content:none!important}
+#screen .hs-profile-own .hs-profile-cover .hs-profile-cover-image{object-fit:contain!important;object-position:center!important;background:transparent!important}
