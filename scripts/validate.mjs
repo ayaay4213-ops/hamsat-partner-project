@@ -575,7 +575,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261120-admin-bomb-validation-v1')) {
+  if (!adminHtml.includes('js/admin.js?v=20261120-admin-members-full-list-v3')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -591,7 +591,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261120-admin-bomb-validation-v1')) {
+  if (!adminHtml.includes('js/admin.js?v=20261120-admin-members-full-list-v3')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -652,7 +652,7 @@ if (fs.existsSync(html)) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-room-chat-friends-v3")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-shared-background-moments-social-v4")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
