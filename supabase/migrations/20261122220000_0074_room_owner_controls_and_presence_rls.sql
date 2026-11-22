@@ -137,3 +137,25 @@ $$;
 
 revoke all on function public.save_room_background(uuid, text, text) from public, anon;
 grant execute on function public.save_room_background(uuid, text, text) to authenticated;
+
+-- The client updates room metadata through owner-scoped RLS; the grant is required
+-- in addition to the existing Owners update policy.
+grant update on public.rooms to authenticated;
+
+-- Only the room owner may publish a short system announcement.
+grant insert on public.room_activity_events to authenticated;
+drop policy if exists "Room owners publish system announcements" on public.room_activity_events;
+create policy "Room owners publish system announcements"
+  on public.room_activity_events
+  for insert
+  to authenticated
+  with check (
+    event_type = 'system'
+    and actor_id = (select auth.uid())
+    and target_user_id is null
+    and private.is_room_owner(room_id)
+    and jsonb_typeof(payload) = 'object'
+    and payload ? 'message'
+    and jsonb_object_length(payload) = 1
+    and char_length(btrim(coalesce(payload ->> 'message', ''))) between 1 and 160
+  );
