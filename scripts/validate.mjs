@@ -352,7 +352,9 @@ if (fs.existsSync(appRoomPath)) {
     "state.roomMinimized=true;state.minimizedRoom=r",
     "data-room-bg-item",
     "معاينة — ستُطبّق بعد حفظ الإعدادات",
-    "r.seatLimit = 10"
+    'r.seatLimit = Math.min(10, Math.max(1, Number(r.seatLimit) || 10))',
+    "Array.from({length:r.seatLimit}",
+    "seatsEl.dataset.layout=roomSeatLayout",
   ]) {
     if (!js.includes(token)) errors.push(`Missing room interaction UI behavior: ${token}`);
   }
