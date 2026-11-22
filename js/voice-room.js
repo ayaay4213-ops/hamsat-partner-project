@@ -284,7 +284,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
 }
 
 
-// Switch to the SFU only after LiveKit credentials and the token function are deployed.
+// LiveKit SFU is enabled; switch to 'p2p' only when intentionally testing the fallback.
 export function createVoiceRoom(options) {
   if (AUDIO_PROVIDER === 'livekit') return createLiveKitVoiceRoom(options);
   return createPeerVoiceRoom(options);
