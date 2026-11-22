@@ -694,7 +694,7 @@ async function openRoom(r) {
           <p class="hs-room-settings-hint">اختاري عدد المقاعد وشكل ترتيبها. التغييرات تظهر لجميع أعضاء الغرفة بعد الحفظ.</p>
           <div class="hs-room-settings-fields">
             <label class="hs-room-setting-field"><span>عدد المايكات</span><select id="room-seat-limit" class="field">
-              ${Array.from({length:10},(_,i)=>i+1).map(n=>'<option value="'+n+'" '+(Number(r.seatLimit)===n?'selected':'')+'>'+n+' مقاعد</option>').join('')}
+              ${Array.from({length:10},(_,i)=>i+1).map(n=>'<option value="'+n+'" '+(Number(r.seatLimit)===n?'selected':'')+'>'+(n===1?'مقعد واحد':n===2?'مقعدان':n+' مقاعد')+'</option>').join('')}
             </select></label>
             <label class="hs-room-setting-field"><span>شكل التوزيع</span><select id="room-seat-layout" class="field">
               <option value="grid" ${roomSeatLayout==='grid'?'selected':''}>شبكة متساوية</option>
