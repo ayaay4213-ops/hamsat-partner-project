@@ -54,10 +54,21 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       try { await room.localParticipant.setMicrophoneEnabled(false); } catch (_) {}
       await room.disconnect();
       joined = false;
+      if (disposed || !room) return;
       await room.connect(credentials.url, credentials.token);
+      if (disposed || !room) {
+        try { await room?.disconnect(); } catch (_) {}
+        joined = false;
+        return;
+      }
       canPublish = nextCanPublish;
       muted = false;
       if (canPublish) await room.localParticipant.setMicrophoneEnabled(true);
+      if (disposed || !room) {
+        try { await room?.disconnect(); } catch (_) {}
+        joined = false;
+        return;
+      }
       joined = true;
       status(canPublish
         ? 'تم تفعيل المايك بعد حجز المقعد'
