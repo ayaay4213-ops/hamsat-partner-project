@@ -616,6 +616,38 @@ function bindRoomCards(root, rooms) {
 async function openRoom(r) {
   if (!r) return;
 
+  // A minimized room must be fully released before joining a different room.
+  // Otherwise its LiveKit controller could be mistaken for the new room's audio.
+  if (state.activeRoomId && state.activeRoomId !== r.id) {
+    const previousRoomId = state.activeRoomId;
+    if (state.voiceRoom) {
+      const previousVoice = state.voiceRoom;
+      state.voiceRoom = null;
+      await previousVoice.leave().catch(error => console.warn('Could not release previous room audio:', error));
+    }
+    for (const key of ['roomGameTimer','roomPresenceTimer','roomSeatTimer','roomBombTimer','hostSessionTimer']) {
+      if (state[key]) { clearInterval(state[key]); state[key] = null; }
+    }
+    if (state.hostSessionId) {
+      const previousSession = state.hostSessionId;
+      state.hostSessionId = null;
+      await api.hostEndSession(previousSession).catch(error => console.warn('Could not close previous host session:', error));
+    }
+    if (state.roomChannel) {
+      await api.unsubscribeRoomChannel(state.roomChannel);
+      state.roomChannel = null;
+    }
+    if (state.roomEventChannel) {
+      await api.unsubscribeRoomChannel(state.roomEventChannel);
+      state.roomEventChannel = null;
+    }
+    state.activeRoomId = null;
+    await api.leaveRoom(previousRoomId).catch(error => console.warn('Could not leave previous room presence:', error));
+    state.roomMinimized = false;
+    state.minimizedRoom = null;
+    renderRoomMiniBubble();
+  }
+
   const isRoomOwner = String(r.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase();
   let roomSeatLayout = 'grid';
   r.seatLimit = 10;
