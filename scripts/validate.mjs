@@ -706,6 +706,52 @@ if (!fs.existsSync(roomHistoryMigrationPath)) {
   }
 }
 
+const micInviteMigrationPath = path.join(root, 'supabase/migrations/20261122230000_0077_room_seat_invitations.sql');
+if (!fs.existsSync(micInviteMigrationPath)) {
+  errors.push('Missing secure room microphone invitation migration: 0077');
+} else {
+  const sql = fs.readFileSync(micInviteMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create table if not exists public.room_seat_invitations',
+    'invite_room_member_to_seat',
+    'respond_room_seat_invitation',
+    'status = \'pending\'',
+    'expires_at <= now()',
+    'auth.uid() = invitee_id or auth.uid() = inviter_id',
+    'alter publication supabase_realtime add table public.room_seat_invitations',
+    'insert into public.room_seats(room_id,seat_no,user_id)',
+    'create unique index if not exists room_seat_invites_one_pending_per_recipient_uidx'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing microphone invitation security/acceptance SQL: ' + token);
+  }
+}
+if (fs.existsSync(appRoomPath)) {
+  const js = fs.readFileSync(appRoomPath, 'utf8');
+  for (const token of [
+    'data-invite-seat',
+    'api.inviteRoomMemberToSeat',
+    'api.respondRoomSeatInvitation',
+    'api.subscribeRoomSeatInvitations',
+    'room-seat-invite-accept',
+    'room-seat-invite-decline',
+    'تم قبول الدعوة وصعدتِ تلقائياً إلى المايك'
+  ]) {
+    if (!js.includes(token)) errors.push('Missing host-to-member microphone invitation UI: ' + token);
+  }
+}
+if (fs.existsSync(apiFilePath)) {
+  const js = fs.readFileSync(apiFilePath, 'utf8');
+  for (const token of ['inviteRoomMemberToSeat: async', 'respondRoomSeatInvitation: async', 'subscribeRoomSeatInvitations:']) {
+    if (!js.includes(token)) errors.push('Missing microphone invitation API method: ' + token);
+  }
+}
+if (fs.existsSync(roomStylePath)) {
+  const css = fs.readFileSync(roomStylePath, 'utf8');
+  for (const token of ['.hs-room-seat-invite-modal', '.hs-room-seat-invite-card', '.hs-room-invite-seat-action']) {
+    if (!css.includes(token)) errors.push('Missing microphone invitation dialog styling: ' + token);
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
