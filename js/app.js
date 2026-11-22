@@ -636,7 +636,7 @@ async function openRoom(r) {
       </div>
       <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
       <div id="room-announcement-ticker" class="hs-room-announcement-ticker" role="status" aria-live="polite"><i data-lucide="megaphone"></i><span>مرحباً بك في غرفة همسات</span></div>
-    <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><a href="#/games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></a><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
+    <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><button type="button" id="room-open-games-page" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></button><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
     </div>
     ${isRoomOwner ? `
       <div id="room-owner-menu" class="hs-room-owner-menu hidden" role="dialog" aria-label="أدوات المضيفة">
@@ -1024,6 +1024,7 @@ async function openRoom(r) {
       choice.classList.add('is-visible');
     };
     sheet.querySelector('#room-private-messages').onclick=()=>{minimizeRoom();location.hash='#/inbox';};
+    sheet.querySelector('#room-open-games-page').onclick=()=>{minimizeRoom();location.hash='#/games';};
     sheet.querySelector('#room-minimize').onclick=minimizeRoom;
     sheet.querySelector('#room-exit').onclick=showRoomExitChoice;
     sheet.querySelector('#room-close-prompt').onclick=showRoomExitChoice;
