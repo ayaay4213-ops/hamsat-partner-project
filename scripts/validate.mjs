@@ -554,7 +554,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261122-reference-room-v15','js/app.js?v=20261122-reference-room-v15']) {
+  for (const token of ['css/styles.css?v=20261122-reference-room-v16','js/app.js?v=20261122-reference-room-v16']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -648,11 +648,11 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261122-reference-room-v15','js/app.js?v=20261122-reference-room-v15']) {
+  for (const token of ['css/styles.css?v=20261122-reference-room-v16','js/app.js?v=20261122-reference-room-v16']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-room-ticker-toolbar-v2")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-mic-invitations-v1")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
