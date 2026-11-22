@@ -347,7 +347,7 @@ export const api = {
     const mappedOwners=await mapProfilesWithFrames(owners);const byId = Object.fromEntries(mappedOwners.map(p => [p.uuid,p]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
-      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 8, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
+      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 10, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
         ownerColor: p.color || '#7c3aed' };
