@@ -45,6 +45,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     permissionRefreshing = true;
     try {
       const credentials = await requestToken();
+      if (disposed || !room || !joined) return;
       const nextCanPublish = Boolean(credentials.can_publish);
       if (nextCanPublish === canPublish) return;
 
@@ -131,8 +132,13 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
       });
 
       const credentials = await requestToken();
+      if (disposed) throw new Error('تم إلغاء الاتصال الصوتي.');
       try {
         await room.connect(credentials.url, credentials.token);
+        if (disposed) {
+          await room.disconnect();
+          throw new Error('تم إلغاء الاتصال الصوتي.');
+        }
       } catch (connectError) {
         const detail = String(connectError?.message || connectError || '');
         if (/invalid token|could not establish signal connection|unauthoriz|401/i.test(detail)) {
@@ -214,6 +220,11 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
 
   async function leave() {
     disposed = true;
+    // If the user leaves while the initial join is still pending, wait for that
+    // attempt to settle so it cannot reconnect after cleanup has completed.
+    if (joining) {
+      try { await joining; } catch (_) {}
+    }
     joined = false;
     if (seatChannel) {
       try { await supabase.removeChannel(seatChannel); } catch (_) {}
