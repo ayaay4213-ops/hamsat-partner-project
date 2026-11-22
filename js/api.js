@@ -325,7 +325,7 @@ export const api = {
     const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=await mapProfileWithFrame(p);
-    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||8,ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
+    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||10,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
     // Load every public room in pages instead of silently stopping at the first 100.
@@ -382,14 +382,18 @@ export const api = {
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
+    const seatLimit = Number(settings.seatLimit ?? 10);
+    const seatLayout = String(settings.seatLayout || 'grid');
+    if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 10) throw new Error('عدد المايكات يجب أن يكون بين 1 و10');
+    if (!['grid','one-top','two-top','row'].includes(seatLayout)) throw new Error('اختيار توزيع المقاعد غير صالح');
     const payload = {
       title: String(settings.title || '').trim().slice(0, 50),
       topic: String(settings.topic || 'عام').trim().slice(0, 20),
       description: String(settings.description || '').trim().slice(0, 160),
       cover_url: settings.coverUrl || null,
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
-      seat_limit: 10,
-      seat_layout: 'grid'
+      seat_limit: seatLimit,
+      seat_layout: seatLayout
     };
     if (!payload.title) throw new Error('اسم الغرفة مطلوب');
     const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit,seat_layout').single();
