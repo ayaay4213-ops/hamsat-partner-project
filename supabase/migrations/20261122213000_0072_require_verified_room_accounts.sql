@@ -13,6 +13,9 @@ begin
     raise exception 'يجب تسجيل الدخول أولاً';
   end if;
 
+  -- Keep the one-room rule safe when two devices join at nearly the same time.
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text, 0));
+
   if not exists (
     select 1
       from auth.users u
