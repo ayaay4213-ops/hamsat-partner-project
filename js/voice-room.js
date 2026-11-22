@@ -1,6 +1,6 @@
 import { supabase } from './supabase-auth.js';
 import { AUDIO_PROVIDER } from '../supabase/config.js';
-import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261121-room-audio-v4';
+import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261122-room-audio-v5';
 
 // STUN is sufficient for some peer-to-peer networks. Reliable mobile/carrier
 // connectivity still requires a TURN relay or an SFU with server credentials.
@@ -20,12 +20,14 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
   let roomAudioMuted = false;
   let audioUnlocked = false;
   let joining = null;
+  let stateHandler = onState;
   const peers = new Map();
   const audioNodes = new Map();
   const pendingIce = new Map();
   const mutedParticipants = new Set();
 
-  const status = (message, connected = false) => onState({ message, connected, muted, roomAudioMuted });
+  const status = (message, connected = false) => stateHandler({ message, connected, muted, roomAudioMuted });
+  function setStateHandler(handler) { stateHandler = typeof handler === 'function' ? handler : () => {}; status(joined ? 'الصوت المباشر متصل' : 'الصوت غير متصل', joined); }
 
   async function send(to, kind, data = {}) {
     if (!channel) return;
@@ -278,7 +280,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return Boolean(localStream); } };
+  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, setParticipantMuted, setStateHandler, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return Boolean(localStream); } };
 }
 
 
