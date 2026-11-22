@@ -768,6 +768,7 @@ async function openRoom(r) {
       if(floatingBomb&&floatingBomb.parentElement!==bombStack)bombStack.appendChild(floatingBomb);
       if(sitTimer&&sitTimer.parentElement!==bombStack)bombStack.appendChild(sitTimer);
       if(url) canvas.style.setProperty('background-image','url('+JSON.stringify(String(url))+')','important');
+      else canvas.style.removeProperty('background-image');
       canvas.style.setProperty('background-size','cover','important');
       canvas.style.setProperty('background-position','center center','important');
       canvas.style.setProperty('background-repeat','no-repeat','important');
