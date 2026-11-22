@@ -138,6 +138,7 @@ function renderRoomMiniBubble() {
     state.roomMinimized = false;
     state.minimizedRoom = null;
     if (state.roomPresenceTimer) { clearInterval(state.roomPresenceTimer); state.roomPresenceTimer = null; }
+    if (state.roomSeatTimer) { clearInterval(state.roomSeatTimer); state.roomSeatTimer = null; }
     root.innerHTML = '';
     if (state.roomChannel) { await api.unsubscribeRoomChannel(state.roomChannel); state.roomChannel = null; }
     if (state.roomEventChannel) { await api.unsubscribeRoomChannel(state.roomEventChannel); state.roomEventChannel = null; }
@@ -1081,7 +1082,7 @@ async function openRoom(r) {
     };
     try{const joinedRoom=await api.joinRoom(r.id);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{roomSeatLayout='grid';r.seatLayout='grid';await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
-    const minimizeRoom=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
+    const minimizeRoom=()=>{state.roomMinimized=true;state.minimizedRoom=r;if(state.roomSeatTimer){clearInterval(state.roomSeatTimer);state.roomSeatTimer=null;}$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
     const exitRoom=async(button)=>{
       if(button)button.disabled=true;
       try{
