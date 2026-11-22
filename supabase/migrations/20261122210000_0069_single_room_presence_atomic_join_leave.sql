@@ -76,6 +76,9 @@ begin
     raise exception 'يجب تسجيل الدخول أولاً';
   end if;
 
+  -- Serialize leave with concurrent joins from other devices for the same account.
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text, 0));
+
   delete from public.room_seats
    where room_id = p_room_id
      and user_id = v_user;
