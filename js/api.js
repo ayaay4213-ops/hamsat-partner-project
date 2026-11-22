@@ -782,6 +782,15 @@ export const api = {
     const mapped=await mapProfilesWithFrames(profiles);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     return { events: (data || []).map(e => ({ ...e, actor: byId[e.actor_id] || null, target: byId[e.target_user_id] || null })) };
   },
+  postRoomAnnouncement: async (roomId,message) => {
+    const user=await currentUser();
+    const text=String(message||'').trim();
+    if(!text||text.length>160)throw new Error('الإعلان يجب أن يكون بين حرف واحد و160 حرفاً.');
+    const {data,error}=await client().from('room_activity_events')
+      .insert({room_id:roomId,actor_id:user.id,event_type:'system',payload:{message:text}})
+      .select('id').single();
+    fail(error);return data;
+  },
   subscribeRoomEvents: (roomId, callback) => client().channel('room-events-' + roomId)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_activity_events', filter: 'room_id=eq.' + roomId }, callback)
     .subscribe(),
