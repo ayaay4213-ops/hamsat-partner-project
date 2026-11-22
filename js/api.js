@@ -388,8 +388,8 @@ export const api = {
       cover_url: settings.coverUrl || null,
       background_item_id: settings.backgroundItemId || null,
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
-      seat_limit: [4,6,8,10,12,16].includes(Number(settings.seatLimit)) ? Number(settings.seatLimit) : 8,
-      seat_layout: ['grid','one-top','two-top'].includes(settings.seatLayout) ? settings.seatLayout : 'grid'
+      seat_limit: 10,
+      seat_layout: 'grid'
     };
     if (!payload.title) throw new Error('اسم الغرفة مطلوب');
     const { data, error } = await client().from('rooms').update(payload).eq('id', roomId).eq('owner_id', user.id).select('id,title,topic,description,cover_url,background_item_id,room_emoji,seat_limit,seat_layout').single();
