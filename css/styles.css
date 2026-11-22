@@ -5586,3 +5586,12 @@ body:has(.room-sheet) #tabbar{display:none!important}
   #sheet-root .room-sheet .hs-room-announcement-ticker{margin-inline:8px;height:25px;min-height:25px;font-size:9px}
   #sheet-root .room-sheet .hs-room-tools-row #room-private-messages{flex-basis:31px!important;width:31px!important;height:34px!important}
 }
+
+@media(max-width:380px){
+  #sheet-root .room-sheet .hs-room-bottom-bar{gap:2px!important;padding-inline:3px!important}
+  #sheet-root .room-sheet .hs-room-tools-row{gap:2px!important}
+  #sheet-root .room-sheet .hs-room-tools-row button{width:27px!important;min-width:27px!important;height:32px!important}
+  #sheet-root .room-sheet .hs-room-tools-row #room-private-messages{width:28px!important;min-width:28px!important;flex-basis:28px!important}
+  #sheet-root .room-sheet .hs-room-compose-wrap{min-width:64px!important}
+  #sheet-root .room-sheet .hs-room-compose input{min-width:0!important;padding-inline:5px!important;font-size:10px!important}
+}
