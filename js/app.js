@@ -703,6 +703,19 @@ async function openRoom(r) {
         <button type="button" id="room-settings-save" class="btn-gold w-full mt-4">حفظ الإعدادات</button>
       </section>` : ''}
     <div id="room-invite-panel" class="card p-3 mb-3 hidden"><div class="flex items-center justify-between mb-2"><b class="text-gold-300">اختاري صديقًا لدعوته</b><button type="button" id="room-invite-close" class="text-sm">إغلاق</button></div><div id="room-invite-friends" class="space-y-2"></div></div>
+    <div id="room-seat-invite-modal" class="hs-room-seat-invite-modal hidden" role="dialog" aria-modal="true" aria-labelledby="room-seat-invite-title">
+      <div class="hs-room-seat-invite-card">
+        <span class="hs-room-seat-invite-icon"><i data-lucide="mic-2"></i></span>
+        <small>H A M S A T · MIC INVITATION</small>
+        <h3 id="room-seat-invite-title">دعوة للصعود إلى المايك</h3>
+        <p id="room-seat-invite-message">المضيفة تدعوك للصعود إلى المايك.</p>
+        <div class="hs-room-seat-invite-actions">
+          <button type="button" id="room-seat-invite-accept" class="btn-gold">قبول والصعود</button>
+          <button type="button" id="room-seat-invite-decline" class="btn-ghost">رفض</button>
+        </div>
+        <small class="hs-room-seat-invite-expiry">الدعوة صالحة لمدة 30 ثانية</small>
+      </div>
+    </div>
     <button type="button" id="room-gift-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق الهدايا"></button><div id="room-gift-panel" class="hs-gift-picker hidden"><div class="hs-gift-picker-head"><span class="hs-gift-picker-mark" aria-hidden="true">✦</span><button type="button" id="room-gift-close" aria-label="إغلاق">×</button></div><form id="room-gift-form" class="space-y-3"><div class="flex items-center justify-between gap-2"><label class="label">اختاري العضو</label><button type="button" id="room-gift-all" class="hs-gift-all" aria-label="كل المايكات" title="كل المايكات"><i data-lucide="users"></i></button></div><select name="recipient" class="field" aria-label="المستلم"></select><div id="room-gift-recipient-grid" class="hs-gift-recipient-grid" aria-label="اختيار مستلم الهدية"></div><input type="hidden" name="gift" value=""><div id="room-gift-categories" class="hs-room-gift-categories"><button type="button" data-gift-category="app" class="active">هدية التطبيق</button><button type="button" data-gift-category="event">هدية الحدث</button><button type="button" data-gift-category="lucky">الهدايا المحظوظة</button><button type="button" data-gift-category="special">هدية خاصة</button></div><div id="room-gift-grid" class="hs-gift-grid"></div><label class="label">الكمية</label><select name="quantity" class="field"><option value="1">×1</option><option value="10">×10</option><option value="99">×99</option></select><p id="room-gift-selection" class="hs-gift-selection">اختاري هدية للمتابعة</p><button type="submit" id="room-gift-submit" class="hs-gift-submit btn-gold w-full" aria-label="إرسال الهدية" title="إرسال الهدية" disabled><i data-lucide="send"></i><span>إرسال الهدية</span></button><div class="hs-gift-wallet-footer"><span><i data-lucide="wallet"></i><b id="room-gift-balance">—</b></span><a href="#/wallet" aria-label="شحن الرصيد" title="شحن الرصيد"><i data-lucide="plus-circle"></i></a></div></form></div>
     <button type="button" id="room-game-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق مركز الألعاب"></button><div id="room-game-center" class="hs-room-game-center hidden" role="dialog" aria-label="مركز الألعاب"><div class="hs-room-panel-handle"></div><div class="hs-room-game-head"><div><span>H A M S A T</span><h3>🎮 GAME CENTER</h3></div><div class="hs-room-game-head-actions"><button type="button" id="room-game-page-link" aria-label="فتح صفحة الألعاب" title="فتح صفحة الألعاب">كل الألعاب <i data-lucide="arrow-up-left"></i></button><button type="button" id="room-game-close" aria-label="إغلاق">×</button></div></div><div class="hs-room-game-balance"><span>رصيدك <b id="room-game-balance">—</b> عملة</span><button type="button" id="room-game-balance-refresh" aria-label="تحديث الرصيد">↻</button></div><div class="hs-room-game-banners"><div class="hs-room-game-banner"><b>🏆 قاعة الشهرة</b><small>أبرز نجوم همسات</small></div><div class="hs-room-game-banner"><b>🤝 شريك الغرفة</b><small>العبوا معاً</small></div></div><div id="room-games-grid" class="hs-room-games-grid"><p class="text-xs opacity-70">جارٍ تحميل الألعاب...</p></div><div id="room-game-stage" class="hs-room-game-stage hidden"></div></div>
     <button type="button" id="room-bomb-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق قنبلة الغرفة"></button><div id="room-bomb-panel" class="hs-room-bomb-panel hidden" role="dialog" aria-label="قنبلة الغرفة"><div class="hs-room-panel-handle"></div><div class="hs-room-bomb-head"><div><span>HAMSAT ROOM EVENT</span><h3>💣 قنبلة الغرفة</h3></div><button type="button" id="room-bomb-close" aria-label="إغلاق">×</button></div><p class="hs-room-bomb-description">كل هدية تُرسل داخل الغرفة تزيد تقدم القنبلة. عند اكتمال المستوى تُوزّع العملات تلقائياً على الموجودين، مع مكافآت إضافية لأعلى المساهمين.</p><div class="hs-room-bomb-status"><div><b id="room-bomb-panel-level">LV.1</b><span id="room-bomb-countdown">بانتظار أول هدية</span></div><strong id="room-bomb-panel-percent">0%</strong></div><div class="hs-room-bomb-track"><i id="room-bomb-panel-bar"></i></div><div id="room-bomb-levels" class="hs-room-bomb-levels"></div><div class="hs-room-bomb-top"><h4>🏆 أعلى المساهمين</h4><div id="room-bomb-top3"><p>لا توجد مساهمات بعد.</p></div></div></div>
@@ -1007,7 +1020,7 @@ async function openRoom(r) {
       // This keeps the real avatar_url and equipped frame visible on every occupied microphone seat.
       const memberById=Object.fromEntries(members.map(member=>[member.userId,member]));
       const adminMembersEl=sheet.querySelector('#room-admin-members');
-      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${m.handle?`<button type="button" class="hs-member-avatar-link" data-open-member-profile="${esc(m.handle)}" aria-label="عرض ملف ${esc(m.displayName)}">${avatar(m,34)}</button>`:avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host?`<button type="button" class="hs-room-member-action danger" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button>`:``}${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
+      const renderMemberRows=()=>members.length?members.map(m=>`<div class="hs-room-person">${m.handle?`<button type="button" class="hs-member-avatar-link" data-open-member-profile="${esc(m.handle)}" aria-label="عرض ملف ${esc(m.displayName)}">${avatar(m,34)}</button>`:avatar(m,34)}<span>${esc(m.displayName)}</span>${m.userId!==state.profile?.uuid?`<button type="button" class="hs-room-member-action" data-local-mute="${esc(m.userId)}">${mutedRoomUsers.has(m.userId)?'إلغاء الكتم':'كتم صوته لدي'}</button>${host&&!seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action hs-room-invite-seat-action" data-invite-seat="${esc(m.userId)}"><i data-lucide="mic-2"></i> دعوة للمايك</button>`:``}${host?`<button type="button" class="hs-room-member-action danger" data-kick-room-member="${esc(m.userId)}">طرد من الغرفة</button>`:``}${host&&seatedUsers.has(m.userId)?`<button type="button" class="hs-room-member-action" data-host-mute="${esc(m.userId)}">${remotelyMutedUsers.has(m.userId)?'إلغاء كتم المايك':'كتم المايك'}</button><button type="button" class="hs-room-member-action danger" data-remove-seat="${esc(m.userId)}">إنزال من الكرسي</button>`:''}`:''}</div>`).join(''):'<span class="text-xs text-[#8a76a8]">لا يوجد أعضاء بعد</span>';
       membersEl.innerHTML=renderMemberRows();
       if(adminMembersEl)adminMembersEl.innerHTML=renderMemberRows();
       const actionRoots=[membersEl,adminMembersEl].filter(Boolean);
@@ -1015,6 +1028,12 @@ async function openRoom(r) {
         event.stopPropagation();
         location.hash='#/u/'+encodeURIComponent(button.dataset.openMemberProfile);
       })));
+      actionRoots.forEach(root=>root.querySelectorAll('[data-invite-seat]').forEach(b=>b.onclick=async()=>{
+        b.disabled=true;
+        try{await api.inviteRoomMemberToSeat(r.id,b.dataset.inviteSeat);toast('تم إرسال دعوة المايك، بانتظار موافقة العضو');}
+        catch(e){toast(e.message,'error');}
+        finally{b.disabled=false;}
+      }));
       actionRoots.forEach(root=>root.querySelectorAll('[data-local-mute]').forEach(b=>b.onclick=()=>{
         const uid=b.dataset.localMute,muted=!mutedRoomUsers.has(uid);
         if(muted)mutedRoomUsers.add(uid);else mutedRoomUsers.delete(uid);
@@ -1080,6 +1099,42 @@ async function openRoom(r) {
       });
       icons_();
     };
+    const seatInviteModal=sheet.querySelector('#room-seat-invite-modal');
+    let activeSeatInvitation=null;
+    const hideSeatInvite=()=>{activeSeatInvitation=null;seatInviteModal?.classList.add('hidden');};
+    const answerSeatInvite=async(accept)=>{
+      if(!activeSeatInvitation)return;
+      const invite=activeSeatInvitation;
+      const acceptButton=sheet.querySelector('#room-seat-invite-accept'),declineButton=sheet.querySelector('#room-seat-invite-decline');
+      acceptButton.disabled=true;declineButton.disabled=true;
+      try{
+        const result=await api.respondRoomSeatInvitation(invite.id,accept);
+        hideSeatInvite();
+        if(accept&&result?.status==='accepted'){
+          if(state.voiceRoom&&state.activeRoomId===r.id)await state.voiceRoom.refreshPermissions();
+          else await voiceStart.onclick();
+          await drawMembers();
+          toast('تم قبول الدعوة وصعدتِ تلقائياً إلى المايك');
+        }else if(!accept){toast('رفضتِ دعوة المايك، وما زلتِ مستمعة');}
+        else toast(result?.message||'انتهت صلاحية الدعوة','error');
+      }catch(e){toast(e.message,'error');}
+      finally{acceptButton.disabled=false;declineButton.disabled=false;}
+    };
+    sheet.querySelector('#room-seat-invite-accept').onclick=()=>answerSeatInvite(true);
+    sheet.querySelector('#room-seat-invite-decline').onclick=()=>answerSeatInvite(false);
+    state.roomSeatInviteChannel=api.subscribeRoomSeatInvitations(r.id,payload=>{
+      const invite=payload?.new;
+      if(!invite)return;
+      if(invite.invitee_id===state.profile?.uuid&&invite.status==='pending'){
+        activeSeatInvitation=invite;
+        sheet.querySelector('#room-seat-invite-message').textContent='المضيفة تدعوك للصعود إلى المايك. هل تقبلين؟';
+        seatInviteModal.classList.remove('hidden');icons_();
+      }else if(invite.inviter_id===state.profile?.uuid&&invite.status==='accepted'){
+        toast('قبل العضو دعوتك وصعد تلقائياً إلى المايك');
+      }else if(invite.inviter_id===state.profile?.uuid&&invite.status==='declined'){
+        toast('رفض العضو دعوة المايك');
+      }
+    });
     try{const joinedRoom=await api.joinRoom(r.id);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{roomSeatLayout='grid';r.seatLayout='grid';await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     const minimizeRoom=()=>{closeRoomGames();state.roomMinimized=true;state.minimizedRoom=r;if(state.roomSeatTimer){clearInterval(state.roomSeatTimer);state.roomSeatTimer=null;}$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
