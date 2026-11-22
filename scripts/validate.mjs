@@ -572,8 +572,8 @@ if (fs.existsSync(roomStylePath)) {
     if (!css.includes(token)) errors.push(`Missing HAMSAT room visual redesign styling: ${token}`);
   }
 }
-if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261122-reference-room-v16','js/app.js?v=20261122-reference-room-v16']) {
+if (html) {
+  for (const token of ['css/styles.css?v=20261122-configurable-seats-v18','js/app.js?v=20261122-configurable-seats-v18']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -666,12 +666,12 @@ if (fs.existsSync(roomStylePath)) {
     errors.push('Bottom navigation tabs must be evenly centered');
   }
 }
-if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261122-reference-room-v16','js/app.js?v=20261122-reference-room-v16']) {
+if (html) {
+  for (const token of ['css/styles.css?v=20261122-configurable-seats-v18','js/app.js?v=20261122-configurable-seats-v18']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-mic-invitations-v2")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-configurable-seats-v3")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
