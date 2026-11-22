@@ -652,7 +652,7 @@ if (fs.existsSync(html)) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-mic-invitations-v1")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-mic-invitations-v2")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
@@ -732,6 +732,7 @@ if (fs.existsSync(appRoomPath)) {
     'api.inviteRoomMemberToSeat',
     'api.respondRoomSeatInvitation',
     'api.subscribeRoomSeatInvitations',
+    'api.pendingRoomSeatInvitations',
     'room-seat-invite-accept',
     'room-seat-invite-decline',
     'تم قبول الدعوة وصعدتِ تلقائياً إلى المايك'
@@ -741,7 +742,7 @@ if (fs.existsSync(appRoomPath)) {
 }
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
-  for (const token of ['inviteRoomMemberToSeat: async', 'respondRoomSeatInvitation: async', 'subscribeRoomSeatInvitations:']) {
+  for (const token of ['inviteRoomMemberToSeat: async', 'respondRoomSeatInvitation: async', 'subscribeRoomSeatInvitations:', 'pendingRoomSeatInvitations: async']) {
     if (!js.includes(token)) errors.push('Missing microphone invitation API method: ' + token);
   }
 }
