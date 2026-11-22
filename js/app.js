@@ -711,7 +711,7 @@ async function openRoom(r) {
           <button type="button" id="room-private-messages" class="hs-tool-icon" aria-label="الرسائل الخاصة" title="الرسائل الخاصة"><i data-lucide="message-circle"></i></button>
           <button type="button" id="room-game-center-toggle" class="hs-tool-icon" aria-label="الألعاب"><i data-lucide="gamepad-2"></i></button>
           <button type="button" id="room-send-gift" class="hs-tool-gift" aria-label="الهدايا"><i data-lucide="gift"></i></button>
-          <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="القائمة" title="القائمة"><i data-lucide="grid-2x2"></i></button>
+          <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="إعدادات الغرفة" title="إعدادات الغرفة"><i data-lucide="grid-2x2"></i></button>
         </div>
         <p id="voice-status" class="hs-room-voice-status sr-only" role="status">الصوت غير متصل</p>
         <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
