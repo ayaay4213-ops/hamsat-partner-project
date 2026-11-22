@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261122-room-presence-single-room-v1';
+import { api } from './api.js?v=20261122-room-ticker-toolbar-v2';
 import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -634,6 +634,7 @@ async function openRoom(r) {
         ${'</div>'}
       </div>
       <div class="hs-room-meta hs-room-meta-compact"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId || "ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة" title="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><div class="hs-room-meta-actions"><button type="button" id="room-copy-link" aria-label="نسخ الرابط" title="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner ? '<button type="button" id="room-settings-toggle" class="hs-room-settings-launch" aria-label="إعدادات الغرفة" title="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings-2"></i></button>' : ''}<button type="button" id="room-share" aria-label="مشاركة الأصدقاء" title="مشاركة الأصدقاء"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="الإبلاغ عن الغرفة" title="الإبلاغ عن الغرفة"><i data-lucide="flag"></i></button><button type="button" id="room-exit" class="hs-room-exit" aria-label="مغادرة الغرفة" title="مغادرة الغرفة"><i data-lucide="log-out"></i></button></div></div>
+      <div id="room-announcement-ticker" class="hs-room-announcement-ticker" role="status" aria-live="polite"><i data-lucide="megaphone"></i><span>مرحباً بك في غرفة همسات</span></div>
     <nav class="hs-room-quick-actions" aria-label="اختصارات الغرفة"><a href="#/games" aria-label="الألعاب" title="الألعاب"><i data-lucide="gamepad-2"></i></a><a href="#/shop" aria-label="المتجر" title="المتجر"><i data-lucide="shopping-bag"></i></a><button type="button" id="room-send-gift-quick" aria-label="الهدايا" title="الهدايا"><i data-lucide="gift"></i></button></nav>
     </div>
     ${isRoomOwner ? `
@@ -707,9 +708,10 @@ async function openRoom(r) {
           <button type="button" id="voice-mute" class="hs-tool-icon" aria-label="كتم الميكروفون" title="كتم الميكروفون" disabled><i data-lucide="mic-off"></i></button>
           <button type="button" id="room-audio-mute" class="hs-tool-icon" aria-label="كتم صوت الغرفة" title="كتم صوت الغرفة" disabled><i data-lucide="volume-2"></i></button>
           <button type="button" id="voice-audio-enable" class="hs-tool-icon" aria-label="سماع المشاركين" disabled><i data-lucide="headphones"></i></button>
-          <button type="button" id="room-send-gift" class="hs-tool-gift" aria-label="الهدايا"><i data-lucide="gift"></i></button>
+          <button type="button" id="room-private-messages" class="hs-tool-icon" aria-label="الرسائل الخاصة" title="الرسائل الخاصة"><i data-lucide="message-circle"></i></button>
           <button type="button" id="room-game-center-toggle" class="hs-tool-icon" aria-label="الألعاب"><i data-lucide="gamepad-2"></i></button>
-          <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="إعدادات الغرفة" title="إعدادات الغرفة"><i data-lucide="grid-2x2"></i></button>
+          <button type="button" id="room-send-gift" class="hs-tool-gift" aria-label="الهدايا"><i data-lucide="gift"></i></button>
+          <button type="button" id="room-settings-shortcut" class="hs-tool-icon" aria-label="القائمة" title="القائمة"><i data-lucide="grid-2x2"></i></button>
         </div>
         <p id="voice-status" class="hs-room-voice-status sr-only" role="status">الصوت غير متصل</p>
         <div class="sr-only"><button type="button" id="voice-leave" hidden>إيقاف الصوت</button><div id="voice-audio" aria-hidden="true"></div></div>
@@ -873,6 +875,17 @@ async function openRoom(r) {
       const [messageData,eventData]=await Promise.all([api.roomMessages(r.id,roomJoinedAt),api.roomEvents(r.id,roomJoinedAt).catch(()=>({events:[]}))]);
       if(!chat.isConnected)return;
       const messages=messageData.messages||[],events=eventData.events||[];
+      const ticker=sheet.querySelector('#room-announcement-ticker');
+      if(ticker){
+        const latest=[...events].reverse().find(event=>['system','gift','game','bomb'].includes(event.event_type));
+        let tickerText='مرحباً بك في غرفة همسات';
+        if(latest?.event_type==='system')tickerText=String(latest.payload?.message||'إعلان من إدارة الغرفة');
+        else if(latest?.event_type==='gift')tickerText=(latest.actor?.displayName||'عضو')+' أرسل '+(latest.payload?.gift_name||'هدية')+' إلى '+(latest.target?.displayName||'عضو');
+        else if(latest?.event_type==='game')tickerText=String(latest.payload?.message||'بدأ نشاط جديد في الغرفة');
+        else if(latest?.event_type==='bomb')tickerText='💣 انفجرت قنبلة الغرفة وتم توزيع الجوائز';
+        ticker.querySelector('span').textContent=tickerText;
+        ticker.classList.toggle('is-live',Boolean(latest));
+      }
       if(roomEventsLoaded){events.forEach(event=>{if(!seenRoomEventIds.has(event.id)){seenRoomEventIds.add(event.id);animateRoomEvent(event);}});}
       else{events.forEach(event=>seenRoomEventIds.add(event.id));roomEventsLoaded=true;}
       const items=[];
@@ -1010,6 +1023,7 @@ async function openRoom(r) {
       }
       choice.classList.add('is-visible');
     };
+    sheet.querySelector('#room-private-messages').onclick=()=>{minimizeRoom();location.hash='#/inbox';};
     sheet.querySelector('#room-minimize').onclick=minimizeRoom;
     sheet.querySelector('#room-exit').onclick=showRoomExitChoice;
     sheet.querySelector('#room-close-prompt').onclick=showRoomExitChoice;
