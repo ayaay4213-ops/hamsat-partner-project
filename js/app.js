@@ -1,6 +1,6 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
 import { api } from './api.js?v=20261122-room-ticker-toolbar-v2';
-import { createVoiceRoom } from './voice-room.js?v=20261116-room-controls-v3';
+import { createVoiceRoom } from './voice-room.js?v=20261122-room-controls-v5';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
@@ -850,7 +850,60 @@ async function openRoom(r) {
         }catch(err){console.warn('Host session heartbeat failed',err);}
       },30000);
     };
-        voiceStart.onclick=async()=>{voiceStart.disabled=true;voiceStatus.textContent='جارٍ الاتصال بالغرفة الصوتية...';try{const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:s=>{if(voiceStatus.isConnected)voiceStatus.textContent=s.message;if(Array.isArray(s.activeSpeakers)){const active=new Set(s.activeSpeakers);sheet.querySelectorAll('#room-seats .hs-room-seat[data-user-id]').forEach(seat=>seat.classList.toggle('is-speaking',active.has(seat.dataset.userId)));}if(voiceMute.isConnected){voiceMute.disabled=!controller.canPublish;voiceMute.innerHTML='<i data-lucide="'+(s.muted?'mic':'mic-off')+'"></i>';voiceMute.setAttribute('aria-label',s.muted?'تشغيل الميكروفون':'كتم الميكروفون');voiceMute.title=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';icons_();}if(roomAudioMute?.isConnected){roomAudioMute.disabled=!s.connected;roomAudioMute.innerHTML='<i data-lucide="'+(s.roomAudioMuted?'volume-x':'volume-2')+'"></i>';roomAudioMute.setAttribute('aria-label',s.roomAudioMuted?'تشغيل صوت الغرفة':'كتم صوت الغرفة');roomAudioMute.title=s.roomAudioMuted?'تشغيل صوت الغرفة':'كتم صوت الغرفة';icons_();}if(voiceStart.isConnected&&s.connected){const label=controller.canPublish?'الميكروفون متصل':'متصلة كمستمعة';voiceStart.innerHTML='<i data-lucide="'+(controller.canPublish?'mic':'headphones')+'"></i>';voiceStart.setAttribute('aria-label',label);voiceStart.title=label;icons_();}}});state.voiceRoom=controller;await controller.join();try{await ensureHostSessionTracking();}catch(err){console.warn('Host session tracking unavailable',err.message);}voiceMute.disabled=!controller.canPublish;roomAudioMute.disabled=false;roomAudioMute.innerHTML='<i data-lucide="'+(controller.roomAudioMuted?'volume-x':'volume-2')+'"></i>';voiceAudioEnable.disabled=false;voiceLeave.hidden=false;voiceStart.innerHTML='<i data-lucide="'+(controller.canPublish?'mic':'headphones')+'"></i>';voiceStart.setAttribute('aria-label',controller.canPublish?'الميكروفون متصل':'متصلة كمستمعة');voiceStart.title=controller.canPublish?'الميكروفون متصل':'متصلة كمستمعة';icons_();voiceStatus.textContent=controller.canPublish?'أنتِ متصلة ويمكنك التحدث.':'أنتِ متصلة وتسمعين الغرفة. احجزي مقعداً للتحدث.';}catch(e){if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;voiceStart.disabled=false;}};
+    const syncRoomVoiceUi=s=>{
+      const controller=state.voiceRoom;
+      if(!controller||state.activeRoomId!==r.id)return;
+      if(voiceStatus.isConnected)voiceStatus.textContent=s.message;
+      if(Array.isArray(s.activeSpeakers)){
+        const active=new Set(s.activeSpeakers);
+        sheet.querySelectorAll('#room-seats .hs-room-seat[data-user-id]').forEach(seat=>seat.classList.toggle('is-speaking',active.has(seat.dataset.userId)));
+      }
+      if(voiceMute.isConnected){
+        voiceMute.disabled=!controller.canPublish;
+        voiceMute.innerHTML='<i data-lucide="'+(s.muted?'mic':'mic-off')+'"></i>';
+        voiceMute.setAttribute('aria-label',s.muted?'تشغيل الميكروفون':'كتم الميكروفون');
+        voiceMute.title=s.muted?'تشغيل الميكروفون':'كتم الميكروفون';
+      }
+      if(roomAudioMute?.isConnected){
+        roomAudioMute.disabled=!s.connected;
+        roomAudioMute.innerHTML='<i data-lucide="'+(s.roomAudioMuted?'volume-x':'volume-2')+'"></i>';
+        roomAudioMute.setAttribute('aria-label',s.roomAudioMuted?'تشغيل صوت الغرفة':'كتم صوت الغرفة');
+        roomAudioMute.title=s.roomAudioMuted?'تشغيل صوت الغرفة':'كتم صوت الغرفة';
+      }
+      if(voiceStart.isConnected&&s.connected){
+        const label=controller.canPublish?'الميكروفون متصل':'متصلة كمستمعة';
+        voiceStart.innerHTML='<i data-lucide="'+(controller.canPublish?'mic':'headphones')+'"></i>';
+        voiceStart.setAttribute('aria-label',label);
+        voiceStart.title=label;
+        voiceStart.disabled=true;
+      }
+      icons_();
+    };
+    voiceStart.onclick=async()=>{
+      if(state.voiceRoom&&state.activeRoomId===r.id){
+        state.voiceRoom.setStateHandler?.(syncRoomVoiceUi);
+        syncRoomVoiceUi({message:'الغرفة الصوتية مستمرة.',connected:true,muted:state.voiceRoom.muted,roomAudioMuted:state.voiceRoom.roomAudioMuted,activeSpeakers:[]});
+        return;
+      }
+      voiceStart.disabled=true;
+      voiceStatus.textContent='جارٍ الاتصال بالغرفة الصوتية...';
+      try{
+        const controller=createVoiceRoom({roomId:r.id,userId:state.profile.uuid,onState:syncRoomVoiceUi});
+        state.voiceRoom=controller;
+        await controller.join();
+        try{await ensureHostSessionTracking();}catch(err){console.warn('Host session tracking unavailable',err.message);}
+        voiceMute.disabled=!controller.canPublish;
+        roomAudioMute.disabled=false;
+        roomAudioMute.innerHTML='<i data-lucide="'+(controller.roomAudioMuted?'volume-x':'volume-2')+'"></i>';
+        voiceAudioEnable.disabled=false;
+        voiceLeave.hidden=false;
+        syncRoomVoiceUi({message:controller.canPublish?'أنتِ متصلة ويمكنك التحدث.':'أنتِ متصلة وتسمعين الغرفة. احجزي مقعداً للتحدث.',connected:true,muted:controller.muted,roomAudioMuted:controller.roomAudioMuted,activeSpeakers:[]});
+      }catch(e){
+        if(state.voiceRoom){const failed=state.voiceRoom;state.voiceRoom=null;failed.leave().catch(()=>{});}
+        voiceStatus.textContent='تعذّر تشغيل الصوت: '+e.message;
+        voiceStart.disabled=false;
+      }
+    };
     voiceAudioEnable.onclick=async()=>{if(!state.voiceRoom)return;voiceAudioEnable.disabled=true;try{await state.voiceRoom.enableAudio();voiceStatus.textContent='تم تفعيل سماع أصوات المشاركين';voiceAudioEnable.setAttribute('aria-label','الصوت مفعّل');voiceAudioEnable.title='الصوت مفعّل';}catch(e){voiceStatus.textContent='تعذّر تشغيل صوت الآخرين: '+e.message;voiceAudioEnable.disabled=false;}};
     voiceMute.onclick=async()=>{const controller=state.voiceRoom;if(!controller)return;voiceMute.disabled=true;try{const muted=await controller.setMuted(!controller.muted);voiceMute.innerHTML='<i data-lucide="'+(muted?'mic':'mic-off')+'"></i>';voiceMute.setAttribute('aria-label',muted?'تشغيل الميكروفون':'كتم الميكروفون');voiceMute.title=muted?'تشغيل الميكروفون':'كتم الميكروفون';icons_();voiceStatus.textContent=muted?'الميكروفون مكتوم':'الميكروفون يعمل';}catch(error){toast(error.message,'error');}finally{voiceMute.disabled=!state.voiceRoom?.canPublish;}};
      roomAudioMute.onclick=()=>{const controller=state.voiceRoom;if(!controller)return;const muted=controller.toggleRoomAudioMute();roomAudioMute.innerHTML='<i data-lucide="'+(muted?'volume-x':'volume-2')+'"></i>';roomAudioMute.setAttribute('aria-label',muted?'تشغيل صوت الغرفة':'كتم صوت الغرفة');roomAudioMute.title=muted?'تشغيل صوت الغرفة':'كتم صوت الغرفة';icons_();toast(muted?'تم كتم صوت الغرفة على جهازك':'تم تشغيل صوت الغرفة');};
