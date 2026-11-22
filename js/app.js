@@ -895,7 +895,7 @@ async function openRoom(r) {
     const remotelyMutedUsers=new Set();
     let muteStateLoaded=false;
     const drawMembers=async()=>{
-      const [{members},{seats}]=await Promise.all([api.roomMembers(r.id),api.roomSeats(r.id)]);
+      const {members}=await api.roomMembers(r.id);const {seats}=await api.roomSeats(r.id);
       if(!membersEl.isConnected)return;
       countEl.textContent=num(members.length);
       const host=r.ownerUuid===state.profile?.uuid;
