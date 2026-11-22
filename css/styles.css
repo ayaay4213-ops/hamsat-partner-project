@@ -5814,3 +5814,10 @@ body:has(.room-sheet) #tabbar{display:none!important}
 #sheet-root .room-sheet .hs-room-template-lock b{display:block;color:#f2df9e;font-size:12px}
 #sheet-root .room-sheet .hs-room-template-lock p{margin-top:4px;color:#bcb39f;font-size:10px;line-height:1.7}
 #sheet-root .room-sheet .hs-room-template-lock>strong{flex:none;color:#f3dc86;font-size:19px;font-variant-numeric:tabular-nums}
+
+
+/* Room game navigation: open the full games page without ending room audio. */
+.hs-room-game-head-actions{display:flex;align-items:center;gap:7px;flex:none}
+.hs-room-game-head-actions #room-game-page-link{display:inline-flex;align-items:center;justify-content:center;gap:5px;width:auto;height:32px;padding:0 10px;border:1px solid rgba(212,175,55,.35);border-radius:999px;background:rgba(212,175,55,.10);color:#f0d98f;font-size:10px;white-space:nowrap}
+.hs-room-game-head-actions #room-game-page-link svg{width:13px;height:13px}
+.hs-room-game-head-actions #room-game-close{width:32px;height:32px;flex:none;border-radius:50%;background:#ffffff10;color:#e8d8b5;font-size:22px}
