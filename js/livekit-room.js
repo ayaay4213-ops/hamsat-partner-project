@@ -16,12 +16,15 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
   let disposed = false;
   let seatChannel = null;
   let permissionRefreshing = false;
+  let stateHandler = onState;
   const audioElements = new Map();
   const mutedParticipants = new Set();
 
   const status = (message, connected = joined) => {
-    if (!disposed) onState({ message, connected, muted, roomAudioMuted, activeSpeakers: activeSpeakerIds });
+    if (!disposed) stateHandler({ message, connected, muted, roomAudioMuted, activeSpeakers: activeSpeakerIds });
   };
+
+  function setStateHandler(handler) { stateHandler = typeof handler === 'function' ? handler : () => {}; status(joined ? 'الصوت المباشر متصل' : 'الصوت غير متصل', joined); }
 
   async function requestToken() {
     const { data, error } = await supabase.functions.invoke('livekit-token', {
@@ -234,5 +237,5 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false, roomAudioMuted: false });
   }
 
-  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
+  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, setStateHandler, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
 }
