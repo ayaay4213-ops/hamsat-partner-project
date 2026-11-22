@@ -26,6 +26,17 @@ drop policy if exists "Users join rooms as themselves" on public.room_members;
 drop policy if exists "Users create their own rooms" on public.rooms;
 
 -- Only the room owner may choose or remove the shared room background.
+-- Owners can still manage the shared background if their room membership is temporarily absent.
+drop policy if exists "Room members view shared background" on public.room_backgrounds;
+create policy "Room members and owners view shared background"
+  on public.room_backgrounds
+  for select
+  to authenticated
+  using (
+    private.is_room_member(room_id)
+    or private.is_room_owner(room_id)
+  );
+
 drop policy if exists "Room members set shared background" on public.room_backgrounds;
 drop policy if exists "Room members update shared background" on public.room_backgrounds;
 drop policy if exists "Room members remove shared background" on public.room_backgrounds;
