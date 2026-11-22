@@ -6048,3 +6048,52 @@ body:has(.room-sheet) #tabbar{display:none!important}
 @media(max-width:390px){
   #sheet-root .room-sheet .hs-room-seat-layout-settings .hs-room-settings-fields{grid-template-columns:1fr!important}
 }
+
+
+/* HAMSAT room layout reconciliation — keep configurable seat maps independent of legacy 2+4+4 placement. */
+#sheet-root .room-sheet #room-seats[data-layout="one-top"]>.hs-room-seat:nth-child(n){
+  grid-column:auto!important;grid-row:auto!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="one-top"]>.hs-room-seat:first-child{
+  grid-column:1/-1!important;grid-row:auto!important;justify-self:center!important;max-width:150px!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(n){
+  grid-column:auto!important;grid-row:auto!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(1){grid-column:2!important;grid-row:1!important}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(2){grid-column:3!important;grid-row:1!important}
+#sheet-root .room-sheet #room-seats[data-layout="grid"]:not([data-seat-count="10"])>.hs-room-seat:nth-child(n){
+  grid-column:auto!important;grid-row:auto!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="5"],
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="6"],
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="7"],
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="8"],
+#sheet-root .room-sheet #room-seats[data-layout="grid"][data-seat-count="9"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+
+/* The composer and all eight room actions occupy separate, predictable rows. */
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:7px!important;width:100%!important;min-width:0!important;
+  padding:7px 8px calc(env(safe-area-inset-bottom) + 7px)!important;
+}
+#sheet-root .room-sheet .hs-room-compose-wrap{width:100%!important;min-width:0!important;flex:0 0 auto!important}
+#sheet-root .room-sheet .hs-room-compose{width:100%!important;min-width:0!important}
+#sheet-root .room-sheet .hs-room-compose input{min-width:0!important}
+#sheet-root .room-sheet .hs-room-tools-row{
+  display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  align-items:center!important;gap:5px!important;width:100%!important;min-width:0!important;
+}
+#sheet-root .room-sheet .hs-room-tools-row button{
+  display:grid!important;place-items:center!important;
+  width:100%!important;min-width:0!important;min-height:38px!important;height:38px!important;
+  padding:0!important;border-radius:11px!important;
+}
+#sheet-root .room-sheet .hs-room-tools-row button svg{width:17px!important;height:17px!important}
+@media(max-width:360px){
+  #sheet-root .room-sheet .hs-room-tools-row{gap:3px!important}
+  #sheet-root .room-sheet .hs-room-tools-row button{min-height:35px!important;height:35px!important;border-radius:9px!important}
+  #sheet-root .room-sheet .hs-room-tools-row button svg{width:15px!important;height:15px!important}
+}
