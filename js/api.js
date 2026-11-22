@@ -372,21 +372,21 @@ export const api = {
     fail(error);return {imageUrl:data?.image_url||null,updatedAt:data?.updated_at||null};
   },
   saveRoomBackground: async (roomId,imageUrl,backgroundItemId=null) => {
-    const user=await currentUser();
     if(imageUrl && (!/^https:\/\//i.test(String(imageUrl)) || String(imageUrl).length>2048))throw new Error('رابط خلفية الغرفة غير صالح.');
-    const {error}=await client().from('room_backgrounds').upsert({room_id:roomId,image_url:imageUrl||null,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:'room_id'});
-    fail(error);
-    const {error:roomError}=await client().from('rooms').update({background_item_id:backgroundItemId||null}).eq('id',roomId).eq('owner_id',user.id);
-    fail(roomError);return {imageUrl:imageUrl||null,backgroundItemId:backgroundItemId||null};
+    const {data,error}=await client().rpc('save_room_background',{
+      p_room_id:roomId,
+      p_image_url:imageUrl||null,
+      p_background_item_id:backgroundItemId||null
+    });
+    fail(error);return data||{imageUrl:imageUrl||null,backgroundItemId:backgroundItemId||null};
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
     const payload = {
-      title: String(settings.title || '').trim().slice(0, 60),
-      topic: String(settings.topic || 'عام').trim().slice(0, 40),
-      description: String(settings.description || '').trim().slice(0, 240),
+      title: String(settings.title || '').trim().slice(0, 50),
+      topic: String(settings.topic || 'عام').trim().slice(0, 20),
+      description: String(settings.description || '').trim().slice(0, 160),
       cover_url: settings.coverUrl || null,
-      background_item_id: settings.backgroundItemId || null,
       room_emoji: String(settings.roomEmoji || '🎙️').slice(0, 8),
       seat_limit: 10,
       seat_layout: 'grid'
