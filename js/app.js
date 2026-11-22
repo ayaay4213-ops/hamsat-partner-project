@@ -673,7 +673,7 @@ async function openRoom(r) {
     <div class="hs-room-unified" aria-label="واجهة الغرفة الصوتية">
     <section class="hs-room-stage">
       <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="mic" aria-hidden="true"></i><span class="sr-only">المقاعد</span></div><span class="hs-room-seat-count" aria-label="عدد المقاعد">${r.seatLimit||8}</span></div>
-      <div class="hs-seat-live-timer" aria-live="off"><span><i data-lucide="timer"></i> وقتك على المايك</span><strong id="room-bomb-sit-time" data-started-at="">00:00</strong></div><div id="room-seats" class="hs-room-seats"></div>
+      <div class="hs-seat-live-timer" aria-live="off"><span class="sr-only">وقت المايك</span><strong id="room-bomb-sit-time" data-started-at="">00:00</strong></div><div id="room-seats" class="hs-room-seats"></div>
        
       
     </section>
@@ -939,7 +939,7 @@ async function openRoom(r) {
         catch(e){toast(e.message,'error');b.disabled=false;}
       }));
       const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
-      seatsEl.dataset.layout=roomSeatLayout;
+      seatsEl.dataset.layout=roomSeatLayout;seatsEl.dataset.seatCount=String(Math.max(1,Math.min(16,Number(r.seatLimit)||8)));
       seatsEl.innerHTML=Array.from({length:Math.max(1,Math.min(16,Number(r.seatLimit)||8))},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?(seat.member||memberById[seat.user_id]||null):null,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-chair"><i data-lucide="armchair"></i></span><i class="hs-seat-center-mic" data-lucide="mic"></i></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
