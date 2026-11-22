@@ -554,7 +554,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261121-room-profile-layout-v2','js/app.js?v=20261121-room-profile-layout-v2']) {
+  for (const token of ['css/styles.css?v=20261122-reference-room-v14','js/app.js?v=20261122-reference-room-v14']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -648,11 +648,11 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (fs.existsSync(html)) {
-  for (const token of ['css/styles.css?v=20261121-room-profile-layout-v2','js/app.js?v=20261121-room-profile-layout-v2']) {
+  for (const token of ['css/styles.css?v=20261122-reference-room-v14','js/app.js?v=20261122-reference-room-v14']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261120-shared-background-moments-social-v4")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-room-ticker-toolbar-v2")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
