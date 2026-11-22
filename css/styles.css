@@ -5994,3 +5994,17 @@ body:has(.room-sheet) #tabbar{display:none!important}
   #sheet-root .room-sheet .hs-room-seat .hs-seat-ring{width:clamp(40px,12vw,50px)!important;height:clamp(40px,12vw,50px)!important;min-width:clamp(40px,12vw,50px)!important}
   #sheet-root .room-sheet .hs-room-seat .hs-seat-ring .avatar{width:calc(100% - 6px)!important;height:calc(100% - 6px)!important}
 }
+
+/* Host-to-member microphone invitation */
+.hs-room-seat-invite-modal{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(8,5,17,.78);backdrop-filter:blur(9px)}
+.hs-room-seat-invite-modal.hidden{display:none}
+.hs-room-seat-invite-card{width:min(100%,360px);padding:26px 22px 20px;border:1px solid rgba(226,190,121,.42);border-radius:24px;background:linear-gradient(155deg,#241632,#100d1b 72%);box-shadow:0 22px 70px rgba(0,0,0,.55);text-align:center;color:#fff}
+.hs-room-seat-invite-icon{display:grid;place-items:center;width:62px;height:62px;margin:0 auto 13px;border:1px solid rgba(232,196,130,.55);border-radius:50%;color:#f2d49b;background:rgba(213,169,91,.12);font-size:26px}
+.hs-room-seat-invite-card>small:first-of-type{display:block;color:#c7a56b;font-size:9px;letter-spacing:2px}
+.hs-room-seat-invite-card h3{margin:10px 0 8px;color:#f4d8a5;font-size:20px;font-weight:800}
+.hs-room-seat-invite-card p{margin:0 auto 20px;color:#e7deef;font-size:14px;line-height:1.8}
+.hs-room-seat-invite-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hs-room-seat-invite-actions button{min-height:46px;border-radius:13px;font-weight:800}
+.hs-room-seat-invite-expiry{display:block;margin-top:14px;color:#a99ab9;font-size:11px}
+.hs-room-invite-seat-action{display:inline-flex;align-items:center;gap:5px;color:#e9cb8f!important;border-color:rgba(220,184,112,.35)!important}
+.hs-room-invite-seat-action svg{width:14px;height:14px}
