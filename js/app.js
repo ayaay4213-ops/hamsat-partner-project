@@ -622,7 +622,7 @@ async function openRoom(r) {
     <div class="hs-room-head">
       <div class="hs-room-cover" style="${r.coverUrl ? `background-image:linear-gradient(180deg,#08090a22,#08090add),url(${JSON.stringify(r.coverUrl)})` : ''}">
         <div class="hs-room-head-row">
-          <button type="button" class="hs-room-close" data-close aria-label="إغلاق الغرفة"><i data-lucide="power"></i></button>
+          <button type="button" id="room-close-prompt" class="hs-room-close" aria-label="خيارات مغادرة الغرفة"><i data-lucide="power"></i></button>
           <button type="button" id="room-minimize" class="hs-room-close hs-room-minimize" aria-label="تصغير والاحتفاظ بالغرفة"><i data-lucide="minimize-2"></i></button>
           <span class="hs-room-state" aria-label="مباشر" title="مباشر"><i></i></span>
         </div><button type="button" id="room-bomb-floating" class="hs-room-bomb-floating" aria-label="قنبلة الغرفة"><span class="hs-bomb-art" aria-hidden="true"><span class="hs-bomb-single">💣</span><span class="hs-bomb-fuse-spark"></span></span><b id="room-bomb-level">LV.1</b><small id="room-bomb-percent">0%</small><i class="hs-room-bomb-progress"><em id="room-bomb-bar"></em></i></button>
@@ -979,8 +979,41 @@ async function openRoom(r) {
     };
     try{const joinedRoom=await api.joinRoom(r.id);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{if(payload?.new?.seat_layout){roomSeatLayout=payload.new.seat_layout;r.seatLayout=roomSeatLayout;}await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
-    sheet.querySelector('#room-minimize').onclick=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
-    sheet.querySelector('#room-exit').onclick=async()=>{const button=sheet.querySelector('#room-exit');button.disabled=true;try{if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave();}if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}if(state.roomChannel){await api.unsubscribeRoomChannel(state.roomChannel);state.roomChannel=null;}if(state.roomEventChannel){await api.unsubscribeRoomChannel(state.roomEventChannel);state.roomEventChannel=null;}if(state.roomBombTimer){clearInterval(state.roomBombTimer);state.roomBombTimer=null;}if(state.activeRoomId===r.id)state.activeRoomId=null;state.roomMinimized=false;state.minimizedRoom=null;$('#room-mini-root').innerHTML='';await api.leaveRoom(r.id);$('#sheet-root').innerHTML='';toast('غادرتِ الغرفة. ستبقى غرفتك محفوظة ويمكن للجميع دخولها.');}catch(e){toast(e.message,'error');button.disabled=false;}};
+    const minimizeRoom=()=>{state.roomMinimized=true;state.minimizedRoom=r;$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
+    const exitRoom=async(button)=>{
+      if(button)button.disabled=true;
+      try{
+        if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave();}
+        if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}
+        if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}
+        if(state.roomChannel){await api.unsubscribeRoomChannel(state.roomChannel);state.roomChannel=null;}
+        if(state.roomEventChannel){await api.unsubscribeRoomChannel(state.roomEventChannel);state.roomEventChannel=null;}
+        if(state.roomBombTimer){clearInterval(state.roomBombTimer);state.roomBombTimer=null;}
+        if(state.roomSeatTimer){clearInterval(state.roomSeatTimer);state.roomSeatTimer=null;}
+        if(state.activeRoomId===r.id)state.activeRoomId=null;
+        state.roomMinimized=false;state.minimizedRoom=null;$('#room-mini-root').innerHTML='';
+        await api.leaveRoom(r.id);
+        $('#sheet-root').innerHTML='';
+        toast('غادرتِ الغرفة.');
+      }catch(e){toast(e.message,'error');if(button)button.disabled=false;}
+    };
+    const showRoomExitChoice=()=>{
+      let choice=sheet.querySelector('#room-exit-choice');
+      if(!choice){
+        sheet.insertAdjacentHTML('beforeend',`<div id="room-exit-choice" class="hs-room-exit-choice" role="dialog" aria-modal="true" aria-labelledby="room-exit-choice-title"><div class="hs-room-exit-card"><span class="hs-room-exit-mark"><i data-lucide="log-out"></i></span><h3 id="room-exit-choice-title">ماذا تريدين أن تفعلي؟</h3><p>يمكنك الاحتفاظ بالغرفة ومتابعة الصوت، أو الخروج منها نهائياً.</p><button type="button" id="room-choice-keep" class="hs-room-choice-keep"><i data-lucide="minimize-2"></i><span><b>الاحتفاظ بالغرفة</b><small>تصغير إلى فقاعة مع استمرار الصوت</small></span></button><button type="button" id="room-choice-exit" class="hs-room-choice-exit"><i data-lucide="log-out"></i><span><b>خروج</b><small>مغادرة الغرفة وإيقاف الصوت</small></span></button><button type="button" id="room-choice-cancel" class="hs-room-choice-cancel">إلغاء</button></div></div>`);
+        choice=sheet.querySelector('#room-exit-choice');
+        choice.querySelector('#room-choice-keep').onclick=minimizeRoom;
+        choice.querySelector('#room-choice-exit').onclick=e=>exitRoom(e.currentTarget);
+        choice.querySelector('#room-choice-cancel').onclick=()=>choice.classList.remove('is-visible');
+        icons_();
+      }
+      choice.classList.add('is-visible');
+    };
+    sheet.querySelector('#room-minimize').onclick=minimizeRoom;
+    sheet.querySelector('#room-exit').onclick=showRoomExitChoice;
+    sheet.querySelector('#room-close-prompt').onclick=showRoomExitChoice;
+    const roomBackdrop=$('#sheet-root .sheet-backdrop');
+    if(roomBackdrop)roomBackdrop.onclick=e=>{e.preventDefault();e.stopPropagation();showRoomExitChoice();};
     form.onsubmit=async e=>{e.preventDefault();const input=form.elements.message,button=form.querySelector('button'),value=input.value.trim();if(!value)return;button.disabled=true;try{await api.sendRoomMessage(r.id,value);input.value='';await drawMessages();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
     const emojiPanel=sheet.querySelector('#room-emoji-panel');
     const emojiSet=state.profile?.equippedEmojiPackId==='emoji_luxe'?['👑','💎','✨','🥂','🪞','💍','🌟','🎀','🦢','🌹','💫','🪄','🩷','🫶','🌸','🔥','👏','🎉','🎤','🎧']:state.profile?.equippedEmojiPackId==='emoji_moon'?['🌙','⭐','🌟','☄️','🪐','🌌','✨','🌠','🌃','🦋','🌷','💜','🩵','🫶','🎶','🎧','☕','🌸','👏','🎤']:['💖','🌹','😂','😍','👏','✨','🌙','🥰','🫶','🎉','🔥','💎','👑','🦋','🎶','🎤','💜','🩷','🌸','🥂','😎','🤩','💫','🌈','🎊','💐','🩵','🧡','💚','⭐'];
