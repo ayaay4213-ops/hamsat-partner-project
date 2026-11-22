@@ -20,6 +20,7 @@ const required = [
   'supabase/migrations/0050_seed_profile_frame_catalog.sql',
   'supabase/migrations/0051_protect_game_answer_keys.sql',
   'supabase/migrations/0056_room_and_gift_integrity.sql',
+  'supabase/migrations/20261122224438_0078_configurable_room_seat_layout.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -54,6 +55,22 @@ const localRefs = [...html.matchAll(/(?:src|href)=["']([^"'#]+)["']/gi)]
 for (const ref of localRefs) {
   const clean = decodeURIComponent(ref.split(/[?#]/)[0]);
   if (clean && !fs.existsSync(path.join(root, clean))) errors.push(`Broken local reference in index.html: ${ref}`);
+}
+
+
+const configurableRoomSeatsPath = path.join(root, 'supabase/migrations/20261122224438_0078_configurable_room_seat_layout.sql');
+if (fs.existsSync(configurableRoomSeatsPath)) {
+  const sql = fs.readFileSync(configurableRoomSeatsPath, 'utf8').toLowerCase();
+  for (const token of [
+    'rooms_reference_layout_fixed_check',
+    'check (seat_limit between 1 and 10)',
+    "seat_layout in ('grid', 'one-top', 'two-top', 'row')",
+    'private.guard_room_seat_limit_change',
+    'generate_series(2, v_limit)',
+    'create trigger rooms_guard_seat_limit_change'
+  ]) {
+    if (!sql.includes(token.toLowerCase())) errors.push(`Missing configurable room-seat SQL: ${token}`);
+  }
 }
 
 const hardeningMigrationPath = path.join(root, 'supabase/migrations/0010_room_policy_and_trigger_hardening.sql');
