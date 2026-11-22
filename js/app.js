@@ -829,7 +829,7 @@ async function openRoom(r) {
     }
     const chat=sheet.querySelector('#room-chat'), membersEl=sheet.querySelector('#room-members'), seatsEl=sheet.querySelector('#room-seats'), countEl=sheet.querySelector('#room-member-count'), form=sheet.querySelector('#room-chat-form');
     const chatTabs=sheet.querySelector('#room-chat-tabs'),bottomBar=sheet.querySelector('.hs-room-bottom-bar'),composeWrap=sheet.querySelector('.hs-room-compose-wrap');
-    if(chatTabs&&bottomBar&&composeWrap&&chatTabs.parentElement!==bottomBar)bottomBar.insertBefore(chatTabs,composeWrap);
+    // Keep chat filters in the chat panel; the bottom bar stays one compact row.
     const voiceStatus=sheet.querySelector('#voice-status'), voiceStart=sheet.querySelector('#voice-start'), voiceAudioEnable=sheet.querySelector('#voice-audio-enable'), voiceMute=sheet.querySelector('#voice-mute'), roomAudioMute=sheet.querySelector('#room-audio-mute'), voiceLeave=sheet.querySelector('#voice-leave');
     const stopHostSessionTracking=async()=>{
       if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}
