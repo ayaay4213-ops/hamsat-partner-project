@@ -156,6 +156,6 @@ create policy "Room owners publish system announcements"
     and private.is_room_owner(room_id)
     and jsonb_typeof(payload) = 'object'
     and payload ? 'message'
-    and jsonb_object_length(payload) = 1
+    and (select count(*) from jsonb_object_keys(payload)) = 1
     and char_length(btrim(coalesce(payload ->> 'message', ''))) between 1 and 160
   );
