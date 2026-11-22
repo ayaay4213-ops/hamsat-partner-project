@@ -397,19 +397,12 @@ export const api = {
   },
 
   leaveRoom: async (roomId) => {
-    const user = await currentUser();
-    // Free the speaker seat as well as the room membership so abandoned rooms
-    // never keep a microphone seat locked for a user who has already left.
-    await api.leaveRoomSeat(roomId);
-    const { error } = await client().from('room_members').delete().eq('room_id', roomId).eq('user_id', user.id);
-    fail(error); return { success: true };
+    const { data, error } = await client().rpc('leave_room_presence', { p_room_id: roomId });
+    fail(error); return data || { success: true };
   },
   joinRoom: async (roomId) => {
-    const user = await currentUser();
-    const { error } = await client().from('room_members').insert({ room_id: roomId, user_id: user.id });
-    if (error && error.code !== '23505') fail(error);
-    await api.heartbeatRoomPresence(roomId);
-    return api.roomMembers(roomId);
+    const { data, error } = await client().rpc('join_room_presence', { p_room_id: roomId });
+    fail(error); return api.roomMembers(roomId);
   },
   heartbeatRoomPresence: async (roomId) => {
     const { data, error } = await client().rpc('heartbeat_room_presence', { p_room_id: roomId });
