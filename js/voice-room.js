@@ -233,13 +233,14 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     finally { joining = null; }
   }
 
-  async function toggleMute() {
+  async function setMuted(shouldMute) {
     if (!localStream) throw new Error('ابدئي الاتصال الصوتي أولاً.');
-    muted = !muted;
+    muted = Boolean(shouldMute);
     localStream.getAudioTracks().forEach(track => { track.enabled = !muted; });
     status(muted ? 'الميكروفون مكتوم' : 'الميكروفون يعمل', true);
     return muted;
   }
+  async function toggleMute() { return setMuted(!muted); }
 
   function toggleRoomAudioMute() {
     roomAudioMuted = !roomAudioMuted;
@@ -277,7 +278,7 @@ function createPeerVoiceRoom({ roomId, userId, onState = () => {} }) {
     status('تم إيقاف الصوت');
   }
 
-  return { join, leave, toggleMute, toggleRoomAudioMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return Boolean(localStream); } };
+  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return Boolean(localStream); } };
 }
 
 
