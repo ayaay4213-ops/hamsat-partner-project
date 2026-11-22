@@ -1,12 +1,12 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261122-room-ticker-toolbar-v2';
+import { api } from './api.js?v=20261122-mic-invitations-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261122-room-controls-v5';
 
 const $ = (s, r = document) => r.querySelector(s);
 const screen = $('#screen');
 const tabbar = $('#tabbar');
 
-const state = { isAdmin: false, account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomBombTimer: null, roomSeatTimer: null, roomPresenceTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
+const state = { isAdmin: false, account: null, profile: null, wallet: null, gifts: null, roomChannel: null, roomEventChannel: null, roomSeatInviteChannel: null, roomBombTimer: null, roomSeatTimer: null, roomPresenceTimer: null, hostSessionId: null, hostSessionTimer: null, activeRoomId: null, voiceRoom: null, roomMinimized: false, minimizedRoom: null };
 
 // A recovery callback must own the screen until the new password is saved.
 let passwordRecoveryActive = new URLSearchParams(location.hash.replace(/^#/, '')).get('type') === 'recovery'
