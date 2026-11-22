@@ -408,10 +408,20 @@ export const api = {
     const user = await currentUser();
     const { error } = await client().from('room_members').insert({ room_id: roomId, user_id: user.id });
     if (error && error.code !== '23505') fail(error);
+    await api.heartbeatRoomPresence(roomId);
     return api.roomMembers(roomId);
   },
+  heartbeatRoomPresence: async (roomId) => {
+    const { data, error } = await client().rpc('heartbeat_room_presence', { p_room_id: roomId });
+    fail(error); return data;
+  },
+  cleanupStaleRoomPresence: async (roomId) => {
+    const { data, error } = await client().rpc('cleanup_stale_room_presence', { p_room_id: roomId });
+    fail(error); return data;
+  },
   roomMembers: async (roomId) => {
-    const { data, error } = await client().from('room_members').select('user_id,joined_at').eq('room_id', roomId).order('joined_at', { ascending: true });
+    await api.cleanupStaleRoomPresence(roomId);
+    const { data, error } = await client().from('room_members').select('user_id,joined_at,last_seen_at').eq('room_id', roomId).order('joined_at', { ascending: true });
     fail(error);
     const ids = [...new Set(data.map(x => x.user_id))];
     if (!ids.length) return { members: [] };
