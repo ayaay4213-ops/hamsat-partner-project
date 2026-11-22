@@ -234,7 +234,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     const root = document.getElementById('voice-audio');
     if (root) root.querySelectorAll('[data-livekit-participant]').forEach(el => el.remove());
     roomAudioMuted = false;
-    onState({ message: 'تم إيقاف الصوت', connected: false, muted: false, roomAudioMuted: false });
+    stateHandler({ message: 'تم إيقاف الصوت', connected: false, muted: false, roomAudioMuted: false, activeSpeakers: [] });
   }
 
   return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, setStateHandler, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
