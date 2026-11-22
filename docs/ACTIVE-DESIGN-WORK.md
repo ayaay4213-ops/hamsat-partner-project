@@ -1,13 +1,16 @@
 # HAMSAT Active Design Work
 
-This is the persistent working pointer for the current HAMSAT design update.
+This is the persistent working pointer for HAMSAT ongoing development.
 
 - Repository: https://github.com/ayaay4213-ops/hamsat-partner-project
-- Active branch: `work/hamsat-design-updates-2026-11-21`
-- Branch URL: https://github.com/ayaay4213-ops/hamsat-partner-project/tree/work/hamsat-design-updates-2026-11-21
-- Production branch: `main` — do not modify as part of this work without explicit approval.
-- Deployment target: Vercel Preview only until the user explicitly approves production release.
-- Latest user-approved scope: clean room-only home; admin-only three-line menu; 4.2-second splash; moments-only feed with likes/comments; persistent profile cover; elegant profile stat chips; country flag beside public ID; open member profiles from avatars anywhere including microphone seats; persistent room backgrounds behind microphones visible to all room members.
-- Continue all future HAMSAT design edits on this branch unless the user explicitly chooses another branch.
-- Before each update, fetch the latest branch head and current file SHA; never overwrite a newer version.
-- Do not delete existing features or rebuild the app. Verify the preview build and actual UI before claiming completion.
+- Permanent active development branch: `work/hamsat-reference-redo-2026-11-21`
+- Branch URL: https://github.com/ayaay4213-ops/hamsat-partner-project/tree/work/hamsat-reference-redo-2026-11-21
+- Production branch: `main` — do not modify or merge into it without the owner's explicit approval.
+- Deployment target: Vercel Preview only until the owner explicitly approves a Production release.
+- Rule: all future HAMSAT code/design edits continue on the active development branch above. Fetch the latest branch head and current file SHA before every edit; never overwrite newer work.
+- Keep this branch as the ongoing development workspace. Do not replace it with a new branch unless the owner explicitly requests that.
+- Current latest room fix: settings save now calls the shared close handler; the duplicate older close handler that reopened the owner tools menu was removed.
+- Latest preview deployment: https://hamsat-preview-ewlg7xpqz-hamsat.vercel.app (READY at the time of recording; preview only).
+- PWA foundation exists: manifest, service worker, app icons, and Android install prompt are present. Actual installation and offline behavior still require testing on a real Android phone.
+- Do not delete existing features or rebuild the app. Verify preview build and actual UI before claiming completion.
+- Treat code presence, static validation, successful deployment, and real-device acceptance as separate evidence levels.
