@@ -5595,3 +5595,41 @@ body:has(.room-sheet) #tabbar{display:none!important}
   #sheet-root .room-sheet .hs-room-compose-wrap{min-width:64px!important}
   #sheet-root .room-sheet .hs-room-compose input{min-width:0!important;padding-inline:5px!important;font-size:10px!important}
 }
+
+
+/* HAMSAT room action order: one compact horizontal action strip */
+#sheet-root .room-sheet .hs-room-tools-row{
+  display:flex!important;flex-flow:row nowrap!important;align-items:center!important;
+  justify-content:flex-start!important;gap:3px!important;min-width:0!important;
+  overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important
+}
+#sheet-root .room-sheet .hs-room-tools-row::-webkit-scrollbar{display:none!important}
+#sheet-root .room-sheet .hs-room-tools-row #room-settings-shortcut{order:1!important}
+#sheet-root .room-sheet .hs-room-tools-row #room-private-messages{order:2!important}
+#sheet-root .room-sheet .hs-room-tools-row #room-game-center-toggle{order:3!important}
+#sheet-root .room-sheet .hs-room-tools-row #room-send-gift{order:4!important}
+#sheet-root .room-sheet .hs-room-tools-row #voice-start{order:5!important}
+#sheet-root .room-sheet .hs-room-tools-row #voice-mute{order:6!important}
+#sheet-root .room-sheet .hs-room-tools-row #room-audio-mute{order:7!important}
+#sheet-root .room-sheet .hs-room-tools-row #voice-audio-enable{order:8!important}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  display:flex!important;flex-flow:row nowrap!important;align-items:center!important;
+  gap:4px!important;min-width:0!important;overflow:hidden!important
+}
+#sheet-root .room-sheet .hs-room-compose-wrap{
+  order:2!important;flex:1 1 90px!important;min-width:58px!important;width:auto!important
+}
+#sheet-root .room-sheet .hs-room-tools-row{
+  order:1!important;flex:0 1 auto!important;max-width:calc(100% - 90px)!important
+}
+#sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs{
+  order:0!important;flex:0 0 auto!important;gap:2px!important
+}
+@media(max-width:380px){
+  #sheet-root .room-sheet .hs-room-tools-row{gap:2px!important;max-width:calc(100% - 68px)!important}
+  #sheet-root .room-sheet .hs-room-tools-row button{width:25px!important;min-width:25px!important;height:30px!important;flex:0 0 25px!important}
+  #sheet-root .room-sheet .hs-room-tools-row button svg{width:14px!important;height:14px!important}
+  #sheet-root .room-sheet .hs-room-compose-wrap{min-width:54px!important;flex-basis:54px!important}
+  #sheet-root .room-sheet .hs-room-bottom-bar{gap:2px!important}
+}
