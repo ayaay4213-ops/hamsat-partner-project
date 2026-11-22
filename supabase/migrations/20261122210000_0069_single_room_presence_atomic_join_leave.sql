@@ -39,6 +39,9 @@ begin
     raise exception 'يجب تسجيل الدخول أولاً';
   end if;
 
+  -- Serialize concurrent joins for the same account before moving its presence.
+  perform pg_advisory_xact_lock(hashtextextended(v_user::text, 0));
+
   if not exists (select 1 from public.rooms where id = p_room_id) then
     raise exception 'الغرفة غير موجودة';
   end if;
