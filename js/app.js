@@ -617,7 +617,8 @@ async function openRoom(r) {
   if (!r) return;
 
   const isRoomOwner = String(r.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase();
-  let roomSeatLayout = ['grid','one-top','two-top'].includes(r.seatLayout) ? r.seatLayout : 'grid';
+  let roomSeatLayout = 'grid';
+  r.seatLimit = 10;
   openSheet(`
     <div class="hs-room-canvas">
     <div class="hs-room-head">
@@ -674,7 +675,7 @@ async function openRoom(r) {
     <button type="button" id="room-bomb-backdrop" class="hs-room-panel-backdrop hidden" aria-label="إغلاق قنبلة الغرفة"></button><div id="room-bomb-panel" class="hs-room-bomb-panel hidden" role="dialog" aria-label="قنبلة الغرفة"><div class="hs-room-panel-handle"></div><div class="hs-room-bomb-head"><div><span>HAMSAT ROOM EVENT</span><h3>💣 قنبلة الغرفة</h3></div><button type="button" id="room-bomb-close" aria-label="إغلاق">×</button></div><p class="hs-room-bomb-description">كل هدية تُرسل داخل الغرفة تزيد تقدم القنبلة. عند اكتمال المستوى تُوزّع العملات تلقائياً على الموجودين، مع مكافآت إضافية لأعلى المساهمين.</p><div class="hs-room-bomb-status"><div><b id="room-bomb-panel-level">LV.1</b><span id="room-bomb-countdown">بانتظار أول هدية</span></div><strong id="room-bomb-panel-percent">0%</strong></div><div class="hs-room-bomb-track"><i id="room-bomb-panel-bar"></i></div><div id="room-bomb-levels" class="hs-room-bomb-levels"></div><div class="hs-room-bomb-top"><h4>🏆 أعلى المساهمين</h4><div id="room-bomb-top3"><p>لا توجد مساهمات بعد.</p></div></div></div>
     <div class="hs-room-unified" aria-label="واجهة الغرفة الصوتية">
     <section class="hs-room-stage">
-      <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="mic" aria-hidden="true"></i><span class="sr-only">المقاعد</span></div><span class="hs-room-seat-count" aria-label="عدد المقاعد">${r.seatLimit||8}</span></div>
+      <div class="hs-room-section-title hs-room-icon-heading"><div><i data-lucide="mic" aria-hidden="true"></i><span class="sr-only">المقاعد</span></div><span class="hs-room-seat-count" aria-label="عدد المقاعد">10</span></div>
       <div class="hs-seat-live-timer" aria-live="off"><span class="sr-only">وقت المايك</span><strong id="room-bomb-sit-time" data-started-at="">00:00</strong></div><div id="room-seats" class="hs-room-seats"></div>
        
       
@@ -953,8 +954,8 @@ async function openRoom(r) {
         catch(e){toast(e.message,'error');b.disabled=false;}
       }));
       const bySeat=Object.fromEntries(seats.map(x=>[x.seat_no,x]));
-      seatsEl.dataset.layout=roomSeatLayout;seatsEl.dataset.seatCount=String(Math.max(1,Math.min(16,Number(r.seatLimit)||8)));
-      seatsEl.innerHTML=Array.from({length:Math.max(1,Math.min(16,Number(r.seatLimit)||8))},(_,i)=>{
+      seatsEl.dataset.layout='grid';seatsEl.dataset.seatCount='10';
+      seatsEl.innerHTML=Array.from({length:10},(_,i)=>{
         const n=i+1,seat=bySeat[n],m=seat?(seat.member||memberById[seat.user_id]||null):null,own=seat?.user_id===state.profile?.uuid,isHost=r.ownerUuid===state.profile?.uuid&&n===1;
         if(!seat)return `<button type="button" data-seat="${n}" class="hs-room-seat empty" aria-label="طلب المايك ${n}"><span class="hs-seat-ring"><span class="hs-seat-chair"><i data-lucide="armchair"></i></span><i class="hs-seat-center-mic" data-lucide="mic"></i></span><b>${isHost?'مقعد المضيفة':'مقعد '+n}</b><small>${isHost?'مقعد المضيفة':'اضغطي لطلب المايك'}</small><span class="hs-seat-number">${n}</span></button>`;
         return `<button type="button" data-seat="${n}" data-user-id="${esc(seat.user_id)}" data-user-handle="${esc(m?.handle||'')}" data-own="${own}" class="hs-room-seat occupied ${own?'mine':''}" aria-label="${own?'مقعدك على المايك':'عرض ملف '+esc(m?.displayName||'العضو')}"><span class="hs-seat-ring occupied-ring">${m?avatar(m,58):'<span class="hs-seat-mic"><i data-lucide="user-round"></i></span>'}<i class="hs-seat-live-mic" data-lucide="mic"></i></span><b>${esc(m?.displayName||'عضو')}</b><small>${own?'أنتِ على المايك':'متحدث'}</small><small class="hs-seat-duration" data-started-at="${esc(seat.seated_at||'')}">00:00</small>${isHost?'<em>المضيفة</em>':''}<span class="hs-seat-number">${n}</span></button>`;
