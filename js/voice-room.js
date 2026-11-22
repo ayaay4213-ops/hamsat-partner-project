@@ -1,6 +1,6 @@
 import { supabase } from './supabase-auth.js';
 import { AUDIO_PROVIDER } from '../supabase/config.js';
-import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261122-room-audio-v5';
+import { createLiveKitVoiceRoom } from './livekit-room.js?v=20261122-room-audio-v6';
 
 // STUN is sufficient for some peer-to-peer networks. Reliable mobile/carrier
 // connectivity still requires a TURN relay or an SFU with server credentials.
