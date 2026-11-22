@@ -983,7 +983,7 @@ async function openRoom(r) {
     const exitRoom=async(button)=>{
       if(button)button.disabled=true;
       try{
-        if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave();}
+        if(state.voiceRoom){const voice=state.voiceRoom;state.voiceRoom=null;await voice.leave().catch(e=>console.warn('Could not stop room audio cleanly:',e));}
         if(state.hostSessionTimer){clearInterval(state.hostSessionTimer);state.hostSessionTimer=null;}
         if(state.hostSessionId){const sessionId=state.hostSessionId;state.hostSessionId=null;await api.hostEndSession(sessionId).catch(e=>console.warn('Could not close host session',e));}
         if(state.roomChannel){await api.unsubscribeRoomChannel(state.roomChannel);state.roomChannel=null;}
