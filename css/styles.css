@@ -5299,3 +5299,65 @@ html,body,#app{background:var(--hs-paper)!important;color:var(--hs-ink)!importan
 @keyframes hs-burst-launch{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.6) rotate(35deg)}}
 @keyframes hs-boom-word{0%{opacity:0;scale:.3}20%{opacity:1;scale:1.1}80%{opacity:1}100%{opacity:0;scale:1.7}}
 @media(prefers-reduced-motion:reduce){.hs-room-bomb-floating,.hs-bomb-orb,.hs-bomb-fuse-spark,.hs-burst-bomb,.hs-burst-flash,.hs-bomb-explosion{animation:none!important}}
+
+
+/* HAMSAT 2026-11-22 — deterministic room layouts, clear composer, timer stack */
+#sheet-root .room-sheet .hs-room-seats{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  align-items:start!important;
+}
+#sheet-root .room-sheet .hs-room-seats[data-layout="grid"]::before,
+#sheet-root .room-sheet .hs-room-seats[data-layout="grid"]::after{content:none!important;display:none!important}
+#sheet-root .room-sheet .hs-room-seats[data-layout="grid"]>.hs-room-seat{grid-column:auto!important;grid-row:auto!important;transform:none!important;margin:0!important}
+#sheet-root .room-sheet .hs-room-seats[data-layout="one-top"]::before,
+#sheet-root .room-sheet .hs-room-seats[data-layout="two-top"]::before{
+  content:""!important;display:block!important;visibility:hidden!important;grid-column:1!important;grid-row:1!important;pointer-events:none!important
+}
+#sheet-root .room-sheet .hs-room-seats[data-layout="one-top"]::after,
+#sheet-root .room-sheet .hs-room-seats[data-layout="two-top"]::after{
+  content:""!important;display:block!important;visibility:hidden!important;grid-column:4!important;grid-row:1!important;pointer-events:none!important
+}
+#sheet-root .room-sheet .hs-room-seats[data-layout="one-top"]>.hs-room-seat:first-child{
+  grid-column:2 / span 2!important;grid-row:1!important;transform:none!important;margin:0 0 8px!important
+}
+#sheet-root .room-sheet .hs-room-seats[data-layout="two-top"]>.hs-room-seat:first-child{
+  grid-column:2!important;grid-row:1!important;transform:none!important;margin:0 0 8px!important
+}
+#sheet-root .room-sheet .hs-room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(2){
+  grid-column:3!important;grid-row:1!important;transform:none!important;margin:0 0 8px!important
+}
+#sheet-root .room-sheet .hs-room-bomb-stack{display:flex!important;flex-direction:column!important;align-items:center!important;gap:7px!important}
+#sheet-root .room-sheet .hs-room-bomb-stack>#room-bomb-floating{order:0!important;position:relative!important;z-index:1!important}
+#sheet-root .room-sheet .hs-room-bomb-stack>.hs-seat-live-timer{
+  order:1!important;position:relative!important;inset:auto!important;z-index:2!important;transform:none!important;
+  margin:0!important;align-self:center!important;clear:both!important
+}
+#sheet-root .room-sheet .hs-room-bottom-bar{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"composer filters" "tools tools"!important;
+  align-items:center!important;column-gap:8px!important;row-gap:6px!important;
+  direction:rtl!important;background:#080b12!important;background-image:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;filter:none!important
+}
+#sheet-root .room-sheet .hs-room-compose-wrap{grid-area:composer!important;min-width:0!important;width:100%!important;background:#111722!important;border:1px solid rgba(231,202,120,.42)!important;border-radius:14px!important;opacity:1!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+#sheet-root .room-sheet .hs-room-compose{background:transparent!important;opacity:1!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+#sheet-root .room-sheet .hs-room-compose input{background:transparent!important;opacity:1!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+#sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs{
+  grid-area:filters!important;position:static!important;display:flex!important;visibility:visible!important;
+  align-items:center!important;justify-content:center!important;gap:4px!important;align-self:stretch!important;
+  margin:0!important;padding:0!important;width:auto!important;max-width:none!important;background:transparent!important;
+  border:0!important;box-shadow:none!important;backdrop-filter:none!important
+}
+#sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs button{
+  display:grid!important;place-items:center!important;flex:0 0 32px!important;width:32px!important;height:36px!important;
+  min-width:32px!important;padding:0!important;border:1px solid rgba(231,202,120,.22)!important;
+  border-radius:10px!important;background:#151a24!important;color:#cbbd99!important
+}
+#sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs button.active{background:#3a2e17!important;border-color:#e5c36b!important;color:#ffe5a0!important}
+#sheet-root .room-sheet .hs-room-tools-row{grid-area:tools!important;justify-content:flex-start!important;margin:0!important}
+@media(max-width:380px){
+  #sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs{gap:3px!important}
+  #sheet-root .room-sheet #room-chat-tabs.hs-room-chat-icon-tabs button{flex-basis:29px!important;width:29px!important;min-width:29px!important;height:34px!important}
+}
