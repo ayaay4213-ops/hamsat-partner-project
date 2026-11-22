@@ -7,14 +7,20 @@
   ],
   "orientation": "any",
   "id": "./",
-  "name": "HAMSAT",
-  "short_name": "HAMSAT",
-  "description": "HAMSAT — تطبيق اجتماعي عربي للغرف الصوتية والتواصل",
+  "name": "همسات HAMSAT",
+  "short_name": "همسات",
+  "description": "همسات — تطبيق اجتماعي عربي للغرف الصوتية والتواصل",
   "start_url": "./",
   "scope": "./",
-  "background_color": "#08090C",
-  "theme_color": "#08090C",
+  "background_color": "#220833",
+  "theme_color": "#220833",
   "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
@@ -33,6 +39,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "generator": "builder.puter.com"
+  ]
 }
