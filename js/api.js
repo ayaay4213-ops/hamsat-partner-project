@@ -436,6 +436,17 @@ export const api = {
     const {data,error}=await client().rpc('request_room_seat',{p_room_id:roomId,p_seat_no:seatNo});
     fail(error);return data;
   },
+  inviteRoomMemberToSeat: async (roomId,targetUserId) => {
+    const {data,error}=await client().rpc('invite_room_member_to_seat',{p_room_id:roomId,p_target_user:targetUserId});
+    fail(error);return data;
+  },
+  respondRoomSeatInvitation: async (invitationId,accept) => {
+    const {data,error}=await client().rpc('respond_room_seat_invitation',{p_invitation_id:invitationId,p_accept:!!accept});
+    fail(error);return data;
+  },
+  subscribeRoomSeatInvitations: (roomId,callback) => client().channel('room-seat-invitations-'+roomId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_seat_invitations',filter:'room_id=eq.'+roomId},callback)
+    .subscribe(),
   leaveRoomSeat: async (roomId) => {
     const {data,error}=await client().rpc('leave_room_seat',{p_room_id:roomId});
     fail(error);return data;
