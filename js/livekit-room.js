@@ -183,14 +183,15 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     return true;
   }
 
-  async function toggleMute() {
+  async function setMuted(shouldMute) {
     if (!room || !joined || !canPublish) throw new Error('احجزي مقعداً على المايك أولاً.');
-    const nextMuted = !muted;
+    const nextMuted = Boolean(shouldMute);
     await room.localParticipant.setMicrophoneEnabled(!nextMuted);
     muted = nextMuted;
     status(muted ? 'الميكروفون مكتوم' : 'الميكروفون يعمل', true);
     return muted;
   }
+  async function toggleMute() { return setMuted(!muted); }
 
   function toggleRoomAudioMute() {
     roomAudioMuted = !roomAudioMuted;
@@ -233,5 +234,5 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
     onState({ message: 'تم إيقاف الصوت', connected: false, muted: false, roomAudioMuted: false });
   }
 
-  return { join, leave, toggleMute, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
+  return { join, leave, toggleMute, setMuted, toggleRoomAudioMute, enableAudio, refreshPermissions, setParticipantMuted, get muted() { return muted; }, get roomAudioMuted() { return roomAudioMuted; }, get canPublish() { return canPublish; } };
 }
