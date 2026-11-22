@@ -689,10 +689,21 @@ async function openRoom(r) {
           <div class="hs-room-settings-fields"></div>
           <div class="hs-room-setting-row"><label>رمز الغرفة</label><div id="room-emoji-pick" class="hs-room-emoji-pick">${['🎙️','👑','🌙','💎','🌹','🦋','✨','🎶','💕','🔥','☕','🎧','🪄','🥂','🩷','💜','⭐','🌸','🦄','🎤'].map(e=>`<button type="button" data-room-emoji="${e}" class="${(r.roomEmoji||'🎙️')===e?'active':''}">${e}</button>`).join('')}</div></div></div>
         <div class="hs-room-settings-group hs-room-announcement-settings"><h4>إعلان الغرفة</h4><p class="hs-room-settings-hint">يظهر الإعلان في الشريط العلوي لجميع أعضاء الغرفة.</p><textarea id="room-announcement-input" class="field" rows="2" maxlength="160" placeholder="اكتبي إعلاناً قصيراً لأعضاء الغرفة..."></textarea><button type="button" id="room-announcement-publish" class="btn-gold w-full mt-2">نشر الإعلان</button></div>
-        <div class="hs-room-template-lock" role="note" aria-label="قالب الغرفة ثابت">
-          <span class="hs-room-template-lock-icon"><i data-lucide="layout-grid"></i></span>
-          <div><b>قالب الغرفة الموحد</b><p>المقاعد ثابتة: 2 + 4 + 4. يمكنك اختيار الخلفية دون تغيير ترتيبها أو أدوات الغرفة.</p></div>
-          <strong>10</strong>
+        <div class="hs-room-settings-group hs-room-seat-layout-settings">
+          <h4>إعدادات المايكات وتوزيع المقاعد</h4>
+          <p class="hs-room-settings-hint">اختاري عدد المقاعد وشكل ترتيبها. التغييرات تظهر لجميع أعضاء الغرفة بعد الحفظ.</p>
+          <div class="hs-room-settings-fields">
+            <label class="hs-room-setting-field"><span>عدد المايكات</span><select id="room-seat-limit" class="field">
+              ${Array.from({length:10},(_,i)=>i+1).map(n=>'<option value="'+n+'" '+(Number(r.seatLimit)===n?'selected':'')+'>'+n+' مقاعد</option>').join('')}
+            </select></label>
+            <label class="hs-room-setting-field"><span>شكل التوزيع</span><select id="room-seat-layout" class="field">
+              <option value="grid" ${roomSeatLayout==='grid'?'selected':''}>شبكة متساوية</option>
+              <option value="one-top" ${roomSeatLayout==='one-top'?'selected':''}>مقعد واحد بالأعلى</option>
+              <option value="two-top" ${roomSeatLayout==='two-top'?'selected':''}>مقعدان بالأعلى</option>
+              <option value="row" ${roomSeatLayout==='row'?'selected':''}>صف واحد متجاور</option>
+            </select></label>
+          </div>
+          <small class="hs-room-seat-layout-note">المقعد الأول مخصص للمضيفة. قبل تقليل العدد، أنزلي الأعضاء من المقاعد التي ستُزال.</small>
         </div>
         <div class="hs-room-settings-group hs-room-background-settings"><h4>خلفية المايكات</h4><p class="hs-room-settings-hint">هذه الخلفية مستقلة تمامًا عن غلاف الغرفة، وتظهر خلف المايكات فقط.</p>
           <label class="photo-picker hs-room-background-picker" for="room-background-gallery-file"><i data-lucide="images"></i><span>اختيار خلفية الغرفة من معرض الهاتف</span><input id="room-background-gallery-file" type="file" accept="image/*" hidden></label><p class="hs-room-settings-hint">اختاري صورة من هاتفك، ثم اضغطي حفظ خلفية الغرفة.</p><div id="room-background-catalog" class="mt-3"><p class="text-xs opacity-60">أو اختاري من خلفيات المتجر والمقتنيات</p></div>
