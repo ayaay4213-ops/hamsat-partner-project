@@ -1122,10 +1122,10 @@ async function openRoom(r) {
     };
     sheet.querySelector('#room-seat-invite-accept').onclick=()=>answerSeatInvite(true);
     sheet.querySelector('#room-seat-invite-decline').onclick=()=>answerSeatInvite(false);
-    state.roomSeatInviteChannel=api.subscribeRoomSeatInvitations(r.id,payload=>{
-      const invite=payload?.new;
+    const receiveSeatInvite=invite=>{
       if(!invite)return;
       if(invite.invitee_id===state.profile?.uuid&&invite.status==='pending'){
+        if(activeSeatInvitation?.id===invite.id)return;
         activeSeatInvitation=invite;
         sheet.querySelector('#room-seat-invite-message').textContent='المضيفة تدعوك للصعود إلى المايك. هل تقبلين؟';
         seatInviteModal.classList.remove('hidden');icons_();
@@ -1134,8 +1134,9 @@ async function openRoom(r) {
       }else if(invite.inviter_id===state.profile?.uuid&&invite.status==='declined'){
         toast('رفض العضو دعوة المايك');
       }
-    });
-    try{const joinedRoom=await api.joinRoom(r.id);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{roomSeatLayout='grid';r.seatLayout='grid';await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    };
+    state.roomSeatInviteChannel=api.subscribeRoomSeatInvitations(r.id,payload=>receiveSeatInvite(payload?.new));
+    try{const joinedRoom=await api.joinRoom(r.id);const pendingSeatInvites=await api.pendingRoomSeatInvitations(r.id);pendingSeatInvites.invitations.forEach(receiveSeatInvite);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{roomSeatLayout='grid';r.seatLayout='grid';await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     const minimizeRoom=()=>{closeRoomGames();if(state.roomSeatInviteChannel){api.unsubscribeRoomChannel(state.roomSeatInviteChannel);state.roomSeatInviteChannel=null;}state.roomMinimized=true;state.minimizedRoom=r;if(state.roomSeatTimer){clearInterval(state.roomSeatTimer);state.roomSeatTimer=null;}$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
     const exitRoom=async(button)=>{
