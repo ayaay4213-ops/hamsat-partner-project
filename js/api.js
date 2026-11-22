@@ -447,6 +447,11 @@ export const api = {
   subscribeRoomSeatInvitations: (roomId,callback) => client().channel('room-seat-invitations-'+roomId)
     .on('postgres_changes',{event:'*',schema:'public',table:'room_seat_invitations',filter:'room_id=eq.'+roomId},callback)
     .subscribe(),
+  pendingRoomSeatInvitations: async (roomId) => {
+    const user=await currentUser();
+    const {data,error}=await client().from('room_seat_invitations').select('id,room_id,inviter_id,invitee_id,seat_no,status,created_at,expires_at').eq('room_id',roomId).eq('invitee_id',user.id).eq('status','pending').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(3);
+    fail(error);return {invitations:data||[]};
+  },
   leaveRoomSeat: async (roomId) => {
     const {data,error}=await client().rpc('leave_room_seat',{p_room_id:roomId});
     fail(error);return data;
