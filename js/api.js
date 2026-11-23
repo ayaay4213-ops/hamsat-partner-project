@@ -661,7 +661,8 @@ export const api = {
     .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
   subscribeInbox: (callback) => client().channel('dm-inbox')
     .on('postgres_changes',{event:'*',schema:'public',table:'dm_conversations'},callback)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages'},callback).subscribe(),
+    // Inbox unread/read state changes on UPDATE as well as new-message INSERTs.
+    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages'},callback).subscribe(),
   blockState: async (targetId) => {
     const user = await currentUser();
     const { data, error } = await client().from('user_blocks').select('blocked_id')
