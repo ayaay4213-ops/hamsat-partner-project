@@ -6097,3 +6097,22 @@ body:has(.room-sheet) #tabbar{display:none!important}
   #sheet-root .room-sheet .hs-room-tools-row button{min-height:35px!important;height:35px!important;border-radius:9px!important}
   #sheet-root .room-sheet .hs-room-tools-row button svg{width:15px!important;height:15px!important}
 }
+
+
+/* Preserve the intentional reserved columns used to center the top microphone seats. */
+#sheet-root .room-sheet #room-seats[data-layout="one-top"]>.hs-room-seat:first-child{
+  grid-column:2/span 2!important;grid-row:1!important;justify-self:center!important;
+  width:calc(100% - 14px)!important;max-width:112px!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="one-top"]>.hs-room-seat:nth-child(n+2){
+  grid-column:auto!important;grid-row:auto!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(1){
+  grid-column:2!important;grid-row:1!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(2){
+  grid-column:3!important;grid-row:1!important;
+}
+#sheet-root .room-sheet #room-seats[data-layout="two-top"]>.hs-room-seat:nth-child(n+3){
+  grid-column:auto!important;grid-row:auto!important;
+}
