@@ -85,3 +85,15 @@ $$;
 
 revoke all on function public.get_public_room_member_counts(uuid[]) from public, anon;
 grant execute on function public.get_public_room_member_counts(uuid[]) to authenticated;
+
+-- 3) Client roles must not receive table-maintenance or DDL-adjacent privileges.
+-- Apply to existing public tables and to future tables created by either owner role.
+revoke truncate, references, trigger, maintain
+  on all tables in schema public
+  from anon, authenticated;
+
+alter default privileges for role postgres in schema public
+  revoke truncate, references, trigger, maintain on tables from anon, authenticated;
+
+alter default privileges for role supabase_admin in schema public
+  revoke truncate, references, trigger, maintain on tables from anon, authenticated;
