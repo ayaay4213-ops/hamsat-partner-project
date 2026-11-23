@@ -600,6 +600,12 @@ export const api = {
     const {data,error}=await client().from('notifications').select('id,type,title,body,actor_id,target_url,created_at,read_at').order('created_at',{ascending:false}).limit(60);
     fail(error); return {notifications:data};
   },
+  subscribeNotifications: async (callback) => {
+    const user=await currentUser();
+    return client().channel('notifications-'+user.id)
+      .on('postgres_changes',{event:'*',schema:'public',table:'notifications',filter:'recipient_id=eq.'+user.id},callback)
+      .subscribe();
+  },
   markNotificationRead: async (id) => {
     const {error}=await client().from('notifications').update({read_at:new Date().toISOString()}).eq('id',id);
     fail(error); return {success:true};
