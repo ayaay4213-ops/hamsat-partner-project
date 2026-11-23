@@ -62,7 +62,7 @@ security definer
 set search_path = ''
 as $function$
 begin
-  if not public.is_admin() then
+  if coalesce(public.is_admin(), false) is not true then
     raise exception 'هذه العملية متاحة للمشرفة الرئيسية فقط';
   end if;
   if p_status is null or p_status not in ('new','reviewing','resolved','dismissed') then
