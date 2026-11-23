@@ -26,3 +26,11 @@ jobs:
           node-version: 22
       - name: Validate project files
         run: node scripts/validate.mjs
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check moderation and LiveKit Edge Functions
+        run: |
+          deno check supabase/functions/admin-user-moderate/index.ts
+          deno check supabase/functions/livekit-token/index.ts
