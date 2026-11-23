@@ -132,8 +132,11 @@ Deno.serve(async (req: Request) => {
   if (target.role === "admin") return json(403, { error: "لا يمكن حظر حساب إداري." });
 
   if (action === "kick") {
-    const { error: kickError } = await service.auth.admin.signOut(userId, "global");
-    if (kickError) return json(502, { error: "تعذّر إنهاء جلسة العضو: " + kickError.message });
+    const { data: revokedSessions, error: kickError } = await service.rpc("admin_revoke_user_sessions", { p_user_id: userId });
+    if (kickError) {
+      console.error("Could not revoke target user sessions", kickError);
+      return json(502, { error: "تعذّر إنهاء جلسات العضو. تأكدي من تطبيق ترحيل حماية الجلسات أولاً." });
+    }
     const livekitCleanup = await removeUserFromLiveKitRooms(service, userId);
     const { error: auditError } = await service.from("staff_audit_log").insert({
       staff_user_id: authData.user.id,
@@ -141,19 +144,24 @@ Deno.serve(async (req: Request) => {
       target_type: "user",
       target_id: userId,
       reason: reason || "إنهاء جلسة العضو من لوحة الإدارة",
-      metadata: { source: "admin-user-moderate", livekit_cleanup: livekitCleanup },
+      metadata: { source: "admin-user-moderate", revoked_sessions: revokedSessions, livekit_cleanup: livekitCleanup },
     });
     if (auditError) return json(500, { error: "تم إنهاء الجلسة لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
-    return json(200, { success: true, user_id: userId, kicked: true, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
+    return json(200, { success: true, user_id: userId, kicked: true, revoked_sessions: revokedSessions, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
   }
 
   const { error: authBanError } = await service.auth.admin.updateUserById(userId, {
     ban_duration: banned ? "876000h" : "none",
   });
   if (authBanError) return json(502, { error: "تعذّر تحديث حالة تسجيل الدخول: " + authBanError.message });
+  let revokedSessions = 0;
   if (banned) {
-    const { error: revokeError } = await service.auth.admin.signOut(userId, "global");
-    if (revokeError) return json(502, { error: "تم تحديث الحظر لكن تعذّر إنهاء الجلسات الحالية: " + revokeError.message });
+    const { data, error: revokeError } = await service.rpc("admin_revoke_user_sessions", { p_user_id: userId });
+    if (revokeError) {
+      console.error("Could not revoke banned user's sessions", revokeError);
+      return json(502, { error: "تم تحديث الحظر لكن تعذّر إنهاء جلسات الحساب. تأكدي من تطبيق ترحيل حماية الجلسات." });
+    }
+    revokedSessions = Number(data) || 0;
   }
 
   const { error: profileError } = await service.from("profiles").update({
@@ -173,9 +181,9 @@ Deno.serve(async (req: Request) => {
     target_type: "user",
     target_id: userId,
     reason: banned ? (reason || "مخالفة إرشادات المجتمع") : (reason || "رفع الحظر من لوحة الإدارة"),
-    metadata: { banned, auth_sessions_revoked: banned, source: "admin-user-moderate", livekit_cleanup: livekitCleanup },
+    metadata: { banned, auth_sessions_revoked: banned, revoked_sessions: revokedSessions, source: "admin-user-moderate", livekit_cleanup: livekitCleanup },
   });
   if (auditError) return json(500, { error: "تم تحديث حالة الحساب لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
 
-  return json(200, { success: true, user_id: userId, banned, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
+  return json(200, { success: true, user_id: userId, banned, revoked_sessions: revokedSessions, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
 });
