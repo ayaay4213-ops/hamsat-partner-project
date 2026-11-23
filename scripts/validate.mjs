@@ -772,6 +772,20 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const shopHardeningPath = path.join(root, 'supabase/migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql');
+if (fs.existsSync(shopHardeningPath)) {
+  const sql = fs.readFileSync(shopHardeningPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on function public.purchase_shop_item(text) from public, anon, authenticated',
+    'grant execute on function public.purchase_shop_item(text) to authenticated',
+    'revoke all on function private.apply_room_bomb_contribution() from public, anon, authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing shop/bomb RPC execution hardening: ' + token);
+  }
+} else {
+  errors.push('Missing shop idempotency and room-bomb migration: 0080');
+}
+
 const reportRateLimitPath = path.join(root, 'supabase/migrations/20261123153000_0085_report_rate_limits.sql');
 if (fs.existsSync(reportRateLimitPath)) {
   const sql = fs.readFileSync(reportRateLimitPath, 'utf8').toLowerCase();
