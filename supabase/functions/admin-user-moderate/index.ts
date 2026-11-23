@@ -31,38 +31,66 @@ async function removeUserFromLiveKitRooms(service: ReturnType<typeof createClien
   }
 
   const roomService = new RoomServiceClient(livekitUrl.replace(/^wss:/i, "https:"), livekitApiKey, livekitApiSecret);
-  const failures: string[] = [];
+  const livekitFailures: string[] = [];
+  const databaseFailures: string[] = [];
   let processed = 0;
 
   for (const roomId of roomIds) {
+    // Attempt LiveKit removal independently. A transient LiveKit API error must
+    // not prevent stale seats/memberships from being cleaned from Postgres.
     try {
       const participants = await roomService.listParticipants(roomId);
       if (participants.some((participant) => participant.identity === userId)) {
         await roomService.removeParticipant(roomId, userId);
       }
-
-      const { error: seatError } = await service.from("room_seats").delete()
-        .eq("room_id", roomId).eq("user_id", userId);
-      if (seatError) throw new Error("تعذّر تحرير المقعد");
-
-      const { error: memberError } = await service.from("room_members").delete()
-        .eq("room_id", roomId).eq("user_id", userId);
-      if (memberError) throw new Error("تعذّر إنهاء عضوية الغرفة");
-
-      const { error: muteError } = await service.from("room_participant_mutes").delete()
-        .eq("room_id", roomId).eq("user_id", userId);
-      if (muteError) throw new Error("تعذّر تنظيف حالة كتم الصوت");
-
-      processed++;
     } catch (error) {
-      console.error("LiveKit moderation cleanup failed for room", roomId, error);
-      failures.push(roomId);
+      console.error("LiveKit participant removal failed during moderation", roomId, error);
+      livekitFailures.push(roomId);
     }
+
+    let databaseRoomClean = true;
+    const { error: seatError } = await service.from("room_seats").delete()
+      .eq("room_id", roomId).eq("user_id", userId);
+    if (seatError) {
+      databaseRoomClean = false;
+      console.error("Could not release moderated user's room seat", roomId, seatError);
+    }
+
+    const { error: memberError } = await service.from("room_members").delete()
+      .eq("room_id", roomId).eq("user_id", userId);
+    if (memberError) {
+      databaseRoomClean = false;
+      console.error("Could not remove moderated user's room membership", roomId, memberError);
+    }
+
+    const { error: muteError } = await service.from("room_participant_mutes").delete()
+      .eq("room_id", roomId).eq("user_id", userId);
+    if (muteError) {
+      databaseRoomClean = false;
+      console.error("Could not clear moderated user's room mute state", roomId, muteError);
+    }
+
+    if (databaseRoomClean) processed++;
+    else databaseFailures.push(roomId);
   }
 
-  return failures.length
-    ? { ok: false, rooms_processed: processed, failed_rooms: failures.length, warning: "تم تنفيذ الإجراء، لكن تعذّر تنظيف الاتصال الصوتي أو العضوية في بعض الغرف. راجعي الغرف المتأثرة." }
-    : { ok: true, rooms_processed: processed };
+  const failedRooms = [...new Set([...livekitFailures, ...databaseFailures])];
+  if (failedRooms.length) {
+    const warning = livekitFailures.length && databaseFailures.length
+      ? "تعذّر إخراج الصوت من بعض الغرف وتنظيف بعض سجلات العضوية. راجعي الغرف المتأثرة فوراً."
+      : livekitFailures.length
+        ? "نُظّفت سجلات المقاعد والعضوية، لكن تعذّر تأكيد إخراج الصوت من بعض الغرف. راجعي الاتصالات الصوتية فوراً."
+        : "تعذّر تنظيف بعض سجلات المقاعد أو العضوية. راجعي الغرف المتأثرة.";
+    return {
+      ok: false,
+      rooms_processed: processed,
+      failed_rooms: failedRooms.length,
+      livekit_failed_rooms: livekitFailures.length,
+      database_failed_rooms: databaseFailures.length,
+      warning,
+    };
+  }
+  return { ok: true, rooms_processed: processed, livekit_failed_rooms: 0, database_failed_rooms: 0 };
 }
 
 Deno.serve(async (req: Request) => {
