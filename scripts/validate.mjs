@@ -772,6 +772,49 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const presenceSecurityPath = path.join(root, 'supabase/migrations/20261123080000_0079_security_and_presence_reconciliation.sql');
+if (fs.existsSync(presenceSecurityPath)) {
+  const sql = fs.readFileSync(presenceSecurityPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on function public.capture_auth_login_event() from public, anon, authenticated',
+    'interval \'180 seconds\'',
+    'revoke truncate, references, trigger, maintain',
+    'grant update (status, responded_at)'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing security/presence reconciliation safeguard: ' + token);
+  }
+} else {
+  errors.push('Missing security and presence reconciliation migration: 0079');
+}
+
+const agencyRolePath = path.join(root, 'supabase/migrations/20261123140000_0082_agency_role_type_validation.sql');
+if (fs.existsSync(agencyRolePath)) {
+  const sql = fs.readFileSync(agencyRolePath, 'utf8').toLowerCase();
+  for (const token of [
+    'coalesce(public.is_admin(), false)',
+    "p_role = 'agent' and v_agency_type not in ('recharge','both')",
+    "p_role = 'host' and v_agency_type not in ('hosts','both')"
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing agency role/type authorization: ' + token);
+  }
+} else {
+  errors.push('Missing agency role/type validation migration: 0082');
+}
+
+const rechargePolicyPath = path.join(root, 'supabase/migrations/20261123150000_0084_scope_agency_recharge_history.sql');
+if (fs.existsSync(rechargePolicyPath)) {
+  const sql = fs.readFileSync(rechargePolicyPath, 'utf8').toLowerCase();
+  for (const token of [
+    'coalesce(public.is_admin(), false)',
+    "private.is_agency_member(agency_id, array['owner','manager']::text[])",
+    "private.is_agency_member(agency_id, array['agent']::text[])"
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing agency recharge history scope: ' + token);
+  }
+} else {
+  errors.push('Missing agency recharge history policy migration: 0084');
+}
+
 const shopHardeningPath = path.join(root, 'supabase/migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql');
 if (fs.existsSync(shopHardeningPath)) {
   const sql = fs.readFileSync(shopHardeningPath, 'utf8').toLowerCase();
