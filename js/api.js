@@ -652,7 +652,7 @@ export const api = {
     fail(error); return {success:true};
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
+    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
   subscribeInbox: (callback) => client().channel('dm-inbox')
     .on('postgres_changes',{event:'*',schema:'public',table:'dm_conversations'},callback)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'dm_messages'},callback).subscribe(),
