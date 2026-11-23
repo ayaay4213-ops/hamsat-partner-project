@@ -623,18 +623,36 @@ export const api = {
     const { data, error } = await client().from('dm_conversations')
       .select('id,user_a,user_b,updated_at,dm_messages(id,body,sender_id,created_at,read_at)')
       .or('user_a.eq.' + user.id + ',user_b.eq.' + user.id)
-      .order('updated_at', { ascending: false }).limit(50);
+      .order('updated_at', { ascending: false }).limit(50)
+      // The inbox preview needs only the newest message per conversation.
+      .limit(1, { foreignTable: 'dm_messages' });
     fail(error);
-    const ids = [...new Set(data.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
+    const rows = data || [];
+    if (!rows.length) return { conversations: [] };
+
+    const conversationIds = rows.map(c => c.id);
+    // Fetch only unread incoming rows, rather than every historical message.
+    const { data: unreadRows, error: unreadError } = await client().from('dm_messages')
+      .select('conversation_id')
+      .in('conversation_id', conversationIds)
+      .neq('sender_id', user.id)
+      .is('read_at', null);
+    fail(unreadError);
+
+    const ids = [...new Set(rows.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
     const profiles = ids.length ? await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids) : {data:[],error:null};
     fail(profiles.error);
-    const mapped=await mapProfilesWithFrames(profiles.data);const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
-    return { conversations: data.map(c => {
+    const mapped=await mapProfilesWithFrames(profiles.data || []);
+    const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
+    const unreadCounts = (unreadRows || []).reduce((counts, row) => {
+      counts[row.conversation_id] = (counts[row.conversation_id] || 0) + 1;
+      return counts;
+    }, {});
+    return { conversations: rows.map(c => {
       const otherId = c.user_a === user.id ? c.user_b : c.user_a;
-      const msgs = (c.dm_messages || []).sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
-      const last = msgs[0];
+      const last = (c.dm_messages || [])[0];
       return { id:c.id, other:byId[otherId], lastMessage:last?.body || '', updatedAt:c.updated_at,
-        unread:msgs.filter(m=>m.sender_id!==user.id&&!m.read_at).length };
+        unread:unreadCounts[c.id] || 0 };
     }).filter(c=>c.other) };
   },
   directMessages: async (conversationId) => {
