@@ -777,7 +777,7 @@ if (fs.existsSync(livekitTokenPath)) {
   const source = fs.readFileSync(livekitTokenPath, 'utf8');
   for (const token of [
     '.select("display_name,is_banned")',
-    'if (profile.is_banned === true)',
+    'if (!profile || profile.is_banned === true)',
     'هذا الحساب غير مخوّل بالاتصال الصوتي'
   ]) {
     if (!source.includes(token)) errors.push('LiveKit token issuance must reject banned or unverifiable accounts: ' + token);
