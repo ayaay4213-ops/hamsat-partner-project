@@ -14,7 +14,7 @@ async function boot(){
  const sections=[
   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports]
+  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
  ];
  await Promise.all(sections.map(async([label,load])=>{
   try{await load();}
@@ -23,7 +23,7 @@ async function boot(){
    const target=({
     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
     'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
-    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list'
+    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
    })[label];
    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
    message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
@@ -148,6 +148,18 @@ async function loadReports(){
  root.querySelectorAll('[data-report-status]').forEach(b=>b.onclick=async()=>{const {error}=await supabase.rpc('admin_update_user_report',{p_report_id:Number(b.dataset.id),p_status:b.dataset.reportStatus});if(error){message(error.message,true);return;}await loadReports();message('تم تحديث حالة البلاغ.');});
 }
 
+async function loadFeedback(){
+ const root=$('#feedback-list');
+ const {data,error}=await supabase.from('user_feedback').select('*').order('created_at',{ascending:false}).limit(100);
+ if(error)throw error;
+ const ids=[...new Set((data||[]).map(x=>x.user_id).filter(Boolean))];
+ let profiles=[];
+ if(ids.length){const r=await supabase.from('profiles').select('id,public_id,display_name,handle').in('id',ids);if(!r.error)profiles=r.data||[];}
+ const byId=Object.fromEntries(profiles.map(x=>[x.id,x]));
+ const statusNames={new:'جديدة',reviewing:'قيد المراجعة',resolved:'تمت المعالجة',dismissed:'مغلقة'};
+ root.innerHTML=(data||[]).map(x=>'<article class="item block"><div class="flex justify-between gap-3"><div><b>ملاحظة #'+esc(x.id)+' · '+esc(x.feedback_type)+'</b><p class="muted text-xs">'+esc(byId[x.user_id]?.display_name||byId[x.user_id]?.handle||'عضو')+' · ID '+esc(byId[x.user_id]?.public_id||'—')+' · '+new Date(x.created_at).toLocaleString('ar-DZ')+'</p></div><span class="pill">'+esc(statusNames[x.status]||x.status)+'</span></div><p class="text-sm mt-2 whitespace-pre-wrap">'+esc(x.body)+'</p><div class="flex flex-wrap gap-2 mt-3"><button class="ghost text-xs" data-feedback-status="reviewing" data-id="'+esc(x.id)+'">قيد المراجعة</button><button class="ghost text-xs" data-feedback-status="resolved" data-id="'+esc(x.id)+'">تمت المعالجة</button><button class="ghost text-xs" data-feedback-status="dismissed" data-id="'+esc(x.id)+'">إغلاق</button></div></article>').join('')||'<p class="muted">لا توجد ملاحظات واردة حالياً.</p>';
+ root.querySelectorAll('[data-feedback-status]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const {error}=await supabase.rpc('admin_update_user_feedback',{p_feedback_id:Number(b.dataset.id),p_status:b.dataset.feedbackStatus});if(error)throw error;await loadFeedback();message('تم تحديث حالة الملاحظة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}});
+}
 async function loadLogins(){
  const root=$('#login-events');
  const {data,error}=await supabase.rpc('admin_recent_logins',{p_limit:100});
@@ -352,7 +364,7 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','agencies','reports'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','agencies','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
 $('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
 let loginChannel=null;
 function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}
