@@ -51,6 +51,7 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
 
       // LiveKit publish permission is fixed by the access token. Reconnect with
       // a fresh server-issued token whenever this participant gains or loses a seat.
+      const wasMuted = muted;
       try { await room.localParticipant.setMicrophoneEnabled(false); } catch (_) {}
       await room.disconnect();
       joined = false;
@@ -62,8 +63,8 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
         return;
       }
       canPublish = nextCanPublish;
-      muted = false;
-      if (canPublish) await room.localParticipant.setMicrophoneEnabled(true);
+      muted = wasMuted;
+      if (canPublish) await room.localParticipant.setMicrophoneEnabled(!muted);
       if (disposed || !room) {
         try { await room?.disconnect(); } catch (_) {}
         joined = false;
