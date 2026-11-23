@@ -529,7 +529,7 @@ export const api = {
     fail(error); return { success: true };
   },
   games: async () => {
-    const {data,error}=await client().from('games').select('id,name,description,game_type,icon').eq('active',true).in('game_type',['quiz','trivia']).order('sort_order').order('created_at',{ascending:false});
+    const {data,error}=await client().rpc('list_room_games');
     fail(error); return {games:data||[]};
   },
   findRoomGameSession: async (roomId) => {
