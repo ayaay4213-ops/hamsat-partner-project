@@ -796,6 +796,11 @@ if (fs.existsSync(moderationFunctionPath)) {
     'RoomServiceClient',
     'removeUserFromLiveKitRooms',
     'roomService.removeParticipant(roomId, userId)',
+    'const livekitFailures: string[] = []',
+    'const databaseFailures: string[] = []',
+    'if (databaseRoomClean) processed++',
+    'livekit_failed_rooms: livekitFailures.length',
+    'database_failed_rooms: databaseFailures.length',
     'livekit_cleanup: livekitCleanup',
     'warning: livekitCleanup.ok ? undefined : livekitCleanup.warning'
   ]) {
