@@ -35,7 +35,7 @@ declare
   v_id bigint;
 begin
   if v_user is null then raise exception 'يجب تسجيل الدخول'; end if;
-  if p_type not in ('اقتراح','مشكلة تقنية','شكوى') then
+  if p_type is null or p_type not in ('اقتراح','مشكلة تقنية','شكوى') then
     raise exception 'نوع الملاحظة غير صالح';
   end if;
   if char_length(btrim(coalesce(p_body,''))) < 5
