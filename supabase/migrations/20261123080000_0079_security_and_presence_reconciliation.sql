@@ -97,3 +97,9 @@ alter default privileges for role postgres in schema public
 
 alter default privileges for role supabase_admin in schema public
   revoke truncate, references, trigger, maintain on tables from anon, authenticated;
+
+-- 4) Friend-request participants may only change the response fields.
+-- RLS already restricts UPDATE to the receiver of a pending request.
+revoke update on table public.friend_requests from authenticated;
+grant update (status, responded_at)
+  on table public.friend_requests to authenticated;
