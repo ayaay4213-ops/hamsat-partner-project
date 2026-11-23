@@ -909,6 +909,21 @@ if (fs.existsSync(reportRateLimitPath)) {
   errors.push('Missing report rate-limit migration: 0085');
 }
 
+const dmBlockMigrationPath = path.join(root, 'supabase/migrations/20261123163000_0087_dm_block_consistency.sql');
+if (fs.existsSync(dmBlockMigrationPath)) {
+  const sql = fs.readFileSync(dmBlockMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function public.get_or_create_conversation(p_other_user uuid)',
+    'private.is_user_blocked(v_me, p_other_user)',
+    'revoke all on function public.get_or_create_conversation(uuid) from public, anon',
+    'grant execute on function public.get_or_create_conversation(uuid) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing direct-message block enforcement: ' + token);
+  }
+} else {
+  errors.push('Missing direct-message block consistency migration: 0087');
+}
+
 const feedbackMigrationPath = path.join(root, 'supabase/migrations/20261123160000_0086_user_feedback_inbox.sql');
 if (fs.existsSync(feedbackMigrationPath)) {
   const sql = fs.readFileSync(feedbackMigrationPath, 'utf8').toLowerCase();
