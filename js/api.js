@@ -642,8 +642,14 @@ export const api = {
 
     const ids = [...new Set(rows.map(c => c.user_a === user.id ? c.user_b : c.user_a))];
     const profiles = ids.length ? await client().from('profiles').select(PROFILE_COLUMNS).in('id', ids) : {data:[],error:null};
-    fail(profiles.error);
-    const mapped=await mapProfilesWithFrames(profiles.data || []);
+    let mapped=[];
+    try{
+      if(profiles.error)throw profiles.error;
+      mapped=await mapProfilesWithFrames(profiles.data || []);
+    }catch(profileError){
+      // A profile/cosmetic lookup must not hide a valid private conversation.
+      console.warn('Inbox participant profiles could not be loaded; showing neutral placeholders.',profileError);
+    }
     const byId = Object.fromEntries(mapped.map(p => [p.uuid,p]));
     const unreadCounts = (unreadRows || []).reduce((counts, row) => {
       counts[row.conversation_id] = (counts[row.conversation_id] || 0) + 1;
@@ -652,9 +658,9 @@ export const api = {
     return { conversations: rows.map(c => {
       const otherId = c.user_a === user.id ? c.user_b : c.user_a;
       const last = (c.dm_messages || [])[0];
-      return { id:c.id, other:byId[otherId], lastMessage:last?.body || '', updatedAt:c.updated_at,
+      return { id:c.id, other:byId[otherId] || {uuid:otherId,displayName:'عضو',handle:'عضو',avatarUrl:null}, lastMessage:last?.body || '', updatedAt:c.updated_at,
         unread:unreadCounts[c.id] || 0 };
-    }).filter(c=>c.other) };
+    }) };
   },
   directMessages: async (conversationId) => {
     const user=await currentUser();
