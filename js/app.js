@@ -1842,7 +1842,23 @@ function settingsScreen(){
  document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
  $('#settings-logout').onclick=()=>openSheet('<h2 class="font-bold mb-3">تسجيل الخروج</h2><button id="settings-confirm-out" class="btn-danger w-full">تأكيد تسجيل الخروج</button>',s=>s.querySelector('#settings-confirm-out').onclick=signOut);
 }
-function feedbackScreen(){mePage('التعليقات والاقتراحات','<form id="me-feedback-form" class="hs-feedback-page"><label>نوع الملاحظة<select name="type" class="field"><option>اقتراح</option><option>مشكلة تقنية</option><option>شكوى</option></select></label><label>التفاصيل<textarea name="body" class="field" rows="5" required maxlength="1500" placeholder="اكتبي ملاحظتك"></textarea></label><button class="btn-gold w-full">إرسال</button><p class="hs-task-note">خدمة إرسال الملاحظات تحتاج إلى endpoint دعم.</p></form>');$('#me-feedback-form').onsubmit=e=>{e.preventDefault();toast('خدمة إرسال الملاحظات غير مربوطة بالخادم بعد.','error');};}
+function feedbackScreen(){
+ mePage('التعليقات والاقتراحات','<form id="me-feedback-form" class="hs-feedback-page"><label>نوع الملاحظة<select name="type" class="field"><option>اقتراح</option><option>مشكلة تقنية</option><option>شكوى</option></select></label><label>التفاصيل<textarea name="body" class="field" rows="5" required minlength="5" maxlength="1500" placeholder="اكتبي ملاحظتك"></textarea></label><button class="btn-gold w-full" type="submit">إرسال</button><p class="hs-task-note">نستقبل ملاحظتك ونحفظها لفريق همسات لمراجعتها.</p></form>');
+ const form=$('#me-feedback-form');
+ form.onsubmit=async e=>{
+  e.preventDefault();
+  const button=form.querySelector('button[type="submit"]');
+  const body=form.elements.body.value.trim();
+  if(body.length<5){toast('اكتبي ملاحظة من 5 أحرف على الأقل.','error');return;}
+  button.disabled=true;
+  try{
+   await api.submitFeedback(form.elements.type.value,body);
+   form.reset();
+   toast('تم إرسال ملاحظتك بنجاح، شكرًا لمساعدتنا.');
+  }catch(error){toast(error.message||'تعذّر إرسال الملاحظة.','error');}
+  finally{button.disabled=false;}
+ };
+}
 function inventoryScreen(){mePage('أدوات','<div id="me-inventory" class="hs-inventory-list">جارٍ تحميل المقتنيات…</div>');api.inventory().then(r=>{const el=$('#me-inventory');if(!el)return;el.innerHTML=(r.items||[]).length?r.items.map(x=>'<article><b>'+esc(x.name)+'</b><small>'+esc(x.item_type||'عنصر')+'</small></article>').join(''):'لا توجد مقتنيات بعد.';}).catch(e=>{$('#me-inventory').textContent=e.message;});}
 
 async function userScreen(handle) {
