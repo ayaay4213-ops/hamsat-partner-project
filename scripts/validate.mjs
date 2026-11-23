@@ -831,7 +831,9 @@ if (fs.existsSync(inboxApiPath)) {
     ".select('id,conversation_id,sender_id,body,created_at,read_at').single()",
     "if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.')",
     ".subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Direct-message realtime status:'",
-    ".subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Inbox realtime status:'"
+    ".subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Inbox realtime status:'",
+    "Inbox participant profiles could not be loaded; showing neutral placeholders.",
+    "other:byId[otherId] || {uuid:otherId,displayName:'عضو',handle:'عضو',avatarUrl:null}"
   ]) {
     if (!js.includes(token)) errors.push('Inbox must load the latest message preview and preserve unread counts: ' + token);
   }
