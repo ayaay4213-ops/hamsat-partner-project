@@ -51,6 +51,15 @@ Deno.serve(async (req: Request) => {
   if (action === "kick") {
     const { error: kickError } = await service.auth.admin.signOut(userId, "global");
     if (kickError) return json(502, { error: "تعذّر إنهاء جلسة العضو: " + kickError.message });
+    const { error: auditError } = await service.from("staff_audit_log").insert({
+      staff_user_id: authData.user.id,
+      action: "user_session_kicked",
+      target_type: "user",
+      target_id: userId,
+      reason: reason || "إنهاء جلسة العضو من لوحة الإدارة",
+      metadata: { source: "admin-user-moderate" },
+    });
+    if (auditError) return json(500, { error: "تم إنهاء الجلسة لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
     return json(200, { success: true, user_id: userId, kicked: true });
   }
 
@@ -69,6 +78,16 @@ Deno.serve(async (req: Request) => {
     ban_reason: banned ? (reason || "مخالفة إرشادات المجتمع") : null,
   }).eq("id", userId);
   if (profileError) return json(502, { error: "تم تحديث تسجيل الدخول لكن تعذّر تحديث سجل العضو: " + profileError.message });
+
+  const { error: auditError } = await service.from("staff_audit_log").insert({
+    staff_user_id: authData.user.id,
+    action: banned ? "user_banned" : "user_unbanned",
+    target_type: "user",
+    target_id: userId,
+    reason: banned ? (reason || "مخالفة إرشادات المجتمع") : (reason || "رفع الحظر من لوحة الإدارة"),
+    metadata: { banned, auth_sessions_revoked: banned, source: "admin-user-moderate" },
+  });
+  if (auditError) return json(500, { error: "تم تحديث حالة الحساب لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
 
   return json(200, { success: true, user_id: userId, banned });
 });
