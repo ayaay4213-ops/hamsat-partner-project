@@ -772,6 +772,27 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const moderationFunctionPath = path.join(root, 'supabase/functions/admin-user-moderate/index.ts');
+if (fs.existsSync(moderationFunctionPath)) {
+  const source = fs.readFileSync(moderationFunctionPath, 'utf8');
+  for (const token of [
+    'RoomServiceClient',
+    'removeUserFromLiveKitRooms',
+    'roomService.removeParticipant(roomId, userId)',
+    'livekit_cleanup: livekitCleanup',
+    'warning: livekitCleanup.ok ? undefined : livekitCleanup.warning'
+  ]) {
+    if (!source.includes(token)) errors.push('Account moderation must clean up active LiveKit rooms and report failures: ' + token);
+  }
+} else {
+  errors.push('Missing account moderation Edge Function');
+}
+const adminUiPath = path.join(root, 'js/admin.js');
+if (fs.existsSync(adminUiPath)) {
+  const source = fs.readFileSync(adminUiPath, 'utf8');
+  if (!source.includes('Boolean(data?.warning)')) errors.push('Admin moderation UI must display LiveKit cleanup warnings');
+}
+
 const inboxApiPath = path.join(root, 'js/api.js');
 if (fs.existsSync(inboxApiPath)) {
   const js = fs.readFileSync(inboxApiPath, 'utf8');
