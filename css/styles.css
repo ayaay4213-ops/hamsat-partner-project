@@ -5790,7 +5790,6 @@ body:has(.room-sheet) #tabbar{display:none!important}
 }
 #sheet-root .room-sheet .hs-room-bomb-stack .hs-seat-live-timer>span{display:none!important}
 #sheet-root .room-sheet .hs-room-bomb-stack .hs-seat-live-timer>strong{font-size:10px!important;line-height:1.2!important}
-#sheet-root .room-sheet .hs-room-settings-group:has(#room-seat-limit){display:none!important}
 @media(max-width:380px){
   #sheet-root .room-sheet .hs-room-seats{gap:5px 2px!important}
   #sheet-root .room-sheet .hs-room-tools-row{gap:2px!important}
