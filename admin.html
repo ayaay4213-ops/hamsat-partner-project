@@ -42,7 +42,7 @@ textarea.field{min-height:76px;resize:vertical}
 #admin>nav .tab{flex:1 1 105px}
 #overview .stat{min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:5px}
 #catalog>div,#gifts>div,#games>div,#agencies>div,#reports>div{min-width:0}
-#item-list,#gift-list,#game-list,#user-results,#login-events,#room-list,#bomb-level-list,#agency-list,#report-list,#topup-package-list{display:grid;gap:9px}
+#item-list,#gift-list,#game-list,#user-results,#login-events,#room-list,#bomb-level-list,#agency-list,#report-list,#topup-package-list,#staff-list,#staff-audit-list{display:grid;gap:9px}
 #item-list .item,#user-results .item,#room-list .item,#login-events .item{padding:13px;border-radius:15px}
 #item-list img{flex:none}
 #user-results .item>div:last-child{justify-content:flex-end}
@@ -136,7 +136,7 @@ header p,header small{color:#77786d!important}
 </head>
 <body><div class="wrap space-y-4">
 <header class="flex flex-wrap items-center justify-between gap-3 py-3"><div class="flex items-center gap-3"><button id="admin-menu-toggle" class="ghost text-2xl leading-none" type="button" aria-label="فتح قائمة لوحة الإدارة">☰</button><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
-<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
+<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
 <div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
 <main id="admin" class="hidden space-y-4">
 <section id="overview" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -150,7 +150,7 @@ header p,header small{color:#77786d!important}
 <button class="tab" data-tab="gifts">الهدايا</button>
 <button class="tab" data-tab="users">الأعضاء وID</button><button class="tab" data-tab="logins">دخول الأعضاء</button>
 <button class="tab" data-tab="rooms">الغرف</button>
-<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button>
+<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button>
 </nav>
 <section id="catalog" class="panel space-y-4">
 <div><h2 class="text-xl font-bold">إدارة المقتنيات والتأثيرات</h2><p class="muted text-sm">إضافة عناصر المتجر وتحديد السعر والنوع وإظهارها أو إخفاؤها.</p></div>
@@ -262,6 +262,22 @@ header p,header small{color:#77786d!important}
 <button class="btn sm:col-span-2" type="submit">حفظ الباقة</button>
 </form><div id="topup-package-list" class="space-y-2 mt-3"></div></div>
 </section>
+<section id="staff" class="panel space-y-5 hidden">
+<div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
+<form id="staff-assign-form" class="grid sm:grid-cols-2 gap-3">
+<label class="text-sm">المعرّف العام للعضو<input class="field mt-1" name="public_id" type="number" min="1" required placeholder="مثال: 100025"></label>
+<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation"> إدارة الغرف والإشراف</label>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="report_review"> مراجعة البلاغات</label>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="member_support"> دعم الأعضاء</label>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="event_management"> إدارة الفعاليات</label>
+</div>
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> تفعيل المسؤول مباشرة</label>
+<button class="btn" type="submit">حفظ الصلاحيات</button>
+</form>
+<div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">المسؤولون الحاليون</h3><div id="staff-list" class="grid gap-2"><p class="muted">جارٍ التحميل...</p></div></div>
+<div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">سجل إجراءات المسؤولين</h3><div id="staff-audit-list" class="grid gap-2"><p class="muted">جارٍ التحميل...</p></div></div>
+</section>
 <section id="reports" class="panel space-y-4 hidden">
 <div><h2 class="text-xl font-bold">بلاغات المستخدمين والغرف</h2><p class="muted text-sm">راجعي البلاغات وغيّري حالتها بعد اتخاذ الإجراء المناسب.</p></div>
 <div id="report-list" class="space-y-2"></div>
@@ -271,4 +287,4 @@ header p,header small{color:#77786d!important}
 <div id="feedback-list" class="space-y-2"></div>
 </section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261121-admin-directory-edge-v4"></script></body></html>
+<script type="module" src="js/admin.js?v=20261123-staff-permissions-v1"></script></body></html>
