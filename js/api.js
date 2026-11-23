@@ -684,6 +684,10 @@ export const api = {
     const { data, error } = await client().rpc('report_room', { p_room_id: roomId, p_reason: reason, p_details: details });
     fail(error); return data;
   },
+  submitFeedback: async (type, body) => {
+    const { data, error } = await client().rpc('submit_user_feedback', { p_type: type, p_body: body });
+    fail(error); return data;
+  },
   hostStartSession: async (roomId) => {
     const { data, error } = await client().rpc('host_start_session', { p_room_id: roomId });
     if (error && /Could not find the function|does not exist/i.test(error.message || '')) return null;
