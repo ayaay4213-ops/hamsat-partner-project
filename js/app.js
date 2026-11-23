@@ -2043,18 +2043,33 @@ async function agencyScreen(){
 async function notificationsScreen() {
   screen.innerHTML = header('الإشعارات', '<button id="read-all" class="text-xs text-amber-300">تحديد الكل كمقروء</button>') + `<div class="p-4 space-y-3" id="notifications-list">${loading()}</div>`;
   icons_();
-  const {notifications}=await api.notifications(), root=$('#notifications-list');
-  root.innerHTML=notifications.length?notifications.map(n=>`
-    <a href="${esc(n.target_url||'#/home')}" data-notification="${esc(n.id)}" class="card p-3 flex gap-3 items-start ${n.read_at?'opacity-70':'border border-amber-400/40'}">
-      <span class="w-10 h-10 rounded-full bg-[#302713] text-amber-300 flex items-center justify-center"><i data-lucide="${n.type==='gift'?'gift':n.type==='message'?'message-circle':'bell'}"></i></span>
-      <span class="flex-1 min-w-0"><b class="block">${esc(n.title)}</b><span class="block text-sm text-[#bba9d6]">${esc(n.body||'')}</span><small class="text-[10px] opacity-60">${timeAgo(new Date(n.created_at).getTime())}</small></span>
-      ${n.read_at?'':'<span class="w-2 h-2 rounded-full bg-amber-400 mt-2"></span>'}
-    </a>`).join(''):emptyBox('bell','لا توجد إشعارات','ستظهر هنا رسائل الأعضاء والهدايا الجديدة.');
-  root.querySelectorAll('[data-notification]').forEach(el=>el.addEventListener('click',()=>api.markNotificationRead(el.dataset.notification).catch(()=>{})));
-  $('#read-all').onclick=async()=>{try{await api.markAllNotificationsRead();await notificationsScreen();}catch(e){toast(e.message,'error');}};
-  icons_();
+  const root=$('#notifications-list');
+  let refreshing=false, refreshQueued=false;
+  const refresh=async()=>{
+    if(!root?.isConnected)return;
+    if(refreshing){refreshQueued=true;return;}
+    refreshing=true;
+    try{
+      const {notifications}=await api.notifications();
+      if(!root.isConnected)return;
+      root.innerHTML=notifications.length?notifications.map(n=>`
+        <a href="${esc(n.target_url||'#/home')}" data-notification="${esc(n.id)}" class="card p-3 flex gap-3 items-start ${n.read_at?'opacity-70':'border border-amber-400/40'}">
+          <span class="w-10 h-10 rounded-full bg-[#302713] text-amber-300 flex items-center justify-center"><i data-lucide="${n.type==='gift'?'gift':n.type==='message'?'message-circle':'bell'}"></i></span>
+          <span class="flex-1 min-w-0"><b class="block">${esc(n.title)}</b><span class="block text-sm text-[#bba9d6]">${esc(n.body||'')}</span><small class="text-[10px] opacity-60">${timeAgo(new Date(n.created_at).getTime())}</small></span>
+          ${n.read_at?'':'<span class="w-2 h-2 rounded-full bg-amber-400 mt-2"></span>'}
+        </a>`).join(''):emptyBox('bell','لا توجد إشعارات','ستظهر هنا رسائل الأعضاء والهدايا الجديدة.');
+      root.querySelectorAll('[data-notification]').forEach(el=>el.addEventListener('click',()=>api.markNotificationRead(el.dataset.notification).catch(()=>{})));
+      icons_();
+    }finally{
+      refreshing=false;
+      if(refreshQueued){refreshQueued=false;refresh();}
+    }
+  };
+  const channel=await api.subscribeNotifications(()=>refresh().catch(e=>console.warn('Notifications refresh:',e.message)));
+  window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+  await refresh();
+  $('#read-all').onclick=async()=>{try{await api.markAllNotificationsRead();await refresh();}catch(e){toast(e.message,'error');}};
 }
-
 async function inboxScreen() {
   screen.innerHTML = header('الرسائل الخاصة', '<a href="#/friends" class="text-xs text-gold-300">اكتشاف الأعضاء</a>') + `
     <div class="hs-inbox-page"><div class="hs-inbox-intro"><span>HAMSAT · PRIVATE</span><h2>مساحتك الخاصة للحديث</h2><p>محادثاتك تبقى بينك وبين الشخص الذي تراسلينه، بعيداً عن الغرف.</p></div><div id="inbox-list" class="hs-inbox-list">${loading()}</div></div>`;
