@@ -20,7 +20,8 @@ Deno.serve(async (req: Request) => {
   const livekitApiSecret = Deno.env.get("LIVEKIT_API_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
-  if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !supabaseUrl || !anonKey) {
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !supabaseUrl || !anonKey || !serviceRoleKey) {
     return json(503, { error: "خدمة إدارة الصوت غير مهيأة على الخادم." });
   }
 
@@ -42,6 +43,15 @@ Deno.serve(async (req: Request) => {
   });
   const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
   if (authError || !authData.user) return json(401, { error: "انتهت جلسة الدخول. سجّلي الدخول مجدداً." });
+
+  const moderationDb = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: callerProfile, error: callerProfileError } = await moderationDb
+    .from("profiles").select("is_banned").eq("id", authData.user.id).maybeSingle();
+  if (callerProfileError || !callerProfile || callerProfile.is_banned === true) {
+    return json(403, { error: "الحساب غير مخوّل بإدارة الصوت." });
+  }
   if (authData.user.id === participantId) return json(400, { error: "لا يمكنك كتم حسابك من أدوات إدارة الآخرين." });
 
   const { data: room, error: roomError } = await supabase.from("rooms").select("owner_id").eq("id", roomId).maybeSingle();
