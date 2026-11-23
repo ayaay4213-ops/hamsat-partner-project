@@ -671,7 +671,7 @@ if (html) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261122-configurable-seats-v3")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261123-dm-reliability-v1")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
