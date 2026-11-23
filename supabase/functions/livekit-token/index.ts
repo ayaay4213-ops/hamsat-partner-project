@@ -86,13 +86,18 @@ Deno.serve(async (req: Request) => {
 
   if (seatError) return json(500, { error: "تعذّر التحقق من مقعد المايك." });
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("display_name")
+    .select("display_name,is_banned")
     .eq("id", user.id)
     .maybeSingle();
 
-  const participantName = String(profile?.display_name || "عضو همسات").slice(0, 64);
+  if (profileError) return json(500, { error: "تعذّر التحقق من حالة الحساب." });
+  if (!profile || profile.is_banned === true) {
+    return json(403, { error: "هذا الحساب غير مخوّل بالاتصال الصوتي." });
+  }
+
+  const participantName = String(profile.display_name || "عضو همسات").slice(0, 64);
   const token = new AccessToken(livekitApiKey, livekitApiSecret, {
     identity: user.id,
     name: participantName,
