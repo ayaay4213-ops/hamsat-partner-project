@@ -110,3 +110,10 @@ begin
   return v_report;
 end;
 $function$;
+
+-- Keep SECURITY DEFINER report entry points unavailable to anonymous/public callers.
+-- The functions still authenticate internally, and only signed-in users may invoke them.
+revoke all on function public.report_user(bigint,text,text) from public, anon, authenticated;
+revoke all on function public.report_room(uuid,text,text) from public, anon, authenticated;
+grant execute on function public.report_user(bigint,text,text) to authenticated;
+grant execute on function public.report_room(uuid,text,text) to authenticated;
