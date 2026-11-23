@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.95.0";
+import { RoomServiceClient } from "npm:livekit-server-sdk@2.19.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,6 +9,60 @@ const corsHeaders = {
 };
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+}
+
+
+async function removeUserFromLiveKitRooms(service: ReturnType<typeof createClient>, userId: string) {
+  const { data: memberships, error: membershipError } = await service
+    .from("room_members").select("room_id").eq("user_id", userId);
+  if (membershipError) {
+    console.error("Could not load room memberships for moderation", membershipError);
+    return { ok: false, rooms_processed: 0, warning: "تعذّر قراءة عضويات الغرف؛ قد يبقى العضو داخل الصوت." };
+  }
+
+  const roomIds = [...new Set((memberships || []).map((row: { room_id: string }) => row.room_id))];
+  if (!roomIds.length) return { ok: true, rooms_processed: 0 };
+
+  const livekitUrl = Deno.env.get("LIVEKIT_URL") || "";
+  const livekitApiKey = Deno.env.get("LIVEKIT_API_KEY") || "";
+  const livekitApiSecret = Deno.env.get("LIVEKIT_API_SECRET") || "";
+  if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !/^wss:\/\//i.test(livekitUrl)) {
+    return { ok: false, rooms_processed: 0, warning: "إعدادات خادم الصوت غير مكتملة؛ قد يبقى العضو متصلاً صوتياً حتى انتهاء الاتصال." };
+  }
+
+  const roomService = new RoomServiceClient(livekitUrl.replace(/^wss:/i, "https:"), livekitApiKey, livekitApiSecret);
+  const failures: string[] = [];
+  let processed = 0;
+
+  for (const roomId of roomIds) {
+    try {
+      const participants = await roomService.listParticipants(roomId);
+      if (participants.some((participant) => participant.identity === userId)) {
+        await roomService.removeParticipant(roomId, userId);
+      }
+
+      const { error: seatError } = await service.from("room_seats").delete()
+        .eq("room_id", roomId).eq("user_id", userId);
+      if (seatError) throw new Error("تعذّر تحرير المقعد");
+
+      const { error: memberError } = await service.from("room_members").delete()
+        .eq("room_id", roomId).eq("user_id", userId);
+      if (memberError) throw new Error("تعذّر إنهاء عضوية الغرفة");
+
+      const { error: muteError } = await service.from("room_participant_mutes").delete()
+        .eq("room_id", roomId).eq("user_id", userId);
+      if (muteError) throw new Error("تعذّر تنظيف حالة كتم الصوت");
+
+      processed++;
+    } catch (error) {
+      console.error("LiveKit moderation cleanup failed for room", roomId, error);
+      failures.push(roomId);
+    }
+  }
+
+  return failures.length
+    ? { ok: false, rooms_processed: processed, failed_rooms: failures.length, warning: "تم تنفيذ الإجراء، لكن تعذّر تنظيف الاتصال الصوتي أو العضوية في بعض الغرف. راجعي الغرف المتأثرة." }
+    : { ok: true, rooms_processed: processed };
 }
 
 Deno.serve(async (req: Request) => {
@@ -51,16 +106,17 @@ Deno.serve(async (req: Request) => {
   if (action === "kick") {
     const { error: kickError } = await service.auth.admin.signOut(userId, "global");
     if (kickError) return json(502, { error: "تعذّر إنهاء جلسة العضو: " + kickError.message });
+    const livekitCleanup = await removeUserFromLiveKitRooms(service, userId);
     const { error: auditError } = await service.from("staff_audit_log").insert({
       staff_user_id: authData.user.id,
       action: "user_session_kicked",
       target_type: "user",
       target_id: userId,
       reason: reason || "إنهاء جلسة العضو من لوحة الإدارة",
-      metadata: { source: "admin-user-moderate" },
+      metadata: { source: "admin-user-moderate", livekit_cleanup: livekitCleanup },
     });
     if (auditError) return json(500, { error: "تم إنهاء الجلسة لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
-    return json(200, { success: true, user_id: userId, kicked: true });
+    return json(200, { success: true, user_id: userId, kicked: true, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
   }
 
   const { error: authBanError } = await service.auth.admin.updateUserById(userId, {
@@ -79,15 +135,19 @@ Deno.serve(async (req: Request) => {
   }).eq("id", userId);
   if (profileError) return json(502, { error: "تم تحديث تسجيل الدخول لكن تعذّر تحديث سجل العضو: " + profileError.message });
 
+  const livekitCleanup = banned
+    ? await removeUserFromLiveKitRooms(service, userId)
+    : { ok: true, rooms_processed: 0 };
+
   const { error: auditError } = await service.from("staff_audit_log").insert({
     staff_user_id: authData.user.id,
     action: banned ? "user_banned" : "user_unbanned",
     target_type: "user",
     target_id: userId,
     reason: banned ? (reason || "مخالفة إرشادات المجتمع") : (reason || "رفع الحظر من لوحة الإدارة"),
-    metadata: { banned, auth_sessions_revoked: banned, source: "admin-user-moderate" },
+    metadata: { banned, auth_sessions_revoked: banned, source: "admin-user-moderate", livekit_cleanup: livekitCleanup },
   });
   if (auditError) return json(500, { error: "تم تحديث حالة الحساب لكن تعذّر حفظ سجل التدقيق: " + auditError.message });
 
-  return json(200, { success: true, user_id: userId, banned });
+  return json(200, { success: true, user_id: userId, banned, livekit_cleanup: livekitCleanup, warning: livekitCleanup.ok ? undefined : livekitCleanup.warning });
 });
