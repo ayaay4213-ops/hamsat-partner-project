@@ -1,6 +1,8 @@
 -- Private messaging: remove broad table and column privileges and allow
 -- only the columns the client actually needs. RLS remains the row-level boundary.
 revoke all on table public.dm_conversations from anon, authenticated;
+revoke references (id, user_a, user_b, created_at, updated_at)
+  on table public.dm_conversations from anon, authenticated;
 grant select on table public.dm_conversations to authenticated;
 
 revoke all on table public.dm_messages from anon, authenticated;
