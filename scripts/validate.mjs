@@ -984,7 +984,8 @@ if (fs.existsSync(dmBlockMigrationPath)) {
   const sql = fs.readFileSync(dmBlockMigrationPath, 'utf8').toLowerCase();
   for (const token of [
     'create or replace function public.get_or_create_conversation(p_other_user uuid)',
-    'private.is_user_blocked(v_me, p_other_user)',
+    'security invoker',
+    'select private.get_or_create_conversation(p_other_user)',
     'revoke all on function public.get_or_create_conversation(uuid) from public, anon',
     'grant execute on function public.get_or_create_conversation(uuid) to authenticated'
   ]) {
