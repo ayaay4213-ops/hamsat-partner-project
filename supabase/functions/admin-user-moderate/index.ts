@@ -12,7 +12,7 @@ function json(status: number, body: Record<string, unknown>) {
 }
 
 
-async function removeUserFromLiveKitRooms(service: ReturnType<typeof createClient>, userId: string) {
+async function removeUserFromLiveKitRooms(service: any, userId: string) {
   const { data: memberships, error: membershipError } = await service
     .from("room_members").select("room_id").eq("user_id", userId);
   if (membershipError) {
