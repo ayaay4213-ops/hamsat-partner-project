@@ -42,7 +42,7 @@ textarea.field{min-height:76px;resize:vertical}
 #admin>nav .tab{flex:1 1 105px}
 #overview .stat{min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:5px}
 #catalog>div,#gifts>div,#games>div,#agencies>div,#reports>div{min-width:0}
-#item-list,#gift-list,#game-list,#user-results,#login-events,#room-list,#bomb-level-list,#agency-list,#report-list,#topup-package-list,#staff-list,#staff-audit-list{display:grid;gap:9px}
+#item-list,#gift-list,#game-list,#user-results,#login-events,#room-list,#bomb-level-list,#agency-list,#report-list,#topup-package-list,#topup-order-list,#staff-list,#staff-audit-list{display:grid;gap:9px}
 #item-list .item,#user-results .item,#room-list .item,#login-events .item{padding:13px;border-radius:15px}
 #item-list img{flex:none}
 #user-results .item>div:last-child{justify-content:flex-end}
@@ -261,6 +261,7 @@ header p,header small{color:#77786d!important}
 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> باقة نشطة</label>
 <button class="btn sm:col-span-2" type="submit">حفظ الباقة</button>
 </form><div id="topup-package-list" class="space-y-2 mt-3"></div></div>
+<div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">طلبات الشحن الخارجية</h3><p class="muted text-xs mb-3">عرض ومتابعة فقط. لا يتم اعتماد الدفع أو إضافة العملات من هذه القائمة قبل وجود تحقق موثوق من مزود الدفع.</p><div id="topup-order-list" class="grid gap-2"><p class="muted">جارٍ تحميل الطلبات...</p></div></div>
 </section>
 <section id="staff" class="panel space-y-5 hidden">
 <div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
