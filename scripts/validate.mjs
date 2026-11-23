@@ -573,7 +573,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-royal-room-v22']) {
+  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
