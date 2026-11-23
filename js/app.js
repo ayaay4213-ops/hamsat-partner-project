@@ -2099,7 +2099,11 @@ async function inboxScreen() {
   };
   // Subscribe before the first fetch so an incoming message cannot land in
   // the gap between rendering the initial inbox and opening the channel.
-  const channel=api.subscribeInbox(()=>void refresh());
+  const channel=api.subscribeInbox(payload=>{
+    void refresh();
+    const incoming=payload?.eventType==='INSERT'&&payload?.new?.sender_id&&payload.new.sender_id!==state.account?.id;
+    if(incoming&&localStorage.getItem('hamsat:message-notifications')!=='off')toast('وصلتك رسالة جديدة');
+  });
   window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
   await refresh();
 }
