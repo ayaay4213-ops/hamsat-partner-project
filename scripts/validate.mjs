@@ -837,6 +837,20 @@ if (fs.existsSync(inboxApiPath)) {
   errors.push('Missing API client file for inbox validation');
 }
 
+const topupAdminPath = path.join(root, 'js/admin.js');
+if (fs.existsSync(topupAdminPath)) {
+  const js = fs.readFileSync(topupAdminPath, 'utf8');
+  for (const token of [
+    'async function loadExternalTopupOrders()',
+    "from('external_topup_orders').select(",
+    "'طلبات الشحن الخارجية',loadExternalTopupOrders"
+  ]) {
+    if (!js.includes(token)) errors.push('Missing read-only external top-up order visibility: ' + token);
+  }
+} else {
+  errors.push('Missing admin JavaScript for external top-up order visibility');
+}
+
 const staffUiPath = path.join(root, 'js/admin.js');
 if (fs.existsSync(staffUiPath)) {
   const js = fs.readFileSync(staffUiPath, 'utf8');
