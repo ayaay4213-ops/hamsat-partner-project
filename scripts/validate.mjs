@@ -772,6 +772,20 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const livekitTokenPath = path.join(root, 'supabase/functions/livekit-token/index.ts');
+if (fs.existsSync(livekitTokenPath)) {
+  const source = fs.readFileSync(livekitTokenPath, 'utf8');
+  for (const token of [
+    '.select("display_name,is_banned")',
+    'if (profile.is_banned === true)',
+    'هذا الحساب غير مخوّل بالاتصال الصوتي'
+  ]) {
+    if (!source.includes(token)) errors.push('LiveKit token issuance must reject banned or unverifiable accounts: ' + token);
+  }
+} else {
+  errors.push('Missing LiveKit token Edge Function');
+}
+
 const moderationFunctionPath = path.join(root, 'supabase/functions/admin-user-moderate/index.ts');
 if (fs.existsSync(moderationFunctionPath)) {
   const source = fs.readFileSync(moderationFunctionPath, 'utf8');
