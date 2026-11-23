@@ -695,12 +695,14 @@ export const api = {
     if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.');
     return { success:true, message:data };
   },
-  subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
-    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
-  subscribeInbox: (callback) => client().channel('dm-inbox')
+  subscribeDirectMessages: (conversationId, callback, onStatus) => client().channel('dm-' + conversationId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback)
+    .subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Direct-message realtime status:',status,error||'');if(onStatus)onStatus(status,error);}),
+  subscribeInbox: (callback, onStatus) => client().channel('dm-inbox')
     .on('postgres_changes',{event:'*',schema:'public',table:'dm_conversations'},callback)
     // Inbox unread/read state changes on UPDATE as well as new-message INSERTs.
-    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages'},callback).subscribe(),
+    .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages'},callback)
+    .subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Inbox realtime status:',status,error||'');if(onStatus)onStatus(status,error);}),
   blockState: async (targetId) => {
     const user = await currentUser();
     const { data, error } = await client().from('user_blocks').select('blocked_id')
