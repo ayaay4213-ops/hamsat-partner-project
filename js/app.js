@@ -706,7 +706,7 @@ async function openRoom(r) {
           <small class="hs-room-seat-layout-note">المقعد الأول مخصص للمضيفة. قبل تقليل العدد، أنزلي الأعضاء من المقاعد التي ستُزال.</small>
         </div>
         <div class="hs-room-settings-group hs-room-background-settings"><h4>خلفية المايكات</h4><p class="hs-room-settings-hint">هذه الخلفية مستقلة تمامًا عن غلاف الغرفة، وتظهر خلف المايكات فقط.</p>
-          <label class="photo-picker hs-room-background-picker" for="room-background-gallery-file"><i data-lucide="images"></i><span>اختيار خلفية الغرفة من معرض الهاتف</span><input id="room-background-gallery-file" type="file" accept="image/*" hidden></label><p class="hs-room-settings-hint">اختاري صورة من هاتفك، ثم اضغطي حفظ خلفية الغرفة.</p><div id="room-background-catalog" class="mt-3"><p class="text-xs opacity-60">أو اختاري من خلفيات المتجر والمقتنيات</p></div>
+          <label class="photo-picker hs-room-background-picker" for="room-background-gallery-file"><i data-lucide="images"></i><span>إضافة خلفية من المعرض</span><input id="room-background-gallery-file" type="file" accept="image/*" hidden></label><p class="hs-room-settings-hint">اختاري صورة من هاتفك، ثم اضغطي حفظ خلفية الغرفة.</p><div id="room-background-catalog" class="mt-3"><p class="text-xs opacity-60">أو اختاري من خلفيات المتجر والمقتنيات</p></div>
           <div id="room-background-preview" class="hs-room-background-preview" aria-live="polite"><div>لم تختاري خلفية للمايكات بعد</div></div>
           <button type="button" id="room-background-reset" class="btn-ghost w-full mt-2">إزالة خلفية المايكات</button><button type="button" id="room-background-save" class="btn-gold w-full mt-2">حفظ خلفية الغرفة</button>
         </div>
