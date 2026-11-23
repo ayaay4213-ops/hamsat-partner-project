@@ -829,12 +829,30 @@ if (fs.existsSync(inboxApiPath)) {
     "if(readError)console.warn(",
     ".slice().reverse().map(m=>({...m,profile:byId[m.sender_id]||null}))",
     ".select('id,conversation_id,sender_id,body,created_at,read_at').single()",
-    "if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.')"
+    "if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.')",
+    ".subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Direct-message realtime status:'",
+    ".subscribe((status,error)=>{if(status!=='SUBSCRIBED')console.warn('Inbox realtime status:'"
   ]) {
     if (!js.includes(token)) errors.push('Inbox must load the latest message preview and preserve unread counts: ' + token);
   }
 } else {
   errors.push('Missing API client file for inbox validation');
+}
+
+const inboxUiPath = path.join(root, 'js/app.js');
+if (fs.existsSync(inboxUiPath)) {
+  const js = fs.readFileSync(inboxUiPath, 'utf8');
+  for (const token of [
+    'const inboxPoll=window.setInterval(',
+    'const dmPoll=window.setInterval(',
+    "document.visibilityState!=='hidden'",
+    'window.clearInterval(inboxPoll)',
+    'window.clearInterval(dmPoll)'
+  ]) {
+    if (!js.includes(token)) errors.push('Private messaging must refresh safely when Realtime disconnects: ' + token);
+  }
+} else {
+  errors.push('Missing app UI file for inbox fallback validation');
 }
 
 const topupAdminPath = path.join(root, 'js/admin.js');
