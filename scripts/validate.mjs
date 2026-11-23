@@ -797,6 +797,7 @@ if (fs.existsSync(feedbackMigrationPath)) {
     'revoke all on function public.submit_user_feedback(text,text) from public, anon, authenticated',
     'grant execute on function public.submit_user_feedback(text,text) to authenticated',
     'revoke all on function public.admin_update_user_feedback(bigint,text) from public, anon, authenticated',
+    'if coalesce(public.is_admin(), false) is not true then',
     'grant execute on function public.admin_update_user_feedback(bigint,text) to authenticated'
   ]) {
     if (!sql.includes(token)) errors.push('Missing user-feedback access control: ' + token);
