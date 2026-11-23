@@ -995,6 +995,24 @@ if (fs.existsSync(dmBlockMigrationPath)) {
   errors.push('Missing direct-message block consistency migration: 0087');
 }
 
+const dmRateLimitPath = path.join(root, 'supabase/migrations/20261123180000_0090_dm_message_rate_limit.sql');
+if (fs.existsSync(dmRateLimitPath)) {
+  const sql = fs.readFileSync(dmRateLimitPath, 'utf8').toLowerCase();
+  for (const token of [
+    'new.sender_id is distinct from v_user',
+    'length(new.body) > 2000',
+    "interval '1 minute'",
+    'if v_recent_count >= 20 then',
+    'before insert on public.dm_messages',
+    'security definer',
+    "set search_path = ''"
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing server-side private-message abuse guard: ' + token);
+  }
+} else {
+  errors.push('Missing private-message rate-limit migration: 0090');
+}
+
 const dmGrantsMigrationPath = path.join(root, 'supabase/migrations/20261123173000_0089_harden_dm_column_grants.sql');
 if (fs.existsSync(dmGrantsMigrationPath)) {
   const sql = fs.readFileSync(dmGrantsMigrationPath, 'utf8').toLowerCase();
