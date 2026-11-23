@@ -772,6 +772,21 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const inboxApiPath = path.join(root, 'js/api.js');
+if (fs.existsSync(inboxApiPath)) {
+  const js = fs.readFileSync(inboxApiPath, 'utf8');
+  for (const token of [
+    ".order('created_at', { ascending: false, foreignTable: 'dm_messages' })",
+    ".limit(1, { foreignTable: 'dm_messages' })",
+    ".is('read_at', null)",
+    "unreadCounts[c.id] || 0"
+  ]) {
+    if (!js.includes(token)) errors.push('Inbox must load the latest message preview and preserve unread counts: ' + token);
+  }
+} else {
+  errors.push('Missing API client file for inbox validation');
+}
+
 const presenceSecurityPath = path.join(root, 'supabase/migrations/20261123080000_0079_security_and_presence_reconciliation.sql');
 if (fs.existsSync(presenceSecurityPath)) {
   const sql = fs.readFileSync(presenceSecurityPath, 'utf8').toLowerCase();
