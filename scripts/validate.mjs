@@ -594,7 +594,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v1')) {
+  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -610,7 +610,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v1')) {
+  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -860,6 +860,7 @@ if (fs.existsSync(staffUiPath)) {
     "supabase.from('staff_roles').select(",
     "supabase.from('staff_audit_log').select(",
     'data-staff-revoke',
+    "supabase.rpc('staff_update_user_report'",
     "'staff'"
   ]) {
     if (!js.includes(token)) errors.push('Missing Super Admin staff-role management flow: ' + token);
