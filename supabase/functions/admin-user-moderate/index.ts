@@ -20,7 +20,7 @@ async function removeUserFromLiveKitRooms(service: any, userId: string) {
     return { ok: false, rooms_processed: 0, warning: "تعذّر قراءة عضويات الغرف؛ قد يبقى العضو داخل الصوت." };
   }
 
-  const roomIds = [...new Set((memberships || []).map((row: { room_id: string }) => row.room_id))];
+  const roomIds: string[] = [...new Set<string>((memberships || []).map((row: { room_id: string }) => row.room_id))];
   if (!roomIds.length) return { ok: true, rooms_processed: 0 };
 
   const livekitUrl = Deno.env.get("LIVEKIT_URL") || "";
