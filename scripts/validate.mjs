@@ -772,6 +772,39 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 
+const reportRateLimitPath = path.join(root, 'supabase/migrations/20261123153000_0085_report_rate_limits.sql');
+if (fs.existsSync(reportRateLimitPath)) {
+  const sql = fs.readFileSync(reportRateLimitPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on function public.report_user(bigint,text,text) from public, anon, authenticated',
+    'revoke all on function public.report_room(uuid,text,text) from public, anon, authenticated',
+    'grant execute on function public.report_user(bigint,text,text) to authenticated',
+    'grant execute on function public.report_room(uuid,text,text) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push('Report RPC execution must be restricted to authenticated users: ' + token);
+  }
+} else {
+  errors.push('Missing report rate-limit migration: 0085');
+}
+
+const feedbackMigrationPath = path.join(root, 'supabase/migrations/20261123160000_0086_user_feedback_inbox.sql');
+if (fs.existsSync(feedbackMigrationPath)) {
+  const sql = fs.readFileSync(feedbackMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'alter table public.user_feedback enable row level security',
+    'revoke all on table public.user_feedback from anon, authenticated',
+    'create policy "admins read user feedback"',
+    'revoke all on function public.submit_user_feedback(text,text) from public, anon, authenticated',
+    'grant execute on function public.submit_user_feedback(text,text) to authenticated',
+    'revoke all on function public.admin_update_user_feedback(bigint,text) from public, anon, authenticated',
+    'grant execute on function public.admin_update_user_feedback(bigint,text) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing user-feedback access control: ' + token);
+  }
+} else {
+  errors.push('Missing user feedback inbox migration: 0086');
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
