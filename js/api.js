@@ -659,7 +659,7 @@ export const api = {
   directMessages: async (conversationId) => {
     const user=await currentUser();
     const { data, error } = await client().from('dm_messages').select('id,sender_id,body,created_at,read_at')
-      .eq('conversation_id', conversationId).order('created_at',{ascending:true}).limit(200);
+      .eq('conversation_id', conversationId).order('created_at',{ascending:false}).limit(200);
     fail(error);
     const senderIds=[...new Set((data||[]).map(m=>m.sender_id))];
     const people=senderIds.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',senderIds):{data:[],error:null};
@@ -668,13 +668,17 @@ export const api = {
     const { error: readError } = await client().from('dm_messages').update({read_at:new Date().toISOString()})
       .eq('conversation_id',conversationId).neq('sender_id',user.id).is('read_at',null);
     fail(readError);
-    return { messages:(data||[]).map(m=>({...m,profile:byId[m.sender_id]||null})) };
+    return { messages:(data||[]).slice().reverse().map(m=>({...m,profile:byId[m.sender_id]||null})) };
   },
   sendDirectMessage: async (conversationId, body) => {
     const user = await currentUser(), text = String(body || '').trim();
     if (!text || text.length > 2000) throw new Error('الرسالة يجب أن تكون من 1 إلى 2000 حرف');
-    const { error } = await client().from('dm_messages').insert({conversation_id:conversationId,sender_id:user.id,body:text});
-    fail(error); return {success:true};
+    const { data, error } = await client().from('dm_messages')
+      .insert({conversation_id:conversationId,sender_id:user.id,body:text})
+      .select('id,conversation_id,sender_id,body,created_at,read_at').single();
+    fail(error);
+    if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.');
+    return { success:true, message:data };
   },
   subscribeDirectMessages: (conversationId, callback) => client().channel('dm-' + conversationId)
     .on('postgres_changes',{event:'*',schema:'public',table:'dm_messages',filter:'conversation_id=eq.'+conversationId},callback).subscribe(),
