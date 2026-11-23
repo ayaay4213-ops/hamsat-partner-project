@@ -6,7 +6,7 @@ on public.agency_recharges
 for select
 to authenticated
 using (
-  is_admin()
+  coalesce(public.is_admin(), false)
   or target_user_id = (select auth.uid())
   or private.is_agency_member(agency_id, array['owner','manager']::text[])
   or (
