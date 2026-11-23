@@ -837,6 +837,23 @@ if (fs.existsSync(inboxApiPath)) {
   errors.push('Missing API client file for inbox validation');
 }
 
+const staffUiPath = path.join(root, 'js/admin.js');
+if (fs.existsSync(staffUiPath)) {
+  const js = fs.readFileSync(staffUiPath, 'utf8');
+  for (const token of [
+    'async function loadStaffRoles()',
+    "supabase.rpc('assign_staff_permissions'",
+    "supabase.from('staff_roles').select(",
+    "supabase.from('staff_audit_log').select(",
+    'data-staff-revoke',
+    "'staff',loadStaffRoles"
+  ]) {
+    if (!js.includes(token)) errors.push('Missing Super Admin staff-role management flow: ' + token);
+  }
+} else {
+  errors.push('Missing admin JavaScript for staff-role management');
+}
+
 const presenceSecurityPath = path.join(root, 'supabase/migrations/20261123080000_0079_security_and_presence_reconciliation.sql');
 if (fs.existsSync(presenceSecurityPath)) {
   const sql = fs.readFileSync(presenceSecurityPath, 'utf8').toLowerCase();
@@ -907,6 +924,24 @@ if (fs.existsSync(reportRateLimitPath)) {
   }
 } else {
   errors.push('Missing report rate-limit migration: 0085');
+}
+
+const staffMigrationPath = path.join(root, 'supabase/migrations/20261123170000_0088_harden_staff_role_table_grants.sql');
+if (fs.existsSync(staffMigrationPath)) {
+  const sql = fs.readFileSync(staffMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on table public.staff_roles, public.staff_audit_log from anon, authenticated',
+    'grant select on table public.staff_roles, public.staff_audit_log to authenticated',
+    'revoke all on function public.assign_staff_permissions(uuid, text[], boolean) from public, anon',
+    'grant execute on function public.assign_staff_permissions(uuid, text[], boolean) to authenticated',
+    'revoke all on function public.has_staff_permission(text) from public, anon',
+    'grant execute on function public.has_staff_permission(text) to authenticated',
+    'revoke all on function public.staff_update_user_report(bigint, text, text) from public, anon'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing staff-role privilege safeguard: ' + token);
+  }
+} else {
+  errors.push('Missing staff-role privilege hardening migration: 0088');
 }
 
 const dmBlockMigrationPath = path.join(root, 'supabase/migrations/20261123163000_0087_dm_block_consistency.sql');
