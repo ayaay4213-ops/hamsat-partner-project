@@ -20,6 +20,7 @@ Deno.serve(async (req: Request) => {
   const livekitApiKey = Deno.env.get("LIVEKIT_API_KEY");
   const livekitApiSecret = Deno.env.get("LIVEKIT_API_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const publishableKeyNames = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
   let mappedPublishableKey = "";
   if (publishableKeyNames) {
@@ -31,7 +32,7 @@ Deno.serve(async (req: Request) => {
   }
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || mappedPublishableKey || Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
 
-  if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !supabaseUrl || !supabaseAnonKey) {
+  if (!livekitUrl || !livekitApiKey || !livekitApiSecret || !supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
     return json(503, { error: "خدمة الصوت غير مهيأة بعد على الخادم." });
   }
 
@@ -86,7 +87,12 @@ Deno.serve(async (req: Request) => {
 
   if (seatError) return json(500, { error: "تعذّر التحقق من مقعد المايك." });
 
-  const { data: profile, error: profileError } = await supabase
+  // Moderation flags are intentionally hidden from authenticated clients.
+  // Read this one server-only field through the service role after validating the caller JWT.
+  const moderationDb = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: profile, error: profileError } = await moderationDb
     .from("profiles")
     .select("display_name,is_banned")
     .eq("id", user.id)
