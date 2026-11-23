@@ -1024,6 +1024,8 @@ async function openRoom(r) {
       const {members}=await api.roomMembers(r.id);const {seats}=await api.roomSeats(r.id);
       if(!membersEl.isConnected)return;
       countEl.textContent=num(members.length);
+      const seatCountBadge=sheet.querySelector('.hs-room-seat-count');
+      if(seatCountBadge)seatCountBadge.textContent=String(r.seatLimit||10)+' مقاعد';
       const host=r.ownerUuid===state.profile?.uuid;
       if(host&&!muteStateLoaded){const savedMutes=await api.roomMutedUsers(r.id);savedMutes.userIds.forEach(id=>remotelyMutedUsers.add(id));muteStateLoaded=true;}
       const seatedUsers=new Set(seats.map(x=>x.user_id));
