@@ -1000,6 +1000,8 @@ if (fs.existsSync(dmRateLimitPath)) {
   const sql = fs.readFileSync(dmRateLimitPath, 'utf8').toLowerCase();
   for (const token of [
     'new.sender_id is distinct from v_user',
+    'create index if not exists dm_messages_sender_created_idx',
+    'on public.dm_messages (sender_id, created_at desc)',
     'length(new.body) > 2000',
     "interval '1 minute'",
     'if v_recent_count >= 20 then',
