@@ -2074,9 +2074,12 @@ async function inboxScreen() {
   screen.innerHTML = header('الرسائل الخاصة', '<a href="#/friends" class="text-xs text-gold-300">اكتشاف الأعضاء</a>') + `
     <div class="hs-inbox-page"><div class="hs-inbox-intro"><span>HAMSAT · PRIVATE</span><h2>مساحتك الخاصة للحديث</h2><p>محادثاتك تبقى بينك وبين الشخص الذي تراسلينه، بعيداً عن الغرف.</p></div><div id="inbox-list" class="hs-inbox-list">${loading()}</div></div>`;
   icons_();
-  const root=$('#inbox-list');let loadingList=false;
+  const root=$('#inbox-list');
+  let refreshing=false, refreshQueued=false;
   const refresh=async()=>{
-    if(loadingList||!root?.isConnected)return;loadingList=true;
+    if(!root?.isConnected)return;
+    if(refreshing){refreshQueued=true;return;}
+    refreshing=true;
     try{
       const {conversations=[]}=await api.conversations();
       if(!root.isConnected)return;
@@ -2089,11 +2092,16 @@ async function inboxScreen() {
         </a>`).join(''):emptyBox('message-circle','لا توجد محادثات بعد','افتحي ملف أي عضو واضغطي «رسالة خاصة» لبدء محادثة لا يراها الآخرون.');
       icons_();
     }catch(e){if(root?.isConnected)root.innerHTML=emptyBox('wifi-off','تعذّر تحميل المحادثات',e.message);}
-    finally{loadingList=false;}
+    finally{
+      refreshing=false;
+      if(refreshQueued&&root?.isConnected){refreshQueued=false;void refresh();}
+    }
   };
-  await refresh();
-  const channel=api.subscribeInbox(()=>refresh().catch(e=>console.warn('Inbox refresh:',e.message)));
+  // Subscribe before the first fetch so an incoming message cannot land in
+  // the gap between rendering the initial inbox and opening the channel.
+  const channel=api.subscribeInbox(()=>void refresh());
   window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+  await refresh();
 }
 async function directMessageScreen(conversationId) {
   let conversation=null;
@@ -2106,11 +2114,27 @@ async function directMessageScreen(conversationId) {
     </div>`;
   icons_();
   const root=$('#dm-messages'), form=$('#dm-form');
-  const draw=async()=>{const {messages}=await api.directMessages(conversationId);root.innerHTML=messages.map(m=>{const mine=m.sender_id===state.account.id,person=m.profile||(mine?state.profile:conversation?.other);return `<div class="hs-dm-line ${mine?'mine':'theirs'}">${avatar(person,30)}<div class="hs-dm-bubble">${esc(m.body)}<small>${timeAgo(new Date(m.created_at).getTime())}${mine?(m.read_at?' · تمت القراءة':' · تم الإرسال'):''}</small></div></div>`;}).join('')||'<div class="hs-dm-empty"><span>✧</span><b>أول رسالة بينكما</b><small>ابدئي الحديث، وستظهر الردود هنا مباشرة.</small></div>';root.scrollTop=root.scrollHeight;};
-  await draw();
-  const channel=api.subscribeDirectMessages(conversationId,()=>draw().catch(e=>toast(e.message,'error')));
-  form.onsubmit=async e=>{e.preventDefault();const input=form.elements.body,button=form.querySelector('button');button.disabled=true;try{await api.sendDirectMessage(conversationId,input.value);input.value='';await draw();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
+  let drawing=false, drawQueued=false;
+  const draw=async()=>{
+    if(!root?.isConnected)return;
+    if(drawing){drawQueued=true;return;}
+    drawing=true;
+    try{
+      const {messages=[]}=await api.directMessages(conversationId);
+      if(!root.isConnected)return;
+      root.innerHTML=messages.map(m=>{const mine=m.sender_id===state.account.id,person=m.profile||(mine?state.profile:conversation?.other);return `<div class="hs-dm-line ${mine?'mine':'theirs'}">${avatar(person,30)}<div class="hs-dm-bubble">${esc(m.body)}<small>${timeAgo(new Date(m.created_at).getTime())}${mine?(m.read_at?' · تمت القراءة':' · تم الإرسال'):''}</small></div></div>`;}).join('')||'<div class="hs-dm-empty"><span>✧</span><b>أول رسالة بينكما</b><small>ابدئي الحديث، وستظهر الردود هنا مباشرة.</small></div>';
+      root.scrollTop=root.scrollHeight;
+    }finally{
+      drawing=false;
+      if(drawQueued&&root?.isConnected){drawQueued=false;void draw().catch(e=>toast(e.message,'error'));}
+    }
+  };
+  // Listen first; the queued refresh below also coalesces bursts of realtime
+  // INSERT/UPDATE events instead of silently dropping them during a fetch.
+  const channel=api.subscribeDirectMessages(conversationId,()=>void draw().catch(e=>toast(e.message,'error')));
   window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+  await draw();
+  form.onsubmit=async e=>{e.preventDefault();const input=form.elements.body,button=form.querySelector('button');button.disabled=true;try{await api.sendDirectMessage(conversationId,input.value);input.value='';await draw();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
 }
 
     if (route === 'notifications') await notificationsScreen();
