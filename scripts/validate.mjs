@@ -1055,6 +1055,35 @@ if (fs.existsSync(feedbackMigrationPath)) {
   errors.push('Missing user feedback inbox migration: 0086');
 }
 
+const sessionRevokeMigrationPath = path.join(root, 'supabase/migrations/20261123183000_0091_admin_revoke_user_sessions.sql');
+if (fs.existsSync(sessionRevokeMigrationPath)) {
+  const sql = fs.readFileSync(sessionRevokeMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function public.admin_revoke_user_sessions(p_user_id uuid)',
+    'security definer',
+    "set search_path = ''",
+    "auth.role()) is distinct from 'service_role'",
+    'delete from auth.sessions',
+    'revoke all on function public.admin_revoke_user_sessions(uuid)',
+    'grant execute on function public.admin_revoke_user_sessions(uuid) to service_role'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing service-role-only Auth session revocation safeguard: ' + token);
+  }
+} else {
+  errors.push('Missing Auth session revocation migration: 0091');
+}
+
+const moderationSessionPath = path.join(root, 'supabase/functions/admin-user-moderate/index.ts');
+if (fs.existsSync(moderationSessionPath)) {
+  const source = fs.readFileSync(moderationSessionPath, 'utf8');
+  if (!source.includes('service.rpc("admin_revoke_user_sessions", { p_user_id: userId })')) {
+    errors.push('Admin moderation must revoke target sessions through the protected service-role RPC');
+  }
+  if (source.includes('service.auth.admin.signOut(userId')) {
+    errors.push('Admin moderation must not pass a user ID where Supabase requires a session JWT');
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
