@@ -789,6 +789,31 @@ if (fs.existsSync(livekitTokenPath)) {
   errors.push('Missing LiveKit token Edge Function');
 }
 
+const livekitKickPath = path.join(root, 'supabase/functions/livekit-kick/index.ts');
+if (fs.existsSync(livekitKickPath)) {
+  const source = fs.readFileSync(livekitKickPath, 'utf8');
+  for (const token of [
+    '.from("profiles").select("is_banned")',
+    'callerProfile.is_banned === true',
+    'const { error: muteError } = await admin.from("room_participant_mutes").delete()',
+    'if (muteError)'
+  ]) {
+    if (!source.includes(token)) errors.push('LiveKit kick must reject banned hosts and report cleanup failures: ' + token);
+  }
+}
+
+const livekitModeratePath = path.join(root, 'supabase/functions/livekit-moderate/index.ts');
+if (fs.existsSync(livekitModeratePath)) {
+  const source = fs.readFileSync(livekitModeratePath, 'utf8');
+  for (const token of [
+    'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")',
+    '.from("profiles").select("is_banned")',
+    'callerProfile.is_banned === true'
+  ]) {
+    if (!source.includes(token)) errors.push('LiveKit moderation must reject banned hosts: ' + token);
+  }
+}
+
 const moderationFunctionPath = path.join(root, 'supabase/functions/admin-user-moderate/index.ts');
 if (fs.existsSync(moderationFunctionPath)) {
   const source = fs.readFileSync(moderationFunctionPath, 'utf8');
