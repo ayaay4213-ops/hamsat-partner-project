@@ -267,11 +267,11 @@ header p,header small{color:#77786d!important}
 <div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
 <form id="staff-assign-form" class="grid sm:grid-cols-2 gap-3">
 <label class="text-sm">المعرّف العام للعضو<input class="field mt-1" name="public_id" type="number" min="1" required placeholder="مثال: 100025"></label>
-<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span>
-<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation"> إدارة الغرف والإشراف</label>
+<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span><p class="muted text-xs mb-2">مراجعة البلاغات هي الصلاحية المرتبطة حاليًا بإجراء خادمي. بقية الصلاحيات قيد الربط ولن تكون قابلة للتعيين الآن.</p>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation" disabled> إدارة الغرف والإشراف · قريبًا</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="report_review"> مراجعة البلاغات</label>
-<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="member_support"> دعم الأعضاء</label>
-<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="event_management"> إدارة الفعاليات</label>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="member_support" disabled> دعم الأعضاء · قريبًا</label>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="event_management" disabled> إدارة الفعاليات · قريبًا</label>
 </div>
 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> تفعيل المسؤول مباشرة</label>
 <button class="btn" type="submit">حفظ الصلاحيات</button>
