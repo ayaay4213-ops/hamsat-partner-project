@@ -824,6 +824,9 @@ if (fs.existsSync(inboxApiPath)) {
     ".is('read_at', null)",
     "unreadCounts[c.id] || 0",
     ".order('created_at',{ascending:false}).limit(200)",
+    "DM sender profiles could not be loaded; rendering messages without profile decoration.",
+    "DM messages loaded, but read receipts could not be updated.",
+    "if(readError)console.warn(",
     ".slice().reverse().map(m=>({...m,profile:byId[m.sender_id]||null}))",
     ".select('id,conversation_id,sender_id,body,created_at,read_at').single()",
     "if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.')"
