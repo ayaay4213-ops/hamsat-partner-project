@@ -14,7 +14,7 @@ async function boot(){
  const sections=[
   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
+  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
  ];
  await Promise.all(sections.map(async([label,load])=>{
   try{await load();}
@@ -23,7 +23,7 @@ async function boot(){
    const target=({
     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
     'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
-    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
+    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
    })[label];
    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
    message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
@@ -159,6 +159,42 @@ async function loadFeedback(){
  const statusNames={new:'جديدة',reviewing:'قيد المراجعة',resolved:'تمت المعالجة',dismissed:'مغلقة'};
  root.innerHTML=(data||[]).map(x=>'<article class="item block"><div class="flex justify-between gap-3"><div><b>ملاحظة #'+esc(x.id)+' · '+esc(x.feedback_type)+'</b><p class="muted text-xs">'+esc(byId[x.user_id]?.display_name||byId[x.user_id]?.handle||'عضو')+' · ID '+esc(byId[x.user_id]?.public_id||'—')+' · '+new Date(x.created_at).toLocaleString('ar-DZ')+'</p></div><span class="pill">'+esc(statusNames[x.status]||x.status)+'</span></div><p class="text-sm mt-2 whitespace-pre-wrap">'+esc(x.body)+'</p><div class="flex flex-wrap gap-2 mt-3"><button class="ghost text-xs" data-feedback-status="reviewing" data-id="'+esc(x.id)+'">قيد المراجعة</button><button class="ghost text-xs" data-feedback-status="resolved" data-id="'+esc(x.id)+'">تمت المعالجة</button><button class="ghost text-xs" data-feedback-status="dismissed" data-id="'+esc(x.id)+'">إغلاق</button></div></article>').join('')||'<p class="muted">لا توجد ملاحظات واردة حالياً.</p>';
  root.querySelectorAll('[data-feedback-status]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const {error}=await supabase.rpc('admin_update_user_feedback',{p_feedback_id:Number(b.dataset.id),p_status:b.dataset.feedbackStatus});if(error)throw error;await loadFeedback();message('تم تحديث حالة الملاحظة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}});
+}
+const STAFF_PERMISSION_LABELS={
+ room_moderation:'إدارة الغرف والإشراف',
+ report_review:'مراجعة البلاغات',
+ member_support:'دعم الأعضاء',
+ event_management:'إدارة الفعاليات'
+};
+async function loadStaffRoles(){
+ const root=$('#staff-list'),auditRoot=$('#staff-audit-list');
+ const {data,error}=await supabase.from('staff_roles').select('user_id,permissions,active,assigned_by,created_at,updated_at').order('updated_at',{ascending:false});
+ if(error)throw error;
+ const rows=data||[],ids=[...new Set(rows.map(x=>x.user_id).filter(Boolean))];
+ let profiles=[];
+ if(ids.length){const r=await supabase.from('profiles').select('id,public_id,display_name,handle,role').in('id',ids);if(r.error)throw r.error;profiles=r.data||[];}
+ const byId=Object.fromEntries(profiles.map(x=>[x.id,x]));
+ root.innerHTML=rows.length?rows.map(x=>{
+  const p=byId[x.user_id]||{},perms=(x.permissions||[]).map(k=>STAFF_PERMISSION_LABELS[k]||k);
+  return '<article class="item"><div class="min-w-0"><b>'+esc(p.display_name||p.handle||'عضو فريق')+'</b><p class="muted text-xs">ID '+esc(p.public_id||'—')+' · '+(x.active?'<span class="text-emerald-300">نشط</span>':'<span class="text-amber-200">متوقف</span>')+'</p><p class="text-xs mt-2">'+esc(perms.join(' · ')||'بلا صلاحيات')+'</p></div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-staff-toggle="'+esc(x.user_id)+'" data-active="'+(!x.active)+'">'+(x.active?'تعطيل':'تفعيل')+'</button><button type="button" class="ghost text-xs" data-staff-revoke="'+esc(x.user_id)+'">سحب كل الصلاحيات</button></div></article>';
+ }).join(''):'<p class="muted">لا يوجد مسؤولون مساعدين حتى الآن.</p>';
+ root.querySelectorAll('[data-staff-toggle]').forEach(b=>b.onclick=async()=>{
+  const row=rows.find(x=>x.user_id===b.dataset.staffToggle);if(!row)return;b.disabled=true;
+  try{const {error}=await supabase.rpc('assign_staff_permissions',{p_user_id:row.user_id,p_permissions:row.permissions||[],p_active:b.dataset.active==='true'});if(error)throw error;await loadStaffRoles();message('تم تحديث حالة المسؤول.');}
+  catch(e){message(e.message,true);}finally{b.disabled=false;}
+ });
+ root.querySelectorAll('[data-staff-revoke]').forEach(b=>b.onclick=async()=>{
+  if(!confirm('سيتم سحب جميع صلاحيات هذا المسؤول وإيقافه. هل تتابعين؟'))return;
+  b.disabled=true;try{const {error}=await supabase.rpc('assign_staff_permissions',{p_user_id:b.dataset.staffRevoke,p_permissions:[],p_active:false});if(error)throw error;await loadStaffRoles();message('تم سحب الصلاحيات.');}
+  catch(e){message(e.message,true);}finally{b.disabled=false;}
+ });
+ const {data:audit,error:auditError}=await supabase.from('staff_audit_log').select('id,staff_user_id,action,target_type,target_id,reason,metadata,created_at').order('created_at',{ascending:false}).limit(30);
+ if(auditError)throw auditError;
+ const auditIds=[...new Set((audit||[]).map(x=>x.staff_user_id).filter(Boolean))];
+ let auditProfiles=[];
+ if(auditIds.length){const r=await supabase.from('profiles').select('id,public_id,display_name,handle').in('id',auditIds);if(r.error)throw r.error;auditProfiles=r.data||[];}
+ const auditById=Object.fromEntries(auditProfiles.map(x=>[x.id,x]));
+ auditRoot.innerHTML=(audit||[]).length?(audit||[]).map(x=>'<div class="item"><b>'+esc(x.action)+'</b><p class="muted text-xs">'+esc(auditById[x.staff_user_id]?.display_name||'مسؤول')+' · '+esc(auditById[x.staff_user_id]?.public_id||'—')+' · '+esc(new Date(x.created_at).toLocaleString('ar-DZ'))+'</p><p class="muted text-xs">'+esc(x.target_type||'')+' '+esc(x.target_id||'')+'</p></div>').join(''):'<p class="muted">لا توجد عمليات مسجلة حتى الآن.</p>';
 }
 async function loadLogins(){
  const root=$('#login-events');
@@ -330,6 +366,23 @@ $('#bomb-level-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTar
 $('#agency-create-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {data,error}=await supabase.rpc('admin_create_agency',{p_name:f.elements.name.value.trim(),p_type:f.elements.agency_type.value,p_owner_public_id:Number(f.elements.owner_public_id.value),p_commission_percent:Number(f.elements.commission_percent.value),p_agent_commission_percent:Number(f.elements.agent_commission_percent.value)});if(error)throw error;f.reset();await loadAgencies();message('تم إنشاء الوكالة: '+data);}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#agency-member-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {error}=await supabase.rpc('agency_add_member',{p_agency_id:f.elements.agency_id.value,p_member_public_id:Number(f.elements.public_id.value),p_role:f.elements.role.value});if(error)throw error;f.elements.public_id.value='';message('تمت إضافة العضو إلى الوكالة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#topup-package-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),coins:Number(f.elements.coins.value),price_dzd:Number(f.elements.price_dzd.value),sort_order:Number(f.elements.sort_order.value||0),active:f.elements.active.checked};const {error}=await supabase.from('topup_packages').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await loadTopupPackages();message('تم حفظ باقة الشحن.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
+$('#staff-assign-form').onsubmit=async e=>{
+ e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;
+ try{
+  const publicId=Number(f.elements.public_id.value);
+  if(!Number.isSafeInteger(publicId)||publicId<=0)throw Error('أدخلي المعرّف العام الصحيح للعضو.');
+  const {data:directory,error:directoryError}=await supabase.functions.invoke('admin-user-directory',{body:{search:String(publicId),offset:0,limit:1}});
+  if(directoryError)throw directoryError;if(directory?.error)throw Error(directory.error);
+  const target=(directory?.users||[]).find(x=>Number(x.public_id)===publicId);
+  if(!target)throw Error('لم يتم العثور على عضو بهذا المعرّف.');
+  if(target.role==='admin')throw Error('لا يمكن تعيين صلاحيات مساعدة لحساب Super Admin.');
+  const permissions=[...f.querySelectorAll('input[name="permissions"]:checked')].map(x=>x.value);
+  if(!permissions.length)throw Error('اختاري صلاحية واحدة على الأقل.');
+  const {error}=await supabase.rpc('assign_staff_permissions',{p_user_id:target.id,p_permissions:permissions,p_active:f.elements.active.checked});
+  if(error)throw error;
+  f.reset();f.elements.active.checked=true;await loadStaffRoles();message('تم حفظ صلاحيات المسؤول المساعد.');
+ }catch(err){message(err.message,true);}finally{b.disabled=false;}
+};
 $('#user-search').onsubmit=async e=>{e.preventDefault();try{await loadUsers(e.currentTarget.elements.term.value);}catch(err){$('#user-results').innerHTML='<p class="text-red-300">'+esc(err.message)+'</p>';}};
 $('#seed-default-games').onclick=async()=>{
  const button=$('#seed-default-games');button.disabled=true;
