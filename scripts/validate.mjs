@@ -776,6 +776,9 @@ const livekitTokenPath = path.join(root, 'supabase/functions/livekit-token/index
 if (fs.existsSync(livekitTokenPath)) {
   const source = fs.readFileSync(livekitTokenPath, 'utf8');
   for (const token of [
+    'const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")',
+    '|| !serviceRoleKey',
+    'const moderationDb = createClient(supabaseUrl, serviceRoleKey',
     '.select("display_name,is_banned")',
     'if (!profile || profile.is_banned === true)',
     'هذا الحساب غير مخوّل بالاتصال الصوتي'
