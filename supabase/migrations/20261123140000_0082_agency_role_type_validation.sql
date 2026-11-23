@@ -19,7 +19,7 @@ begin
     raise exception 'يجب تسجيل الدخول';
   end if;
 
-  if public.is_admin() then
+  if coalesce(public.is_admin(), false) then
     v_actor_role := 'owner';
   else
     select member_role into v_actor_role
