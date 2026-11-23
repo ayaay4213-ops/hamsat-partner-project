@@ -624,7 +624,8 @@ export const api = {
       .select('id,user_a,user_b,updated_at,dm_messages(id,body,sender_id,created_at,read_at)')
       .or('user_a.eq.' + user.id + ',user_b.eq.' + user.id)
       .order('updated_at', { ascending: false }).limit(50)
-      // The inbox preview needs only the newest message per conversation.
+      // Order and cap the embedded relation so each conversation returns its latest preview only.
+      .order('created_at', { ascending: false, foreignTable: 'dm_messages' })
       .limit(1, { foreignTable: 'dm_messages' });
     fail(error);
     const rows = data || [];
