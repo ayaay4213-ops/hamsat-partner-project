@@ -65,7 +65,7 @@ begin
   if not public.is_admin() then
     raise exception 'هذه العملية متاحة للمشرفة الرئيسية فقط';
   end if;
-  if p_status not in ('new','reviewing','resolved','dismissed') then
+  if p_status is null or p_status not in ('new','reviewing','resolved','dismissed') then
     raise exception 'حالة الملاحظة غير صالحة';
   end if;
 
