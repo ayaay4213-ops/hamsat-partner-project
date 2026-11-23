@@ -226,7 +226,7 @@ async function loadUsers(term=''){
    try{
     const {data,error}=await supabase.functions.invoke('admin-user-moderate',{body:{user_id:moderateButton.dataset.moderateUser,action:'kick'}});
     if(error)throw error;if(data?.error)throw new Error(data.error);
-    message('تم إنهاء جلسة العضو. لم يتم حظره ويمكنه تسجيل الدخول مجدداً.');
+    message(data?.warning || 'تم إنهاء جلسة العضو. لم يتم حظره ويمكنه تسجيل الدخول مجدداً.', Boolean(data?.warning));
     await loadUsers(clean);
    }catch(e){message(e.message||'تعذّر إخراج العضو.',true);kickButton.disabled=false;}
   };
@@ -240,7 +240,7 @@ async function loadUsers(term=''){
   try{
    const {data,error}=await supabase.functions.invoke('admin-user-moderate',{body:{user_id:b.dataset.moderateUser,banned:next,reason:next?'إجراء إداري من لوحة HAMSAT':''}});
    if(error)throw error;if(data?.error)throw new Error(data.error);
-   message(next?'تم حظر الحساب.':'تم فك الحظر.');
+   message(data?.warning || (next?'تم حظر الحساب.':'تم فك الحظر.'), Boolean(data?.warning));
    await Promise.all([loadUsers(clean),loadStats()]);
   }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
  });
