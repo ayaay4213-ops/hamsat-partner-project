@@ -662,12 +662,27 @@ export const api = {
       .eq('conversation_id', conversationId).order('created_at',{ascending:false}).limit(200);
     fail(error);
     const senderIds=[...new Set((data||[]).map(m=>m.sender_id))];
-    const people=senderIds.length?await client().from('profiles').select(PROFILE_COLUMNS).in('id',senderIds):{data:[],error:null};
-    fail(people.error);
-    const mapped=await mapProfilesWithFrames(people.data||[]),byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
+    let byId={};
+    if(senderIds.length){
+      const people=await client().from('profiles').select(PROFILE_COLUMNS).in('id',senderIds);
+      if(people.error){
+        // Profile decoration must never prevent the actual private message body
+        // from rendering for a participant who is allowed to read the message.
+        console.warn('DM sender profiles could not be loaded; rendering messages without profile decoration.',people.error);
+      }else{
+        try{
+          const mapped=await mapProfilesWithFrames(people.data||[]);
+          byId=Object.fromEntries(mapped.map(p=>[p.uuid,p]));
+        }catch(profileError){
+          console.warn('DM sender profile decoration failed; rendering messages without it.',profileError);
+        }
+      }
+    }
+    // Read receipts are secondary. A permission/realtime issue here must not
+    // turn a successful SELECT into an empty conversation for the recipient.
     const { error: readError } = await client().from('dm_messages').update({read_at:new Date().toISOString()})
       .eq('conversation_id',conversationId).neq('sender_id',user.id).is('read_at',null);
-    fail(readError);
+    if(readError)console.warn('DM messages loaded, but read receipts could not be updated.',readError);
     return { messages:(data||[]).slice().reverse().map(m=>({...m,profile:byId[m.sender_id]||null})) };
   },
   sendDirectMessage: async (conversationId, body) => {
