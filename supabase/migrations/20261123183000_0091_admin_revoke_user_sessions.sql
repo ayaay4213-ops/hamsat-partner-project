@@ -30,5 +30,4 @@ $function$;
 
 revoke all on function public.admin_revoke_user_sessions(uuid)
   from public, anon, authenticated;
-grant execute on function public.admin_revoke_user_sessions(uuid)
-  to service_role;
+grant execute on function public.admin_revoke_user_sessions(uuid) to service_role;
