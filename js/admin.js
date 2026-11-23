@@ -14,7 +14,7 @@ async function boot(){
  const sections=[
   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
+  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
  ];
  await Promise.all(sections.map(async([label,load])=>{
   try{await load();}
@@ -23,7 +23,7 @@ async function boot(){
    const target=({
     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
     'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
-    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
+    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
    })[label];
    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
    message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
@@ -133,6 +133,20 @@ async function loadTopupPackages(){
  if(error){root.innerHTML='<p class="muted">تظهر الباقات بعد تطبيق ترحيل الوكالات.</p>';return;}
  root.innerHTML=(data||[]).map(x=>'<div class="item"><div><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.coins)+' عملة · '+esc(x.price_dzd)+' دج · '+(x.active?'نشطة':'متوقفة')+'</p></div><button class="ghost text-xs" data-package-toggle="'+esc(x.id)+'" data-active="'+(!x.active)+'">تبديل الحالة</button></div>').join('')||'<p class="muted">أضيفي أول باقة شحن.</p>';
  root.querySelectorAll('[data-package-toggle]').forEach(b=>b.onclick=async()=>{const item=(data||[]).find(x=>x.id===b.dataset.packageToggle);if(!item)return;const {error}=await supabase.from('topup_packages').update({active:b.dataset.active==='true'}).eq('id',item.id);if(error){message(error.message,true);return;}await loadTopupPackages();});
+}
+async function loadExternalTopupOrders(){
+ const root=$('#topup-order-list');
+ const {data,error}=await supabase.from('external_topup_orders').select('id,user_id,package_id,payment_provider,coins,price_dzd,provider_reference,status,created_at,verified_at').order('created_at',{ascending:false}).limit(100);
+ if(error)throw error;
+ const ids=[...new Set((data||[]).map(x=>x.user_id).filter(Boolean))];
+ let profiles=[];
+ if(ids.length){const r=await supabase.from('profiles').select('id,public_id,display_name,handle').in('id',ids);if(r.error)throw r.error;profiles=r.data||[];}
+ const byId=Object.fromEntries(profiles.map(x=>[x.id,x]));
+ const statusNames={pending:'بانتظار التحقق',paid:'مدفوع',failed:'فشل الدفع',cancelled:'ملغى'};
+ root.innerHTML=(data||[]).length?(data||[]).map(x=>{
+  const p=byId[x.user_id]||{};
+  return '<article class="item"><div class="flex justify-between gap-3"><div class="min-w-0"><b>طلب '+esc(String(x.id).slice(0,8))+'…</b><p class="muted text-xs">العضو '+esc(p.public_id||'—')+' · '+esc(p.display_name||p.handle||'عضو')+'</p><p class="text-xs mt-1">'+esc(x.coins)+' عملة · '+esc(x.price_dzd)+' دج · '+esc(x.payment_provider)+'</p><p class="muted text-xs">مرجع الدفع: '+esc(x.provider_reference||'غير متوفر')+' · '+esc(new Date(x.created_at).toLocaleString('ar-DZ'))+'</p></div><span class="pill">'+esc(statusNames[x.status]||x.status)+'</span></div></article>';
+ }).join(''):'<p class="muted">لا توجد طلبات شحن خارجية حالياً.</p>';
 }
 async function loadReports(){
  const root=$('#report-list');
