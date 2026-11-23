@@ -53,3 +53,29 @@ $function$;
 
 revoke all on function public.submit_user_feedback(text,text) from public, anon, authenticated;
 grant execute on function public.submit_user_feedback(text,text) to authenticated;
+
+
+create or replace function public.admin_update_user_feedback(p_feedback_id bigint, p_status text)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if not public.is_admin() then
+    raise exception 'هذه العملية متاحة للمشرفة الرئيسية فقط';
+  end if;
+  if p_status not in ('new','reviewing','resolved','dismissed') then
+    raise exception 'حالة الملاحظة غير صالحة';
+  end if;
+
+  update public.user_feedback
+     set status = p_status
+   where id = p_feedback_id;
+
+  return found;
+end;
+$function$;
+
+revoke all on function public.admin_update_user_feedback(bigint,text) from public, anon, authenticated;
+grant execute on function public.admin_update_user_feedback(bigint,text) to authenticated;
