@@ -213,3 +213,10 @@ begin
   return new;
 end;
 $function$;
+
+-- Limit the SECURITY DEFINER purchase entry point to authenticated callers.
+revoke all on function public.purchase_shop_item(text) from public, anon, authenticated;
+grant execute on function public.purchase_shop_item(text) to authenticated;
+
+-- This routine is trigger-only; clients must not invoke it directly.
+revoke all on function private.apply_room_bomb_contribution() from public, anon, authenticated;
