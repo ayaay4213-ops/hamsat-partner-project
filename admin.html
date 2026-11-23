@@ -136,7 +136,7 @@ header p,header small{color:#77786d!important}
 </head>
 <body><div class="wrap space-y-4">
 <header class="flex flex-wrap items-center justify-between gap-3 py-3"><div class="flex items-center gap-3"><button id="admin-menu-toggle" class="ghost text-2xl leading-none" type="button" aria-label="فتح قائمة لوحة الإدارة">☰</button><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
-<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button></nav>
+<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
 <div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
 <main id="admin" class="hidden space-y-4">
 <section id="overview" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -150,7 +150,7 @@ header p,header small{color:#77786d!important}
 <button class="tab" data-tab="gifts">الهدايا</button>
 <button class="tab" data-tab="users">الأعضاء وID</button><button class="tab" data-tab="logins">دخول الأعضاء</button>
 <button class="tab" data-tab="rooms">الغرف</button>
-<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button>
+<button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button>
 </nav>
 <section id="catalog" class="panel space-y-4">
 <div><h2 class="text-xl font-bold">إدارة المقتنيات والتأثيرات</h2><p class="muted text-sm">إضافة عناصر المتجر وتحديد السعر والنوع وإظهارها أو إخفاؤها.</p></div>
@@ -266,5 +266,9 @@ header p,header small{color:#77786d!important}
 <div><h2 class="text-xl font-bold">بلاغات المستخدمين والغرف</h2><p class="muted text-sm">راجعي البلاغات وغيّري حالتها بعد اتخاذ الإجراء المناسب.</p></div>
 <div id="report-list" class="space-y-2"></div>
 </section>
+<section id="feedback" class="panel space-y-4 hidden">
+<div><h2 class="text-xl font-bold">ملاحظات الأعضاء</h2><p class="muted text-sm">اقتراحات الأعضاء والمشكلات التقنية والشكاوى الواردة إلى فريق همسات.</p></div>
+<div id="feedback-list" class="space-y-2"></div>
+</section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261121-admin-directory-edge-v4"></script></body></html>
+<script type="module" src="js/admin.js?v=20261123-feedback-inbox-v1"></script></body></html>
