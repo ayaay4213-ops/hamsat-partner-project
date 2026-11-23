@@ -995,6 +995,23 @@ if (fs.existsSync(dmBlockMigrationPath)) {
   errors.push('Missing direct-message block consistency migration: 0087');
 }
 
+const dmGrantsMigrationPath = path.join(root, 'supabase/migrations/20261123173000_0089_harden_dm_column_grants.sql');
+if (fs.existsSync(dmGrantsMigrationPath)) {
+  const sql = fs.readFileSync(dmGrantsMigrationPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on table public.dm_conversations from anon, authenticated',
+    'grant select on table public.dm_conversations to authenticated',
+    'revoke all on table public.dm_messages from anon, authenticated',
+    'grant select on table public.dm_messages to authenticated',
+    'grant insert (conversation_id, sender_id, body)',
+    'grant update (read_at)'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing private-message least-privilege grant: ' + token);
+  }
+} else {
+  errors.push('Missing private-message column grant migration: 0089');
+}
+
 const feedbackMigrationPath = path.join(root, 'supabase/migrations/20261123160000_0086_user_feedback_inbox.sql');
 if (fs.existsSync(feedbackMigrationPath)) {
   const sql = fs.readFileSync(feedbackMigrationPath, 'utf8').toLowerCase();
