@@ -1,4 +1,7 @@
 -- HAMSAT 0090: enforce private-message limits server-side.
+create index if not exists dm_messages_sender_created_idx
+  on public.dm_messages (sender_id, created_at desc);
+
 -- Keep this independent from client validation so direct API calls cannot spam.
 create or replace function public.enforce_dm_message_limits()
 returns trigger
