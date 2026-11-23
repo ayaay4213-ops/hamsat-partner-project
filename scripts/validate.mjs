@@ -1002,6 +1002,9 @@ if (fs.existsSync(dmGrantsMigrationPath)) {
     'revoke all on table public.dm_conversations from anon, authenticated',
     'grant select on table public.dm_conversations to authenticated',
     'revoke all on table public.dm_messages from anon, authenticated',
+    'revoke insert (id, conversation_id, sender_id, body, created_at, read_at)',
+    'revoke update (id, conversation_id, sender_id, body, created_at, read_at)',
+    'revoke references (id, conversation_id, sender_id, body, created_at, read_at)',
     'grant select on table public.dm_messages to authenticated',
     'grant insert (conversation_id, sender_id, body)',
     'grant update (read_at)'
