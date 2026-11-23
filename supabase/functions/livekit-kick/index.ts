@@ -52,6 +52,15 @@ Deno.serve(async (req: Request) => {
   });
   const { data: authData, error: authError } = await callerClient.auth.getUser(accessToken);
   if (authError || !authData.user) return json(401, { error: "انتهت جلسة الدخول. سجّلي الدخول مجدداً." });
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: callerProfile, error: callerProfileError } = await admin
+    .from("profiles").select("is_banned").eq("id", authData.user.id).maybeSingle();
+  if (callerProfileError || !callerProfile || callerProfile.is_banned === true) {
+    return json(403, { error: "الحساب غير مخوّل بإدارة الغرفة." });
+  }
   if (authData.user.id === participantId) return json(400, { error: "لا يمكنك طرد نفسك من أدوات إدارة الأعضاء." });
 
   const { data: room, error: roomError } = await callerClient.from("rooms")
@@ -64,9 +73,6 @@ Deno.serve(async (req: Request) => {
   if (memberError) return json(500, { error: "تعذّر التحقق من العضو." });
   if (!member) return json(404, { error: "هذا العضو لم يعد داخل الغرفة." });
 
-  const admin = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
   try {
     const livekitHost = livekitUrl.replace(/^wss:/i, "https:");
     const service = new RoomServiceClient(livekitHost, livekitApiKey, livekitApiSecret);
@@ -91,6 +97,11 @@ Deno.serve(async (req: Request) => {
     console.error("Could not remove kicked room membership", membershipError);
     return json(500, { error: "تم فصل العضو صوتياً، لكن تعذّر إنهاء عضويته. حدّثي الغرفة." });
   }
-  await admin.from("room_participant_mutes").delete().eq("room_id", roomId).eq("user_id", participantId);
+  const { error: muteError } = await admin.from("room_participant_mutes").delete()
+    .eq("room_id", roomId).eq("user_id", participantId);
+  if (muteError) {
+    console.error("Could not clear kicked member mute state", muteError);
+    return json(500, { error: "تم إخراج العضو من الغرفة، لكن تعذّر تنظيف حالة الكتم. حدّثي الغرفة." });
+  }
   return json(200, { success: true, participant_id: participantId, removed_from_audio: true, removed_from_room: true });
 });
