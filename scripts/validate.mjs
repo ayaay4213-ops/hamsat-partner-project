@@ -814,7 +814,11 @@ if (fs.existsSync(inboxApiPath)) {
     ".order('created_at', { ascending: false, foreignTable: 'dm_messages' })",
     ".limit(1, { foreignTable: 'dm_messages' })",
     ".is('read_at', null)",
-    "unreadCounts[c.id] || 0"
+    "unreadCounts[c.id] || 0",
+    ".order('created_at',{ascending:false}).limit(200)",
+    ".slice().reverse().map(m=>({...m,profile:byId[m.sender_id]||null}))",
+    ".select('id,conversation_id,sender_id,body,created_at,read_at').single()",
+    "if (!data?.id) throw new Error('لم يتم تأكيد حفظ الرسالة؛ حاولي مرة أخرى.')"
   ]) {
     if (!js.includes(token)) errors.push('Inbox must load the latest message preview and preserve unread counts: ' + token);
   }
