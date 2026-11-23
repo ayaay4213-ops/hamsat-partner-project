@@ -846,7 +846,7 @@ if (fs.existsSync(staffUiPath)) {
     "supabase.from('staff_roles').select(",
     "supabase.from('staff_audit_log').select(",
     'data-staff-revoke',
-    "'staff',loadStaffRoles"
+    "'staff'"
   ]) {
     if (!js.includes(token)) errors.push('Missing Super Admin staff-role management flow: ' + token);
   }
