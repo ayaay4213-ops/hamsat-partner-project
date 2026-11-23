@@ -1001,6 +1001,7 @@ if (fs.existsSync(dmGrantsMigrationPath)) {
   for (const token of [
     'revoke all on table public.dm_conversations from anon, authenticated',
     'grant select on table public.dm_conversations to authenticated',
+    'revoke references (id, user_a, user_b, created_at, updated_at)',
     'revoke all on table public.dm_messages from anon, authenticated',
     'revoke insert (id, conversation_id, sender_id, body, created_at, read_at)',
     'revoke update (id, conversation_id, sender_id, body, created_at, read_at)',
