@@ -2119,8 +2119,10 @@ async function inboxScreen() {
     void refresh();
     const incoming=payload?.eventType==='INSERT'&&payload?.new?.sender_id&&payload.new.sender_id!==state.account?.id;
     if(incoming&&localStorage.getItem('hamsat:message-notifications')!=='off')toast('وصلتك رسالة جديدة');
-  });
-  window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+  },status=>{if(status!=='SUBSCRIBED'&&root?.isConnected)void refresh();});
+  // Realtime can disconnect on mobile networks; refresh while visible as a safe fallback.
+  const inboxPoll=window.setInterval(()=>{if(root?.isConnected&&document.visibilityState!=='hidden')void refresh();},15000);
+  window.addEventListener('hashchange',()=>{window.clearInterval(inboxPoll);api.unsubscribeRoomChannel(channel);},{once:true});
   await refresh();
 }
 async function directMessageScreen(conversationId) {
@@ -2151,8 +2153,10 @@ async function directMessageScreen(conversationId) {
   };
   // Listen first; the queued refresh below also coalesces bursts of realtime
   // INSERT/UPDATE events instead of silently dropping them during a fetch.
-  const channel=api.subscribeDirectMessages(conversationId,()=>void draw().catch(e=>toast(e.message,'error')));
-  window.addEventListener('hashchange',()=>api.unsubscribeRoomChannel(channel),{once:true});
+  const channel=api.subscribeDirectMessages(conversationId,()=>void draw().catch(e=>toast(e.message,'error')),status=>{if(status!=='SUBSCRIBED'&&root?.isConnected)void draw().catch(e=>console.warn('DM fallback refresh failed:',e));});
+  // Keep incoming messages visible if a mobile connection drops Realtime events.
+  const dmPoll=window.setInterval(()=>{if(root?.isConnected&&document.visibilityState!=='hidden')void draw().catch(e=>console.warn('DM fallback refresh failed:',e));},12000);
+  window.addEventListener('hashchange',()=>{window.clearInterval(dmPoll);api.unsubscribeRoomChannel(channel);},{once:true});
   await draw();
   form.onsubmit=async e=>{e.preventDefault();const input=form.elements.body,button=form.querySelector('button');button.disabled=true;try{await api.sendDirectMessage(conversationId,input.value);input.value='';await draw();}catch(err){toast(err.message,'error');}finally{button.disabled=false;input.focus();}};
 }
