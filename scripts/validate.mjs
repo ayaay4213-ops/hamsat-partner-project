@@ -16,10 +16,10 @@ const required = [
   'supabase/migrations/0009_live_room_seats.sql',
   'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
   'supabase/migrations/0012_room_security_and_lifecycle.sql',
-  'supabase/migrations/0049_synchronized_room_games.sql',
-  'supabase/migrations/0050_seed_profile_frame_catalog.sql',
-  'supabase/migrations/0051_protect_game_answer_keys.sql',
-  'supabase/migrations/0056_room_and_gift_integrity.sql',
+  'supabase/migrations/20261118200858_0049_synchronized_room_games.sql',
+  'supabase/migrations/20261118200902_0050_seed_profile_frame_catalog.sql',
+  'supabase/migrations/20261118200906_0051_protect_game_answer_keys.sql',
+  'supabase/migrations/20261119082823_0056_room_and_gift_integrity.sql',
   'supabase/migrations/20261122224438_0078_configurable_room_seat_layout.sql',
   'supabase/migrations/20261120204751_0062_shared_room_backgrounds_and_staff_roles.sql',
   'supabase/SETUP-AR.md',
@@ -139,7 +139,7 @@ if (fs.existsSync(seatMigrationPath)) {
   }
 }
 
-const expandedSeatsPath = path.join(root, 'supabase/migrations/0037_room_twelve_seats.sql');
+const expandedSeatsPath = path.join(root, 'supabase/migrations/20261116220356_0037_room_twelve_seats.sql');
 if (fs.existsSync(expandedSeatsPath)) {
   const sql = fs.readFileSync(expandedSeatsPath, 'utf8').toLowerCase();
   for (const token of [
@@ -151,7 +151,7 @@ if (fs.existsSync(expandedSeatsPath)) {
     if (!sql.includes(token)) errors.push(`Missing twelve-seat support SQL: ${token}`);
   }
 }
-const roomActivityPath = path.join(root, 'supabase/migrations/0038_room_activity_events.sql');
+const roomActivityPath = path.join(root, 'supabase/migrations/20261116220359_0038_room_activity_events.sql');
 if (fs.existsSync(roomActivityPath)) {
   const sql = fs.readFileSync(roomActivityPath, 'utf8').toLowerCase();
   for (const token of [
@@ -164,14 +164,14 @@ if (fs.existsSync(roomActivityPath)) {
     if (!sql.includes(token)) errors.push(`Missing secure room activity SQL: ${token}`);
   }
 }
-const giftCategoriesPath = path.join(root, 'supabase/migrations/0039_gift_categories.sql');
+const giftCategoriesPath = path.join(root, 'supabase/migrations/20261116220400_0039_gift_categories.sql');
 if (fs.existsSync(giftCategoriesPath)) {
   const sql = fs.readFileSync(giftCategoriesPath, 'utf8').toLowerCase();
   for (const token of ["category text not null default 'app'", "gifts_category_check", "'event'", "'lucky'", "'special'"]) {
     if (!sql.includes(token)) errors.push(`Missing gift category SQL: ${token}`);
   }
 }
-const roomBombPath = path.join(root, 'supabase/migrations/0040_room_bomb_rewards.sql');
+const roomBombPath = path.join(root, 'supabase/migrations/20261116220413_0040_room_bomb_rewards.sql');
 if (fs.existsSync(roomBombPath)) {
   const sql = fs.readFileSync(roomBombPath, 'utf8').toLowerCase();
   for (const token of [
@@ -185,7 +185,7 @@ if (fs.existsSync(roomBombPath)) {
     if (!sql.includes(token)) errors.push(`Missing room bomb SQL: ${token}`);
   }
 }
-const cosmeticsPath = path.join(root, 'supabase/migrations/0041_cosmetic_slots_and_expiry.sql');
+const cosmeticsPath = path.join(root, 'supabase/migrations/20261116220403_0041_cosmetic_slots_and_expiry.sql');
 if (fs.existsSync(cosmeticsPath)) {
   const sql = fs.readFileSync(cosmeticsPath, 'utf8').toLowerCase();
   for (const token of [
@@ -200,7 +200,7 @@ if (fs.existsSync(cosmeticsPath)) {
     if (!sql.includes(token)) errors.push(`Missing cosmetic inventory SQL: ${token}`);
   }
 }
-const agencyPath = path.join(root, 'supabase/migrations/0042_agencies_and_agent_recharge.sql');
+const agencyPath = path.join(root, 'supabase/migrations/20261116220405_0042_agencies_and_agent_recharge.sql');
 if (fs.existsSync(agencyPath)) {
   const sql = fs.readFileSync(agencyPath, 'utf8').toLowerCase();
   for (const token of [
@@ -213,7 +213,7 @@ if (fs.existsSync(agencyPath)) {
     if (!sql.includes(token)) errors.push(`Missing agency and recharge SQL: ${token}`);
   }
 }
-const hostAgencyPath = path.join(root, 'supabase/migrations/0043_host_agency_metrics.sql');
+const hostAgencyPath = path.join(root, 'supabase/migrations/20261116220407_0043_host_agency_metrics.sql');
 if (fs.existsSync(hostAgencyPath)) {
   const sql = fs.readFileSync(hostAgencyPath, 'utf8').toLowerCase();
   for (const token of [
@@ -227,7 +227,7 @@ if (fs.existsSync(hostAgencyPath)) {
     if (!sql.includes(token)) errors.push(`Missing host agency metrics SQL: ${token}`);
   }
 }
-const safetyPath = path.join(root, 'supabase/migrations/0044_user_safety_and_reports.sql');
+const safetyPath = path.join(root, 'supabase/migrations/20261116220409_0044_user_safety_and_reports.sql');
 if (fs.existsSync(safetyPath)) {
   const sql = fs.readFileSync(safetyPath, 'utf8').toLowerCase();
   for (const token of [
@@ -241,7 +241,7 @@ if (fs.existsSync(safetyPath)) {
     if (!sql.includes(token)) errors.push(`Missing user safety SQL: ${token}`);
   }
 }
-const multiplayerGamesPath = path.join(root, 'supabase/migrations/0049_synchronized_room_games.sql');
+const multiplayerGamesPath = path.join(root, 'supabase/migrations/20261118200858_0049_synchronized_room_games.sql');
 if (fs.existsSync(multiplayerGamesPath)) {
   const sql = fs.readFileSync(multiplayerGamesPath, 'utf8').toLowerCase();
   for (const token of [
@@ -263,7 +263,7 @@ if (fs.existsSync(multiplayerGamesPath)) {
     if (!sql.includes(token)) errors.push(`Missing synchronized room games SQL: ${token}`);
   }
 }
-const gameAnswerProtectionPath = path.join(root, 'supabase/migrations/0051_protect_game_answer_keys.sql');
+const gameAnswerProtectionPath = path.join(root, 'supabase/migrations/20261118200906_0051_protect_game_answer_keys.sql');
 if (fs.existsSync(gameAnswerProtectionPath)) {
   const sql = fs.readFileSync(gameAnswerProtectionPath, 'utf8').toLowerCase();
   for (const token of [
@@ -274,7 +274,7 @@ if (fs.existsSync(gameAnswerProtectionPath)) {
     if (!sql.includes(token)) errors.push(`Missing game answer-key protection: ${token}`);
   }
 }
-const profileFramesPath = path.join(root, 'supabase/migrations/0050_seed_profile_frame_catalog.sql');
+const profileFramesPath = path.join(root, 'supabase/migrations/20261118200902_0050_seed_profile_frame_catalog.sql');
 if (fs.existsSync(profileFramesPath)) {
   const sql = fs.readFileSync(profileFramesPath, 'utf8').toLowerCase();
   const frameSeedCount=(sql.split("  ('profile_orig_").length-1)+(sql.split("  ('profile_ref_").length-1);
@@ -285,7 +285,7 @@ if (fs.existsSync(profileFramesPath)) {
     if (!sql.includes(token)) errors.push(`Missing safe profile-frame catalog setting: ${token}`);
   }
 }
-const compatibilityPath = path.join(root, 'supabase/migrations/0046_catalog_and_wallet_type_compatibility.sql');
+const compatibilityPath = path.join(root, 'supabase/migrations/20261116220354_0046_catalog_and_wallet_type_compatibility.sql');
 if (fs.existsSync(compatibilityPath)) {
   const sql = fs.readFileSync(compatibilityPath, 'utf8').toLowerCase();
   for (const token of [
@@ -302,7 +302,7 @@ if (fs.existsSync(compatibilityPath)) {
 } else {
   errors.push('Missing catalog and wallet compatibility migration: 0046');
 }
-const hardeningPath = path.join(root, 'supabase/migrations/0045_security_and_query_hardening.sql');
+const hardeningPath = path.join(root, 'supabase/migrations/20261116220411_0045_security_and_query_hardening.sql');
 if (!fs.existsSync(hardeningPath)) errors.push('Missing security and query hardening migration: 0045');
 
 const liveKitRoomPath = path.join(root, 'js/livekit-room.js');
@@ -407,7 +407,7 @@ for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js',
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
 }
 
-const roomIntegrityPath = path.join(root, 'supabase/migrations/0056_room_and_gift_integrity.sql');
+const roomIntegrityPath = path.join(root, 'supabase/migrations/20261119082823_0056_room_and_gift_integrity.sql');
 if (fs.existsSync(roomIntegrityPath)) {
   const sql = fs.readFileSync(roomIntegrityPath, 'utf8').toLowerCase();
   for (const token of [
@@ -441,7 +441,7 @@ if (fs.existsSync(appRoomPath)) {
   }
 }
 
-const roomGameHostMembershipPath = path.join(root, 'supabase/migrations/0059_require_room_membership_for_game_host.sql');
+const roomGameHostMembershipPath = path.join(root, 'supabase/migrations/20261119090651_0059_require_room_membership_for_game_host.sql');
 if (fs.existsSync(roomGameHostMembershipPath)) {
   const sql = fs.readFileSync(roomGameHostMembershipPath, 'utf8').toLowerCase();
   for (const token of [
@@ -501,7 +501,7 @@ if (fs.existsSync(moderationSourcePath)) {
 } else {
   errors.push('Missing tracked source for deployed admin-user-moderate Edge Function');
 }
-const accountModerationPath = path.join(root, 'supabase/migrations/0027_account_moderation.sql');
+const accountModerationPath = path.join(root, 'supabase/migrations/20261116152406_account_moderation.sql');
 if (fs.existsSync(accountModerationPath)) {
   const sql = fs.readFileSync(accountModerationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -514,7 +514,7 @@ if (fs.existsSync(accountModerationPath)) {
 } else {
   errors.push('Missing account moderation migration: 0027');
 }
-const profileProtectionPath = path.join(root, 'supabase/migrations/0036_protect_profile_ranks_and_couple_identity.sql');
+const profileProtectionPath = path.join(root, 'supabase/migrations/20261116172631_protect_profile_ranks_and_couple_identity.sql');
 if (fs.existsSync(profileProtectionPath)) {
   const sql = fs.readFileSync(profileProtectionPath, 'utf8').toLowerCase();
   for (const token of ['new.role is distinct from old.role','new.is_banned is distinct from old.is_banned','new.vip_level is distinct from old.vip_level','new.wealth_level is distinct from old.wealth_level','new.charisma_level is distinct from old.charisma_level']) {
@@ -524,7 +524,7 @@ if (fs.existsSync(profileProtectionPath)) {
   errors.push('Missing profile-rank protection migration: 0036');
 }
 
-const directGiftCompatPath = path.join(root, 'supabase/migrations/0057_legacy_gift_rpc_compatibility.sql');
+const directGiftCompatPath = path.join(root, 'supabase/migrations/20261119082855_0057_legacy_gift_rpc_compatibility.sql');
 if (directGiftCompatPath && fs.existsSync(directGiftCompatPath)) {
   const sql = fs.readFileSync(directGiftCompatPath, 'utf8').toLowerCase();
   for (const token of ['create or replace function public.send_gift(', 'p_quantity integer default 1', 'security invoker', 'gen_random_uuid()', 'revoke all on function public.send_gift(uuid,text,integer) from public,anon', 'grant execute on function public.send_gift(uuid,text,integer) to authenticated']) {
@@ -533,7 +533,7 @@ if (directGiftCompatPath && fs.existsSync(directGiftCompatPath)) {
 } else {
   errors.push('Missing legacy direct-gift RPC compatibility migration: 0057');
 }
-const roomGiftCompatPath = path.join(root, 'supabase/migrations/0058_legacy_room_gift_rpc_compatibility.sql');
+const roomGiftCompatPath = path.join(root, 'supabase/migrations/20261119083044_0058_legacy_room_gift_rpc_compatibility.sql');
 if (fs.existsSync(roomGiftCompatPath)) {
   const sql = fs.readFileSync(roomGiftCompatPath, 'utf8').toLowerCase();
   for (const token of ['create or replace function public.send_room_gift(', 'create or replace function public.send_room_gift_to_all(', 'p_quantity integer default 1', 'security invoker', 'gen_random_uuid()', 'grant execute on function public.send_room_gift(uuid,uuid,text,integer) to authenticated', 'grant execute on function public.send_room_gift_to_all(uuid,text,integer) to authenticated']) {
@@ -677,7 +677,7 @@ if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes
 }
 
 
-const oneRoomMigrationPath = path.join(root, 'supabase/migrations/0060_one_room_per_member.sql');
+const oneRoomMigrationPath = path.join(root, 'supabase/migrations/20261120204745_0060_one_room_per_member.sql');
 if (!fs.existsSync(oneRoomMigrationPath)) {
   errors.push('Missing database-level one-room-per-member migration: 0060');
 } else {
@@ -716,7 +716,7 @@ if (fs.existsSync(integratedHtmlPath)) {
     errors.push('Bottom navigation must include the moments shortcut beside the profile tab');
   }
 }
-const roomHistoryMigrationPath = path.join(root, 'supabase/migrations/0061_room_chat_history_since_join.sql');
+const roomHistoryMigrationPath = path.join(root, 'supabase/migrations/20261120204747_0061_room_chat_history_since_join.sql');
 if (!fs.existsSync(roomHistoryMigrationPath)) {
   errors.push('Missing room chat history since-join migration 0061');
 } else {
