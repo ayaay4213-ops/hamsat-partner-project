@@ -1023,9 +1023,14 @@ if (fs.existsSync(reportRateLimitPath)) {
     'revoke all on function public.report_user(bigint,text,text) from public, anon, authenticated',
     'revoke all on function public.report_room(uuid,text,text) from public, anon, authenticated',
     'grant execute on function public.report_user(bigint,text,text) to authenticated',
-    'grant execute on function public.report_room(uuid,text,text) to authenticated'
+    'grant execute on function public.report_room(uuid,text,text) to authenticated',
+    'create index if not exists idx_user_reports_reporter_created_at',
+    'pg_advisory_xact_lock(hashtextextended(v_user::text, 0))',
+    "created_at >= now() - interval '24 hours'",
+    "created_at >= now() - interval '1 hour'",
+    'if v_recent_count >= 5 then'
   ]) {
-    if (!sql.includes(token)) errors.push('Report RPC execution must be restricted to authenticated users: ' + token);
+    if (!sql.includes(token)) errors.push('Missing report anti-abuse protection: ' + token);
   }
 } else {
   errors.push('Missing report rate-limit migration: 0085');
