@@ -6626,3 +6626,69 @@ body:has(.room-sheet) #tabbar{display:none!important}
  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring{flex-basis:62px!important;width:62px!important;height:62px!important;min-width:62px!important;min-height:62px!important}
  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar,.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar-photo{width:53px!important;height:53px!important;min-width:53px!important;min-height:53px!important}
 }
+
+
+/* HAMSAT room fit: four microphone columns and a visible chat composer */
+.room-sheet #room-seats.hs-room-seats{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  grid-auto-rows:minmax(92px,auto)!important;
+  align-items:start!important;
+  justify-items:stretch!important;
+  gap:8px 5px!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow:visible!important;
+  padding:10px 6px 12px!important;
+}
+.room-sheet #room-seats>.hs-room-seat{
+  min-height:90px!important;
+  height:auto!important;
+  padding:5px 2px 7px!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring{
+  flex:0 0 50px!important;
+  width:50px!important;
+  height:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
+}
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar,
+.room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar-photo{
+  width:43px!important;
+  height:43px!important;
+  min-width:43px!important;
+  min-height:43px!important;
+  max-width:43px!important;
+  max-height:43px!important;
+}
+.room-sheet #room-chat{
+  min-height:112px!important;
+  max-height:min(22dvh,170px)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+.room-sheet .hs-room-chat-area{
+  padding-bottom:8px!important;
+}
+@media(max-width:350px){
+  .room-sheet #room-seats.hs-room-seats{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(84px,auto)!important;
+    gap:6px 3px!important;
+    padding:8px 3px 10px!important;
+  }
+  .room-sheet #room-seats>.hs-room-seat{min-height:82px!important}
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring{
+    flex-basis:44px!important;width:44px!important;height:44px!important;
+    min-width:44px!important;min-height:44px!important;
+  }
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar,
+  .room-sheet #room-seats>.hs-room-seat .hs-seat-ring>.avatar-photo{
+    width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;
+    max-width:38px!important;max-height:38px!important;
+  }
+}
