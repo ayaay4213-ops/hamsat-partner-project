@@ -132,6 +132,8 @@ header p,header small{color:#77786d!important}
 #admin button:focus-visible,#admin input:focus-visible,#admin select:focus-visible{outline:3px solid #d8bd78!important;outline-offset:2px!important}
 @media(max-width:640px){.wrap{padding:12px!important}.panel{padding:14px!important}.stat b{font-size:28px!important}.item{gap:10px!important}}
 
+
+.room-design-studio{border:1px solid #d8b66e35;border-radius:18px;padding:14px;background:#fffdf8}.room-design-notice{display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid #d6a33166;border-radius:12px;background:#fff8e8;color:#6a4a10;font-size:13px}.room-design-notice span{color:#6d6250;line-height:1.7}.rd-value{float:left;color:#98701c;font-weight:800}.rd-preview{overflow:hidden;border:1px solid #d8b66e55;border-radius:18px;background:#11121c;color:#f6edda;padding:12px;max-width:680px;margin:auto}.rd-preview-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #ffffff20;font-size:12px}.rd-preview-head small{color:#d8b66e}.rd-preview-stage{margin-top:10px;padding:12px;border-radius:15px;background:#211d30;border:1px solid #d8b66e55}.rd-preview-host{display:flex;align-items:center;justify-content:center;gap:8px;color:#e9ce91;font-size:12px;margin-bottom:12px}.rd-seat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 10px;align-items:start}.rd-seat{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;font-size:10px;color:#f3e9d6}.rd-seat-avatar{display:grid;place-items:center;border-radius:50%;border:2px solid #d8b66e;background:linear-gradient(145deg,#493b59,#1b1928);box-shadow:0 0 0 3px #d8b66e22}.rd-seat small{color:#c9bdd0;font-size:9px}.rd-preview-lower{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rd-preview-box{padding:10px;border:1px solid #ffffff20;border-radius:12px;background:#ffffff0b;color:#d9d0bf;font-size:10px;min-height:48px}.rd-preview-toolbar{display:flex;justify-content:space-around;margin-top:10px;padding:10px;border-radius:14px;background:#282334;color:#e8ca80}.rd-preview-toolbar span{font-size:17px}@media(max-width:420px){.rd-seat-grid{gap:12px 5px}.rd-preview{padding:8px}.rd-preview-lower{grid-template-columns:1fr}.rd-preview-box{min-height:34px}}
 </style>
 </head>
 <body><div class="wrap space-y-4">
@@ -203,9 +205,37 @@ header p,header small{color:#77786d!important}
 <div id="user-results" class="space-y-2"><p class="muted text-sm">اكتبي ID أو اسم العضو للبحث.</p></div>
 </section>
 <section id="logins" class="panel space-y-3 hidden"><div><h2 class="text-xl font-bold">إشعارات دخول الأعضاء</h2><p class="muted text-sm">كل تسجيل دخول جديد يظهر هنا مباشرة مع رقم العضو والوقت، دون عرض بيانات الاتصال الخاصة.</p></div><div id="login-events" class="space-y-2"><p class="muted">جارٍ تحميل سجل الدخول...</p></div></section>
-<section id="rooms" class="panel space-y-3 hidden">
-<div><h2 class="text-xl font-bold">الغرف</h2><p class="muted text-sm">قائمة الغرف الحالية ومعرّف كل غرفة وصاحبتها.</p></div>
-<button id="refresh-rooms" class="ghost">تحديث القائمة</button><div id="room-list" class="space-y-2"></div>
+<section id="rooms" class="panel space-y-4 hidden">
+<div><h2 class="text-xl font-bold">إدارة الغرف وتصميمها</h2><p class="muted text-sm">معاينة تخطيط موحّد أو تخطيط مستقل لغرفة محددة.</p></div>
+<button id="refresh-rooms" class="ghost" type="button">تحديث قائمة الغرف</button><div id="room-list" class="space-y-2"></div>
+<div class="room-design-studio space-y-4">
+  <div class="room-design-notice"><b>وضع المعاينة فقط</b><span>التعديلات هنا تجريبية داخل لوحة الإدارة ولا تُحفظ ولا تُطبّق على الغرف بعد. ربط الحفظ يحتاج طبقة تخزين وصلاحيات آمنة منفصلة.</span></div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <label class="text-sm">نطاق التصميم<select id="rd-scope" class="field mt-1"><option value="global">التصميم العام — كل الغرف</option><option value="room">تخصيص غرفة واحدة</option></select></label>
+    <label class="text-sm">الغرفة<select id="rd-room" class="field mt-1" disabled><option value="">اختاري غرفة</option></select></label>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <label class="text-sm">عدد المايكات <output id="rd-seat-count-value" class="rd-value">8</output><input id="rd-seat-count" class="field mt-2" type="range" min="1" max="10" value="8"></label>
+    <label class="text-sm">المسافة بين المايكات <output id="rd-gap-value" class="rd-value">16px</output><input id="rd-gap" class="field mt-2" type="range" min="8" max="28" value="16"></label>
+    <label class="text-sm">حجم المايك <output id="rd-size-value" class="rd-value">52px</output><input id="rd-size" class="field mt-2" type="range" min="38" max="64" value="52"></label>
+    <label class="text-sm">لون الإطار<input id="rd-accent" class="field mt-1" type="color" value="#d8b66e"></label>
+    <label class="text-sm">خلفية منطقة المايكات<input id="rd-stage" class="field mt-1" type="color" value="#211d30"></label>
+    <label class="text-sm">شكل التوزيع<select id="rd-layout" class="field mt-1"><option value="grid">شبكة متوازنة</option><option value="one-top">مقعد واحد بالأعلى</option><option value="two-top">مقعدان بالأعلى</option><option value="row">صف واحد</option></select></label>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <label class="flex items-center gap-2"><input id="rd-show-host" type="checkbox" checked> إظهار المضيفة</label>
+    <label class="flex items-center gap-2"><input id="rd-show-attendees" type="checkbox" checked> إظهار الحاضرين</label>
+    <label class="flex items-center gap-2"><input id="rd-show-chat" type="checkbox" checked> إظهار الدردشة</label>
+    <label class="flex items-center gap-2"><input id="rd-show-tools" type="checkbox" checked> إظهار شريط الأدوات</label>
+  </div>
+  <div class="flex flex-wrap gap-2"><button id="rd-reset" type="button" class="ghost">استعادة إعدادات المعاينة</button><span class="muted text-xs self-center">تتحدث المعاينة مباشرة عند تغيير الخيارات.</span></div>
+  <div id="rd-preview" class="rd-preview" aria-live="polite">
+    <div class="rd-preview-head"><span>🎙️ همسات · غرفة تجريبية</span><small>مباشر · 12 عضواً</small></div>
+    <div class="rd-preview-stage"><div class="rd-preview-host">👑 <span>المضيفة</span></div><div id="rd-seat-grid" class="rd-seat-grid"></div></div>
+    <div class="rd-preview-lower"><div id="rd-attendees" class="rd-preview-box">الحاضرون · صور الأعضاء</div><div id="rd-chat" class="rd-preview-box">الدردشة · الرسائل تظهر هنا</div></div>
+    <div id="rd-toolbar" class="rd-preview-toolbar"><span>🎤</span><span>🎁</span><span>💬</span><span>⚙️</span><span>🚪</span></div>
+  </div>
+</div>
 </section>
 <section id="games" class="panel space-y-4 hidden">
 <div><h2 class="text-xl font-bold">إدارة الألعاب</h2><p class="muted text-sm">تعريف الألعاب وإعدادات الأسئلة. الجولات الجماعية تُدار داخل الغرف مع احتساب النقاط من الخادم.</p></div>
