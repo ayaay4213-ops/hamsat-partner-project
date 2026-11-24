@@ -21,6 +21,7 @@ const required = [
   'supabase/migrations/0051_protect_game_answer_keys.sql',
   'supabase/migrations/0056_room_and_gift_integrity.sql',
   'supabase/migrations/20261122224438_0078_configurable_room_seat_layout.sql',
+  'supabase/migrations/20261120204751_0062_shared_room_backgrounds_and_staff_roles.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -1218,6 +1219,40 @@ for (const token of [
   'p_request_id: requestId'
 ]) {
   if (!giftApiSource.includes(token)) errors.push('Gift API must send stable request IDs: ' + token);
+}
+
+
+const migrationHistoryAlignment = [
+  {
+    active: 'supabase/migrations/20261120204751_0062_shared_room_backgrounds_and_staff_roles.sql',
+    archived: null,
+    requiredToken: 'create table if not exists public.room_backgrounds'
+  },
+  {
+    active: 'supabase/migrations/20261122211000_0070_lock_auth_login_trigger_function.sql',
+    archived: 'supabase/deferred-migrations/20261122211000_0070_lock_auth_login_trigger_function.sql',
+    requiredToken: 'ARCHIVED: Production effect reconciled by applied migration 20261124122300'
+  },
+  {
+    active: 'supabase/migrations/20261122212000_0071_presence_grace_and_live_member_counts.sql',
+    archived: 'supabase/deferred-migrations/20261122212000_0071_presence_grace_and_live_member_counts.sql',
+    requiredToken: 'ARCHIVED: Production effect reconciled by applied migration 20261124122300'
+  }
+];
+for (const item of migrationHistoryAlignment) {
+  if (item.archived && fs.existsSync(path.join(root, item.active))) {
+    errors.push('Reconciled migration must not remain active: ' + item.active);
+  }
+  const target = item.archived || item.active;
+  const targetPath = path.join(root, target);
+  if (!fs.existsSync(targetPath)) {
+    errors.push('Missing migration history alignment file: ' + target);
+  } else if (!fs.readFileSync(targetPath, 'utf8').includes(item.requiredToken)) {
+    errors.push('Migration history alignment marker missing from: ' + target);
+  }
+}
+if (fs.existsSync(path.join(root, 'supabase/migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql'))) {
+  errors.push('Financial/shop migration 0080 must remain outside active migrations pending separate approval');
 }
 
 if (errors.length) {
