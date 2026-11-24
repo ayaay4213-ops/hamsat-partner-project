@@ -6799,3 +6799,19 @@ body:has(.room-sheet) #tabbar{display:none!important}
   .room-sheet .hs-room-tools-row{gap:4px!important}
   .room-sheet .hs-tool-icon,.room-sheet .hs-tool-mic,.room-sheet .hs-tool-gift{height:37px!important}
 }
+
+
+/* Correct selectors and remove duplicate generated labels in room redesign */
+.room-sheet .hs-seat-ring{
+  width:clamp(48px,15vw,62px)!important;height:clamp(48px,15vw,62px)!important;
+  flex:none!important;border:1.5px solid rgba(160,145,216,.82)!important;
+  background:radial-gradient(circle at 35% 28%,#37304f,#171526 72%)!important;
+  box-shadow:0 0 0 3px rgba(145,125,204,.14),0 5px 14px rgba(0,0,0,.35)!important
+}
+.room-sheet .hs-room-seat:first-child .hs-seat-ring{
+  width:clamp(52px,16vw,66px)!important;height:clamp(52px,16vw,66px)!important;
+  border:2px solid #e4c66f!important;box-shadow:0 0 0 4px rgba(218,184,91,.18),0 0 18px rgba(218,184,91,.2)!important
+}
+.room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#e6c96f!important}
+.room-sheet .hs-room-chat-heading>div:after{content:none!important}
+.room-sheet .hs-room-section-title>div:after{content:none!important}
