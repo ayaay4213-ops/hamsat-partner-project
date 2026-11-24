@@ -22,6 +22,11 @@ const required = [
   'supabase/migrations/20261119082823_0056_room_and_gift_integrity.sql',
   'supabase/migrations/20261122224438_0078_configurable_room_seat_layout.sql',
   'supabase/migrations/20261120204751_0062_shared_room_backgrounds_and_staff_roles.sql',
+  'supabase/migrations/20261116115128_0017_social_data_api_grants.sql',
+  'supabase/migrations/20261116115248_0018_private_dm_conversation_rpc.sql',
+  'supabase/migrations/20261124122300_hamsat_0079_security_and_presence_reconciliation_existing_objects.sql',
+  'supabase/migrations/20261124122508_hamsat_0079_default_privileges_postgres_only.sql',
+  'supabase/migrations/20261124152213_hamsat_private_room_game_answer_keys_rls.sql',
   'supabase/SETUP-AR.md',
   'workers/hamsat-api.js',
   'assets/hamsat-hero.svg'
@@ -1221,6 +1226,45 @@ for (const token of [
   if (!giftApiSource.includes(token)) errors.push('Gift API must send stable request IDs: ' + token);
 }
 
+
+const recoveredSourceMigrations = [
+  {
+    path: 'supabase/migrations/20261116115128_0017_social_data_api_grants.sql',
+    tokens: [
+      'revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon',
+      'grant select on table public.dm_conversations to authenticated',
+      'grant update (read_at) on table public.dm_messages to authenticated'
+    ]
+  },
+  {
+    path: 'supabase/migrations/20261116115248_0018_private_dm_conversation_rpc.sql',
+    tokens: [
+      'create or replace function private.get_or_create_conversation',
+      'auth.uid()',
+      'create or replace function public.get_or_create_conversation',
+      'grant execute on function public.get_or_create_conversation(uuid) to authenticated'
+    ]
+  },
+  {
+    path: 'supabase/migrations/20261124152213_hamsat_private_room_game_answer_keys_rls.sql',
+    tokens: [
+      'alter table private.room_game_answer_keys enable row level security'
+    ]
+  }
+];
+for (const item of recoveredSourceMigrations) {
+  const filePath = path.join(root, item.path);
+  if (!fs.existsSync(filePath)) {
+    errors.push('Missing restored source/security migration: ' + item.path);
+    continue;
+  }
+  const sql = fs.readFileSync(filePath, 'utf8').toLowerCase();
+  for (const token of item.tokens) {
+    if (!sql.includes(token.toLowerCase())) {
+      errors.push('Restored migration content check failed for ' + item.path + ': ' + token);
+    }
+  }
+}
 
 const migrationHistoryAlignment = [
   {
