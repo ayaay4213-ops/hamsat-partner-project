@@ -1032,7 +1032,8 @@ if (fs.existsSync(staffMigrationPath)) {
     'grant execute on function public.assign_staff_permissions(uuid, text[], boolean) to authenticated',
     'revoke all on function public.has_staff_permission(text) from public, anon',
     'grant execute on function public.has_staff_permission(text) to authenticated',
-    'revoke all on function public.staff_update_user_report(bigint, text, text) from public, anon'
+    'revoke all on function public.staff_update_user_report(bigint, text, text) from public, anon',
+    'grant execute on function public.staff_update_user_report(bigint, text, text) to authenticated'
   ]) {
     if (!sql.includes(token)) errors.push('Missing staff-role privilege safeguard: ' + token);
   }
