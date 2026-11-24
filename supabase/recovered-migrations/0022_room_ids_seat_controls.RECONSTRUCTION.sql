@@ -10,6 +10,19 @@ create unique index if not exists rooms_public_id_key on public.rooms(public_id)
 alter table public.rooms
   add column if not exists seat_limit integer not null default 10;
 
+do $block$
+begin
+  if not exists (
+    select 1 from pg_constraint
+     where conrelid = 'public.rooms'::regclass
+       and conname = 'rooms_seat_limit_check'
+  ) then
+    alter table public.rooms
+      add constraint rooms_seat_limit_check check (seat_limit between 1 and 10);
+  end if;
+end;
+$block$;
+
 create table if not exists public.room_seats (
   room_id uuid not null references public.rooms(id) on delete cascade,
   seat_no smallint not null check (seat_no between 1 and 10),
