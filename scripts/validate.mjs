@@ -914,7 +914,7 @@ if (fs.existsSync(staffUiPath)) {
   errors.push('Missing admin JavaScript for staff-role management');
 }
 
-const presenceSecurityPath = path.join(root, 'supabase/migrations/20261123080000_0079_security_and_presence_reconciliation.sql');
+const presenceSecurityPath = path.join(root, 'supabase/migrations/20261124122300_hamsat_0079_security_and_presence_reconciliation_existing_objects.sql');
 if (fs.existsSync(presenceSecurityPath)) {
   const sql = fs.readFileSync(presenceSecurityPath, 'utf8').toLowerCase();
   for (const token of [
@@ -933,9 +933,7 @@ if (fs.existsSync(presenceSecurityPath)) {
     'revoke truncate, references, trigger, maintain',
     'on all tables in schema public',
     'from anon, authenticated',
-    'alter default privileges for role postgres in schema public',
-    'revoke truncate, references, trigger, maintain on tables from anon, authenticated',
-    'alter default privileges for role supabase_admin in schema public',
+    'revoke truncate, references, trigger, maintain on tables in schema public from anon, authenticated',
     'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
   ]) {
@@ -945,7 +943,18 @@ if (fs.existsSync(presenceSecurityPath)) {
   errors.push('Missing security and presence reconciliation migration: 0079');
 }
 
-const roomGameCataloguePath = path.join(root, 'supabase/migrations/20261123133000_0081_safe_room_game_catalogue.sql');
+const postgresDefaultPrivilegesPath = path.join(root, 'supabase/migrations/20261124122508_hamsat_0079_default_privileges_postgres_only.sql');
+if (fs.existsSync(postgresDefaultPrivilegesPath)) {
+  const sql = fs.readFileSync(postgresDefaultPrivilegesPath, 'utf8').toLowerCase();
+  if (!sql.includes('alter default privileges for role postgres in schema public')
+      || !sql.includes('revoke truncate, references, trigger, maintain on tables from anon, authenticated')) {
+    errors.push('Missing postgres default-privilege hardening for future public tables');
+  }
+} else {
+  errors.push('Missing postgres default-privilege hardening migration');
+}
+
+const roomGameCataloguePath = path.join(root, 'supabase/migrations/20261124122344_hamsat_0081_safe_room_game_catalogue.sql');
 if (fs.existsSync(roomGameCataloguePath)) {
   const sql = fs.readFileSync(roomGameCataloguePath, 'utf8').toLowerCase();
   for (const token of [
@@ -968,7 +977,7 @@ if (fs.existsSync(roomGameCataloguePath)) {
   errors.push('Missing safe room-game catalogue migration: 0081');
 }
 
-const agencyRolePath = path.join(root, 'supabase/migrations/20261123140000_0082_agency_role_type_validation.sql');
+const agencyRolePath = path.join(root, 'supabase/migrations/20261124122346_hamsat_0082_agency_role_type_validation.sql');
 if (fs.existsSync(agencyRolePath)) {
   const sql = fs.readFileSync(agencyRolePath, 'utf8').toLowerCase();
   for (const token of [
@@ -982,7 +991,7 @@ if (fs.existsSync(agencyRolePath)) {
   errors.push('Missing agency role/type validation migration: 0082');
 }
 
-const publicInventoryPath = path.join(root, 'supabase/migrations/20261123143000_0083_limit_public_inventory_to_equipped.sql');
+const publicInventoryPath = path.join(root, 'supabase/migrations/20261124122347_hamsat_0083_limit_public_inventory_to_equipped.sql');
 if (fs.existsSync(publicInventoryPath)) {
   const sql = fs.readFileSync(publicInventoryPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1004,7 +1013,7 @@ if (fs.existsSync(publicInventoryPath)) {
   errors.push('Missing public inventory privacy migration: 0083');
 }
 
-const rechargePolicyPath = path.join(root, 'supabase/migrations/20261123150000_0084_scope_agency_recharge_history.sql');
+const rechargePolicyPath = path.join(root, 'supabase/migrations/20261124122349_hamsat_0084_scope_agency_recharge_history.sql');
 if (fs.existsSync(rechargePolicyPath)) {
   const sql = fs.readFileSync(rechargePolicyPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1018,7 +1027,7 @@ if (fs.existsSync(rechargePolicyPath)) {
   errors.push('Missing agency recharge history policy migration: 0084');
 }
 
-const shopHardeningPath = path.join(root, 'supabase/migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql');
+const shopHardeningPath = path.join(root, 'supabase/deferred-migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql');
 if (fs.existsSync(shopHardeningPath)) {
   const sql = fs.readFileSync(shopHardeningPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1038,7 +1047,7 @@ if (fs.existsSync(shopHardeningPath)) {
   errors.push('Missing shop idempotency and room-bomb migration: 0080');
 }
 
-const reportRateLimitPath = path.join(root, 'supabase/migrations/20261123153000_0085_report_rate_limits.sql');
+const reportRateLimitPath = path.join(root, 'supabase/migrations/20261124122350_hamsat_0085_report_rate_limits.sql');
 if (fs.existsSync(reportRateLimitPath)) {
   const sql = fs.readFileSync(reportRateLimitPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1058,7 +1067,7 @@ if (fs.existsSync(reportRateLimitPath)) {
   errors.push('Missing report rate-limit migration: 0085');
 }
 
-const staffMigrationPath = path.join(root, 'supabase/migrations/20261123170000_0088_harden_staff_role_table_grants.sql');
+const staffMigrationPath = path.join(root, 'supabase/migrations/20261124122354_hamsat_0088_harden_staff_role_table_grants.sql');
 if (fs.existsSync(staffMigrationPath)) {
   const sql = fs.readFileSync(staffMigrationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1077,7 +1086,7 @@ if (fs.existsSync(staffMigrationPath)) {
   errors.push('Missing staff-role privilege hardening migration: 0088');
 }
 
-const dmBlockMigrationPath = path.join(root, 'supabase/migrations/20261123163000_0087_dm_block_consistency.sql');
+const dmBlockMigrationPath = path.join(root, 'supabase/migrations/20261124122353_hamsat_0087_dm_block_consistency.sql');
 if (fs.existsSync(dmBlockMigrationPath)) {
   const sql = fs.readFileSync(dmBlockMigrationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1093,7 +1102,7 @@ if (fs.existsSync(dmBlockMigrationPath)) {
   errors.push('Missing direct-message block consistency migration: 0087');
 }
 
-const dmRateLimitPath = path.join(root, 'supabase/migrations/20261123180000_0090_dm_message_rate_limit.sql');
+const dmRateLimitPath = path.join(root, 'supabase/migrations/20261124122357_hamsat_0090_dm_message_rate_limit.sql');
 if (fs.existsSync(dmRateLimitPath)) {
   const sql = fs.readFileSync(dmRateLimitPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1113,7 +1122,7 @@ if (fs.existsSync(dmRateLimitPath)) {
   errors.push('Missing private-message rate-limit migration: 0090');
 }
 
-const dmGrantsMigrationPath = path.join(root, 'supabase/migrations/20261123173000_0089_harden_dm_column_grants.sql');
+const dmGrantsMigrationPath = path.join(root, 'supabase/migrations/20261124122356_hamsat_0089_harden_dm_column_grants.sql');
 if (fs.existsSync(dmGrantsMigrationPath)) {
   const sql = fs.readFileSync(dmGrantsMigrationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1134,7 +1143,7 @@ if (fs.existsSync(dmGrantsMigrationPath)) {
   errors.push('Missing private-message column grant migration: 0089');
 }
 
-const feedbackMigrationPath = path.join(root, 'supabase/migrations/20261123160000_0086_user_feedback_inbox.sql');
+const feedbackMigrationPath = path.join(root, 'supabase/migrations/20261124122352_hamsat_0086_user_feedback_inbox.sql');
 if (fs.existsSync(feedbackMigrationPath)) {
   const sql = fs.readFileSync(feedbackMigrationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1153,7 +1162,7 @@ if (fs.existsSync(feedbackMigrationPath)) {
   errors.push('Missing user feedback inbox migration: 0086');
 }
 
-const sessionRevokeMigrationPath = path.join(root, 'supabase/migrations/20261123183000_0091_admin_revoke_user_sessions.sql');
+const sessionRevokeMigrationPath = path.join(root, 'supabase/migrations/20261124122359_hamsat_0091_admin_revoke_user_sessions.sql');
 if (fs.existsSync(sessionRevokeMigrationPath)) {
   const sql = fs.readFileSync(sessionRevokeMigrationPath, 'utf8').toLowerCase();
   for (const token of [
@@ -1183,7 +1192,7 @@ if (fs.existsSync(moderationSessionPath)) {
 }
 
 
-const legacyGiftRpcPath = path.join(root, 'supabase/migrations/20261124120000_0092_disable_legacy_gift_rpc.sql');
+const legacyGiftRpcPath = path.join(root, 'supabase/migrations/20261124122401_hamsat_0092_disable_legacy_gift_rpc.sql');
 if (fs.existsSync(legacyGiftRpcPath)) {
   const sql = fs.readFileSync(legacyGiftRpcPath, 'utf8').toLowerCase();
   for (const token of [
