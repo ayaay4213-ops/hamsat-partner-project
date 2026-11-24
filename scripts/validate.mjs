@@ -1155,6 +1155,35 @@ if (fs.existsSync(moderationSessionPath)) {
   }
 }
 
+
+const legacyGiftRpcPath = path.join(root, 'supabase/migrations/20261124120000_0092_disable_legacy_gift_rpc.sql');
+if (fs.existsSync(legacyGiftRpcPath)) {
+  const sql = fs.readFileSync(legacyGiftRpcPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on function public.send_gift(uuid, text, integer)',
+    'revoke all on function public.send_room_gift(uuid, uuid, text, integer)',
+    'revoke all on function public.send_room_gift_to_all(uuid, text, integer)',
+    'from public, anon, authenticated',
+    'grant execute on function public.send_gift(uuid, text, integer, uuid)',
+    'grant execute on function public.send_room_gift(uuid, uuid, text, integer, uuid)',
+    'grant execute on function public.send_room_gift_to_all(uuid, text, integer, uuid)'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing legacy gift RPC idempotency safeguard: ' + token);
+  }
+} else {
+  errors.push('Missing legacy gift RPC hardening migration: 0092');
+}
+
+const giftApiSource = fs.existsSync(apiFilePath) ? fs.readFileSync(apiFilePath, 'utf8') : '';
+for (const token of [
+  "rpc('send_gift'",
+  "rpc('send_room_gift'",
+  "rpc('send_room_gift_to_all'",
+  'p_request_id: requestId'
+]) {
+  if (!giftApiSource.includes(token)) errors.push('Gift API must send stable request IDs: ' + token);
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
