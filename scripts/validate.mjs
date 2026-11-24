@@ -999,7 +999,13 @@ if (fs.existsSync(shopHardeningPath)) {
   for (const token of [
     'revoke all on function public.purchase_shop_item(text) from public, anon, authenticated',
     'grant execute on function public.purchase_shop_item(text) to authenticated',
-    'revoke all on function private.apply_room_bomb_contribution() from public, anon, authenticated'
+    'revoke all on function private.apply_room_bomb_contribution() from public, anon, authenticated',
+    'pg_advisory_xact_lock(hashtextextended(v_user::text || \':\' || p_item_id, 0))',
+    'from public.user_inventory',
+    'where user_id = v_user and item_id = p_item_id',
+    'for update;',
+    'select balance into v_balance from public.wallets where user_id = v_user;',
+    'on conflict (user_id, item_id) do update'
   ]) {
     if (!sql.includes(token)) errors.push('Missing shop/bomb RPC execution hardening: ' + token);
   }
