@@ -13,9 +13,9 @@ const required = [
   'js/voice-room.js',
   'js/livekit-room.js',
   'supabase/functions/livekit-token/index.ts',
-  'supabase/migrations/0009_live_room_seats.sql',
-  'supabase/migrations/0010_room_policy_and_trigger_hardening.sql',
-  'supabase/migrations/0012_room_security_and_lifecycle.sql',
+  'supabase/deferred-migrations/legacy-baseline/0009_live_room_seats.sql',
+  'supabase/deferred-migrations/legacy-baseline/0010_room_policy_and_trigger_hardening.sql',
+  'supabase/deferred-migrations/legacy-baseline/0012_room_security_and_lifecycle.sql',
   'supabase/migrations/20261118200858_0049_synchronized_room_games.sql',
   'supabase/migrations/20261118200902_0050_seed_profile_frame_catalog.sql',
   'supabase/migrations/20261118200906_0051_protect_game_answer_keys.sql',
@@ -74,7 +74,7 @@ if (fs.existsSync(configurableRoomSeatsPath)) {
   }
 }
 
-const hardeningMigrationPath = path.join(root, 'supabase/migrations/0010_room_policy_and_trigger_hardening.sql');
+const hardeningMigrationPath = path.join(root, 'supabase/deferred-migrations/legacy-baseline/0010_room_policy_and_trigger_hardening.sql');
 if (fs.existsSync(hardeningMigrationPath)) {
   const sql = fs.readFileSync(hardeningMigrationPath, 'utf8').toLowerCase();
   const dollarQuotes = sql.match(/\$\$/g) || [];
@@ -98,7 +98,7 @@ if (fs.existsSync(hardeningMigrationPath)) {
   }
 }
 
-const roomLifecycleMigrationPath = path.join(root, 'supabase/migrations/0012_room_security_and_lifecycle.sql');
+const roomLifecycleMigrationPath = path.join(root, 'supabase/deferred-migrations/legacy-baseline/0012_room_security_and_lifecycle.sql');
 if (fs.existsSync(roomLifecycleMigrationPath)) {
   const sql = fs.readFileSync(roomLifecycleMigrationPath, 'utf8').toLowerCase();
   const dollarQuotes = sql.match(/\$\$/g) || [];
@@ -121,7 +121,7 @@ if (fs.existsSync(roomLifecycleMigrationPath)) {
   }
 }
 
-const seatMigrationPath = path.join(root, 'supabase/migrations/0009_live_room_seats.sql');
+const seatMigrationPath = path.join(root, 'supabase/deferred-migrations/legacy-baseline/0009_live_room_seats.sql');
 if (fs.existsSync(seatMigrationPath)) {
   const sql = fs.readFileSync(seatMigrationPath, 'utf8');
   for (const token of [
@@ -726,7 +726,7 @@ if (!fs.existsSync(roomHistoryMigrationPath)) {
   }
 }
 
-const micInviteMigrationPath = path.join(root, 'supabase/migrations/20261122230000_0077_room_seat_invitations.sql');
+const micInviteMigrationPath = path.join(root, 'supabase/migrations/20261122214339_0077_room_seat_invitations.sql');
 if (!fs.existsSync(micInviteMigrationPath)) {
   errors.push('Missing secure room microphone invitation migration: 0077');
 } else {
@@ -1253,6 +1253,16 @@ for (const item of migrationHistoryAlignment) {
 }
 if (fs.existsSync(path.join(root, 'supabase/migrations/20261123130000_0080_shop_idempotency_and_bomb_progress.sql'))) {
   errors.push('Financial/shop migration 0080 must remain outside active migrations pending separate approval');
+}
+
+
+const activeMigrationDirectory = path.join(root, 'supabase/migrations');
+if (fs.existsSync(activeMigrationDirectory)) {
+  for (const file of fs.readdirSync(activeMigrationDirectory).filter(name => name.endsWith('.sql'))) {
+    if (!/^\\d{14}_/.test(file)) {
+      errors.push('Active migration must use its production 14-digit timestamp: ' + file);
+    }
+  }
 }
 
 if (errors.length) {
