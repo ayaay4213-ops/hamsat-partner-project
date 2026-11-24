@@ -2,33 +2,52 @@ import { supabase } from './supabase-auth.js';
 const $=s=>document.querySelector(s), notice=$('#notice'), admin=$('#admin');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function message(s,bad=false){notice.textContent=s;notice.style.borderColor=bad?'#a33':'#39734a';}
+const withTimeout=(promise,label,ms=15000)=>Promise.race([
+ promise,
+ new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة '+label+' بعد '+Math.round(ms/1000)+' ثانية.')),ms))
+]);
 async function boot(){
- if(!supabase){message('إعداد Supabase غير مكتمل.',true);return;}
- const {data:{session},error}=await supabase.auth.getSession();
- if(error||!session){message('سجّلي الدخول أولاً من تطبيق HAMSAT، ثم افتحي لوحة الإدارة في المتصفح نفسه.',true);return;}
- const {data:profile,error:e}=await supabase.from('profiles').select('role,display_name').eq('id',session.user.id).single();
- if(e){message('تعذّر التحقق من صلاحية الإدارة. تأكدي من ترحيل صلاحيات لوحة الإدارة.',true);return;}
- const {data:isOwner,error:ownerError}=await supabase.rpc('is_admin');
- if(ownerError||isOwner!==true){message('هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
- admin.classList.remove('hidden');message('مرحباً '+(profile.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');watchLoginEvents();
- const sections=[
-  ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
-  ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-  ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
- ];
- await Promise.all(sections.map(async([label,load])=>{
-  try{await load();}
-  catch(error){
-   console.error('HAMSAT admin section failed:',label,error);
-   const target=({
-    'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
-    'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
-    'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
-   })[label];
-   if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
-   message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
-  }
- }));
+ try{
+  if(!supabase){message('إعداد Supabase غير مكتمل.',true);return;}
+  message('الخطوة 1/3: استرجاع جلسة الدخول…');
+  const {data:{session},error}=await withTimeout(supabase.auth.getSession(),'استرجاع جلسة الدخول');
+  if(error)throw error;
+  if(!session){message('لم نعثر على جلسة دخول في رابط المعاينة. سجّلي الدخول من نسخة المعاينة أولاً ثم أعيدي فتح اللوحة.',true);return;}
+  message('الخطوة 2/3: التحقق من ملف الحساب…');
+  const {data:profile,error:e}=await withTimeout(
+   supabase.from('profiles').select('role,display_name').eq('id',session.user.id).single(),
+   'قراءة ملف الحساب'
+  );
+  if(e)throw e;
+  message('الخطوة 3/3: التحقق من صلاحية Super Admin…');
+  const {data:isOwner,error:ownerError}=await withTimeout(supabase.rpc('is_admin'),'فحص صلاحية الإدارة');
+  if(ownerError)throw ownerError;
+  if(isOwner!==true){message('تم تسجيل الدخول، لكن هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
+  admin.classList.remove('hidden');
+  message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
+  watchLoginEvents();
+  const sections=[
+   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
+   ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
+   ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
+  ];
+  await Promise.all(sections.map(async([label,load])=>{
+   try{await load();}
+   catch(error){
+    console.error('HAMSAT admin section failed:',label,error);
+    const target=({
+     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
+     'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
+     'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
+    })[label];
+    if(target&&$(target))$(target).innerHTML='<p class="text-red-300 text-sm">تعذر تحميل هذا القسم: '+esc(error.message||'خطأ غير معروف')+'</p>';
+    message('تعذر تحميل قسم '+label+' فقط: '+(error.message||'خطأ غير معروف'),true);
+   }
+  }));
+ }catch(error){
+  console.error('HAMSAT admin authorization failed:',error);
+  message('توقف التحقق: '+(error?.message||'خطأ غير معروف')+' — أعيدي تحميل الصفحة بعد قليل.',true);
+ }
 }
 async function upload(file,folder,stableName=null){
  if(!file)return null;
