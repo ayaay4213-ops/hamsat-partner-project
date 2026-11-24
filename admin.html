@@ -318,4 +318,14 @@ header p,header small{color:#77786d!important}
 <div id="feedback-list" class="space-y-2"></div>
 </section>
 </main></div>
-<script type="module" src="js/admin.js?v=20261124-admin-auth-timeout-v2"></script></body></html>
+<script>
+window.addEventListener('error',function(e){
+ const n=document.getElementById('notice');
+ if(n&&e.message)n.textContent='خطأ في تشغيل لوحة الإدارة: '+e.message+' — أرسلي صورة هذه الرسالة للدعم.';
+});
+window.addEventListener('unhandledrejection',function(e){
+ const n=document.getElementById('notice');
+ if(n)n.textContent='تعذر إكمال تحميل لوحة الإدارة: '+(e.reason?.message||String(e.reason||'خطأ غير معروف'));
+});
+</script>
+<script type="module" src="js/admin.js?v=20261124-admin-auth-diagnostics-v3" onerror="document.getElementById('notice').textContent='تعذر تحميل ملفات لوحة الإدارة. تحققي من اتصال الإنترنت ثم أعيدي فتح الرابط.'"></script></body></html>
