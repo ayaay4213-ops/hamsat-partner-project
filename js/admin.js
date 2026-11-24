@@ -295,10 +295,12 @@ async function loadUsers(term=''){
   }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
  });
 }
+let roomDesignRooms=[];
 async function loadRooms(){
  const data=[];for(let from=0;;from+=200){const {data:page,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).range(from,from+199);if(error)throw error;data.push(...(page||[]));if(!page||page.length<200)break;}
  const ids=[...new Set(data.map(x=>x.owner_id))],p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};if(p.error)throw p.error;
- const byId=Object.fromEntries(p.data.map(x=>[x.id,x]));
+ const byId=Object.fromEntries(p.data.map(x=>[x.id,x]));roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
+ const roomSelect=$('#rd-room');if(roomSelect){const selected=roomSelect.value;roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;}
  $('#room-list').innerHTML=data.length?data.map(x=>{const owner=byId[x.owner_id]||{};return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p></div><span class="pill">غرفة</span></div>';}).join(''):'<p class="muted">لا توجد غرف.</p>';
 }
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const id=f.elements.id.value.trim(),item_type=f.elements.item_type.value;const imageFile=f.elements.image.files[0];const imageFolder=item_type==='room_background'?'catalog/room-backgrounds':item_type==='profile_frame'?'catalog/profile-frames':'catalog';const image_url=imageFile?await upload(imageFile,imageFolder,['room_background','profile_frame'].includes(item_type)?id:null):null;const payload={id,name:f.elements.name.value.trim(),item_type,price:Number(f.elements.price.value),duration_days:Number(f.elements.duration_days.value||0),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
@@ -436,6 +438,26 @@ $('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
 let loginChannel=null;
 function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}
 
+function initRoomDesignStudio(){
+ const $id=id=>document.getElementById(id),ids=['rd-seat-count','rd-gap','rd-size','rd-accent','rd-stage','rd-layout','rd-show-host','rd-show-attendees','rd-show-chat','rd-show-tools'];
+ const defaults={'rd-seat-count':'8','rd-gap':'16','rd-size':'52','rd-accent':'#d8b66e','rd-stage':'#211d30','rd-layout':'grid','rd-show-host':true,'rd-show-attendees':true,'rd-show-chat':true,'rd-show-tools':true};
+ const scope=$id('rd-scope'),room=$id('rd-room');
+ const render=()=>{
+  const count=Number($id('rd-seat-count').value),gap=Number($id('rd-gap').value),size=Number($id('rd-size').value),accent=$id('rd-accent').value,stage=$id('rd-stage').value,layout=$id('rd-layout').value;
+  $id('rd-seat-count-value').textContent=count;$id('rd-gap-value').textContent=gap+'px';$id('rd-size-value').textContent=size+'px';
+  const grid=$id('rd-seat-grid');grid.style.gap=gap+'px '+Math.max(4,Math.round(gap*.65))+'px';grid.style.gridTemplateColumns=layout==='row'?'repeat('+Math.min(count,5)+',minmax(0,1fr))':'repeat(4,minmax(0,1fr))';
+  grid.innerHTML=Array.from({length:count},(_,i)=>'<div class="rd-seat"><div class="rd-seat-avatar" style="width:'+size+'px;height:'+size+'px;border-color:'+accent+';font-size:'+Math.round(size*.43)+'px">'+(i===0?'👑':['🌸','🦋','🌙','💎','⭐','🌹','🎧','✨','🐱'][i%9])+'</div><b>'+(i===0?'المضيفة':'عضو '+(i+1))+'</b><small>'+(i===0?'المقعد الرئيسي':'على المايك')+'</small></div>').join('');
+  $id('rd-preview-stage').style.background=stage;$id('rd-preview-stage').style.borderColor=accent;$id('rd-preview').style.setProperty('--rd-accent',accent);
+  $id('rd-attendees').hidden=!$id('rd-show-attendees').checked;$id('rd-chat').hidden=!$id('rd-show-chat').checked;$id('rd-toolbar').hidden=!$id('rd-show-tools').checked;$id('rd-preview-host').hidden=!$id('rd-show-host').checked;
+  const lower=$id('rd-preview-lower');lower.hidden=!$id('rd-show-attendees').checked&&!$id('rd-show-chat').checked;
+ };
+ ids.forEach(id=>$id(id)?.addEventListener('input',render));ids.forEach(id=>$id(id)?.addEventListener('change',render));
+ scope?.addEventListener('change',()=>{room.disabled=scope.value!=='room';});
+ $id('rd-reset')?.addEventListener('click',()=>{for(const [id,value] of Object.entries(defaults))if($id(id)){if(typeof value==='boolean')$id(id).checked=value;else $id(id).value=value;}render();});
+ render();
+}
+
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
+initRoomDesignStudio();
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));
