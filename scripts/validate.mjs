@@ -555,6 +555,27 @@ if (fs.existsSync(appRoomPath)) {
 }
 
 
+const roomBackgroundScopePath = path.join(root, 'js/app.js');
+if (fs.existsSync(roomBackgroundScopePath)) {
+  const js = fs.readFileSync(roomBackgroundScopePath, 'utf8');
+  const backgroundFnStart = js.indexOf('const applyRoomBackground=(url)=>{');
+  const backgroundFnEnd = backgroundFnStart >= 0 ? js.indexOf('};', backgroundFnStart) : -1;
+  const backgroundFn = backgroundFnStart >= 0 && backgroundFnEnd > backgroundFnStart
+    ? js.slice(backgroundFnStart, backgroundFnEnd + 2)
+    : '';
+  if (!backgroundFn.includes("sheet.querySelector('#room-seats')") ||
+      !backgroundFn.includes("seats.style.setProperty('background-image'")) {
+    errors.push('Room background must be applied to the microphone seats only');
+  }
+  if (backgroundFn.includes("sheet.querySelector('.hs-room-canvas')") ||
+      backgroundFn.includes("bottomBar.parentElement!==canvas")) {
+    errors.push('Room background must not cover the whole room or reparent the chat/tools bar');
+  }
+  if (!js.includes('خلفية تظهر خلف المايكات فقط')) {
+    errors.push('Room background settings must clearly describe microphone-only scope');
+  }
+}
+
 const roomAvatarPath = path.join(root, 'js/app.js');
 const roomStylePath = path.join(root, 'css/styles.css');
 if (fs.existsSync(roomAvatarPath)) {
