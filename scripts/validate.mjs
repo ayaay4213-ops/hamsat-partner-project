@@ -982,6 +982,28 @@ if (fs.existsSync(agencyRolePath)) {
   errors.push('Missing agency role/type validation migration: 0082');
 }
 
+const publicInventoryPath = path.join(root, 'supabase/migrations/20261123143000_0083_limit_public_inventory_to_equipped.sql');
+if (fs.existsSync(publicInventoryPath)) {
+  const sql = fs.readFileSync(publicInventoryPath, 'utf8').toLowerCase();
+  for (const token of [
+    'drop policy if exists "members can view owned cosmetics publicly" on public.user_inventory',
+    'create policy "members can view equipped cosmetics publicly"',
+    'user_id = (select auth.uid())',
+    'p.equipped_frame_id',
+    'p.equipped_emoji_pack_id',
+    'p.equipped_entrance_id',
+    'p.equipped_bubble_id',
+    'p.equipped_special_id',
+    'p.equipped_profile_frame_id',
+    'p.equipped_sound_frame_id',
+    'p.equipped_voice_wave_id'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing public inventory privacy safeguard: ' + token);
+  }
+} else {
+  errors.push('Missing public inventory privacy migration: 0083');
+}
+
 const rechargePolicyPath = path.join(root, 'supabase/migrations/20261123150000_0084_scope_agency_recharge_history.sql');
 if (fs.existsSync(rechargePolicyPath)) {
   const sql = fs.readFileSync(rechargePolicyPath, 'utf8').toLowerCase();
