@@ -576,6 +576,18 @@ if (fs.existsSync(roomBackgroundScopePath)) {
   }
 }
 
+const roomLayoutCssPath = path.join(root, 'css/styles.css');
+if (fs.existsSync(roomLayoutCssPath)) {
+  const css = fs.readFileSync(roomLayoutCssPath, 'utf8');
+  const roomLayoutRules = css.slice(css.lastIndexOf('/* HAMSAT room fit: four microphone columns'));
+  if (!roomLayoutRules.includes('grid-template-columns:repeat(4,minmax(0,1fr))!important')) {
+    errors.push('HAMSAT room must use a four-column microphone layout');
+  }
+  if (!roomLayoutRules.includes('#room-chat') || !roomLayoutRules.includes('min-height:112px!important')) {
+    errors.push('HAMSAT room must preserve a visible chat area');
+  }
+}
+
 const roomAvatarPath = path.join(root, 'js/app.js');
 const roomStylePath = path.join(root, 'css/styles.css');
 if (fs.existsSync(roomAvatarPath)) {
