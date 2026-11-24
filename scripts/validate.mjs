@@ -931,7 +931,10 @@ if (fs.existsSync(presenceSecurityPath)) {
     'if auth.uid() is null then',
     'coalesce(array_length(p_room_ids,1),0)>1000',
     'revoke truncate, references, trigger, maintain',
+    'on all tables in schema public',
+    'from anon, authenticated',
     'alter default privileges for role postgres in schema public',
+    'revoke truncate, references, trigger, maintain on tables from anon, authenticated',
     'alter default privileges for role supabase_admin in schema public',
     'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
