@@ -919,14 +919,50 @@ if (fs.existsSync(presenceSecurityPath)) {
   const sql = fs.readFileSync(presenceSecurityPath, 'utf8').toLowerCase();
   for (const token of [
     'revoke all on function public.capture_auth_login_event() from public, anon, authenticated',
-    'interval \'180 seconds\'',
+    'create or replace function public.cleanup_stale_room_presence(p_room_id uuid)',
+    'security definer',
+    "set search_path = ''",
+    'if v_user is null then',
+    'private.is_room_member(p_room_id)',
+    "interval '180 seconds'",
+    'delete from public.room_seats s',
+    'delete from public.room_members m',
+    'create or replace function public.get_public_room_member_counts(p_room_ids uuid[])',
+    'if auth.uid() is null then',
+    'coalesce(array_length(p_room_ids,1),0)>1000',
     'revoke truncate, references, trigger, maintain',
+    'alter default privileges for role postgres in schema public',
+    'alter default privileges for role supabase_admin in schema public',
+    'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
   ]) {
     if (!sql.includes(token)) errors.push('Missing security/presence reconciliation safeguard: ' + token);
   }
 } else {
   errors.push('Missing security and presence reconciliation migration: 0079');
+}
+
+const roomGameCataloguePath = path.join(root, 'supabase/migrations/20261123133000_0081_safe_room_game_catalogue.sql');
+if (fs.existsSync(roomGameCataloguePath)) {
+  const sql = fs.readFileSync(roomGameCataloguePath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function public.list_room_games()',
+    'stable',
+    'security definer',
+    "set search_path = ''",
+    'if auth.uid() is null then',
+    "g.active = true",
+    "g.game_type in ('quiz','trivia')",
+    'revoke all on function public.list_room_games() from public, anon, authenticated',
+    'grant execute on function public.list_room_games() to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push('Missing safe room-game catalogue safeguard: ' + token);
+  }
+  if (/grant\\s+select\\s+on\\s+(?:table\\s+)?public\\.games\\s+to\\s+(?:anon|authenticated)/i.test(sql)) {
+    errors.push('Room-game catalogue must not expose the games table directly to client roles');
+  }
+} else {
+  errors.push('Missing safe room-game catalogue migration: 0081');
 }
 
 const agencyRolePath = path.join(root, 'supabase/migrations/20261123140000_0082_agency_role_type_validation.sql');
