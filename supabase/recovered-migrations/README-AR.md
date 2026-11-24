@@ -28,6 +28,13 @@
 
 ## الملفات المرجعية
 
+## الملفات الموجودة في فرع التطوير
+
+- [0017 الأصلي](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/feature/hamsat-security-core-2026-11-23/supabase/migrations/20261116115128_0017_social_data_api_grants.sql)
+- [0018 الأصلي](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/feature/hamsat-security-core-2026-11-23/supabase/migrations/20261116115248_0018_private_dm_conversation_rpc.sql)
+- [0025 الموجود مسبقاً](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/feature/hamsat-security-core-2026-11-23/supabase/migrations/20261116143251_0025_admin_console_catalog.sql)
+- [إصلاح RLS لمفاتيح إجابات ألعاب الغرف](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/feature/hamsat-security-core-2026-11-23/supabase/migrations/20261124152213_hamsat_private_room_game_answer_keys_rls.sql)
+
 - [0019 reconstruction](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/recovery/0019-friends-and-follows/supabase/recovered-migrations/0019_friends_and_follows.RECONSTRUCTION.sql)
 - [0020 reconstruction](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/recovery/0020-resend-friend-requests/supabase/recovered-migrations/0020_allow_resending_rejected_friend_requests.RECONSTRUCTION.sql)
 - [0021 reconstruction](https://github.com/ayaay4213-ops/hamsat-partner-project/blob/recovery/0021-public-user-ids/supabase/recovered-migrations/0021_add_public_user_ids.RECONSTRUCTION.sql)
