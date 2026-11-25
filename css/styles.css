@@ -6957,3 +6957,7 @@ body:has(.room-sheet) #tabbar{display:none!important}
  .room-sheet .hs-room-tools-row>button{height:38px!important;border-radius:11px!important}
  .room-sheet .hs-room-seats{gap:13px 4px!important;padding:12px 5px!important}
 }
+
+/* Validation and responsive seat-grid hook */
+.room-sheet .hs-v2-seats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:start!important;justify-items:center!important;width:100%!important;}
+@media(max-width:390px){.room-sheet .hs-v2-seats{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
