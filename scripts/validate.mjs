@@ -655,7 +655,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261125-room-layout-profile-gifts-v1','js/app.js?v=20261125-profile-gift-history-v1']) {
+  for (const token of ['css/styles.css?v=20261125-black-gold-room-fix-v2','js/app.js?v=20261125-profile-room-fix-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -749,11 +749,11 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261125-room-layout-profile-gifts-v1','js/app.js?v=20261125-profile-gift-history-v1']) {
+  for (const token of ['css/styles.css?v=20261125-black-gold-room-fix-v2','js/app.js?v=20261125-profile-room-fix-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261125-gift-history-v1")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261125-profile-safe-update-v2")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
