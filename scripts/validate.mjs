@@ -1384,6 +1384,28 @@ if (fs.existsSync(activeMigrationDirectory)) {
   }
 }
 
+const profileUiPath = path.join(root, 'js/app.js');
+const apiUiPath = path.join(root, 'js/api.js');
+const roomUiCssPath = path.join(root, 'css/styles.css');
+if (fs.existsSync(profileUiPath)) {
+  const appUi = fs.readFileSync(profileUiPath, 'utf8');
+  for (const token of ['async function profileEditScreen()', '#/profile-edit', 'id="profile-edit-form"', 'api.giftHistory(60)', 'giftHistoryMode', 'exitRoom(e.currentTarget)', 'hs-host-target-notice']) {
+    if (!appUi.includes(token)) errors.push('Missing restored account/gift/room UI behavior: ' + token);
+  }
+}
+if (fs.existsSync(apiUiPath)) {
+  const apiUi = fs.readFileSync(apiUiPath, 'utf8');
+  for (const token of ['giftHistory: async', "from('gift_transactions')", "direction: row.sender_id === user.id ? 'sent' : 'received'"]) {
+    if (!apiUi.includes(token)) errors.push('Missing sender/recipient gift history API: ' + token);
+  }
+}
+if (fs.existsSync(roomUiCssPath)) {
+  const roomUiCss = fs.readFileSync(roomUiCssPath, 'utf8');
+  for (const token of ['.hs-v2-control-dock', '.hs-v2-seats', '.hs-gift-history-row', '.hs-profile-edit-card']) {
+    if (!roomUiCss.includes(token)) errors.push('Missing responsive HAMSAT UI styling: ' + token);
+  }
+}
+
 if (errors.length) {
   console.error('Hamsat validation failed:');
   for (const error of errors) console.error(`- ${error}`);
