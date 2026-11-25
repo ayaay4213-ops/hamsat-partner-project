@@ -833,13 +833,15 @@ if (fs.existsSync(appRoomPath)) {
     'api.inviteRoomMemberToSeat',
     'api.respondRoomSeatInvitation',
     'api.subscribeRoomSeatInvitations',
-    'api.pendingRoomSeatInvitations',
     'room-seat-invite-accept',
     'room-seat-invite-decline',
-    'تم قبول الدعوة وصعدتِ تلقائياً إلى المايك'
+    'تم قبول الدعوة وتفعيل المايك',
+    'بقيتِ داخل الغرفة مستمعة. الدردشة والكتابة ما زالت متاحة.'
   ]) {
     if (!js.includes(token)) errors.push('Missing host-to-member microphone invitation UI: ' + token);
   }
+  if (js.includes('pendingRoomSeatInvitations(r.id)')) errors.push('Room entry must not replay stale pending microphone invitations');
+  if (!js.includes('aria-label="غلاف الملف الشخصي">')) errors.push('The Me-page cover image container must be a valid opening element');
 }
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
