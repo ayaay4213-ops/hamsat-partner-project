@@ -42,7 +42,7 @@ const migrationDir = path.join(root, 'supabase/migrations');
 if (fs.existsSync(migrationDir)) {
   const versions = new Map();
   for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
-    const version = file.match(/^(\\d{14})_/) || file.match(/^(\\d{4})_/);
+    const version = file.match(/^(\d{14})_/) || file.match(/^(\d{4})_/);
     if (!version) continue;
     const previous = versions.get(version[1]);
     if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
@@ -1379,7 +1379,7 @@ if (fs.existsSync(path.join(root, 'supabase/migrations/20261123130000_0080_shop_
 const activeMigrationDirectory = path.join(root, 'supabase/migrations');
 if (fs.existsSync(activeMigrationDirectory)) {
   for (const file of fs.readdirSync(activeMigrationDirectory).filter(name => name.endsWith('.sql'))) {
-    if (!/^\\d{14}_/.test(file)) {
+    if (!/^\d{14}_/.test(file)) {
       errors.push('Active migration must use its production 14-digit timestamp: ' + file);
     }
   }
