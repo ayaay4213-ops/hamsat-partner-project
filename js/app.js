@@ -653,7 +653,7 @@ async function openRoom(r) {
   let roomSeatLayout = ['grid','one-top','two-top','row'].includes(r.seatLayout) ? r.seatLayout : 'grid';
   r.seatLimit = Math.min(10, Math.max(1, Number(r.seatLimit) || 10));
   openSheet(`
-    <main class="hs-room-canvas hs-room-v2">
+    <main class="hs-room-premium">
       <header class="hs-v2-topbar">
         <div class="hs-v2-room-identity"><div class="hs-v2-avatar">${avatar({displayName:r.ownerName,color:r.ownerColor},48)}</div><div class="hs-v2-title"><h2>${esc(r.roomEmoji||'🎙️')} ${esc(r.title)}</h2><p>${esc(r.topic)} · ${esc(r.ownerName||'عضو')}</p></div><span class="hs-v2-live"><i></i> مباشر</span></div>
         <div class="hs-v2-actions"><span class="hs-room-member-count"><i data-lucide="users"></i><b id="room-member-count">—</b></span><span class="hs-room-id-chip" dir="ltr"><b>${esc(r.publicId||"ROOM")}</b><button type="button" id="room-copy-id" aria-label="نسخ رقم الغرفة"><i data-lucide="copy"></i></button></span><button type="button" id="room-copy-link" aria-label="نسخ الرابط"><i data-lucide="link"></i></button>${isRoomOwner?'<button type="button" id="room-settings-toggle" aria-label="إعدادات الغرفة" aria-expanded="false"><i data-lucide="settings"></i></button>':''}<button type="button" id="room-share" aria-label="مشاركة"><i data-lucide="share-2"></i></button><button type="button" id="room-report" aria-label="إبلاغ"><i data-lucide="flag"></i></button><button type="button" id="room-exit" aria-label="مغادرة"><i data-lucide="log-out"></i></button><button type="button" id="room-minimize" aria-label="تصغير الغرفة"><i data-lucide="minimize-2"></i></button><button type="button" id="room-close-prompt" aria-label="خيارات المغادرة"><i data-lucide="power"></i></button></div>
