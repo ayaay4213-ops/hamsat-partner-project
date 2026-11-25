@@ -1469,12 +1469,14 @@ async function giftsScreen() {
     };
     renderGiftRecipients();
     $('#gift-member-search')?.addEventListener('input',event=>renderGiftRecipients(event.target.value));
-    let giftHistoryMode='received';
+    let giftHistoryMode='received',giftHistoryInitialized=false;const seenReceivedGiftIds=new Set();
     const drawGiftHistory=async()=>{
       const historyRoot=$('#gift-history-list');if(!historyRoot)return;
       historyRoot.innerHTML=loading();
       try{
         const {gifts=[]}=await api.giftHistory(60);
+        for(const item of gifts.filter(x=>x.direction==='received')){const id=String(item.id);if(giftHistoryInitialized&&!seenReceivedGiftIds.has(id)){showGiftCelebration({name:item.gift?.name||'هدية',icon:item.gift?.icon||'gift'},Number(item.quantity||1));toast('وصلتك هدية جديدة');}seenReceivedGiftIds.add(id);}
+        giftHistoryInitialized=true;
         const rows=gifts.filter(item=>item.direction===giftHistoryMode);
         historyRoot.innerHTML=rows.length?rows.map(item=>{
           const gift=item.gift||{},person=giftHistoryMode==='received'?item.sender:item.recipient;
@@ -1487,6 +1489,8 @@ async function giftsScreen() {
     screen.querySelectorAll('[data-gift-history]').forEach(button=>button.onclick=()=>{giftHistoryMode=button.dataset.giftHistory;screen.querySelectorAll('[data-gift-history]').forEach(x=>x.classList.toggle('active',x===button));drawGiftHistory();});
     $('#gift-history-refresh')?.addEventListener('click',drawGiftHistory);
     await drawGiftHistory();
+    const giftHistoryPoll=window.setInterval(()=>{if($('#gift-history-list')&&document.visibilityState!=='hidden')drawGiftHistory().catch(()=>{});},12000);
+    window.addEventListener('hashchange',()=>window.clearInterval(giftHistoryPoll),{once:true});
     icons_();
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
@@ -1750,7 +1754,7 @@ function profileView(p, own) {
 function meScreen() {
  const p=state.profile||{}, wallet=Number(state.wallet?.balance||0), flag=p.country&&/الجزائر|algeria/i.test(p.country)?'🇩🇿':p.country&&/tunisia/i.test(p.country)?'🇹🇳':p.country&&/morocco/i.test(p.country)?'🇲🇦':p.country&&/egypt/i.test(p.country)?'🇪🇬':'🌍';
  const tiles=[['medal','ميدالية الشرف','#/honor'],['users-round','العائلة','#/family'],['store','المتجر','#/shop'],['heart-handshake','منزل CP','#/cp'],['mic-2','بيانات المضيف','#/host-data'],['target','مركز المهام','#/tasks']];
- const rows=[['history','سجل المكافآت','#/wallet'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
+ const rows=[['history','سجل المكافآت','#/wallet'],['gift','سجل الهدايا','#/gifts'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
  screen.innerHTML='<main class="hs-me-v2 hs-me-reference" dir="rtl">'+
  '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
  '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><a href="#/profile-edit" class="hs-me-edit-profile"><i data-lucide="user-round-pen"></i> تعديل الملف</a><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
