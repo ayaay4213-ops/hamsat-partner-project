@@ -157,7 +157,7 @@ export const api = {
       country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null, color: String(p.color || '#7c3aed'),
       avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
     };
-    const { data, error } = await client().from('profiles').upsert(payload, { onConflict: 'id' }).select(PROFILE_COLUMNS).single();
+    const { data, error } = await client().from('profiles').update(payload).eq('id', user.id).select(PROFILE_COLUMNS).single();
     fail(error);
     const { data: wallet, error: walletError } = await client().from('wallets').select('*').eq('user_id', user.id).single();
     fail(walletError);
