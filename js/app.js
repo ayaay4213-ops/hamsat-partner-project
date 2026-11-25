@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261123-dm-reliability-v1';
+import { api } from './api.js?v=20261125-gift-history-v1';
 import { createVoiceRoom } from './voice-room.js?v=20261122-room-controls-v5';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -1735,11 +1735,11 @@ function meScreen() {
  const rows=[['history','سجل المكافآت','#/wallet'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
  screen.innerHTML='<main class="hs-me-v2 hs-me-reference" dir="rtl">'+
  '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
- '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
+ '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><a href="#/profile-edit" class="hs-me-edit-profile"><i data-lucide="user-round-pen"></i> تعديل الملف</a><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
  '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>Following</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="followers">—</b><span>Fans</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>Charisma</span></button></div></section>'+
  '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيدكِ وإدارة العملات</span></div><span class="hs-me-first-tag">FIRST RECHARGE</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
  '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><span class="hs-metal-icon"><i data-lucide="crown"></i></span><small>عضوية VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'VIP')+'</b><em>اكتشفي امتيازاتكِ</em></a><a href="#/wallet" class="hs-me-wealth-card"><span class="hs-metal-icon"><i data-lucide="gem"></i></span><small>مستوى الثروة</small><b>LV. '+num(p.wealthLevel||0)+'</b><em>تقدّم مستوى الثروة</em></a></div>'+
- '<a href="#/wallet" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>PURPLE LUCKY SPIN</small><b>Cash-out</b><span>تحويل الألماس إلى نقد</span><strong>$0 <em>=</em> 0</strong><small>Only 900000 left to withdraw</small><i class="hs-spin-progress"><span></span></i></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
+ '<a href="#/host-data" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>HOST CENTER</small><b>إحصاءات المضيف</b><span>ساعات البث وهدايا المضيف والتارجت</span><strong>عرض البيانات</strong><small>الماس والسحب النقدي لا يُعرضان قبل تفعيل سجلاتهما رسمياً</small></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
  '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الوصول السريع</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
  '<section class="hs-me-settings-card"><div class="hs-me-section-heading"><div><small>ACCOUNT & SUPPORT</small><h2>الحساب والخدمات</h2></div><i data-lucide="sliders-horizontal"></i></div>'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T <i>✦</i></div></main>';
  icons_(); loadProfileStats(p.uuid,false);
@@ -1775,10 +1775,47 @@ async function hostDataScreen(){
  $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">الفترة الزمنية</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
  try{const r=await api.myAgencies();const ag=(r.agencies||[]).find(x=>['hosts','both'].includes(x.agency_type));if(ag){const s=await api.agencyHostStats(ag.id);const own=(s.stats||[]).filter(x=>x.host_id===state.profile.uuid);const total=own.reduce((n,x)=>n+Number(x.gift_coins||0),0);$('.hs-host-grid div:first-child b').textContent=num(total);$('.hs-host-grid div:nth-child(4) b').textContent=num(total);$('.hs-host-overview small').textContent='حالة الوكالة: '+ag.status;}}catch(e){console.warn(e);}
 }
+async function profileEditScreen(){
+ const p=state.profile||{};
+ screen.innerHTML=header('تعديل الملف الشخصي','<a href="#/me" class="text-sm text-gold-300">العودة إلى حسابي</a>')+
+ '<main class="hs-profile-edit-page" dir="rtl"><form id="profile-edit-form" class="hs-profile-edit-form"><section class="hs-profile-edit-card">'+
+ '<div class="hs-profile-edit-avatar" id="profile-edit-avatar-preview">'+avatar(p,88)+'</div>'+
+ '<label class="photo-picker"><i data-lucide="image-plus"></i><span>اختيار الصورة الشخصية</span><input name="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>'+
+ '<label class="label" for="profile-edit-name">الاسم الظاهر</label><input id="profile-edit-name" class="field" name="displayName" maxlength="40" required value="'+esc(p.displayName||'')+'" placeholder="اسمك في همسات">'+
+ '<label class="label" for="profile-edit-handle">اسم المستخدم</label><input id="profile-edit-handle" class="field" name="handle" maxlength="24" required value="'+esc(p.handle||'')+'" dir="ltr" placeholder="username">'+
+ '<p class="hs-profile-edit-hint">اسم المستخدم ظاهر للآخرين. لا تضعي رقم هاتفك أو بريدك الإلكتروني.</p>'+
+ '<label class="label" for="profile-edit-country">البلد</label><input id="profile-edit-country" class="field" name="country" maxlength="60" value="'+esc(p.country||'')+'" placeholder="مثال: الجزائر">'+
+ '<div class="grid grid-cols-2 gap-3"><div><label class="label" for="profile-edit-age">العمر</label><input id="profile-edit-age" class="field" name="age" type="number" min="18" max="99" value="'+(p.age==null?'':esc(p.age))+'" placeholder="اختياري"></div><div><label class="label" for="profile-edit-gender">الجنس</label><select id="profile-edit-gender" class="field" name="gender"><option value="">عدم التحديد</option><option value="female" '+(p.gender==='female'?'selected':'')+'>أنثى</option><option value="male" '+(p.gender==='male'?'selected':'')+'>ذكر</option></select></div></div>'+
+ '<label class="label" for="profile-edit-bio">نبذة عنك</label><textarea id="profile-edit-bio" class="field" name="bio" rows="4" maxlength="240" placeholder="اكتبي نبذة قصيرة عنك">'+esc(p.bio||'')+'</textarea>'+
+ '<label class="photo-picker"><i data-lucide="image"></i><span>تغيير غلاف الملف الشخصي (اختياري)</span><input name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>'+
+ '<button type="submit" class="btn-gold w-full">حفظ التعديلات</button><p class="hs-profile-edit-hint">رقم الهاتف لا يظهر في الملف الشخصي ولا يمكن تعديله من هذه الصفحة.</p>'+
+ '</section></form></main>';
+ icons_();
+ const form=$('#profile-edit-form'),avatarInput=form.elements.avatarFile,coverInput=form.elements.coverFile,preview=$('#profile-edit-avatar-preview');
+ let avatarFile=null,coverFile=null,previewUrl=null;
+ avatarInput.onchange=()=>{avatarFile=avatarInput.files?.[0]||null;if(!avatarFile)return;if(avatarFile.size>5*1024*1024){avatarInput.value='';avatarFile=null;toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(avatarFile);preview.innerHTML='<img src="'+previewUrl+'" alt="معاينة الصورة الشخصية">';};
+ coverInput.onchange=()=>{coverFile=coverInput.files?.[0]||null;if(coverFile&&coverFile.size>5*1024*1024){coverInput.value='';coverFile=null;toast('حجم الغلاف يجب ألا يتجاوز 5 ميغابايت','error');return;}if(coverFile)coverInput.closest('.photo-picker').querySelector('span').textContent='تم اختيار الغلاف ✓';};
+ form.onsubmit=async e=>{
+  e.preventDefault();const button=form.querySelector('[type="submit"]'),values=Object.fromEntries(new FormData(form));
+  if(String(values.displayName||'').trim().length<2){toast('اكتبي اسماً من حرفين على الأقل','error');return;}
+  if(String(values.handle||'').trim().length<3){toast('اسم المستخدم يجب أن يكون 3 أحرف على الأقل','error');return;}
+  if(values.age&&(!Number.isInteger(Number(values.age))||Number(values.age)<18||Number(values.age)>99)){toast('العمر يجب أن يكون بين 18 و99','error');return;}
+  button.disabled=true;button.textContent='جارٍ حفظ الملف...';
+  try{
+   let avatarUrl=p.avatarUrl||null,coverUrl=p.coverUrl||null;
+   if(avatarFile)avatarUrl=(await api.uploadMedia(avatarFile,'avatars')).url;
+   if(coverFile)coverUrl=(await api.uploadMedia(coverFile,'profile-covers')).url;
+   const result=await api.saveProfile({handle:values.handle,displayName:values.displayName,bio:values.bio,country:values.country,age:values.age,gender:values.gender,avatarUrl,coverUrl,backgroundUrl:p.backgroundUrl});
+   state.profile=result.profile;state.wallet=result.wallet;state.account={...(state.account||{}),username:result.profile.handle};
+   if(previewUrl)URL.revokeObjectURL(previewUrl);
+   toast('تم حفظ الملف الشخصي');location.hash='#/me';
+  }catch(error){toast(error.message||'تعذر حفظ الملف الشخصي','error');button.disabled=false;button.textContent='حفظ التعديلات';}
+ };
+}
 function settingsScreen(){
- const items=[['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
+ const items=[['user-round-pen','تعديل الملف الشخصي','profile'],['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
  mePage('إعدادات','<section class="hs-settings-page">'+items.map(x=>'<button data-setting="'+x[2]+'"><i data-lucide="'+x[0]+'"></i><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button>').join('')+'<button id="settings-logout" class="hs-settings-logout">تسجيل الخروج</button></section>');
- document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
+ document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='profile'){location.hash='#/profile-edit';}else if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
  $('#settings-logout').onclick=()=>openSheet('<h2 class="font-bold mb-3">تسجيل الخروج</h2><button id="settings-confirm-out" class="btn-danger w-full">تأكيد تسجيل الخروج</button>',s=>s.querySelector('#settings-confirm-out').onclick=signOut);
 }
 function feedbackScreen(){
@@ -2117,6 +2154,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'tasks') tasksScreen();
     else if (route === 'host-data') await hostDataScreen();
     else if (route === 'settings') settingsScreen();
+    else if (route === 'profile-edit') await profileEditScreen();
     else if (route === 'feedback') feedbackScreen();
     else if (route === 'inventory') inventoryScreen();
     else if (route === 'invite') await inviteScreen();
