@@ -6815,3 +6815,79 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#e6c96f!important}
 .room-sheet .hs-room-chat-heading>div:after{content:none!important}
 .room-sheet .hs-room-section-title>div:after{content:none!important}
+
+/* HAMSAT 2026-11-25: coherent responsive room layout and account history */
+#sheet-root .room-sheet .hs-room-premium{position:relative!important;display:flex!important;flex-direction:column!important;gap:12px!important;width:100%!important;min-width:0!important;padding:12px 12px calc(18px + env(safe-area-inset-bottom))!important;overflow:visible!important;isolation:isolate!important}
+#sheet-root .room-sheet .hs-v2-topbar{position:relative!important;display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;min-width:0!important;padding:12px!important;border:1px solid rgba(212,175,55,.28)!important;border-radius:18px!important;background:linear-gradient(145deg,#201b13,#10131c 82%)!important;overflow:visible!important;z-index:4!important}
+#sheet-root .room-sheet .hs-v2-room-identity{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
+#sheet-root .room-sheet .hs-v2-avatar{flex:none!important}
+#sheet-root .room-sheet .hs-v2-title{flex:1!important;min-width:0!important}
+#sheet-root .room-sheet .hs-v2-title h2{font-size:16px!important;font-weight:900!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#f5e9c7!important}
+#sheet-root .room-sheet .hs-v2-title p{font-size:10px!important;color:#c4b99f!important;margin-top:3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#sheet-root .room-sheet .hs-v2-live{flex:none!important;display:inline-flex!important;align-items:center!important;gap:5px!important;padding:5px 8px!important;border:1px solid #d4af3744!important;border-radius:99px!important;color:#f0d88e!important;font-size:10px!important}
+#sheet-root .room-sheet .hs-v2-live i{width:7px!important;height:7px!important;border-radius:50%!important;background:#5bd18b!important;box-shadow:0 0 8px #5bd18b!important}
+#sheet-root .room-sheet .hs-v2-actions{display:flex!important;align-items:center!important;justify-content:flex-start!important;flex-wrap:wrap!important;gap:7px!important;width:100%!important;min-width:0!important}
+#sheet-root .room-sheet .hs-v2-actions button{display:grid!important;place-items:center!important;flex:none!important;width:36px!important;height:36px!important;min-width:36px!important;border:1px solid rgba(212,175,55,.34)!important;border-radius:11px!important;background:#171923!important;color:#f0d88e!important;pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important}
+#sheet-root .room-sheet .hs-v2-actions button svg{width:16px!important;height:16px!important;pointer-events:none!important}
+#sheet-root .room-sheet .hs-room-id-chip{display:inline-flex!important;align-items:center!important;gap:4px!important;padding:0 5px!important;border:1px solid rgba(212,175,55,.25)!important;border-radius:10px!important;background:#11131a!important;color:#f0d88e!important;font-size:10px!important}
+#sheet-root .room-sheet .hs-room-id-chip button{width:27px!important;height:27px!important;border:0!important;background:transparent!important}
+#sheet-root .room-sheet .hs-v2-stage,#sheet-root .room-sheet .hs-v2-listeners,#sheet-root .room-sheet .hs-v2-chat{position:relative!important;display:block!important;width:100%!important;min-width:0!important;margin:0!important;padding:12px!important;border:1px solid rgba(212,175,55,.2)!important;border-radius:17px!important;background:linear-gradient(145deg,rgba(25,24,28,.96),rgba(12,14,20,.96))!important;overflow:visible!important}
+#sheet-root .room-sheet .hs-v2-stage-head,#sheet-root .room-sheet .hs-v2-section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:10px!important}
+#sheet-root .room-sheet .hs-v2-stage-head h3,#sheet-root .room-sheet .hs-v2-section-head h3{font-size:13px!important;font-weight:900!important;color:#f2e5c4!important}
+#sheet-root .room-sheet .hs-v2-kicker{display:block!important;font-size:8px!important;letter-spacing:1.6px!important;color:#c4a454!important;margin-bottom:3px!important}
+#sheet-root .room-sheet .hs-v2-seats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:minmax(104px,auto)!important;align-items:stretch!important;justify-items:stretch!important;gap:10px 5px!important;width:100%!important;min-height:0!important;padding:8px 0!important;overflow:visible!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat{position:relative!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;min-width:0!important;min-height:100px!important;height:auto!important;margin:0!important;padding:5px 2px!important;transform:none!important;grid-column:auto!important;grid-row:auto!important;border:1px solid rgba(212,175,55,.22)!important;border-radius:14px!important;background:linear-gradient(160deg,#211e18,#10131b)!important;overflow:hidden!important;pointer-events:auto!important;touch-action:manipulation!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat:before{content:none!important;display:none!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat .hs-seat-ring{position:relative!important;display:grid!important;place-items:center!important;flex:none!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;margin:0!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat .hs-seat-ring>.avatar,#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat .hs-seat-ring>.avatar-photo{width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat b{position:relative!important;display:block!important;z-index:2!important;max-width:100%!important;font-size:9px!important;line-height:1.3!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat small{display:block!important;max-width:100%!important;font-size:8px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat .hs-seat-duration{display:none!important}
+#sheet-root .room-sheet .hs-v2-seats>.hs-room-seat .hs-seat-number{position:absolute!important;top:3px!important;inset-inline-end:4px!important;z-index:3!important}
+#sheet-root .room-sheet .hs-v2-listeners{padding:10px 12px!important}
+#sheet-root .room-sheet .hs-v2-listeners .hs-room-members{display:flex!important;flex-wrap:nowrap!important;gap:7px!important;overflow-x:auto!important;padding:3px 0!important}
+#sheet-root .room-sheet .hs-v2-listeners .hs-room-person{flex:none!important;max-width:190px!important}
+#sheet-root .room-sheet .hs-v2-chat{display:flex!important;flex-direction:column!important;min-height:220px!important;padding:10px!important}
+#sheet-root .room-sheet #room-chat-tabs{display:flex!important;justify-content:flex-start!important;gap:7px!important;margin:0 0 8px!important}
+#sheet-root .room-sheet #room-chat-tabs button{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;border:1px solid rgba(212,175,55,.25)!important;border-radius:10px!important;background:#151722!important;color:#e9d59d!important;pointer-events:auto!important}
+#sheet-root .room-sheet #room-chat-tabs button.active{background:#6c5524!important;border-color:#e0c16d!important}
+#sheet-root .room-sheet .hs-v2-chat #room-chat{height:clamp(150px,24dvh,230px)!important;min-height:150px!important;max-height:230px!important;overflow-y:auto!important;flex:1 1 auto!important}
+#sheet-root .room-sheet .hs-v2-control-dock{position:sticky!important;bottom:0!important;z-index:40!important;display:flex!important;flex-direction:column!important;gap:8px!important;width:100%!important;min-width:0!important;margin:0!important;padding:10px 8px calc(8px + env(safe-area-inset-bottom))!important;border:1px solid rgba(212,175,55,.25)!important;border-radius:16px!important;background:rgba(10,12,18,.97)!important;box-shadow:0 -8px 28px rgba(0,0,0,.35)!important;backdrop-filter:blur(14px)!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-compose{display:flex!important;align-items:center!important;gap:7px!important;width:100%!important;min-width:0!important;margin:0!important;padding:0!important;position:static!important;background:transparent!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-compose input{flex:1 1 auto!important;min-width:0!important;height:42px!important;border:1px solid rgba(212,175,55,.3)!important;border-radius:12px!important;background:#11141d!important;color:#fff!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-compose button{display:grid!important;place-items:center!important;flex:none!important;width:40px!important;height:40px!important;border-radius:12px!important;background:#26202a!important;color:#e8d08a!important;pointer-events:auto!important;touch-action:manipulation!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:5px!important;width:100%!important;margin:0!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row button{display:grid!important;place-items:center!important;width:100%!important;min-width:0!important;height:39px!important;padding:0!important;border:1px solid rgba(212,175,55,.3)!important;border-radius:11px!important;background:#171a25!important;color:#e9d59d!important;pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important;position:relative!important;z-index:42!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row button:disabled{opacity:.42!important;cursor:not-allowed!important}
+#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row button svg{width:16px!important;height:16px!important;pointer-events:none!important}
+#sheet-root .room-sheet .hs-v2-control-dock button:focus-visible,#sheet-root .room-sheet .hs-v2-actions button:focus-visible{outline:2px solid #f0d88e!important;outline-offset:2px!important}
+#sheet-root .room-sheet .hs-room-panel-backdrop{position:fixed!important;inset:0!important;z-index:70!important;background:rgba(0,0,0,.68)!important;pointer-events:auto!important}
+#sheet-root .room-sheet .hs-room-panel-backdrop.hidden{display:none!important}
+#sheet-root .room-sheet .hs-gift-picker,#sheet-root .room-sheet .hs-room-game-center,#sheet-root .room-sheet .hs-room-bomb-panel,#sheet-root .room-sheet .hs-room-emoji-panel{position:fixed!important;left:50%!important;right:auto!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;top:auto!important;transform:translateX(-50%)!important;width:min(94vw,480px)!important;max-height:78dvh!important;overflow-y:auto!important;z-index:75!important;margin:0!important;pointer-events:auto!important}
+#sheet-root .room-sheet .hs-room-exit-choice{position:fixed!important;inset:0!important;z-index:100!important;display:grid!important;place-items:center!important;background:rgba(0,0,0,.72)!important;pointer-events:auto!important}
+#sheet-root .room-sheet .hs-room-exit-choice:not(.is-visible){display:none!important}
+#sheet-root .room-sheet .hs-room-exit-card{width:min(90vw,360px)!important;max-height:85dvh!important;overflow:auto!important}
+@media(max-width:360px){#sheet-root .room-sheet .hs-v2-seats{grid-template-columns:repeat(3,minmax(0,1fr))!important}#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row{gap:3px!important}#sheet-root .room-sheet .hs-v2-control-dock .hs-room-tools-row button{height:35px!important;border-radius:9px!important}}
+.hs-profile-edit-page{max-width:620px;margin:0 auto;padding:16px 18px 30px}
+.hs-profile-edit-form{display:block}
+.hs-profile-edit-card{display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid rgba(212,175,55,.25);border-radius:20px;background:linear-gradient(145deg,#17171b,#101116);box-shadow:0 14px 36px #0004}
+.hs-profile-edit-avatar{display:grid;place-items:center;min-height:100px;margin:2px auto 4px}
+.hs-profile-edit-avatar>img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid #d4af37;box-shadow:0 0 0 5px #d4af3720}
+.hs-profile-edit-hint{font-size:11px;line-height:1.7;color:#a99b82}
+.hs-profile-edit-card .photo-picker{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px;border:1px dashed rgba(212,175,55,.42);border-radius:12px;color:#ead59a;font-size:12px}
+.hs-me-edit-profile{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:6px 9px;border:1px solid rgba(212,175,55,.4);border-radius:9px;color:#ead59a;font-size:10px}
+.hs-gift-history-tabs{display:flex;gap:8px;margin-bottom:10px}
+.hs-gift-history-tabs button{flex:1;min-height:38px;border:1px solid rgba(212,175,55,.25);border-radius:11px;background:#15131b;color:#c8b99b;font-size:11px}
+.hs-gift-history-tabs button.active{background:#4b3b1b;border-color:#d4af37;color:#ffe8a4}
+.hs-gift-history-row{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid rgba(212,175,55,.18);border-radius:14px;background:linear-gradient(135deg,#1b1a1d,#11131a);min-width:0}
+.hs-gift-history-art{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:13px;background:#302713;color:#f2d98f;overflow:hidden}
+.hs-gift-history-art img{width:100%;height:100%;object-fit:contain}
+.hs-gift-history-copy{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.hs-gift-history-copy b{font-size:12px;color:#f2e5c4}
+.hs-gift-history-copy small{font-size:10px;color:#aaa08f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-gift-history-row>strong{flex:none;font-size:11px;color:#e8ce82;text-align:left}
+.hs-gift-history-row>strong small{font-size:8px}
+.hs-gift-history-empty{padding:20px 12px;text-align:center;border:1px dashed rgba(212,175,55,.22);border-radius:13px;color:#a99b82;font-size:12px}
+.hs-host-target-notice{margin-top:12px;padding:13px;border:1px solid rgba(212,175,55,.22);border-radius:14px;background:#17151a}
+.hs-host-target-notice b{display:block;color:#ecd79a;font-size:13px;margin-bottom:5px}
+.hs-host-target-notice p{font-size:11px;line-height:1.8;color:#b8ad9a}
