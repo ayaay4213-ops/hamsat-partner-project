@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090a0d"><title>HAMSAT · مساحة المسؤول</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--gold:#d4af37;--gold2:#ead59a}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1c1a15 0,#090a0d 48%);color:#f7f2e8;font-family:Tajawal,system-ui}.wrap{max-width:900px;margin:auto;padding:16px}.panel{background:linear-gradient(145deg,#15171c,#101115);border:1px solid #34302a;border-radius:18px;padding:16px;box-shadow:0 12px 36px #0005}.muted{color:#aaa39a}.gold{color:var(--gold2)}.btn{background:linear-gradient(120deg,#ead59a,#b88c2d);color:#17140b;border-radius:11px;padding:9px 13px;font-weight:800}.ghost{border:1px solid #51472f;border-radius:11px;padding:9px 13px;color:#ead59a}.pill{font-size:11px;border:1px solid #65532c;border-radius:99px;padding:3px 8px;color:#ead59a}.item{border:1px solid #303640;border-radius:13px;padding:13px;margin-top:10px}.hidden{display:none!important}button:disabled{opacity:.5}.status{border:1px solid #393329;border-radius:12px;padding:12px;font-size:14px}.status.error{border-color:#93414b;color:#ffc0c7}.status.ok{border-color:#39734a;color:#c7f0d0}
+</style>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body><main class="wrap space-y-4">
+<header class="flex flex-wrap items-center justify-between gap-3 py-3"><div><div class="gold tracking-widest text-xs">H A M S A T · STAFF</div><h1 class="text-2xl font-extrabold mt-1">مساحة المسؤول</h1><p class="muted text-sm">صلاحيات محدودة — لا وصول إلى المحافظ أو الشحن أو السحب أو إعدادات السوبر أدمن</p></div><div class="flex gap-2"><span class="pill">STAFF ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
+<div id="notice" class="panel status">جارٍ التحقق من الصلاحيات...</div>
+<section id="staff" class="hidden space-y-4">
+<div class="panel"><h2 class="font-bold gold mb-2">صلاحيات حسابك</h2><div id="permissions" class="flex flex-wrap gap-2"></div></div>
+<section id="reports-panel" class="panel hidden"><div class="flex items-center justify-between gap-3"><div><h2 class="text-lg font-bold">مراجعة البلاغات</h2><p class="muted text-sm">يمكنك تغيير حالة البلاغات فقط. لا يمكنك حظر الحسابات أو الوصول للمحافظ.</p></div><button id="refresh-reports" class="ghost">تحديث</button></div><div id="reports" class="mt-3"><p class="muted text-sm">جارٍ التحميل...</p></div></section>
+<section id="room-note" class="panel hidden"><h2 class="font-bold gold">إشراف الغرف</h2><p class="muted text-sm mt-2">الصلاحية مسجلة، لكن أدوات كتم الصوت والطرد للمسؤولين تحتاج ربطاً آمناً بخدمة الصوت على الخادم. لذلك لا توجد أزرار تنفيذ هنا حتى يكتمل هذا الربط.</p></section>
+<section id="support-note" class="panel hidden"><h2 class="font-bold gold">مساعدة الأعضاء</h2><p class="muted text-sm mt-2">الصلاحية مسجلة. أدوات الدعم التي تتطلب الاطلاع على بيانات الأعضاء لم تُفتح بعد، حفاظاً على خصوصيتهم.</p></section>
+<section id="events-note" class="panel hidden"><h2 class="font-bold gold">إدارة الفعاليات</h2><p class="muted text-sm mt-2">الصلاحية مسجلة. إدارة الفعاليات ستُفعّل عند اكتمال وحدة الفعاليات وسجل تغييراتها.</p></section>
+<section class="panel"><h2 class="font-bold gold">سجل إجراءاتك</h2><div id="audit" class="mt-2"><p class="muted text-sm">جارٍ التحميل...</p></div></section>
+</section>
+</main><script type="module" src="js/staff.js?v=20261120-staff-portal-v1"></script></body></html>

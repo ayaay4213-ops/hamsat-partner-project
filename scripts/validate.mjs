@@ -10,6 +10,8 @@ const required = [
   'css/styles.css',
   'js/app.js',
   'js/api.js',
+  'staff.html',
+  'js/staff.js',
   'js/voice-room.js',
   'js/livekit-room.js',
   'supabase/functions/livekit-token/index.ts',
@@ -34,6 +36,47 @@ const required = [
 
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
+}
+
+const migrationDir = path.join(root, 'supabase/migrations');
+if (fs.existsSync(migrationDir)) {
+  const versions = new Map();
+  for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
+    const version = file.match(/^(\d{14})_/) || file.match(/^(\d{4})_/);
+    if (!version) continue;
+    const previous = versions.get(version[1]);
+    if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
+    else versions.set(version[1], file);
+  }
+}
+
+const socialGrantsPath = path.join(root, 'supabase/migrations/20261116115128_0017_social_data_api_grants.sql');
+if (fs.existsSync(socialGrantsPath)) {
+  const sql = fs.readFileSync(socialGrantsPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon',
+    'grant select on table public.dm_conversations to authenticated',
+    'grant select, insert on table public.dm_messages to authenticated',
+    'grant update (read_at) on table public.dm_messages to authenticated',
+    'grant select on table public.notifications to authenticated',
+    'grant update (read_at) on table public.notifications to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing social Data API grant: ${token}`);
+  }
+}
+
+const privateDmRpcPath = path.join(root, 'supabase/migrations/20261116115248_0018_private_dm_conversation_rpc.sql');
+if (fs.existsSync(privateDmRpcPath)) {
+  const sql = fs.readFileSync(privateDmRpcPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function private.get_or_create_conversation',
+    'security definer',
+    'create or replace function public.get_or_create_conversation',
+    'security invoker',
+    'grant execute on function public.get_or_create_conversation(uuid) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing private DM RPC hardening: ${token}`);
+  }
 }
 
 let manifest;
@@ -406,7 +449,7 @@ if (fs.existsSync(roomCssPath)) {
     if (!css.includes(token)) errors.push(`Missing circular minimized-room styling: ${token}`);
   }
 }
-for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
+for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/staff.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
@@ -571,7 +614,7 @@ if (fs.existsSync(roomBackgroundScopePath)) {
       backgroundFn.includes("bottomBar.parentElement!==canvas")) {
     errors.push('Room background must not cover the whole room or reparent the chat/tools bar');
   }
-  if (!js.includes('خلفية تظهر خلف المايكات فقط')) {
+  if (!js.includes('تظهر خلف المايكات فقط')) {
     errors.push('Room background settings must clearly describe microphone-only scope');
   }
 }
@@ -612,7 +655,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261125-black-gold-room-fix-v2','js/app.js?v=20261125-profile-room-fix-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -633,7 +676,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261124-admin-auth-diagnostics-v3')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -649,7 +692,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261124-admin-auth-diagnostics-v3')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -706,11 +749,11 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261125-black-gold-room-fix-v2','js/app.js?v=20261125-profile-room-fix-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
-if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261123-dm-reliability-v1")) {
+if (fs.existsSync(appRoomPath) && !fs.readFileSync(appRoomPath, 'utf8').includes("api.js?v=20261125-profile-safe-update-v2")) {
   errors.push('HAMSAT must refresh the API module containing public-handle privacy safeguards');
 }
 
@@ -732,7 +775,7 @@ const integratedCssPath = path.join(root, 'css/styles.css');
 const integratedHtmlPath = path.join(root, 'index.html');
 if (fs.existsSync(integratedRoomPath)) {
   const js = fs.readFileSync(integratedRoomPath, 'utf8');
-  for (const token of ['hs-room-unified','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
+  for (const token of ['hs-v2-stage','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
     if (!js.includes(token)) errors.push('Missing integrated room, join-time chat or independent friends loading: ' + token);
   }
 }
@@ -972,7 +1015,6 @@ if (fs.existsSync(presenceSecurityPath)) {
     'revoke truncate, references, trigger, maintain',
     'on all tables in schema public',
     'from anon, authenticated',
-    'revoke truncate, references, trigger, maintain on tables in schema public from anon, authenticated',
     'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
   ]) {
@@ -1336,9 +1378,31 @@ if (fs.existsSync(path.join(root, 'supabase/migrations/20261123130000_0080_shop_
 const activeMigrationDirectory = path.join(root, 'supabase/migrations');
 if (fs.existsSync(activeMigrationDirectory)) {
   for (const file of fs.readdirSync(activeMigrationDirectory).filter(name => name.endsWith('.sql'))) {
-    if (!/^\\d{14}_/.test(file)) {
+    if (!/^\d{14}_/.test(file)) {
       errors.push('Active migration must use its production 14-digit timestamp: ' + file);
     }
+  }
+}
+
+const profileUiPath = path.join(root, 'js/app.js');
+const apiUiPath = path.join(root, 'js/api.js');
+const roomUiCssPath = path.join(root, 'css/styles.css');
+if (fs.existsSync(profileUiPath)) {
+  const appUi = fs.readFileSync(profileUiPath, 'utf8');
+  for (const token of ['async function profileEditScreen()', '#/profile-edit', 'id="profile-edit-form"', 'api.giftHistory(60)', 'giftHistoryMode', 'exitRoom(e.currentTarget)', 'hs-host-target-notice']) {
+    if (!appUi.includes(token)) errors.push('Missing restored account/gift/room UI behavior: ' + token);
+  }
+}
+if (fs.existsSync(apiUiPath)) {
+  const apiUi = fs.readFileSync(apiUiPath, 'utf8');
+  for (const token of ['giftHistory: async', "from('gift_transactions')", "direction: row.sender_id === user.id ? 'sent' : 'received'"]) {
+    if (!apiUi.includes(token)) errors.push('Missing sender/recipient gift history API: ' + token);
+  }
+}
+if (fs.existsSync(roomUiCssPath)) {
+  const roomUiCss = fs.readFileSync(roomUiCssPath, 'utf8');
+  for (const token of ['.hs-v2-control-dock', '.hs-v2-seats', '.hs-gift-history-row', '.hs-profile-edit-card']) {
+    if (!roomUiCss.includes(token)) errors.push('Missing responsive HAMSAT UI styling: ' + token);
   }
 }
 

@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261123-dm-reliability-v1';
+import { api } from './api.js?v=20261125-profile-safe-update-v2';
 import { createVoiceRoom } from './voice-room.js?v=20261122-room-controls-v5';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -57,7 +57,7 @@ function avatar(p, size = 44) {
   const frameClass = frameStyle ? ' frame-' + frameStyle : '';
   const frameOverlay = p?.equippedProfileFrameUrl ? `<img class="avatar-frame-overlay" src="${esc(p.equippedProfileFrameUrl)}" alt="" aria-hidden="true" loading="lazy">` : '';
   return p?.avatarUrl
-    ? `<div class="avatar avatar-photo${frameClass}"${profileHandle} style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy">${frameOverlay}</div>`
+    ? `<div class="avatar avatar-photo${frameClass}"${profileHandle} style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="eager" decoding="async">${frameOverlay}</div>`
     : `<div class="avatar${frameClass}"${profileHandle} style="${style}">${initial(p?.displayName)}${frameOverlay}</div>`;
 }
 document.addEventListener('click', event => {
@@ -69,6 +69,16 @@ document.addEventListener('click', event => {
   event.preventDefault();
   event.stopPropagation();
   location.hash = '#/u/' + encodeURIComponent(handle);
+}, true);
+
+// If a stored avatar URL is unavailable, keep a visible initials fallback instead of a blank frame.
+document.addEventListener('error', event => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || !image.closest('.avatar-photo')) return;
+  const holder = image.closest('.avatar-photo');
+  const label = image.alt || 'عضو';
+  holder.replaceChildren(document.createTextNode(initial(label)));
+  holder.classList.remove('avatar-photo');
 }, true);
 
 function num(n) { return Number(n || 0).toLocaleString('ar-EG'); }
@@ -1445,7 +1455,7 @@ async function giftsScreen() {
       <label for="gift-search" class="block text-xs font-semibold text-[#cbb9e6] mb-2">ابحثي عن هدية</label>
       <input id="gift-search" type="search" dir="rtl" autocomplete="off" placeholder="اكتبي اسم الهدية…" aria-label="البحث في الهدايا" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3">
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
-      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><label for="gift-member-search" class="sr-only">ابحثي عن عضو</label><input id="gift-member-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي باسم العضو أو اسم المستخدم…" aria-label="البحث عن عضو لإرسال هدية" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3"><div id="gift-members" class="space-y-2">${loading()}</div></section>
+      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><label for="gift-member-search" class="sr-only">ابحثي عن عضو</label><input id="gift-member-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي باسم العضو أو اسم المستخدم…" aria-label="البحث عن عضو لإرسال هدية" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3"><div id="gift-members" class="space-y-2">${loading()}</div></section><section class="hs-gift-history mt-7"><div class="flex items-center justify-between gap-2 mb-3"><div><h3 class="font-bold">سجل الهدايا</h3><p class="text-xs text-[#a993c8]">الهدايا التي استلمتِها أو أرسلتِها</p></div><button type="button" id="gift-history-refresh" class="btn-ghost text-xs">تحديث</button></div><div class="hs-gift-history-tabs"><button type="button" class="active" data-gift-history="received">الهدايا المستلمة</button><button type="button" data-gift-history="sent">الهدايا المرسلة</button></div><div id="gift-history-list" class="space-y-2">${loading()}</div></section>
     </div>`;
   icons_();
   try {
@@ -1469,6 +1479,28 @@ async function giftsScreen() {
     };
     renderGiftRecipients();
     $('#gift-member-search')?.addEventListener('input',event=>renderGiftRecipients(event.target.value));
+    let giftHistoryMode='received',giftHistoryInitialized=false;const seenReceivedGiftIds=new Set();
+    const drawGiftHistory=async()=>{
+      const historyRoot=$('#gift-history-list');if(!historyRoot)return;
+      historyRoot.innerHTML=loading();
+      try{
+        const {gifts=[]}=await api.giftHistory(60);
+        for(const item of gifts.filter(x=>x.direction==='received')){const id=String(item.id);if(giftHistoryInitialized&&!seenReceivedGiftIds.has(id)){showGiftCelebration({name:item.gift?.name||'هدية',icon:item.gift?.icon||'gift'},Number(item.quantity||1));toast('وصلتك هدية جديدة');}seenReceivedGiftIds.add(id);}
+        giftHistoryInitialized=true;
+        const rows=gifts.filter(item=>item.direction===giftHistoryMode);
+        historyRoot.innerHTML=rows.length?rows.map(item=>{
+          const gift=item.gift||{},person=giftHistoryMode==='received'?item.sender:item.recipient;
+          const art=gift.image_url?'<img src="'+esc(gift.image_url)+'" alt="'+esc(gift.name||'هدية')+'">':'<i data-lucide="'+esc(gift.icon||'gift')+'"></i>';
+          return '<article class="hs-gift-history-row"><span class="hs-gift-history-art">'+art+'</span><span class="hs-gift-history-copy"><b>'+esc(gift.name||'هدية')+' ×'+num(item.quantity||1)+'</b><small>'+(giftHistoryMode==='received'?'من: ':'إلى: ')+esc(person?.displayName||person?.handle||'عضو همسات')+'</small><small>'+dateAr(new Date(item.created_at).getTime())+'</small></span><strong>'+num(item.total_price)+' <small>Coins</small></strong></article>';
+        }).join(''):'<div class="hs-gift-history-empty">لا توجد '+(giftHistoryMode==='received'?'هدايا مستلمة':'هدايا مرسلة')+' مسجلة بعد.</div>';
+        icons_();
+      }catch(error){historyRoot.innerHTML='<div class="hs-gift-history-empty">تعذّر تحميل سجل الهدايا: '+esc(error.message)+'</div>';}
+    };
+    screen.querySelectorAll('[data-gift-history]').forEach(button=>button.onclick=()=>{giftHistoryMode=button.dataset.giftHistory;screen.querySelectorAll('[data-gift-history]').forEach(x=>x.classList.toggle('active',x===button));drawGiftHistory();});
+    $('#gift-history-refresh')?.addEventListener('click',drawGiftHistory);
+    await drawGiftHistory();
+    const giftHistoryPoll=window.setInterval(()=>{if($('#gift-history-list')&&document.visibilityState!=='hidden')drawGiftHistory().catch(()=>{});},12000);
+    window.addEventListener('hashchange',()=>window.clearInterval(giftHistoryPoll),{once:true});
     icons_();
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
@@ -1732,14 +1764,15 @@ function profileView(p, own) {
 function meScreen() {
  const p=state.profile||{}, wallet=Number(state.wallet?.balance||0), flag=p.country&&/الجزائر|algeria/i.test(p.country)?'🇩🇿':p.country&&/tunisia/i.test(p.country)?'🇹🇳':p.country&&/morocco/i.test(p.country)?'🇲🇦':p.country&&/egypt/i.test(p.country)?'🇪🇬':'🌍';
  const tiles=[['medal','ميدالية الشرف','#/honor'],['users-round','العائلة','#/family'],['store','المتجر','#/shop'],['heart-handshake','منزل CP','#/cp'],['mic-2','بيانات المضيف','#/host-data'],['target','مركز المهام','#/tasks']];
- const rows=[['history','سجل المكافآت','#/wallet'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
+ const rows=[['history','سجل المكافآت','#/wallet'],['gift','سجل الهدايا','#/gifts'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
  screen.innerHTML='<main class="hs-me-v2 hs-me-reference" dir="rtl">'+
  '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
- '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
+ '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><a href="#/profile-edit" class="hs-me-edit-profile"><i data-lucide="user-round-pen"></i> تعديل الملف</a><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
  '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>Following</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="followers">—</b><span>Fans</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>Charisma</span></button></div></section>'+
  '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيدكِ وإدارة العملات</span></div><span class="hs-me-first-tag">FIRST RECHARGE</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
  '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><span class="hs-metal-icon"><i data-lucide="crown"></i></span><small>عضوية VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'VIP')+'</b><em>اكتشفي امتيازاتكِ</em></a><a href="#/wallet" class="hs-me-wealth-card"><span class="hs-metal-icon"><i data-lucide="gem"></i></span><small>مستوى الثروة</small><b>LV. '+num(p.wealthLevel||0)+'</b><em>تقدّم مستوى الثروة</em></a></div>'+
- '<a href="#/wallet" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>PURPLE LUCKY SPIN</small><b>Cash-out</b><span>تحويل الألماس إلى نقد</span><strong>$0 <em>=</em> 0</strong><small>Only 900000 left to withdraw</small><i class="hs-spin-progress"><span></span></i></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
+ '<div class="hs-me-host-quick-stats"><a href="#/host-data"><span><i data-lucide="gem"></i></span><small>رصيد الماس</small><b>غير مفعّل</b></a><a href="#/host-data"><span><i data-lucide="target"></i></span><small>التارجت الشهري</small><b>بانتظار التفعيل</b></a></div>'+
+ '<a href="#/host-data" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>HOST CENTER</small><b>إحصاءات المضيف</b><span>وقت البث والجلسات والهدايا والماس والتارجت</span><strong>عرض البيانات</strong><small>سيظهر الرصيد والهدف الفعليان بعد تفعيل النظام المالي رسمياً</small></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
  '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الوصول السريع</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
  '<section class="hs-me-settings-card"><div class="hs-me-section-heading"><div><small>ACCOUNT & SUPPORT</small><h2>الحساب والخدمات</h2></div><i data-lucide="sliders-horizontal"></i></div>'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T <i>✦</i></div></main>';
  icons_(); loadProfileStats(p.uuid,false);
@@ -1771,14 +1804,67 @@ function tasksScreen(){
  document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-task]').forEach(x=>x.classList.toggle('active',x===b));});
 }
 async function hostDataScreen(){
- mePage('بيانات المضيف','<section class="hs-host-data"><div class="hs-host-overview"><span>معلومات المضيف</span><b>'+esc(state.profile.displayName||'عضو')+'</b><small>حالة الوكالة: جارٍ التحقق</small><strong>50,000 / ساعة</strong><div class="hs-host-progress"><i></i></div><small>تقدم الترقية</small></div><button id="host-range">آخر 30 يوماً ▾</button><h3>ملخص الماسات</h3><div class="hs-host-grid">'+[['إجمالي الدخل','—'],['الاستهلاك','—'],['الراتب الأساسي','—'],['الهدايا','—'],['المهام','—']].map(x=>'<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="hs-task-note">بيانات المضيف التفصيلية غير متاحة حتى ربط سجل الاستحقاقات.</p></section>');
- $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">الفترة الزمنية</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
- try{const r=await api.myAgencies();const ag=(r.agencies||[]).find(x=>['hosts','both'].includes(x.agency_type));if(ag){const s=await api.agencyHostStats(ag.id);const own=(s.stats||[]).filter(x=>x.host_id===state.profile.uuid);const total=own.reduce((n,x)=>n+Number(x.gift_coins||0),0);$('.hs-host-grid div:first-child b').textContent=num(total);$('.hs-host-grid div:nth-child(4) b').textContent=num(total);$('.hs-host-overview small').textContent='حالة الوكالة: '+ag.status;}}catch(e){console.warn(e);}
+ mePage('بيانات المضيف','<section id="hs-host-data" class="hs-host-data"><div class="hs-host-overview"><span>مركز المضيف</span><b>'+esc(state.profile?.displayName||'عضو')+'</b><small id="hs-host-agency-status">جارٍ تحميل بيانات الوكالة...</small></div><div class="hs-host-grid"><div><small>وقت البث المسجل</small><b id="hs-host-live-time">—</b></div><div><small>عدد الجلسات</small><b id="hs-host-sessions">—</b></div><div><small>قيمة الهدايا بالعملات</small><b id="hs-host-gift-coins">—</b></div><div><small>رصيد الماس</small><b>غير مفعّل</b></div></div><div class="hs-host-target-notice"><b>التارجت الشهري</b><p>لا يوجد هدف رسمي مسجل في قاعدة البيانات حالياً؛ لن نعرض نسبة تقدم أو رقماً افتراضياً.</p></div><div class="hs-host-target-notice"><b>نظام الماس والسحب</b><p>المخطط الحالي يحتوي محفظة Coins وسجل هدايا، ولا يحتوي محفظة Diamonds أو دورة سحب نقدي مكتملة. لن نخلط العملات أو نعرض تحويلات غير موجودة.</p></div><div id="hs-host-data-note" class="hs-task-note">جارٍ تحميل الإحصاءات...</div></section>');
+ try{
+  const result=await api.myAgencies();
+  const agencies=(result.agencies||[]).filter(a=>['hosts','both'].includes(a.agency_type)&&a.status==='active');
+  if(!agencies.length){$('#hs-host-agency-status').textContent='لا توجد وكالة مضيف نشطة مرتبطة بهذا الحساب';$('#hs-host-data-note').textContent='لا توجد إحصاءات وكالة لعرضها الآن.';return;}
+  const allStats=[];
+  for(const agency of agencies){const data=await api.agencyHostStats(agency.id);allStats.push(...(data.stats||[]).filter(x=>x.host_id===state.profile?.uuid));}
+  const since=new Date();since.setDate(since.getDate()-30);
+  const recent=allStats.filter(x=>new Date(x.stat_date+'T00:00:00').getTime()>=since.getTime());
+  const liveSeconds=recent.reduce((sum,x)=>sum+Number(x.live_seconds||0),0);
+  const sessions=recent.reduce((sum,x)=>sum+Number(x.session_count||0),0);
+  const giftCoins=recent.reduce((sum,x)=>sum+Number(x.gift_coins||0),0);
+  const hours=Math.floor(liveSeconds/3600),minutes=Math.floor((liveSeconds%3600)/60);
+  $('#hs-host-agency-status').textContent='وكالة نشطة · آخر 30 يوماً';
+  $('#hs-host-live-time').textContent=num(hours)+' س '+num(minutes)+' د';
+  $('#hs-host-sessions').textContent=num(sessions);
+  $('#hs-host-gift-coins').textContent=num(giftCoins);
+  $('#hs-host-data-note').textContent='هذه أرقام فعلية من سجل الوكالة اليومي. لا تمثل قيمة راتب أو ماس أو مستحقات سحب.';
+ }catch(error){$('#hs-host-agency-status').textContent='تعذّر تحميل بيانات الوكالة';$('#hs-host-data-note').textContent=error.message||'حاولي مرة أخرى.';}
+}
+async function profileEditScreen(){
+ const p=state.profile||{};
+ screen.innerHTML=header('تعديل الملف الشخصي','<a href="#/me" class="text-sm text-gold-300">العودة إلى حسابي</a>')+
+ '<main class="hs-profile-edit-page" dir="rtl"><form id="profile-edit-form" class="hs-profile-edit-form"><section class="hs-profile-edit-card">'+
+ '<div class="hs-profile-edit-avatar" id="profile-edit-avatar-preview">'+avatar(p,88)+'</div>'+
+ '<label class="photo-picker"><i data-lucide="image-plus"></i><span>اختيار الصورة الشخصية</span><input name="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>'+
+ '<label class="label" for="profile-edit-name">الاسم الظاهر</label><input id="profile-edit-name" class="field" name="displayName" maxlength="40" required value="'+esc(p.displayName||'')+'" placeholder="اسمك في همسات">'+
+ '<label class="label" for="profile-edit-handle">اسم المستخدم</label><input id="profile-edit-handle" class="field" name="handle" maxlength="24" required value="'+esc(p.handle||'')+'" dir="ltr" placeholder="username">'+
+ '<p class="hs-profile-edit-hint">اسم المستخدم ظاهر للآخرين. لا تضعي رقم هاتفك أو بريدك الإلكتروني.</p>'+
+ '<label class="label" for="profile-edit-country">البلد</label><input id="profile-edit-country" class="field" name="country" maxlength="60" value="'+esc(p.country||'')+'" placeholder="مثال: الجزائر">'+
+ '<div class="grid grid-cols-2 gap-3"><div><label class="label" for="profile-edit-age">العمر</label><input id="profile-edit-age" class="field" name="age" type="number" min="18" max="99" value="'+(p.age==null?'':esc(p.age))+'" placeholder="اختياري"></div><div><label class="label" for="profile-edit-gender">الجنس</label><select id="profile-edit-gender" class="field" name="gender"><option value="">عدم التحديد</option><option value="female" '+(p.gender==='female'?'selected':'')+'>أنثى</option><option value="male" '+(p.gender==='male'?'selected':'')+'>ذكر</option></select></div></div>'+
+ '<label class="label" for="profile-edit-bio">نبذة عنك</label><textarea id="profile-edit-bio" class="field" name="bio" rows="4" maxlength="240" placeholder="اكتبي نبذة قصيرة عنك">'+esc(p.bio||'')+'</textarea>'+
+ '<label class="photo-picker"><i data-lucide="image"></i><span>تغيير غلاف الملف الشخصي (اختياري)</span><input name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label>'+
+ '<button type="submit" class="btn-gold w-full">حفظ التعديلات</button><p class="hs-profile-edit-hint">رقم الهاتف لا يظهر في الملف الشخصي ولا يمكن تعديله من هذه الصفحة.</p>'+
+ '</section></form></main>';
+ icons_();
+ const form=$('#profile-edit-form'),avatarInput=form.elements.avatarFile,coverInput=form.elements.coverFile,preview=$('#profile-edit-avatar-preview');
+ let avatarFile=null,coverFile=null,previewUrl=null;
+ avatarInput.onchange=()=>{avatarFile=avatarInput.files?.[0]||null;if(!avatarFile)return;if(avatarFile.size>5*1024*1024){avatarInput.value='';avatarFile=null;toast('حجم الصورة يجب ألا يتجاوز 5 ميغابايت','error');return;}if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(avatarFile);preview.innerHTML='<img src="'+previewUrl+'" alt="معاينة الصورة الشخصية">';};
+ coverInput.onchange=()=>{coverFile=coverInput.files?.[0]||null;if(coverFile&&coverFile.size>5*1024*1024){coverInput.value='';coverFile=null;toast('حجم الغلاف يجب ألا يتجاوز 5 ميغابايت','error');return;}if(coverFile)coverInput.closest('.photo-picker').querySelector('span').textContent='تم اختيار الغلاف ✓';};
+ form.onsubmit=async e=>{
+  e.preventDefault();const button=form.querySelector('[type="submit"]'),values=Object.fromEntries(new FormData(form));
+  if(String(values.displayName||'').trim().length<2){toast('اكتبي اسماً من حرفين على الأقل','error');return;}
+  if(String(values.handle||'').trim().length<3){toast('اسم المستخدم يجب أن يكون 3 أحرف على الأقل','error');return;}
+  if(values.age&&(!Number.isInteger(Number(values.age))||Number(values.age)<18||Number(values.age)>99)){toast('العمر يجب أن يكون بين 18 و99','error');return;}
+  button.disabled=true;button.textContent='جارٍ حفظ الملف...';
+  try{
+   let avatarUrl=p.avatarUrl||null,coverUrl=p.coverUrl||null;
+   if(avatarFile)avatarUrl=(await api.uploadMedia(avatarFile,'avatars')).url;
+   if(coverFile)coverUrl=(await api.uploadMedia(coverFile,'profile-covers')).url;
+   const result=await api.saveProfile({handle:values.handle,displayName:values.displayName,bio:values.bio,country:values.country,age:values.age,gender:values.gender,color:p.color,avatarUrl,coverUrl,backgroundUrl:p.backgroundUrl});
+   state.profile=result.profile;state.wallet=result.wallet;state.account={...(state.account||{}),username:result.profile.handle};
+   if(previewUrl)URL.revokeObjectURL(previewUrl);
+   toast('تم حفظ الملف الشخصي');location.hash='#/me';
+  }catch(error){toast(error.message||'تعذر حفظ الملف الشخصي','error');button.disabled=false;button.textContent='حفظ التعديلات';}
+ };
 }
 function settingsScreen(){
- const items=[['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
+ const items=[['user-round-pen','تعديل الملف الشخصي','profile'],['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
  mePage('إعدادات','<section class="hs-settings-page">'+items.map(x=>'<button data-setting="'+x[2]+'"><i data-lucide="'+x[0]+'"></i><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button>').join('')+'<button id="settings-logout" class="hs-settings-logout">تسجيل الخروج</button></section>');
- document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
+ document.querySelectorAll('[data-setting]').forEach(b=>b.onclick=()=>{const k=b.dataset.setting;if(k==='profile'){location.hash='#/profile-edit';}else if(k==='notify'){const on=localStorage.getItem('hamsat:message-notifications')!=='off';localStorage.setItem('hamsat:message-notifications',on?'off':'on');toast(on?'تم إيقاف التفضيل المحلي':'تم تفعيل التفضيل المحلي');}else if(k==='feedback')location.hash='#/feedback';else if(k==='language')openSheet('<h2 class="font-bold mb-3">إعداد اللغة</h2><button class="btn-gold w-full" data-close>العربية</button>');else openSheet('<h2 class="font-bold mb-2">'+(k==='privacy'?'بيان الخصوصية':k==='blacklist'?'القائمة السوداء':k==='about'?'حول همسات':'ربط الحساب')+'</h2><p class="text-sm">هذه الخدمة تحتاج إلى ربط إعداداتها بالخادم.</p>');});
  $('#settings-logout').onclick=()=>openSheet('<h2 class="font-bold mb-3">تسجيل الخروج</h2><button id="settings-confirm-out" class="btn-danger w-full">تأكيد تسجيل الخروج</button>',s=>s.querySelector('#settings-confirm-out').onclick=signOut);
 }
 function feedbackScreen(){
@@ -2117,6 +2203,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'tasks') tasksScreen();
     else if (route === 'host-data') await hostDataScreen();
     else if (route === 'settings') settingsScreen();
+    else if (route === 'profile-edit') await profileEditScreen();
     else if (route === 'feedback') feedbackScreen();
     else if (route === 'inventory') inventoryScreen();
     else if (route === 'invite') await inviteScreen();

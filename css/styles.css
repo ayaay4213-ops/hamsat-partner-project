@@ -6815,3 +6815,29 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#e6c96f!important}
 .room-sheet .hs-room-chat-heading>div:after{content:none!important}
 .room-sheet .hs-room-section-title>div:after{content:none!important}
+
+
+/* Profile editor and gift-history component styles only; room/account theme stays at approved baseline. */
+.hs-profile-edit-page{max-width:620px;margin:0 auto;padding:16px 18px 30px}
+.hs-profile-edit-form{display:block}
+.hs-profile-edit-card{display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid rgba(212,175,55,.25);border-radius:20px;background:linear-gradient(145deg,#17171b,#101116);box-shadow:0 14px 36px #0004}
+.hs-profile-edit-avatar{display:grid;place-items:center;min-height:100px;margin:2px auto 4px}
+.hs-profile-edit-avatar>img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid #d4af37;box-shadow:0 0 0 5px #d4af3720}
+.hs-profile-edit-hint{font-size:11px;line-height:1.7;color:#a99b82}
+.hs-profile-edit-card .photo-picker{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px;border:1px dashed rgba(212,175,55,.42);border-radius:12px;color:#ead59a;font-size:12px}
+.hs-me-edit-profile{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:6px 9px;border:1px solid rgba(212,175,55,.4);border-radius:9px;color:#ead59a;font-size:10px}
+.hs-gift-history-tabs{display:flex;gap:8px;margin-bottom:10px}
+.hs-gift-history-tabs button{flex:1;min-height:38px;border:1px solid rgba(212,175,55,.25);border-radius:11px;background:#15131b;color:#c8b99b;font-size:11px}
+.hs-gift-history-tabs button.active{background:#4b3b1b;border-color:#d4af37;color:#ffe8a4}
+.hs-gift-history-row{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid rgba(212,175,55,.18);border-radius:14px;background:linear-gradient(135deg,#1b1a1d,#11131a);min-width:0}
+.hs-gift-history-art{display:grid;place-items:center;flex:none;width:46px;height:46px;border-radius:13px;background:#302713;color:#f2d98f;overflow:hidden}
+.hs-gift-history-art img{width:100%;height:100%;object-fit:contain}
+.hs-gift-history-copy{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.hs-gift-history-copy b{font-size:12px;color:#f2e5c4}
+.hs-gift-history-copy small{font-size:10px;color:#aaa08f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-gift-history-row>strong{flex:none;font-size:11px;color:#e8ce82;text-align:left}
+.hs-gift-history-row>strong small{font-size:8px}
+.hs-gift-history-empty{padding:20px 12px;text-align:center;border:1px dashed rgba(212,175,55,.22);border-radius:13px;color:#a99b82;font-size:12px}
+.hs-host-target-notice{margin-top:12px;padding:13px;border:1px solid rgba(212,175,55,.22);border-radius:14px;background:#17151a}
+.hs-host-target-notice b{display:block;color:#ecd79a;font-size:13px;margin-bottom:5px}
+.hs-host-target-notice p{font-size:11px;line-height:1.8;color:#b8ad9a}
