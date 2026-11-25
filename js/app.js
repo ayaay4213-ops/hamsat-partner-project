@@ -1136,7 +1136,7 @@ async function openRoom(r) {
     sheet.querySelector('#room-private-messages').onclick=()=>{minimizeRoom();location.hash='#/inbox';};
     sheet.querySelector('#room-open-games-page').onclick=()=>{minimizeRoom();location.hash='#/games';};
     sheet.querySelector('#room-minimize').onclick=minimizeRoom;
-    sheet.querySelector('#room-exit').onclick=e=>exitRoom(e.currentTarget);
+    sheet.querySelector('#room-exit').onclick=showRoomExitChoice;
     sheet.querySelector('#room-close-prompt').onclick=showRoomExitChoice;
     const roomBackdrop=$('#sheet-root .sheet-backdrop');
     if(roomBackdrop)roomBackdrop.onclick=e=>{e.preventDefault();e.stopPropagation();showRoomExitChoice();};
