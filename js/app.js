@@ -1843,7 +1843,7 @@ async function profileEditScreen(){
    let avatarUrl=p.avatarUrl||null,coverUrl=p.coverUrl||null;
    if(avatarFile)avatarUrl=(await api.uploadMedia(avatarFile,'avatars')).url;
    if(coverFile)coverUrl=(await api.uploadMedia(coverFile,'profile-covers')).url;
-   const result=await api.saveProfile({handle:values.handle,displayName:values.displayName,bio:values.bio,country:values.country,age:values.age,gender:values.gender,avatarUrl,coverUrl,backgroundUrl:p.backgroundUrl});
+   const result=await api.saveProfile({handle:values.handle,displayName:values.displayName,bio:values.bio,country:values.country,age:values.age,gender:values.gender,color:p.color,avatarUrl,coverUrl,backgroundUrl:p.backgroundUrl});
    state.profile=result.profile;state.wallet=result.wallet;state.account={...(state.account||{}),username:result.profile.handle};
    if(previewUrl)URL.revokeObjectURL(previewUrl);
    toast('تم حفظ الملف الشخصي');location.hash='#/me';
