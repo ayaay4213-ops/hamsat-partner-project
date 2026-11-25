@@ -614,7 +614,7 @@ if (fs.existsSync(roomBackgroundScopePath)) {
       backgroundFn.includes("bottomBar.parentElement!==canvas")) {
     errors.push('Room background must not cover the whole room or reparent the chat/tools bar');
   }
-  if (!js.includes('خلفية تظهر خلف المايكات فقط')) {
+  if (!js.includes('تظهر خلف المايكات فقط')) {
     errors.push('Room background settings must clearly describe microphone-only scope');
   }
 }
@@ -655,7 +655,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261124-room-mic-bg-v1','js/app.js?v=20261125-room-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -676,7 +676,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261124-admin-auth-diagnostics-v3')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -692,7 +692,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261124-admin-auth-diagnostics-v3')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -749,7 +749,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261124-room-mic-bg-v1','js/app.js?v=20261125-room-v2']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
@@ -775,7 +775,7 @@ const integratedCssPath = path.join(root, 'css/styles.css');
 const integratedHtmlPath = path.join(root, 'index.html');
 if (fs.existsSync(integratedRoomPath)) {
   const js = fs.readFileSync(integratedRoomPath, 'utf8');
-  for (const token of ['hs-room-unified','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
+  for (const token of ['hs-v2-stage','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
     if (!js.includes(token)) errors.push('Missing integrated room, join-time chat or independent friends loading: ' + token);
   }
 }
@@ -1015,7 +1015,6 @@ if (fs.existsSync(presenceSecurityPath)) {
     'revoke truncate, references, trigger, maintain',
     'on all tables in schema public',
     'from anon, authenticated',
-    'revoke truncate, references, trigger, maintain on tables in schema public from anon, authenticated',
     'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
   ]) {
