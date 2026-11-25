@@ -151,12 +151,17 @@ export const api = {
     const user = await currentUser();
     const requestedHandle=String(p.handle || '').trim().toLowerCase();
     if(isEmailLikeHandle(requestedHandle)) throw new Error('لا تستخدمي بريدك الإلكتروني كاسم عام. اختاري اسم مستخدم لا يكشف بياناتك.');
+    // Update only fields supplied by the editor. In particular, never clear an existing
+    // avatar or cover merely because a screen omitted that optional property.
     const payload = {
-      id: user.id, handle: requestedHandle,
+      handle: requestedHandle,
       display_name: String(p.displayName || '').trim(), bio: String(p.bio || ''),
-      country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null, color: String(p.color || '#7c3aed'),
-      avatar_url: p.avatarUrl || null, cover_url: p.coverUrl || null, background_url: p.backgroundUrl || null
+      country: String(p.country || ''), age: p.age ? Number(p.age) : null, gender: p.gender || null,
+      color: String(p.color || '#7c3aed')
     };
+    if (Object.prototype.hasOwnProperty.call(p, 'avatarUrl')) payload.avatar_url = p.avatarUrl || null;
+    if (Object.prototype.hasOwnProperty.call(p, 'coverUrl')) payload.cover_url = p.coverUrl || null;
+    if (Object.prototype.hasOwnProperty.call(p, 'backgroundUrl')) payload.background_url = p.backgroundUrl || null;
     const { data, error } = await client().from('profiles').update(payload).eq('id', user.id).select(PROFILE_COLUMNS).single();
     fail(error);
     const { data: wallet, error: walletError } = await client().from('wallets').select('*').eq('user_id', user.id).single();
