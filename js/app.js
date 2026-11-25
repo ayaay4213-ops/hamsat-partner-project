@@ -1445,7 +1445,7 @@ async function giftsScreen() {
       <label for="gift-search" class="block text-xs font-semibold text-[#cbb9e6] mb-2">ابحثي عن هدية</label>
       <input id="gift-search" type="search" dir="rtl" autocomplete="off" placeholder="اكتبي اسم الهدية…" aria-label="البحث في الهدايا" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3">
       <div id="gifts-grid" class="grid grid-cols-2 gap-3">${loading()}</div>
-      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><label for="gift-member-search" class="sr-only">ابحثي عن عضو</label><input id="gift-member-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي باسم العضو أو اسم المستخدم…" aria-label="البحث عن عضو لإرسال هدية" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3"><div id="gift-members" class="space-y-2">${loading()}</div></section>
+      <section class="mt-7"><div class="flex items-center justify-between mb-3"><h3 class="font-bold">اختاري عضوًا لإرسال هدية</h3><span id="gift-member-count" class="text-xs text-[#a993c8]"></span></div><label for="gift-member-search" class="sr-only">ابحثي عن عضو</label><input id="gift-member-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي باسم العضو أو اسم المستخدم…" aria-label="البحث عن عضو لإرسال هدية" class="w-full rounded-xl border border-[#6c5730] bg-[#17131f] px-4 py-3 text-sm text-white outline-none focus:border-amber-300 mb-3"><div id="gift-members" class="space-y-2">${loading()}</div></section><section class="hs-gift-history mt-7"><div class="flex items-center justify-between gap-2 mb-3"><div><h3 class="font-bold">سجل الهدايا</h3><p class="text-xs text-[#a993c8]">الهدايا التي استلمتِها أو أرسلتِها</p></div><button type="button" id="gift-history-refresh" class="btn-ghost text-xs">تحديث</button></div><div class="hs-gift-history-tabs"><button type="button" class="active" data-gift-history="received">الهدايا المستلمة</button><button type="button" data-gift-history="sent">الهدايا المرسلة</button></div><div id="gift-history-list" class="space-y-2">${loading()}</div></section>
     </div>`;
   icons_();
   try {
@@ -1469,6 +1469,24 @@ async function giftsScreen() {
     };
     renderGiftRecipients();
     $('#gift-member-search')?.addEventListener('input',event=>renderGiftRecipients(event.target.value));
+    let giftHistoryMode='received';
+    const drawGiftHistory=async()=>{
+      const historyRoot=$('#gift-history-list');if(!historyRoot)return;
+      historyRoot.innerHTML=loading();
+      try{
+        const {gifts=[]}=await api.giftHistory(60);
+        const rows=gifts.filter(item=>item.direction===giftHistoryMode);
+        historyRoot.innerHTML=rows.length?rows.map(item=>{
+          const gift=item.gift||{},person=giftHistoryMode==='received'?item.sender:item.recipient;
+          const art=gift.image_url?'<img src="'+esc(gift.image_url)+'" alt="'+esc(gift.name||'هدية')+'">':'<i data-lucide="'+esc(gift.icon||'gift')+'"></i>';
+          return '<article class="hs-gift-history-row"><span class="hs-gift-history-art">'+art+'</span><span class="hs-gift-history-copy"><b>'+esc(gift.name||'هدية')+' ×'+num(item.quantity||1)+'</b><small>'+(giftHistoryMode==='received'?'من: ':'إلى: ')+esc(person?.displayName||person?.handle||'عضو همسات')+'</small><small>'+dateAr(new Date(item.created_at).getTime())+'</small></span><strong>'+num(item.total_price)+' <small>Coins</small></strong></article>';
+        }).join(''):'<div class="hs-gift-history-empty">لا توجد '+(giftHistoryMode==='received'?'هدايا مستلمة':'هدايا مرسلة')+' مسجلة بعد.</div>';
+        icons_();
+      }catch(error){historyRoot.innerHTML='<div class="hs-gift-history-empty">تعذّر تحميل سجل الهدايا: '+esc(error.message)+'</div>';}
+    };
+    screen.querySelectorAll('[data-gift-history]').forEach(button=>button.onclick=()=>{giftHistoryMode=button.dataset.giftHistory;screen.querySelectorAll('[data-gift-history]').forEach(x=>x.classList.toggle('active',x===button));drawGiftHistory();});
+    $('#gift-history-refresh')?.addEventListener('click',drawGiftHistory);
+    await drawGiftHistory();
     icons_();
   } catch(e){const el=$('#gifts-grid');if(el){el.className='';el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الهدايا',e.message);}const m=$('#gift-members');if(m)m.innerHTML=emptyBox('wifi-off','تعذّر تحميل الأعضاء',e.message);icons_();}
 }
