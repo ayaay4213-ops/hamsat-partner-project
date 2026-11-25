@@ -10,6 +10,8 @@ const required = [
   'css/styles.css',
   'js/app.js',
   'js/api.js',
+  'staff.html',
+  'js/staff.js',
   'js/voice-room.js',
   'js/livekit-room.js',
   'supabase/functions/livekit-token/index.ts',
@@ -406,7 +408,7 @@ if (fs.existsSync(roomCssPath)) {
     if (!css.includes(token)) errors.push(`Missing circular minimized-room styling: ${token}`);
   }
 }
-for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
+for (const file of ['js/app.js', 'js/api.js', 'js/admin.js', 'js/staff.js', 'js/voice-room.js', 'js/livekit-room.js', 'workers/hamsat-api.js']) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (check.status !== 0) errors.push(`JavaScript syntax error in ${file}: ${check.stderr || check.stdout}`);
