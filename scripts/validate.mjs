@@ -38,6 +38,47 @@ for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) errors.push(`Missing required file: ${file}`);
 }
 
+const migrationDir = path.join(root, 'supabase/migrations');
+if (fs.existsSync(migrationDir)) {
+  const versions = new Map();
+  for (const file of fs.readdirSync(migrationDir).filter(name => name.endsWith('.sql'))) {
+    const version = file.match(/^(\\d{14})_/) || file.match(/^(\\d{4})_/);
+    if (!version) continue;
+    const previous = versions.get(version[1]);
+    if (previous) errors.push(`Duplicate migration version ${version[1]}: ${previous} and ${file}`);
+    else versions.set(version[1], file);
+  }
+}
+
+const socialGrantsPath = path.join(root, 'supabase/migrations/20261116115128_0017_social_data_api_grants.sql');
+if (fs.existsSync(socialGrantsPath)) {
+  const sql = fs.readFileSync(socialGrantsPath, 'utf8').toLowerCase();
+  for (const token of [
+    'revoke all on table public.dm_conversations, public.dm_messages, public.notifications from anon',
+    'grant select on table public.dm_conversations to authenticated',
+    'grant select, insert on table public.dm_messages to authenticated',
+    'grant update (read_at) on table public.dm_messages to authenticated',
+    'grant select on table public.notifications to authenticated',
+    'grant update (read_at) on table public.notifications to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing social Data API grant: ${token}`);
+  }
+}
+
+const privateDmRpcPath = path.join(root, 'supabase/migrations/20261116115248_0018_private_dm_conversation_rpc.sql');
+if (fs.existsSync(privateDmRpcPath)) {
+  const sql = fs.readFileSync(privateDmRpcPath, 'utf8').toLowerCase();
+  for (const token of [
+    'create or replace function private.get_or_create_conversation',
+    'security definer',
+    'create or replace function public.get_or_create_conversation',
+    'security invoker',
+    'grant execute on function public.get_or_create_conversation(uuid) to authenticated'
+  ]) {
+    if (!sql.includes(token)) errors.push(`Missing private DM RPC hardening: ${token}`);
+  }
+}
+
 let manifest;
 try {
   manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
