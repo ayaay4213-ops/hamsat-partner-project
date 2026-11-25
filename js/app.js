@@ -1,5 +1,5 @@
 import { createIcons, icons } from 'https://cdn.jsdelivr.net/npm/lucide@latest/+esm';
-import { api } from './api.js?v=20261125-gift-history-v1';
+import { api } from './api.js?v=20261125-profile-safe-update-v2';
 import { createVoiceRoom } from './voice-room.js?v=20261122-room-controls-v5';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -57,7 +57,7 @@ function avatar(p, size = 44) {
   const frameClass = frameStyle ? ' frame-' + frameStyle : '';
   const frameOverlay = p?.equippedProfileFrameUrl ? `<img class="avatar-frame-overlay" src="${esc(p.equippedProfileFrameUrl)}" alt="" aria-hidden="true" loading="lazy">` : '';
   return p?.avatarUrl
-    ? `<div class="avatar avatar-photo${frameClass}"${profileHandle} style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="lazy">${frameOverlay}</div>`
+    ? `<div class="avatar avatar-photo${frameClass}"${profileHandle} style="${style}"><img src="${esc(p.avatarUrl)}" alt="${esc(p.displayName || 'الصورة الشخصية')}" loading="eager" decoding="async">${frameOverlay}</div>`
     : `<div class="avatar${frameClass}"${profileHandle} style="${style}">${initial(p?.displayName)}${frameOverlay}</div>`;
 }
 document.addEventListener('click', event => {
@@ -69,6 +69,16 @@ document.addEventListener('click', event => {
   event.preventDefault();
   event.stopPropagation();
   location.hash = '#/u/' + encodeURIComponent(handle);
+}, true);
+
+// If a stored avatar URL is unavailable, keep a visible initials fallback instead of a blank frame.
+document.addEventListener('error', event => {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || !image.closest('.avatar-photo')) return;
+  const holder = image.closest('.avatar-photo');
+  const label = image.alt || 'عضو';
+  holder.replaceChildren(document.createTextNode(initial(label)));
+  holder.classList.remove('avatar-photo');
 }, true);
 
 function num(n) { return Number(n || 0).toLocaleString('ar-EG'); }
@@ -1761,7 +1771,8 @@ function meScreen() {
  '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>Following</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="followers">—</b><span>Fans</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>Charisma</span></button></div></section>'+
  '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيدكِ وإدارة العملات</span></div><span class="hs-me-first-tag">FIRST RECHARGE</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
  '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><span class="hs-metal-icon"><i data-lucide="crown"></i></span><small>عضوية VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'VIP')+'</b><em>اكتشفي امتيازاتكِ</em></a><a href="#/wallet" class="hs-me-wealth-card"><span class="hs-metal-icon"><i data-lucide="gem"></i></span><small>مستوى الثروة</small><b>LV. '+num(p.wealthLevel||0)+'</b><em>تقدّم مستوى الثروة</em></a></div>'+
- '<a href="#/host-data" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>HOST CENTER</small><b>إحصاءات المضيف</b><span>ساعات البث وهدايا المضيف والتارجت</span><strong>عرض البيانات</strong><small>الماس والسحب النقدي لا يُعرضان قبل تفعيل سجلاتهما رسمياً</small></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
+ '<div class="hs-me-host-quick-stats"><a href="#/host-data"><span><i data-lucide="gem"></i></span><small>رصيد الماس</small><b>غير مفعّل</b></a><a href="#/host-data"><span><i data-lucide="target"></i></span><small>التارجت الشهري</small><b>بانتظار التفعيل</b></a></div>'+
+ '<a href="#/host-data" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>HOST CENTER</small><b>إحصاءات المضيف</b><span>وقت البث والجلسات والهدايا والماس والتارجت</span><strong>عرض البيانات</strong><small>سيظهر الرصيد والهدف الفعليان بعد تفعيل النظام المالي رسمياً</small></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
  '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الوصول السريع</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
  '<section class="hs-me-settings-card"><div class="hs-me-section-heading"><div><small>ACCOUNT & SUPPORT</small><h2>الحساب والخدمات</h2></div><i data-lucide="sliders-horizontal"></i></div>'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T <i>✦</i></div></main>';
  icons_(); loadProfileStats(p.uuid,false);
