@@ -6841,3 +6841,63 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-host-target-notice{margin-top:12px;padding:13px;border:1px solid rgba(212,175,55,.22);border-radius:14px;background:#17151a}
 .hs-host-target-notice b{display:block;color:#ecd79a;font-size:13px;margin-bottom:5px}
 .hs-host-target-notice p{font-size:11px;line-height:1.8;color:#b8ad9a}
+
+
+
+/* Profile cover: restore the original light profile palette and keep cover visible. */
+.hs-me-cover{height:138px;margin:0 -17px 14px;position:relative;overflow:hidden;background:linear-gradient(135deg,#d9eee2,#f5f8f5);border-bottom:1px solid #ffffff80}
+.hs-me-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(4,70,40,.20));pointer-events:none}
+.hs-me-cover img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 45%}
+.hs-me-cover-empty{height:100%;display:flex;align-items:center;justify-content:center;gap:9px;color:#147a50;font-size:12px;font-weight:700}
+.hs-me-cover-empty svg{width:22px;height:22px}
+.hs-profile-edit-cover-preview{height:132px;margin:10px 0 16px;border:1px solid #cbded1;border-radius:15px;overflow:hidden;background:#eef5f0;display:grid;place-items:center;color:#668273;font-size:12px}
+.hs-profile-edit-cover-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.hs-profile-edit-cover-preview span{display:flex;align-items:center;gap:8px}
+.hs-profile-edit-cover-preview svg{width:20px;color:#168451}
+
+
+/* HAMSAT ME — large gallery-selected cover; remove the former green header strip. */
+.hs-me-reference .hs-me-hero{
+ position:relative!important;padding:0 14px 25px!important;border-radius:0 0 26px 26px!important;
+ background:linear-gradient(180deg,#f4f6f4 0%,#f4f6f4 100%)!important;color:#35443f!important;
+ box-shadow:0 8px 22px rgba(51,75,64,.07)!important;overflow:hidden!important;
+}
+.hs-me-reference .hs-me-hero-glow{display:none!important}
+.hs-me-reference .hs-me-cover{
+ position:relative!important;display:block!important;width:calc(100% + 28px)!important;height:225px!important;
+ margin:0 -14px 0!important;overflow:hidden!important;border:0!important;border-radius:0 0 22px 22px!important;
+ background:linear-gradient(135deg,#dce6e1,#f2f5f2)!important;box-shadow:0 5px 16px rgba(49,72,61,.09)!important;
+}
+.hs-me-reference .hs-me-cover:after{content:""!important;position:absolute!important;inset:0!important;display:block!important;pointer-events:none!important;background:linear-gradient(180deg,rgba(12,28,22,.03),rgba(12,28,22,.16))!important}
+.hs-me-reference .hs-me-cover>img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;object-position:center 45%!important}
+.hs-me-reference .hs-me-cover-empty{height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;color:#6f897b!important;font-size:12px!important;font-weight:750!important}
+.hs-me-reference .hs-me-cover-empty svg{width:24px!important;height:24px!important;color:#91a99b!important}
+.hs-me-reference .hs-me-hero-top{position:absolute!important;z-index:3!important;top:12px!important;right:25px!important;left:25px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;min-height:36px!important}
+.hs-me-reference .hs-me-brand-mark{color:#fff!important;text-shadow:0 1px 8px #1a302966!important}
+.hs-me-reference .hs-me-checkin{background:rgba(255,255,255,.88)!important;border:1px solid #ffffff!important;color:#536f60!important;box-shadow:0 2px 10px #263c3020!important}
+.hs-me-reference .hs-me-user{margin-top:16px!important;color:#35443f!important}
+.hs-me-reference .hs-me-name{color:#35443f!important;text-shadow:none!important}
+.hs-me-reference .hs-me-handle{color:#829188!important;opacity:1!important}
+.hs-me-reference .hs-me-uid{background:#fff!important;border:1px solid #e0e8e2!important;color:#718579!important}
+.hs-me-reference .hs-me-level{background:linear-gradient(110deg,#f7efd9,#e9d9ad)!important;border:1px solid #e8d9b4!important;color:#76613a!important}
+.hs-me-reference .hs-me-avatar{border-color:#fff!important;background:#fff!important;box-shadow:0 4px 13px #324a3a20!important}
+@media(max-width:390px){.hs-me-reference .hs-me-cover{height:205px!important}}
+
+
+/* HAMSAT PROFILE — calm light layout, visual-only; preserve existing actions and data. */
+.hs-me-reference{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;padding:0 0 22px!important;background:#f5f7f6!important;color:#34434a!important}
+.hs-me-reference>.hs-me-hero,.hs-me-reference>.hs-me-level-cards,.hs-me-reference>.hs-me-spin-banner,.hs-me-reference>.hs-me-quick-card,.hs-me-reference>.hs-me-settings-card,.hs-me-reference>.hs-me-footer{grid-column:1/-1!important;min-width:0!important}
+.hs-me-reference>.hs-me-wallet-banner{grid-column:1!important;min-width:0!important;min-height:108px!important;margin:0 0 0 0!important;padding:12px 10px!important;gap:7px!important;border:1px solid #e0e7e5!important;border-radius:18px!important;background:linear-gradient(145deg,#fff,#f0f4f3)!important;color:#40515a!important;box-shadow:0 5px 16px #405b5510!important}
+.hs-me-reference>.hs-me-host-quick-stats{display:contents!important}
+.hs-me-reference .hs-me-diamond-balance{grid-column:2!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:0!important;min-height:108px!important;padding:10px 7px!important;border:1px solid #e0e7e5!important;border-radius:18px!important;background:linear-gradient(145deg,#fff,#f0f4f3)!important;color:#52616a!important;box-shadow:0 5px 16px #405b5510!important;text-align:center!important}
+.hs-me-reference .hs-me-diamond-balance>span{display:grid!important;place-items:center!important;width:34px!important;height:34px!important;border-radius:12px!important;background:#e7eff4!important;color:#7896aa!important}
+.hs-me-reference .hs-me-diamond-balance small{font-size:10px!important;color:#7d8b91!important}
+.hs-me-reference .hs-me-diamond-balance b{font-size:12px!important;color:#52616a!important}
+.hs-me-reference>.hs-me-level-cards{grid-column:1/-1!important;margin:0 14px!important}
+.hs-me-reference>.hs-me-spin-banner{margin:0 14px!important;background:linear-gradient(135deg,#eaf0f4,#f7f8f7)!important;border:1px solid #dfe7eb!important;color:#52636c!important;box-shadow:0 5px 16px #405b550c!important}
+.hs-me-reference>.hs-me-quick-card,.hs-me-reference>.hs-me-settings-card{margin:0 14px!important;background:#fff!important;border:1px solid #e4eae8!important;border-radius:19px!important;box-shadow:0 5px 18px #405b550c!important}
+.hs-me-reference .hs-me-section-heading h2{color:#40535b!important}
+.hs-me-reference .hs-me-service{background:#f7f9f8!important;border:1px solid #e7eeeb!important;color:#53656b!important}
+.hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{border-color:#edf0ee!important;color:#53636a!important}
+.hs-me-reference .hs-me-footer{color:#9aa7a5!important}
+@media(max-width:390px){.hs-me-reference{gap:9px!important}.hs-me-reference>.hs-me-wallet-banner,.hs-me-reference .hs-me-diamond-balance{min-height:100px!important;padding:9px 7px!important}.hs-me-reference>.hs-me-wallet-banner{margin-inline:0!important}.hs-me-reference>.hs-me-level-cards,.hs-me-reference>.hs-me-spin-banner,.hs-me-reference>.hs-me-quick-card,.hs-me-reference>.hs-me-settings-card{margin-inline:10px!important}}
