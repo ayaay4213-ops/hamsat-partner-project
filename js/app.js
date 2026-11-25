@@ -1066,7 +1066,10 @@ async function openRoom(r) {
     };
     const seatInviteModal=sheet.querySelector('#room-seat-invite-modal');
     let activeSeatInvitation=null;
-    const hideSeatInvite=()=>{activeSeatInvitation=null;seatInviteModal?.classList.add('hidden');};
+    const hideSeatInvite=()=>{
+      activeSeatInvitation=null;
+      if(seatInviteModal){seatInviteModal.classList.add('hidden');seatInviteModal.hidden=true;seatInviteModal.setAttribute('aria-hidden','true');}
+    };
     const answerSeatInvite=async(accept)=>{
       if(!activeSeatInvitation)return;
       const invite=activeSeatInvitation;
@@ -1074,26 +1077,36 @@ async function openRoom(r) {
       acceptButton.disabled=true;declineButton.disabled=true;
       try{
         const result=await api.respondRoomSeatInvitation(invite.id,accept);
+        const expectedStatus=accept?'accepted':'declined';
+        if(!result?.success||result.status!==expectedStatus){
+          throw new Error(result?.message||(result?.status==='expired'?'انتهت صلاحية الدعوة':'تعذّر تأكيد رد الدعوة'));
+        }
         hideSeatInvite();
-        if(accept&&result?.status==='accepted'){
-          if(state.voiceRoom&&state.activeRoomId===r.id)await state.voiceRoom.refreshPermissions();
-          else await voiceStart.onclick();
+        if(accept){
           await drawMembers();
-          toast('تم قبول الدعوة وصعدتِ تلقائياً إلى المايك');
-        }else if(!accept){toast('رفضتِ دعوة المايك، وما زلتِ مستمعة');}
-        else toast(result?.message||'انتهت صلاحية الدعوة','error');
+          try{
+            if(state.voiceRoom&&state.activeRoomId===r.id)await state.voiceRoom.refreshPermissions();
+            else await voiceStart.onclick();
+            if(!state.voiceRoom?.canPublish)throw new Error('تم حجز المقعد، لكن صلاحية الميكروفون لم تتفعّل. تحققي من إذن الميكروفون ثم أعيدي المحاولة.');
+            toast('تم قبول الدعوة وتفعيل المايك');
+          }catch(audioError){
+            toast('تم قبول الدعوة وحجز المقعد، لكن تعذّر تشغيل الميكروفون: '+audioError.message,'error');
+          }
+        }else{
+          toast('رفضتِ دعوة المايك، وبقيتِ داخل الغرفة مستمعة. الدردشة والكتابة ما زالت متاحة.');
+        }
       }catch(e){toast(e.message,'error');}
       finally{acceptButton.disabled=false;declineButton.disabled=false;}
     };
-    sheet.querySelector('#room-seat-invite-accept').onclick=()=>answerSeatInvite(true);
-    sheet.querySelector('#room-seat-invite-decline').onclick=()=>answerSeatInvite(false);
+    sheet.querySelector('#room-seat-invite-accept').onclick=e=>{e.preventDefault();e.stopPropagation();answerSeatInvite(true);};
+    sheet.querySelector('#room-seat-invite-decline').onclick=e=>{e.preventDefault();e.stopPropagation();answerSeatInvite(false);};
     const receiveSeatInvite=invite=>{
       if(!invite)return;
       if(invite.invitee_id===state.profile?.uuid&&invite.status==='pending'){
         if(activeSeatInvitation?.id===invite.id)return;
         activeSeatInvitation=invite;
         sheet.querySelector('#room-seat-invite-message').textContent='المضيفة تدعوك للصعود إلى المايك. هل تقبلين؟';
-        seatInviteModal.classList.remove('hidden');icons_();
+        seatInviteModal.hidden=false;seatInviteModal.setAttribute('aria-hidden','false');seatInviteModal.classList.remove('hidden');icons_();
       }else if(invite.inviter_id===state.profile?.uuid&&invite.status==='accepted'){
         toast('قبل العضو دعوتك وصعد تلقائياً إلى المايك');
       }else if(invite.inviter_id===state.profile?.uuid&&invite.status==='declined'){
@@ -1101,7 +1114,7 @@ async function openRoom(r) {
       }
     };
     state.roomSeatInviteChannel=api.subscribeRoomSeatInvitations(r.id,payload=>receiveSeatInvite(payload?.new));
-    try{const joinedRoom=await api.joinRoom(r.id);const pendingSeatInvites=await api.pendingRoomSeatInvitations(r.id);pendingSeatInvites.invitations.forEach(receiveSeatInvite);rememberRecentRoom(r);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{if(payload?.table==='rooms'&&payload.new){r.seatLimit=Math.min(10,Math.max(1,Number(payload.new.seat_limit)||10));r.seatLayout=['grid','one-top','two-top','row'].includes(payload.new.seat_layout)?payload.new.seat_layout:'grid';roomSeatLayout=r.seatLayout;const seatCountLabel=sheet.querySelector('.hs-room-seat-count');if(seatCountLabel)seatCountLabel.textContent=r.seatLimit+' مقاعد';}await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
+    try{const joinedRoom=await api.joinRoom(r.id);const myMembership=joinedRoom.members?.find(member=>member.userId===state.profile?.uuid);roomJoinedAt=Date.now();state.activeRoomId=r.id;if(state.roomPresenceTimer)clearInterval(state.roomPresenceTimer);state.roomPresenceTimer=window.setInterval(async()=>{try{await api.heartbeatRoomPresence(r.id);}catch(e){console.warn('Room presence heartbeat failed:',e);if(/عضويتك في الغرفة غير موجودة/.test(String(e?.message||''))){closeSheet(true);toast('تم إنهاء اتصال الغرفة على هذا الجهاز لأن الحساب دخل غرفة أخرى أو انتهت عضويته.');}}},20000);const savedRoomBackground=await api.roomBackground(r.id);r.backgroundUrl=savedRoomBackground.imageUrl;applyRoomBackground(savedRoomBackground.imageUrl);await Promise.all([drawMessages(),drawMembers()]);if(state.roomSeatTimer)clearInterval(state.roomSeatTimer);state.roomSeatTimer=window.setInterval(updateRoomSeatTimers,1000);state.roomChannel=api.subscribeRoomMessages(r.id,async payload=>{try{if(payload?.table==='rooms'&&payload.new){r.seatLimit=Math.min(10,Math.max(1,Number(payload.new.seat_limit)||10));r.seatLayout=['grid','one-top','two-top','row'].includes(payload.new.seat_layout)?payload.new.seat_layout:'grid';roomSeatLayout=r.seatLayout;const seatCountLabel=sheet.querySelector('.hs-room-seat-count');if(seatCountLabel)seatCountLabel.textContent=r.seatLimit+' مقاعد';}await Promise.all([drawMessages(),drawMembers()]);if(payload?.table==='room_backgrounds'||payload?.new?.image_url!==undefined){const bg=await api.roomBackground(r.id);r.backgroundUrl=bg.imageUrl;applyRoomBackground(bg.imageUrl);}}catch(e){toast(e.message,'error');}});state.roomEventChannel=api.subscribeRoomEvents(r.id,()=>Promise.all([drawMessages(),drawRoomBomb()]).catch(e=>toast(e.message,'error')));}
     catch(e){chat.innerHTML=emptyBox('wifi-off','تعذّر فتح الغرفة',e.message);}
     const minimizeRoom=()=>{closeRoomGames();if(state.roomSeatInviteChannel){api.unsubscribeRoomChannel(state.roomSeatInviteChannel);state.roomSeatInviteChannel=null;}state.roomMinimized=true;state.minimizedRoom=r;if(state.roomSeatTimer){clearInterval(state.roomSeatTimer);state.roomSeatTimer=null;}$('#sheet-root').innerHTML='';renderRoomMiniBubble();toast('تم الاحتفاظ بالغرفة؛ الصوت مستمر ويمكنك العودة من الفقاعة.');};
     const exitRoom=async(button)=>{
@@ -1766,7 +1779,7 @@ function meScreen() {
  const tiles=[['medal','ميدالية الشرف','#/honor'],['users-round','العائلة','#/family'],['store','المتجر','#/shop'],['heart-handshake','منزل CP','#/cp'],['mic-2','بيانات المضيف','#/host-data'],['target','مركز المهام','#/tasks']];
  const rows=[['history','سجل المكافآت','#/wallet'],['gift','سجل الهدايا','#/gifts'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
  screen.innerHTML='<main class="hs-me-v2 hs-me-reference" dir="rtl">'+
- '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-cover" aria-label="غلاف الملف الشخصي"'+(p.coverUrl?'<img src="'+esc(p.coverUrl)+'" alt="غلاف الملف الشخصي" loading="eager">':'<div class="hs-me-cover-empty"><i data-lucide="image"></i><span>أضيفي غلافاً لحسابك</span></div>')+'</div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
+ '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-cover" aria-label="غلاف الملف الشخصي">'+(p.coverUrl?'<img src="'+esc(p.coverUrl)+'" alt="غلاف الملف الشخصي" loading="eager">':'<div class="hs-me-cover-empty"><i data-lucide="image"></i><span>أضيفي غلافاً لحسابك</span></div>')+'</div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
  '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><a href="#/profile-edit" class="hs-me-edit-profile"><i data-lucide="user-round-pen"></i> تعديل الملف</a><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
  '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>Following</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="followers">—</b><span>Fans</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>Charisma</span></button></div></section>'+
  '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيدكِ وإدارة العملات</span></div><span class="hs-me-first-tag">FIRST RECHARGE</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
@@ -1776,6 +1789,11 @@ function meScreen() {
  '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الوصول السريع</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
  '<section class="hs-me-settings-card"><div class="hs-me-section-heading"><div><small>ACCOUNT & SUPPORT</small><h2>الحساب والخدمات</h2></div><i data-lucide="sliders-horizontal"></i></div>'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T <i>✦</i></div></main>';
  icons_(); loadProfileStats(p.uuid,false);
+ const coverImage=$('.hs-me-cover > img');
+ if(coverImage)coverImage.addEventListener('error',()=>{
+   const cover=$('.hs-me-cover');
+   if(cover){cover.innerHTML='<div class="hs-me-cover-empty"><i data-lucide="image-off"></i><span>تعذّر تحميل الغلاف؛ أعيدي اختياره من تعديل الملف</span></div>';icons_();}
+ },{once:true});
  const copy=$('[data-copy-public-id]');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId||'');toast('تم نسخ UID');}catch(e){toast(p.publicId||'لا يوجد UID');}};
  $('#me-checkin').onclick=dailyCheckinSheet;
  $('#me-logout').onclick=()=>openSheet('<h2 class="font-bold mb-2">تسجيل الخروج</h2><p class="text-sm mb-4">هل تريدين تسجيل الخروج من همسات؟</p><div class="grid grid-cols-2 gap-2"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-me-logout" class="btn-danger">تسجيل الخروج</button></div>',s=>s.querySelector('#confirm-me-logout').onclick=signOut);
