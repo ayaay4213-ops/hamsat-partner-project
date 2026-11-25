@@ -1126,7 +1126,7 @@ async function openRoom(r) {
     sheet.querySelector('#room-private-messages').onclick=()=>{minimizeRoom();location.hash='#/inbox';};
     sheet.querySelector('#room-open-games-page').onclick=()=>{minimizeRoom();location.hash='#/games';};
     sheet.querySelector('#room-minimize').onclick=minimizeRoom;
-    sheet.querySelector('#room-exit').onclick=showRoomExitChoice;
+    sheet.querySelector('#room-exit').onclick=e=>exitRoom(e.currentTarget);
     sheet.querySelector('#room-close-prompt').onclick=showRoomExitChoice;
     const roomBackdrop=$('#sheet-root .sheet-backdrop');
     if(roomBackdrop)roomBackdrop.onclick=e=>{e.preventDefault();e.stopPropagation();showRoomExitChoice();};
@@ -1771,9 +1771,25 @@ function tasksScreen(){
  document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-task]').forEach(x=>x.classList.toggle('active',x===b));});
 }
 async function hostDataScreen(){
- mePage('بيانات المضيف','<section class="hs-host-data"><div class="hs-host-overview"><span>معلومات المضيف</span><b>'+esc(state.profile.displayName||'عضو')+'</b><small>حالة الوكالة: جارٍ التحقق</small><strong>50,000 / ساعة</strong><div class="hs-host-progress"><i></i></div><small>تقدم الترقية</small></div><button id="host-range">آخر 30 يوماً ▾</button><h3>ملخص الماسات</h3><div class="hs-host-grid">'+[['إجمالي الدخل','—'],['الاستهلاك','—'],['الراتب الأساسي','—'],['الهدايا','—'],['المهام','—']].map(x=>'<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="hs-task-note">بيانات المضيف التفصيلية غير متاحة حتى ربط سجل الاستحقاقات.</p></section>');
- $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">الفترة الزمنية</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
- try{const r=await api.myAgencies();const ag=(r.agencies||[]).find(x=>['hosts','both'].includes(x.agency_type));if(ag){const s=await api.agencyHostStats(ag.id);const own=(s.stats||[]).filter(x=>x.host_id===state.profile.uuid);const total=own.reduce((n,x)=>n+Number(x.gift_coins||0),0);$('.hs-host-grid div:first-child b').textContent=num(total);$('.hs-host-grid div:nth-child(4) b').textContent=num(total);$('.hs-host-overview small').textContent='حالة الوكالة: '+ag.status;}}catch(e){console.warn(e);}
+ mePage('بيانات المضيف','<section id="hs-host-data" class="hs-host-data"><div class="hs-host-overview"><span>مركز المضيف</span><b>'+esc(state.profile?.displayName||'عضو')+'</b><small id="hs-host-agency-status">جارٍ تحميل بيانات الوكالة...</small></div><div class="hs-host-grid"><div><small>وقت البث المسجل</small><b id="hs-host-live-time">—</b></div><div><small>عدد الجلسات</small><b id="hs-host-sessions">—</b></div><div><small>قيمة الهدايا بالعملات</small><b id="hs-host-gift-coins">—</b></div><div><small>رصيد الماس</small><b>غير مفعّل</b></div></div><div class="hs-host-target-notice"><b>التارجت الشهري</b><p>لا يوجد هدف رسمي مسجل في قاعدة البيانات حالياً؛ لن نعرض نسبة تقدم أو رقماً افتراضياً.</p></div><div class="hs-host-target-notice"><b>نظام الماس والسحب</b><p>المخطط الحالي يحتوي محفظة Coins وسجل هدايا، ولا يحتوي محفظة Diamonds أو دورة سحب نقدي مكتملة. لن نخلط العملات أو نعرض تحويلات غير موجودة.</p></div><div id="hs-host-data-note" class="hs-task-note">جارٍ تحميل الإحصاءات...</div></section>');
+ try{
+  const result=await api.myAgencies();
+  const agencies=(result.agencies||[]).filter(a=>['hosts','both'].includes(a.agency_type)&&a.status==='active');
+  if(!agencies.length){$('#hs-host-agency-status').textContent='لا توجد وكالة مضيف نشطة مرتبطة بهذا الحساب';$('#hs-host-data-note').textContent='لا توجد إحصاءات وكالة لعرضها الآن.';return;}
+  const allStats=[];
+  for(const agency of agencies){const data=await api.agencyHostStats(agency.id);allStats.push(...(data.stats||[]).filter(x=>x.host_id===state.profile?.uuid));}
+  const since=new Date();since.setDate(since.getDate()-30);
+  const recent=allStats.filter(x=>new Date(x.stat_date+'T00:00:00').getTime()>=since.getTime());
+  const liveSeconds=recent.reduce((sum,x)=>sum+Number(x.live_seconds||0),0);
+  const sessions=recent.reduce((sum,x)=>sum+Number(x.session_count||0),0);
+  const giftCoins=recent.reduce((sum,x)=>sum+Number(x.gift_coins||0),0);
+  const hours=Math.floor(liveSeconds/3600),minutes=Math.floor((liveSeconds%3600)/60);
+  $('#hs-host-agency-status').textContent='وكالة نشطة · آخر 30 يوماً';
+  $('#hs-host-live-time').textContent=num(hours)+' س '+num(minutes)+' د';
+  $('#hs-host-sessions').textContent=num(sessions);
+  $('#hs-host-gift-coins').textContent=num(giftCoins);
+  $('#hs-host-data-note').textContent='هذه أرقام فعلية من سجل الوكالة اليومي. لا تمثل قيمة راتب أو ماس أو مستحقات سحب.';
+ }catch(error){$('#hs-host-agency-status').textContent='تعذّر تحميل بيانات الوكالة';$('#hs-host-data-note').textContent=error.message||'حاولي مرة أخرى.';}
 }
 async function profileEditScreen(){
  const p=state.profile||{};
