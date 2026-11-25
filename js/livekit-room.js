@@ -77,9 +77,11 @@ export function createLiveKitVoiceRoom({ roomId, onState = () => {} }) {
         true);
     } catch (error) {
       // A failed permission refresh happens after disconnecting the old session.
-      // Never report the room as connected when the SFU connection is down.
+      // Never report the room as connected when the SFU connection is down,
+      // and propagate the failure so an invitation is not reported as completed.
       joined = Boolean(room?.state === 'connected');
       status('تعذّر تحديث صلاحية المايك: ' + error.message, joined);
+      throw error;
     } finally {
       permissionRefreshing = false;
     }
