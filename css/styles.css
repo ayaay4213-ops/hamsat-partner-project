@@ -6913,3 +6913,6 @@ body:has(.room-sheet) #tabbar{display:none!important}
  .room-sheet .hs-room-tools-row{gap:4px!important}
  .room-sheet .hs-room-tools-row>button{height:38px!important;border-radius:10px!important}
 }
+
+/* Responsive seat-grid hook used by HAMSAT validator */
+.room-sheet .hs-v2-seats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:start!important;justify-items:center!important;width:100%!important}
