@@ -632,7 +632,7 @@ if (fs.existsSync(roomLayoutCssPath)) {
 }
 
 const roomAvatarPath = path.join(root, 'js/app.js');
-const roomStylePath = path.join(root, 'css/styles.css');
+const roomStylePath = path.join(root, 'css/room-premium.css');
 if (fs.existsSync(roomAvatarPath)) {
   const js = fs.readFileSync(roomAvatarPath, 'utf8');
   for (const token of [
@@ -646,16 +646,16 @@ if (fs.existsSync(roomAvatarPath)) {
 if (fs.existsSync(roomStylePath)) {
   const css = fs.readFileSync(roomStylePath, 'utf8');
   for (const token of [
-    '.room-sheet .hs-room-stage',
-    '.room-sheet .hs-room-seat .hs-seat-ring .avatar',
-    '.room-sheet .hs-room-seat .hs-seat-live-mic',
-    '.room-sheet .hs-room-chat-area'
+    '.hs-room-premium .hs-v2-stage',
+    '.hs-room-premium #room-seats.hs-room-seats',
+    '.hs-room-premium #room-seats>.hs-room-seat .hs-seat-ring',
+    '.hs-room-premium .hs-v2-chat'
   ]) {
     if (!css.includes(token)) errors.push(`Missing HAMSAT room visual redesign styling: ${token}`);
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261125-profile-light-room-v2','js/app.js?v=20261125-profile-cover-redesign-v1']) {
+  for (const token of ['css/styles.css?v=20261125-large-photo-cover-v1','js/app.js?v=20261125-profile-cover-redesign-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -741,15 +741,15 @@ if (fs.existsSync(apiFilePath)) {
 }
 if (fs.existsSync(roomStylePath)) {
   const css = fs.readFileSync(roomStylePath, 'utf8');
-  if (!css.includes('grid-template-columns:repeat(3,minmax(0,1fr))!important')) {
-    errors.push('Room seats must use a balanced three-column mobile layout');
+  if (!css.includes('grid-template-columns:repeat(4,minmax(0,1fr))!important')) {
+    errors.push('Room seats must use the new balanced four-column mobile layout');
   }
-  if (!css.includes('#tabbar .tab{display:flex!important;align-items:center!important;justify-content:center!important')) {
+  if (!fs.readFileSync(path.join(root, 'css/styles.css'), 'utf8').includes('#tabbar .tab{display:flex!important;align-items:center!important;justify-content:center!important')) {
     errors.push('Bottom navigation tabs must be evenly centered');
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261125-profile-light-room-v2','js/app.js?v=20261125-profile-cover-redesign-v1']) {
+  for (const token of ['css/styles.css?v=20261125-large-photo-cover-v1','js/app.js?v=20261125-profile-cover-redesign-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
@@ -1386,7 +1386,7 @@ if (fs.existsSync(activeMigrationDirectory)) {
 
 const profileUiPath = path.join(root, 'js/app.js');
 const apiUiPath = path.join(root, 'js/api.js');
-const roomUiCssPath = path.join(root, 'css/styles.css');
+const roomUiCssPath = path.join(root, 'css/room-premium.css');
 if (fs.existsSync(profileUiPath)) {
   const appUi = fs.readFileSync(profileUiPath, 'utf8');
   for (const token of ['async function profileEditScreen()', '#/profile-edit', 'id="profile-edit-form"', 'api.giftHistory(60)', 'giftHistoryMode', 'exitRoom(e.currentTarget)', 'hs-host-target-notice']) {
@@ -1401,8 +1401,12 @@ if (fs.existsSync(apiUiPath)) {
 }
 if (fs.existsSync(roomUiCssPath)) {
   const roomUiCss = fs.readFileSync(roomUiCssPath, 'utf8');
-  for (const token of ['.hs-v2-control-dock', '.hs-v2-seats', '.hs-gift-history-row', '.hs-profile-edit-card']) {
+  for (const token of ['.hs-v2-control-dock', '.hs-v2-seats', '.hs-room-seat-invite-card']) {
     if (!roomUiCss.includes(token)) errors.push('Missing responsive HAMSAT UI styling: ' + token);
+  }
+  const profileCss = fs.readFileSync(path.join(root, 'css/styles.css'), 'utf8');
+  for (const token of ['.hs-gift-history-row', '.hs-profile-edit-card', '.hs-me-cover']) {
+    if (!profileCss.includes(token)) errors.push('Missing profile/account styling: ' + token);
   }
 }
 
