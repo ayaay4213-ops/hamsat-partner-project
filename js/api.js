@@ -887,6 +887,32 @@ export const api = {
     });
     fail(error); return data;
   },
+  giftHistory: async (limit = 50) => {
+    const user = await currentUser();
+    const { data, error } = await client().from('gift_transactions')
+      .select('id,sender_id,recipient_id,gift_id,quantity,total_price,created_at')
+      .or('sender_id.eq.' + user.id + ',recipient_id.eq.' + user.id)
+      .order('created_at', { ascending: false }).limit(Math.max(1, Math.min(100, Number(limit) || 50)));
+    fail(error);
+    const rows = data || [];
+    const ids = [...new Set(rows.flatMap(x => [x.sender_id, x.recipient_id]).filter(Boolean))];
+    const giftIds = [...new Set(rows.map(x => x.gift_id).filter(Boolean))];
+    const [profilesResult, giftsResult] = await Promise.all([
+      ids.length ? client().from('profiles').select(PROFILE_COLUMNS).in('id', ids) : Promise.resolve({data:[],error:null}),
+      giftIds.length ? client().from('gifts').select('id,name,icon,image_url,animation_url').in('id', giftIds) : Promise.resolve({data:[],error:null})
+    ]);
+    fail(profilesResult.error); fail(giftsResult.error);
+    const people = await mapProfilesWithFrames(profilesResult.data || []);
+    const byId = Object.fromEntries(people.map(p => [p.uuid, p]));
+    const giftsById = Object.fromEntries((giftsResult.data || []).map(g => [g.id, g]));
+    return { gifts: rows.map(row => ({
+      ...row,
+      direction: row.sender_id === user.id ? 'sent' : 'received',
+      sender: byId[row.sender_id] || null,
+      recipient: byId[row.recipient_id] || null,
+      gift: giftsById[row.gift_id] || {id:row.gift_id,name:'هدية',icon:'gift'}
+    })) };
+  },
   sendGift: async (recipientId, giftId, quantity = 1, requestId = crypto.randomUUID()) => {
     const { data, error } = await client().rpc('send_gift', {
       p_recipient: recipientId, p_gift_id: giftId, p_quantity: quantity, p_request_id: requestId
