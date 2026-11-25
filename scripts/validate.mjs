@@ -655,7 +655,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261124-room-mic-bg-v1','js/app.js?v=20261125-room-v2']) {
+  for (const token of ['css/styles.css?v=20261125-room-layout-profile-gifts-v1','js/app.js?v=20261125-profile-gift-history-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -749,7 +749,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261124-room-mic-bg-v1','js/app.js?v=20261125-room-v2']) {
+  for (const token of ['css/styles.css?v=20261125-room-layout-profile-gifts-v1','js/app.js?v=20261125-profile-gift-history-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
