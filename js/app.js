@@ -1586,6 +1586,7 @@ async function shopScreen() {
     return String(map[it.item_type]||'')===String(it.id);
   };
   const durationLabel=(it)=>{
+    if(it.expiresAt){const remaining=Math.max(0,Math.ceil((new Date(it.expiresAt).getTime()-Date.now())/86400000));return 'متبقي '+num(remaining)+' يوم';}
     const d=Number(it.duration_days||0);
     return d>0?'يوم '+num(d):'دائم';
   };
@@ -1672,6 +1673,7 @@ async function shopScreen() {
   }
   const firstAvailable=Object.keys(categoryTypes).find(key=>items.some(it=>categoryTypes[key].includes(it.item_type)));
   if(firstAvailable)category=firstAvailable;
+  screen.querySelectorAll('[data-vcat]').forEach(btn=>btn.classList.toggle('active',btn.dataset.vcat===category));
   selectedId=(mode==='bag'?owned:items).find(it=>categoryTypes[category].includes(it.item_type))?.id||null;
   screen.querySelectorAll('[data-vcat]').forEach(btn=>btn.addEventListener('click',()=>{
     category=btn.dataset.vcat;selectedId=null;
@@ -1681,15 +1683,17 @@ async function shopScreen() {
   $('#vstore-backpack').onclick=()=>{
     mode=mode==='store'?'bag':'store';selectedId=null;
     $('#vstore-backpack').innerHTML=mode==='bag'?'<i data-lucide="store"></i><span>المتجر</span>':'<i data-lucide="backpack"></i><span>الحقيبة</span>';
-    selectedId=(mode==='bag'?owned:items).find(it=>categoryTypes[category].includes(it.item_type))?.id||null;draw();
+    const available=mode==='bag'?owned:items;const preferred=Object.keys(categoryTypes).find(key=>available.some(it=>categoryTypes[key].includes(it.item_type)));if(preferred)category=preferred;
+    screen.querySelectorAll('[data-vcat]').forEach(x=>x.classList.toggle('active',x.dataset.vcat===category));
+    selectedId=available.find(it=>categoryTypes[category].includes(it.item_type))?.id||null;draw();
   };
   $('#vstore-search').addEventListener('input',e=>{searchQuery=e.target.value;draw();});
   $('#vstore-buy').addEventListener('click',async()=>{
     const item=findSelected();if(!item)return;
     if(mode==='bag'){
       try{
-        if(equippedFor(item))await api.unequipShopItem(item.item_type);else await api.equipShopItem(item.id);
-        state.profile=(await api.me()).profile;toast(equippedFor(item)?'تم تحديث العنصر':'تم تفعيل العنصر');draw();
+        const wasEquipped=equippedFor(item);if(wasEquipped)await api.unequipShopItem(item.item_type);else await api.equipShopItem(item.id);
+        state.profile=(await api.me()).profile;toast(wasEquipped?'تم إلغاء تفعيل العنصر':'تم تفعيل العنصر');draw();
       }catch(e){toast(e.message,'error');}
       return;
     }
@@ -1700,7 +1704,10 @@ async function shopScreen() {
         confirmButton.disabled=true;confirmButton.textContent='جارٍ تأكيد الشراء…';
         try{
           await api.purchaseShopItem(item.id);
-          state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;mode='bag';closeSheet();toast('تم الشراء وإضافة العنصر إلى الحقيبة');draw();
+          closeSheet();mode='bag';toast('تم الشراء وإضافة العنصر إلى الحقيبة');
+          try{state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;}catch(refreshError){console.warn('Purchase succeeded, but store data refresh failed.',refreshError);}
+          const preferred=Object.keys(categoryTypes).find(key=>owned.some(x=>categoryTypes[key].includes(x.item_type)));if(preferred)category=preferred;
+          screen.querySelectorAll('[data-vcat]').forEach(x=>x.classList.toggle('active',x.dataset.vcat===category));selectedId=owned.find(x=>categoryTypes[category].includes(x.item_type))?.id||null;draw();
         }catch(e){toast(e.message,'error');confirmButton.disabled=false;confirmButton.textContent='تأكيد الشراء';}
       };
     });
