@@ -331,11 +331,14 @@ async function loadUsers(term=''){
   if(page.length<pageSize)break;
  }
  const out=$('#user-results');
- let activityByUser={};
+ let activityByUser={},walletByUser={};
  if(data.length){
   const activity=await supabase.rpc('admin_user_activity',{p_user_ids:data.map(x=>x.id)});
   if(!activity.error)activityByUser=Object.fromEntries((activity.data||[]).map(x=>[x.user_id,x]));
   else console.warn('HAMSAT admin user activity is unavailable:',activity.error.message);
+  const wallets=await supabase.from('wallets').select('user_id,balance').in('user_id',data.map(x=>x.id));
+  if(!wallets.error)walletByUser=Object.fromEntries((wallets.data||[]).map(x=>[x.user_id,x]));
+  else console.warn('HAMSAT admin wallet balances are unavailable:',wallets.error.message);
  }
  const dateText=value=>value?new Date(value).toLocaleString('ar-DZ'):'غير متاح';
  out.innerHTML=data.length?data.map(x=>{
@@ -345,7 +348,7 @@ async function loadUsers(term=''){
   const handle=String(x.handle||'').trim();
   const registered=activity.account_created_at||x.created_at;
   const lastLogin=activity.last_sign_in_at;
-  return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-user-details="'+esc(x.id)+'">التفاصيل</button><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div></div>';
+  return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">رصيد Coins: '+(walletByUser[x.id]?.balance===undefined?'غير متاح':Number(walletByUser[x.id].balance).toLocaleString('ar-DZ'))+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-user-details="'+esc(x.id)+'">التفاصيل</button><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div></div>';
  }).join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
 
  out.querySelectorAll('[data-user-details]').forEach(detailButton=>{
@@ -362,6 +365,8 @@ async function loadUsers(term=''){
     '<p>اسم المستخدم: '+esc(x.handle?'@'+x.handle:'غير محدد')+'</p>'+
     '<p>نوع الحساب: '+esc(x.role||'user')+'</p>'+
     '<p>الحالة: '+(x.is_banned?'محظور':'نشط')+'</p>'+
+    '<p>رصيد Coins: '+(walletByUser[x.id]?.balance===undefined?'غير متاح':Number(walletByUser[x.id].balance).toLocaleString('ar-DZ'))+'</p>'+
+    '<p class="muted text-xs">تعديل الرصيد غير متاح من الواجهة الحالية؛ يجب أن يمر عبر إجراء مالي آمن ومسجل.</p>'+
     '<p>تاريخ التسجيل: '+esc(dateText(activity.account_created_at||x.created_at))+'</p>'+
     '<p>آخر دخول: '+esc(dateText(activity.last_sign_in_at))+'</p>'+
     '<p class="muted text-xs">لا تُعرض أرقام الهاتف أو البريد الإلكتروني في هذه اللوحة.</p>';
