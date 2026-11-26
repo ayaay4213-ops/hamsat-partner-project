@@ -417,7 +417,48 @@ async function loadUsers(term=''){
   }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
  });
 }
-let roomDesignRooms=[],roomPresenceByRoom={},roomPresenceAvailable=false,roomPresenceUpdatedAt=null;
+let roomDesignRooms=[],roomPresenceByRoom={},roomPresenceAvailable=false,roomPresenceUpdatedAt=null,roomRosterByRoom={},roomRosterOpen=new Set();
+function renderRoomRosterHtml(roomId){
+ const state=roomRosterByRoom[roomId];
+ if(!state)return '<p class="muted text-xs">اضغطي «عرض الأعضاء» لتحميل الحضور الحالي.</p>';
+ if(state.loading)return '<p class="muted text-xs">جارٍ تحميل أعضاء الغرفة…</p>';
+ if(state.error)return '<p class="text-red-300 text-xs">'+esc(state.error)+'</p>';
+ const members=state.members||[];
+ if(!members.length)return '<p class="muted text-xs">لا يوجد أعضاء نشطون في الغرفة حالياً.</p>';
+ return '<div class="grid gap-2">'+members.map(member=>{
+  const profile=member.profile||{},name=profile.display_name||profile.handle||'عضو';
+  const publicId=profile.public_id?'HAMSAT-'+String(profile.public_id).padStart(6,'0'):'عضو';
+  const seat=member.seat_no?' · المايك '+member.seat_no:' · مستمع';
+  const controls=member.is_room_owner?'<span class="pill">مضيفة الغرفة</span>':'<div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-room-mute="'+esc(roomId)+'" data-user="'+esc(member.user_id)+'" data-muted="'+(member.muted?'true':'false')+'">'+(member.muted?'إلغاء كتم المايك':'كتم المايك')+'</button><button type="button" class="ghost text-xs" data-room-kick="'+esc(roomId)+'" data-user="'+esc(member.user_id)+'">طرد من الغرفة</button></div>';
+  return '<div class="item flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><b>'+esc(name)+'</b><p class="muted text-xs">'+esc(publicId)+esc(seat)+(member.muted?' · المايك مكتوم':'')+'</p></div>'+controls+'</div>';
+ }).join('')+'</div>';
+}
+async function loadRoomRoster(roomId){
+ roomRosterByRoom[roomId]={loading:true};renderRoomList();
+ const {data,error}=await supabase.functions.invoke('admin-room-moderation',{body:{action:'list',room_id:roomId}});
+ if(error)throw error;if(data?.error)throw new Error(data.error);
+ roomRosterByRoom[roomId]={members:data?.members||[],loadedAt:Date.now()};renderRoomList();
+}
+async function runRoomModeration(action,roomId,userId,button){
+ if(action==='kick'&&!confirm('سيتم فصل العضو صوتياً وإزالته من الغرفة. هل تريدين المتابعة؟'))return;
+ if(button)button.disabled=true;
+ try{
+  const {data,error}=await supabase.functions.invoke('admin-room-moderation',{body:{action,room_id:roomId,participant_id:userId}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  message(data?.warning||({mute:'تم كتم مايك العضو.',unmute:'تم إرسال طلب إلغاء الكتم.',kick:'تم طرد العضو من الغرفة.'}[action]||'تم تنفيذ الإجراء.'),Boolean(data?.warning));
+  await loadRoomRoster(roomId);await refreshRoomPresence();
+ }catch(error){message(error.message||'تعذّر تنفيذ إجراء إدارة الغرفة.',true);if(button)button.disabled=false;}
+}
+function bindRoomModerationControls(root){
+ root.querySelectorAll('[data-room-roster]').forEach(button=>button.onclick=async()=>{
+  const roomId=button.dataset.roomRoster;
+  if(roomRosterOpen.has(roomId)){roomRosterOpen.delete(roomId);renderRoomList();return;}
+  roomRosterOpen.add(roomId);roomRosterByRoom[roomId]={loading:true};renderRoomList();
+  try{await loadRoomRoster(roomId);}catch(error){roomRosterByRoom[roomId]={error:error.message||'تعذّر تحميل الأعضاء.'};renderRoomList();}
+ });
+ root.querySelectorAll('[data-room-mute]').forEach(button=>button.onclick=()=>runRoomModeration(button.dataset.muted==='true'?'unmute':'mute',button.dataset.roomMute,button.dataset.user,button));
+ root.querySelectorAll('[data-room-kick]').forEach(button=>button.onclick=()=>runRoomModeration('kick',button.dataset.roomKick,button.dataset.user,button));
+}
 function renderRoomList(){
  const root=$('#room-list');if(!root)return;
  const query=($('#room-search')?.value||'').trim().toLocaleLowerCase();
@@ -439,10 +480,11 @@ function renderRoomList(){
  root.innerHTML=filtered.length?filtered.map(room=>{
   const count=roomPresenceByRoom[room.id];
   const countLabel=roomPresenceAvailable?(count??0).toLocaleString('ar-DZ'):'غير متاح';
-  const live=roomPresenceAvailable&&Number(count)>0;
-  return '<article class="item"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><b>'+esc(room.title)+'</b><span class="pill">'+(live?'نشطة الآن':'غرفة')+'</span></div><p class="muted text-xs">'+esc('ROOM-'+String(room.public_id).padStart(6,'0'))+' · '+esc(room.topic||'عام')+' · المضيفة: '+esc(room.ownerName||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+countLabel+'</b></p></div></article>';
+  const live=roomPresenceAvailable&&Number(count)>0,opened=roomRosterOpen.has(room.id);
+  return '<article class="item"><div class="flex flex-wrap items-center justify-between gap-3"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><b>'+esc(room.title)+'</b><span class="pill">'+(live?'نشطة الآن':'غرفة')+'</span></div><p class="muted text-xs">'+esc('ROOM-'+String(room.public_id).padStart(6,'0'))+' · '+esc(room.topic||'عام')+' · المضيفة: '+esc(room.ownerName||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+countLabel+'</b></p></div><button type="button" class="ghost text-xs" data-room-roster="'+esc(room.id)+'">'+(opened?'إخفاء الأعضاء':'عرض الأعضاء وإدارتهم')+'</button></div><div class="mt-3 pt-3 border-t border-slate-200/70" data-room-roster-panel="'+esc(room.id)+'" '+(opened?'':'hidden')+'>'+ (opened?renderRoomRosterHtml(room.id):'')+'</div></article>';
  }).join(''):'<p class="muted">لا توجد غرف تطابق البحث أو الفلتر المحدد.</p>';
  if(roomPresenceUpdatedAt)$('#room-presence-updated').textContent='آخر تحديث للحضور: '+roomPresenceUpdatedAt.toLocaleTimeString('ar-DZ');
+ bindRoomModerationControls(root);
 }
 async function refreshRoomPresence(){
  const {data,error}=await supabase.rpc('get_public_room_presence');
