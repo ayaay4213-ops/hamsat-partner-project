@@ -529,6 +529,38 @@ function onboardingScreen() {
   $('#ob-out').onclick = signOut;
 }
 
+function partyCountryMeta(value='') {
+  const raw=String(value||'').trim();
+  const key=raw.toLowerCase();
+  const known={
+    'algeria':['🇩🇿','الجزائر'],'dz':['🇩🇿','الجزائر'],'الجزائر':['🇩🇿','الجزائر'],
+    'tunisia':['🇹🇳','تونس'],'tn':['🇹🇳','تونس'],'تونس':['🇹🇳','تونس'],
+    'morocco':['🇲🇦','المغرب'],'ma':['🇲🇦','المغرب'],'المغرب':['🇲🇦','المغرب'],
+    'egypt':['🇪🇬','مصر'],'eg':['🇪🇬','مصر'],'مصر':['🇪🇬','مصر'],
+    'saudi arabia':['🇸🇦','السعودية'],'sa':['🇸🇦','السعودية'],'السعودية':['🇸🇦','السعودية'],
+    'iraq':['🇮🇶','العراق'],'iq':['🇮🇶','العراق'],'العراق':['🇮🇶','العراق'],
+    'jordan':['🇯🇴','الأردن'],'jo':['🇯🇴','الأردن'],'الأردن':['🇯🇴','الأردن'],
+    'united arab emirates':['🇦🇪','الإمارات'],'ae':['🇦🇪','الإمارات'],'الإمارات':['🇦🇪','الإمارات'],
+    'libya':['🇱🇾','ليبيا'],'ly':['🇱🇾','ليبيا'],'ليبيا':['🇱🇾','ليبيا'],
+    'syria':['🇸🇾','سوريا'],'sy':['🇸🇾','سوريا'],'سوريا':['🇸🇾','سوريا'],
+    'lebanon':['🇱🇧','لبنان'],'lb':['🇱🇧','لبنان'],'لبنان':['🇱🇧','لبنان'],
+    'kuwait':['🇰🇼','الكويت'],'kw':['🇰🇼','الكويت'],'الكويت':['🇰🇼','الكويت'],
+    'qatar':['🇶🇦','قطر'],'qa':['🇶🇦','قطر'],'قطر':['🇶🇦','قطر'],
+    'bahrain':['🇧🇭','البحرين'],'bh':['🇧🇭','البحرين'],'البحرين':['🇧🇭','البحرين'],
+    'oman':['🇴🇲','عُمان'],'om':['🇴🇲','عُمان'],'عمان':['🇴🇲','عُمان'],
+    'yemen':['🇾🇪','اليمن'],'ye':['🇾🇪','اليمن'],'اليمن':['🇾🇪','اليمن'],
+    'france':['🇫🇷','فرنسا'],'fr':['🇫🇷','فرنسا'],'united states':['🇺🇸','أمريكا'],'us':['🇺🇸','أمريكا'],
+    'turkey':['🇹🇷','تركيا'],'tr':['🇹🇷','تركيا']
+  };
+  if(known[key])return {flag:known[key][0],name:known[key][1]};
+  if(/^[a-z]{2}$/i.test(raw)){const code=raw.toUpperCase().split('').map(c=>String.fromCodePoint(127397+c.charCodeAt(0))).join('');return {flag:code,name:raw.toUpperCase()};}
+  return {flag:'🌐',name:raw||'غير محدد'};
+}
+function partyAvatarMarkup(profile,size=24) {
+  if(!profile)return '<span class="hs-party-avatar-fallback">✦</span>';
+  const src=profile.avatarUrl||profile.avatar_url;
+  return src?'<img src="'+esc(src)+'" alt="" loading="lazy" style="width:'+size+'px;height:'+size+'px" />':'<span class="hs-party-avatar-fallback" style="width:'+size+'px;height:'+size+'px">'+esc((profile.displayName||profile.display_name||'ع').slice(0,1))+'</span>';
+}
 async function homeScreen(params = new URLSearchParams()) {
   screen.innerHTML = `
     <main class="hs-party-home fade-in" dir="rtl">
@@ -538,126 +570,105 @@ async function homeScreen(params = new URLSearchParams()) {
           <button type="button" id="party-search" class="hs-party-action" aria-label="البحث عن غرفة أو عضو" title="بحث"><i data-lucide="search"></i></button>
         </div>
         <nav class="hs-party-top-tabs" aria-label="التنقل الرئيسي">
-          <a href="#/me">أنا</a><a href="#/home" class="active" aria-current="page">حفلة</a><a href="#/activities">الأنشطة</a><button type="button" id="party-country-tab">دولة</button>
+          <a href="#/me">أنا</a><a href="#/home" class="active" aria-current="page">حفلة</a><a href="#/activities">الأنشطة</a><button type="button" id="party-country-tab">🌐 دولة</button>
         </nav>
         <span class="hs-party-header-mark">✦</span>
       </header>
       <section class="hs-party-content">
         <div class="hs-party-carousel" id="hs-party-carousel" aria-label="فعاليات همسات">
           <div class="hs-party-slides">
-            <a href="#/activities" class="hs-party-slide hs-party-slide-weekly">
-              <span class="hs-party-slide-kicker">HAMSAT · WEEKLY STAR</span><b>نجوم همسات الأسبوعية</b><small>فعاليات وتحديات وغرف مميزة بانتظارك</small><em>اكتشفي الفعالية <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">✦</span>
-            </a>
-            <a href="#/activities" class="hs-party-slide hs-party-slide-events">
-              <span class="hs-party-slide-kicker">HAMSAT · ACTIVITIES</span><b>مساحتك تبدأ بلحظة</b><small>انضمي إلى الأنشطة واكتشفي مجتمع همسات</small><em>عرض الأنشطة <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">♛</span>
-            </a>
-            <a href="#/family" class="hs-party-slide hs-party-slide-family">
-              <span class="hs-party-slide-kicker">HAMSAT · COMMUNITY</span><b>عائلتك وأصدقاؤك</b><small>اكتشفي الروابط والمساحات المشتركة</small><em>اكتشفي المزيد <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">❖</span>
-            </a>
+            <a href="#/activities" class="hs-party-slide hs-party-slide-weekly"><span class="hs-party-slide-kicker">HAMSAT · WEEKLY STAR</span><b>نجوم همسات الأسبوعية</b><small>فعاليات وتحديات وغرف مميزة بانتظارك</small><em>اكتشفي الفعالية <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">✦</span></a>
+            <a href="#/activities" class="hs-party-slide hs-party-slide-events"><span class="hs-party-slide-kicker">HAMSAT · ACTIVITIES</span><b>مساحتك تبدأ بلحظة</b><small>انضمي إلى الأنشطة واكتشفي مجتمع همسات</small><em>عرض الأنشطة <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">♛</span></a>
+            <a href="#/family" class="hs-party-slide hs-party-slide-family"><span class="hs-party-slide-kicker">HAMSAT · COMMUNITY</span><b>عائلتك وأصدقاؤك</b><small>اكتشفي الروابط والمساحات المشتركة</small><em>اكتشفي المزيد <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">❖</span></a>
           </div>
           <div class="hs-party-dots" role="tablist" aria-label="شرائح الفعاليات"><button class="active" type="button" data-slide="0" aria-label="الشريحة الأولى"></button><button type="button" data-slide="1" aria-label="الشريحة الثانية"></button><button type="button" data-slide="2" aria-label="الشريحة الثالثة"></button></div>
         </div>
         <section class="hs-party-leaderboards" aria-label="قوائم المجتمع">
-          <a href="#/me" class="hs-party-rank-card hs-rank-charisma"><span class="hs-party-rank-title">الكاريزما</span><span class="hs-party-rank-symbol">✧</span><span class="hs-party-rank-avatars"><i>★</i><i>★</i><i>★</i></span><small>قائمة الترتيب</small></a>
-          <a href="#/family" class="hs-party-rank-card hs-rank-cp"><span class="hs-party-rank-title">قائمة CP</span><span class="hs-party-rank-symbol">♡</span><span class="hs-party-rank-avatars"><i>♡</i><i>♡</i><i>♡</i></span><small>مساحات CP</small></a>
-          <a href="#/family" class="hs-party-rank-card hs-rank-family"><span class="hs-party-rank-title">عائلة</span><span class="hs-party-rank-symbol">♛</span><span class="hs-party-rank-avatars"><i>♛</i><i>♛</i><i>♛</i></span><small>العائلات</small></a>
+          <a href="#/charisma" class="hs-party-rank-card hs-rank-charisma" id="party-charisma-card"><span class="hs-party-rank-title">الكاريزما</span><span class="hs-party-rank-symbol">✧</span><span class="hs-party-rank-avatars"><i>…</i></span><small>جارٍ تحميل المتصدرين</small></a>
+          <a href="#/cp" class="hs-party-rank-card hs-rank-cp" id="party-cp-card"><span class="hs-party-rank-title">قائمة CP</span><span class="hs-party-rank-symbol">♡</span><span class="hs-party-rank-avatars"><i>♡</i></span><small>مساحات CP النشطة</small></a>
+          <a href="#/family" class="hs-party-rank-card hs-rank-family" id="party-family-card"><span class="hs-party-rank-title">عائلة</span><span class="hs-party-rank-symbol">♛</span><span class="hs-party-rank-avatars"><i>—</i></span><small>نظام العائلات غير مفعّل</small></a>
         </section>
         <div class="hs-party-room-heading"><div><small>HAMSAT VOICE ROOMS</small><h2>اكتشفي الغرف</h2></div><span id="rooms-real-count">—</span></div>
-        <div id="filters" class="hs-party-filters" role="group" aria-label="فلترة الغرف">
-          <button type="button" class="active" data-room-filter="popular">🔥 شائع</button>
-          <button type="button" data-room-filter="new">🎉 غرفة جديدة</button>
-        </div>
+        <div id="filters" class="hs-party-filters" role="group" aria-label="فلترة الغرف"><button type="button" class="active" data-room-filter="popular">🔥 شائع</button><button type="button" data-room-filter="new">🎉 غرفة جديدة</button></div>
         <div id="rooms-list" class="hs-party-rooms-grid"><div class="skeleton h-40"></div><div class="skeleton h-40"></div></div>
       </section>
       <button type="button" class="hs-party-spin" id="party-spin" aria-label="عجلة الحظ"><span>✦</span><b>SPIN</b><small>قريباً</small></button>
     </main>`;
   icons_();
-  let rooms = [];
-  let activeFilter = 'popular';
-  let slideIndex = 0;
-  const carousel = $('#hs-party-carousel');
-  const slideTrack = carousel?.querySelector('.hs-party-slides');
-  const dots = [...(carousel?.querySelectorAll('[data-slide]') || [])];
-  const setSlide = index => {
-    slideIndex = (index + 3) % 3;
-    if (slideTrack) slideTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
-    dots.forEach((dot,i)=>dot.classList.toggle('active',i===slideIndex));
-  };
+  let rooms=[],activeFilter='popular',countryFilter='all',slideIndex=0;
+  const carousel=$('#hs-party-carousel'),slideTrack=carousel?.querySelector('.hs-party-slides'),dots=[...(carousel?.querySelectorAll('[data-slide]')||[])];
+  const setSlide=index=>{slideIndex=(index+3)%3;if(slideTrack)slideTrack.style.transform=`translateX(-${slideIndex*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===slideIndex));};
   dots.forEach(dot=>dot.onclick=()=>setSlide(Number(dot.dataset.slide)));
-  const carouselTimer = window.setInterval(()=>{if(carousel?.isConnected)setSlide(slideIndex+1);},5000);
-  window.addEventListener('hashchange',()=>window.clearInterval(carouselTimer),{once:true});
-
-  const roomAction = $('#new-room');
-  roomAction.onclick = () => {
-    const ownRoom = rooms.find(room => String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());
-    if (ownRoom) openRoom(ownRoom); else newRoomSheet();
-  };
-  $('#party-search').onclick = () => openSheet(`
-    <section class="hs-party-search-sheet" dir="rtl">
-      <h2>البحث في همسات</h2><p>ابحثي برقم الغرفة أو UID أو اسم العضو</p>
-      <form id="party-search-form"><input id="party-search-input" class="field" placeholder="ROOM-000001 أو UID أو الاسم" autocomplete="off" required><button class="btn-gold w-full" type="submit"><i data-lucide="search"></i> بحث</button></form>
-      <div id="party-search-results" aria-live="polite"></div>
-    </section>`, root=>{
-      const form=root.querySelector('#party-search-form'), input=root.querySelector('#party-search-input'), result=root.querySelector('#party-search-results');
-      form.onsubmit=async event=>{
-        event.preventDefault();const q=input.value.trim();if(!q)return;
-        result.innerHTML='<div class="py-4 text-center"><span class="spinner"></span></div>';
+  const carouselTimer=window.setInterval(()=>{if(carousel?.isConnected)setSlide(slideIndex+1);},5000);
+  let presenceTimer=null;
+  const cleanup=()=>{window.clearInterval(carouselTimer);if(presenceTimer)window.clearInterval(presenceTimer);};
+  window.addEventListener('hashchange',cleanup,{once:true});
+  const roomAction=$('#new-room');
+  roomAction.onclick=()=>{const ownRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());if(ownRoom)openRoom(ownRoom);else newRoomSheet();};
+  $('#party-search').onclick=()=>openSheet(`
+    <section class="hs-party-search-sheet" dir="rtl"><h2>البحث في همسات</h2><p>ابحثي برقم الغرفة أو UID أو اسم العضو</p>
+      <form id="party-search-form"><input id="party-search-input" class="field" placeholder="ROOM-000001 أو HAMSAT-000001 أو الاسم" autocomplete="off" required><button class="btn-gold w-full" type="submit"><i data-lucide="search"></i> بحث</button></form><div id="party-search-results" aria-live="polite"></div>
+    </section>`,root=>{
+      const form=root.querySelector('#party-search-form'),input=root.querySelector('#party-search-input'),result=root.querySelector('#party-search-results');
+      form.onsubmit=async event=>{event.preventDefault();const q=input.value.trim();if(!q)return;result.innerHTML='<div class="py-4 text-center"><span class="spinner"></span></div>';
         try{
-          if(/^ROOM-/i.test(q)){
-            const found=await api.roomById(q.replace(/^ROOM-/i,'').replace(/^0+/, '')||'0');
-            closeSheet();await openRoom(found.room);return;
-          }
+          if(/^ROOM-/i.test(q)){const found=await api.roomById(q);closeSheet();await openRoom(found.room);return;}
           const found=await api.searchUsers(q);
           if(!found.users?.length){result.innerHTML='<p class="text-sm text-center py-4 text-[#b7b2a5]">لم نعثر على عضو بهذا الاسم أو الرقم.</p>';return;}
           result.innerHTML=found.users.map(user=>`<button type="button" class="hs-party-search-user" data-user-handle="${esc(user.handle)}"><span>${avatar(user,38)}</span><b>${esc(user.displayName||user.handle)}</b><small>@${esc(user.handle)}</small></button>`).join('');
           result.querySelectorAll('[data-user-handle]').forEach(button=>button.onclick=()=>{closeSheet();location.hash='#/u/'+encodeURIComponent(button.dataset.userHandle);});
         }catch(error){result.innerHTML='<p class="text-sm text-center py-4 text-red-300">'+esc(error.message||'تعذّر البحث')+'</p>';}
-      };
-      icons_();input.focus();
+      };icons_();input.focus();
+    });
+  const drawCountrySheet=()=>{
+    const options=[...new Map(rooms.filter(r=>r.ownerCountry).map(r=>{const m=partyCountryMeta(r.ownerCountry);return [m.name,m];})).values()].sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+    openSheet(`<section class="hs-party-country-sheet" dir="rtl"><h2>اختاري الدولة</h2><button type="button" class="hs-party-country-option" data-country="all">🌐 كل الدول</button>${options.map(x=>`<button type="button" class="hs-party-country-option" data-country="${esc(x.name)}">${x.flag} ${esc(x.name)}</button>`).join('')}</section>`,root=>{
+      root.querySelectorAll('[data-country]').forEach(button=>button.onclick=()=>{countryFilter=button.dataset.country;closeSheet();draw();});
     });
   };
-  $('#party-country-tab').onclick=()=>toast('فلترة الغرف حسب الدولة تحتاج إلى إضافة دولة مالك الغرفة إلى بيانات الغرف.');
-  $('#party-spin').onclick=()=>toast('عجلة الحظ ستُفعّل بعد ربط نظام المكافآت.');
-  const draw = () => {
-    const list = activeFilter==='new' ? [...rooms].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)) : rooms;
+  $('#party-country-tab').onclick=drawCountrySheet;
+  $('#party-spin').onclick=()=>toast('عجلة الحظ غير مفعّلة في الخادم بعد؛ لن نعرض مؤقتاً أو جوائز غير معتمدة.');
+  const renderLeaderboards=data=>{
+    const charisma=$('#party-charisma-card'),cp=$('#party-cp-card');
+    if(charisma){const people=data.charisma||[];charisma.querySelector('.hs-party-rank-avatars').innerHTML=people.length?people.map(p=>partyAvatarMarkup(p,23)).join(''):'<i>—</i>';charisma.querySelector('small').textContent=people.length?'أفضل 3 حسب مستوى الكاريزما':'لا توجد بيانات ترتيب بعد';}
+    if(cp){const pairs=data.couples||[];cp.querySelector('.hs-party-rank-avatars').innerHTML=pairs.length?pairs.map(pair=>'<span class="hs-party-couple-mini">'+partyAvatarMarkup(pair.owner,19)+partyAvatarMarkup(pair.partner,19)+'</span>').join(''):'<i>♡</i>';cp.querySelector('small').textContent=pairs.length?num(pairs.length)+' مساحات CP نشطة':'لا توجد مساحات CP نشطة';}
+  };
+  const draw=()=>{
+    let list=rooms.filter(room=>countryFilter==='all'||partyCountryMeta(room.ownerCountry).name===countryFilter);
+    list=activeFilter==='new'?[...list].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[...list].sort((a,b)=>(b.memberCount||0)-(a.memberCount||0)||(b.createdAt||0)-(a.createdAt||0));
     const el=$('#rooms-list');if(!el)return;
-    el.innerHTML=list.length?list.map(roomCard).join(''):emptyBox('mic-off','لا توجد غرف حالياً','يمكنك إنشاء غرفة جديدة أو المحاولة لاحقاً');
+    el.innerHTML=list.length?list.map(roomCard).join(''):emptyBox('mic-off','لا توجد غرف في هذا الاختيار','جرّبي دولة أخرى أو اختاري كل الدول.');
     bindRoomCards(el,list);
-    const badge=$('#rooms-real-count');if(badge)badge.textContent=num(list.length)+' غرفة';
+    const badge=$('#rooms-real-count');if(badge)badge.textContent=num(list.length)+' غرفة'+(countryFilter!=='all'?' · '+countryFilter:'');
     icons_();
   };
-  $('#filters').querySelectorAll('[data-room-filter]').forEach(button=>button.onclick=()=>{
-    activeFilter=button.dataset.roomFilter;
-    $('#filters').querySelectorAll('[data-room-filter]').forEach(chip=>chip.classList.toggle('active',chip===button));
-    draw();
-  });
+  $('#filters').querySelectorAll('[data-room-filter]').forEach(button=>button.onclick=()=>{activeFilter=button.dataset.roomFilter;$('#filters').querySelectorAll('[data-room-filter]').forEach(chip=>chip.classList.toggle('active',chip===button));draw();});
   if(params.get('new')){history.replaceState(null,'','#/home');newRoomSheet();}
   try{
     rooms=(await api.rooms()).rooms||[];
     const ownRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());
     if(ownRoom)roomAction.classList.add('has-own-room');
     draw();
-    const inviteId=params.get('invite');
-    if(inviteId){const {room}=await api.roomById(inviteId);history.replaceState(null,'',location.pathname+location.search+'#/home');openRoom(room);}
-  }catch(error){
-    const el=$('#rooms-list');if(el)el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الغرف',error.message||'حاولي مرة أخرى');icons_();
-  }
-}
-
-function emptyBox(icon, title, sub = '') {
-  return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
+    try{renderLeaderboards(await api.partyLeaderboardData());}catch(error){console.warn('Party leaderboard unavailable',error);}
+    presenceTimer=window.setInterval(async()=>{if(!carousel?.isConnected)return;try{const {counts}=await api.roomPresenceCounts();rooms=rooms.map(room=>({...room,memberCount:counts[room.id]||0}));draw();}catch(error){console.warn('Room presence refresh failed',error);}},15000);
+    const inviteId=params.get('invite');if(inviteId){const {room}=await api.roomById(inviteId);history.replaceState(null,'',location.pathname+location.search+'#/home');openRoom(room);}
+  }catch(error){const el=$('#rooms-list');if(el)el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الغرف',error.message||'حاولي مرة أخرى');icons_();}
 }
 
 function roomCard(r) {
-  const cover = r.coverUrl ? `background-image:linear-gradient(180deg,transparent 42%,rgba(0,0,0,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center` : '';
+  const cover=r.coverUrl?`background-image:linear-gradient(180deg,rgba(0,0,0,.04) 30%,rgba(0,0,0,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center`:'';
+  const country=partyCountryMeta(r.ownerCountry||'');
+  const count=Number(r.memberCount||0);
+  const ownerAvatar=r.ownerAvatarUrl?'<img class="hs-party-room-owner-avatar" src="'+esc(r.ownerAvatarUrl)+'" alt="" loading="lazy" />':'<span class="hs-party-room-owner-avatar hs-party-avatar-fallback">✦</span>';
+  const frame=r.ownerFrameUrl?'<img class="hs-party-room-owner-frame" src="'+esc(r.ownerFrameUrl)+'" alt="" loading="lazy" />':'';
   return `<button data-room="${esc(r.id)}" class="hs-party-room-card" type="button" aria-label="دخول غرفة ${esc(r.title)}">
     <div class="hs-party-room-cover" style="${cover}">
-      ${!r.coverUrl ? '<span class="hs-party-room-placeholder" aria-hidden="true">🎙️</span>' : ''}
-      <span class="hs-party-room-vip" aria-hidden="true">✦</span>
-      <span class="hs-party-room-live"><i data-lucide="audio-lines"></i><b>غرفة صوتية</b><small>—</small></span>
-      <span class="hs-party-room-owner">${esc(r.ownerName||'عضو')}</span>
+      ${!r.coverUrl?'<span class="hs-party-room-placeholder" aria-hidden="true">🎙️</span>':''}
+      <span class="hs-party-room-vip" aria-hidden="true">${Number(r.ownerVipLevel||0)>0?'VIP '+Number(r.ownerVipLevel):'✦'}</span>
+      <span class="hs-party-room-live ${count>0?'is-live':'is-idle'}">${count>0?'<i data-lucide="audio-lines"></i>':'<i data-lucide="users"></i>'}<b>${count>0?'متواجدون':'هادئة'}</b><small>${num(count)}</small></span>
+      <span class="hs-party-room-owner">${ownerAvatar}<span>${esc(r.ownerName||'عضو')}</span>${frame}</span>
     </div>
-    <div class="hs-party-room-footer"><b>${esc(r.title||'غرفة همسات')}</b><span title="الدولة غير متاحة">🌐</span></div>
+    <div class="hs-party-room-footer"><b>${esc(r.title||'غرفة همسات')}</b><span title="${esc(country.name)}">${country.flag}</span></div>
     <small class="hs-party-room-topic">${esc(r.topic||'عام')}</small>
   </button>`;
 }
@@ -1856,6 +1867,15 @@ function honorScreen(){
  mePage('ميدالية الشرف','<section class="hs-honor-page"><div class="hs-honor-medal">🏅</div><h2>ميدالية الشرف</h2><div class="hs-honor-slots">'+Array.from({length:5},()=>'<span>＋</span>').join('')+'</div><div class="hs-honor-counters"><span><b>C</b><small>0</small></span><span><b>B</b><small>0</small></span><span><b>A</b><small>0</small></span><span><b>S</b><small>0</small></span></div><div class="hs-honor-tabs"><button class="active" data-honor="achievement">ميداليات الإنجاز</button><button data-honor="activity">ميداليات النشاط</button></div><div class="hs-honor-empty">لا توجد ميداليات مسجلة بعد.</div></section>');
  document.querySelectorAll('[data-honor]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-honor]').forEach(x=>x.classList.toggle('active',x===b));$('.hs-honor-empty').textContent=b.dataset.honor==='achievement'?'لا توجد ميداليات إنجاز بعد.':'لا توجد ميداليات نشاط بعد.';});
 }
+async function charismaRankingScreen(){
+  screen.innerHTML=header('ترتيب الكاريزما')+'<div id="hs-charisma-ranking" class="p-4 space-y-3">'+loading()+'</div>';icons_();
+  const root=$('#hs-charisma-ranking');
+  try{
+    const {charisma=[]}=await api.partyLeaderboardData();
+    root.innerHTML=charisma.length?charisma.map((p,i)=>'<article class="hs-charisma-rank-row"><span class="hs-charisma-rank-medal">'+(['🥇','🥈','🥉'][i]||'✦')+'</span>'+avatar(p,46)+'<div class="hs-charisma-rank-name"><b>'+esc(p.displayName||'عضو')+'</b><small>UID: '+esc(p.publicId||'—')+'</small></div><strong>'+num(p.charismaLevel||1)+'</strong></article>').join(''):'<div class="card p-5 text-center text-sm">لا توجد بيانات كافية للترتيب بعد.</div>';
+  }catch(error){root.innerHTML=emptyBox('wifi-off','تعذّر تحميل الترتيب',error.message||'حاولي لاحقاً');}
+  icons_();
+}
 function familyScreen(){
  mePage('ترتيب العائلة للشهر','<section class="hs-family-page"><div class="hs-family-countdown">الوقت المتبقي <b>— : — : —</b></div><h2>أفضل العائلات</h2><div class="hs-family-podium"><div class="hs-family-place second"><span>🥈</span><b>TOP 2</b><small>— EXP</small></div><div class="hs-family-place first"><span>👑</span><b>TOP 1</b><small>— EXP</small></div><div class="hs-family-place third"><span>🥉</span><b>TOP 3</b><small>— EXP</small></div></div><p class="hs-family-empty">ترتيب العائلات يحتاج إلى ربط بيانات الخادم.</p><div class="hs-family-actions"><button id="family-create">إنشاء</button><button id="family-join">إنضم إلى</button></div></section>');
  $('#family-create').onclick=()=>toast('خدمة إنشاء العائلات غير مربوطة بالخادم بعد.');$('#family-join').onclick=()=>toast('خدمة العائلات غير مربوطة بالخادم بعد.');
@@ -2245,6 +2265,7 @@ async function directMessageScreen(conversationId) {
     else if (route === 'invite') await inviteScreen();
     else if (route === 'moments') await momentsFeedScreen();
     else if (route === 'activities') await activitiesScreen();
+    else if (route === 'charisma') await charismaRankingScreen();
     else if (route === 'agency') await agencyScreen();
     else if (route === 'aristocracy') comingSoonScreen(route);
     else if (route === 'u' && parts[1]) await userScreen(decodeURIComponent(parts[1]));
