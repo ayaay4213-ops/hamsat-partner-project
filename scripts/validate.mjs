@@ -392,7 +392,6 @@ if (fs.existsSync(appRoomPath)) {
     errors.push('Missing transparent equipped profile-frame rendering');
   }
 }
-const adminHtmlPath = path.join(root, 'admin.html');
 if (fs.existsSync(adminHtmlPath) && fs.existsSync(adminScriptPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
   const adminJs = fs.readFileSync(adminScriptPath, 'utf8');
@@ -650,7 +649,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v8')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v9')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
   for (const token of ['id="stat-live-rooms"', 'id="stat-room-members"', 'id="signup-trend"', 'data-tab="hosts"', 'id="hosts"']) {
@@ -669,7 +668,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v8')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v9')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
