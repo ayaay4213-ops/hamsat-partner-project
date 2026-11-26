@@ -401,7 +401,39 @@ async function loadUsers(term=''){
   }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
  });
 }
-let roomDesignRooms=[];
+let roomDesignRooms=[],roomPresenceByRoom={},roomPresenceAvailable=false,roomPresenceUpdatedAt=null;
+function renderRoomList(){
+ const root=$('#room-list');if(!root)return;
+ const query=($('#room-search')?.value||'').trim().toLocaleLowerCase();
+ const filter=$('#room-presence-filter')?.value||'all';
+ const filtered=roomDesignRooms.filter(room=>{
+  const count=roomPresenceByRoom[room.id];
+  if(filter==='live'&&!(Number(count)>0))return false;
+  if(filter==='quiet'&&count!==0)return false;
+  const haystack=[room.title,room.topic,room.public_id,room.ownerName].join(' ').toLocaleLowerCase();
+  return !query||haystack.includes(query);
+ });
+ const active=roomDesignRooms.filter(room=>Number(roomPresenceByRoom[room.id])>0).length;
+ const members=Object.values(roomPresenceByRoom).reduce((sum,count)=>sum+Math.max(0,Number(count)||0),0);
+ $('#room-live-summary').innerHTML=[
+  ['إجمالي الغرف',roomDesignRooms.length.toLocaleString('ar-DZ')],
+  ['غرف بها حضور',roomPresenceAvailable?active.toLocaleString('ar-DZ'):'—'],
+  ['مقاعد/أعضاء ظاهرون',roomPresenceAvailable?members.toLocaleString('ar-DZ'):'—']
+ ].map(([label,value])=>'<div class="stat"><span class="muted text-xs">'+label+'</span><b>'+value+'</b></div>').join('');
+ root.innerHTML=filtered.length?filtered.map(room=>{
+  const count=roomPresenceByRoom[room.id];
+  const countLabel=roomPresenceAvailable?(count??0).toLocaleString('ar-DZ'):'غير متاح';
+  const live=roomPresenceAvailable&&Number(count)>0;
+  return '<article class="item"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><b>'+esc(room.title)+'</b><span class="pill">'+(live?'نشطة الآن':'غرفة')+'</span></div><p class="muted text-xs">'+esc('ROOM-'+String(room.public_id).padStart(6,'0'))+' · '+esc(room.topic||'عام')+' · المضيفة: '+esc(room.ownerName||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+countLabel+'</b></p></div></article>';
+ }).join(''):'<p class="muted">لا توجد غرف تطابق البحث أو الفلتر المحدد.</p>';
+ if(roomPresenceUpdatedAt)$('#room-presence-updated').textContent='آخر تحديث للحضور: '+roomPresenceUpdatedAt.toLocaleTimeString('ar-DZ');
+}
+async function refreshRoomPresence(){
+ const {data,error}=await supabase.rpc('get_public_room_presence');
+ if(error)throw error;
+ roomPresenceByRoom=Object.fromEntries((data||[]).map(row=>[row.room_id,Math.max(0,Number(row.active_count)||0)]));
+ roomPresenceAvailable=true;roomPresenceUpdatedAt=new Date();renderRoomList();
+}
 async function loadRooms(){
  const data=[];
  for(let from=0;;from+=200){
@@ -411,12 +443,6 @@ async function loadRooms(){
  const ids=[...new Set(data.map(x=>x.owner_id))];
  const p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};
  if(p.error)throw p.error;
- let presenceByRoom={};
- try{
-  const presence=await supabase.rpc('get_public_room_presence');
-  if(presence.error)throw presence.error;
-  presenceByRoom=Object.fromEntries((presence.data||[]).map(x=>[x.room_id,Number(x.active_count)||0]));
- }catch(error){console.warn('Room presence unavailable in admin list:',error);}
  const byId=Object.fromEntries((p.data||[]).map(x=>[x.id,x]));
  roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
  const roomSelect=$('#rd-room');
@@ -425,11 +451,11 @@ async function loadRooms(){
   roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');
   if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;
  }
- $('#room-list').innerHTML=data.length?data.map(x=>{
-  const owner=byId[x.owner_id]||{},count=presenceByRoom[x.id];
-  return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+ (count===undefined?'غير متاح':count.toLocaleString('ar-DZ')) +'</b></p></div><span class="pill">غرفة</span></div>';
- }).join(''):'<p class="muted">لا توجد غرف.</p>';
+ try{await refreshRoomPresence();}
+ catch(error){roomPresenceAvailable=false;roomPresenceByRoom={};roomPresenceUpdatedAt=null;$('#room-presence-updated').textContent='تعذر جلب الحضور: '+(error.message||'خطأ غير معروف');renderRoomList();}
 }
+$('#room-search')?.addEventListener('input',renderRoomList);
+$('#room-presence-filter')?.addEventListener('change',renderRoomList);
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const id=f.elements.id.value.trim(),item_type=f.elements.item_type.value;const imageFile=f.elements.image.files[0];const imageFolder=item_type==='room_background'?'catalog/room-backgrounds':item_type==='profile_frame'?'catalog/profile-frames':'catalog';const image_url=imageFile?await upload(imageFile,imageFolder,['room_background','profile_frame'].includes(item_type)?id:null):null;const payload={id,name:f.elements.name.value.trim(),item_type,price:Number(f.elements.price.value),duration_days:Number(f.elements.duration_days.value||0),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 const ROOM_BACKGROUND_ASSETS=[
  ['free_01_queen_girl','الخلفية المجانية 1'],['free_02_moonlit_terrace','الخلفية المجانية 2'],
@@ -608,6 +634,7 @@ function initRoomDesignStudio(){
  apply(defaults);
 }
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
+setInterval(()=>refreshRoomPresence().catch(error=>{console.warn('Automatic room presence refresh failed:',error);}),30000);
 initRoomDesignStudio();
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));
