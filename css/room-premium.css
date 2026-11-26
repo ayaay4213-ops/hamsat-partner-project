@@ -102,3 +102,40 @@
 #sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-modal{position:fixed!important;inset:0!important;z-index:100!important;display:grid!important;place-items:center!important;padding:18px!important;background:rgba(43,59,54,.28)!important;backdrop-filter:blur(5px)!important}
 #sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-card{width:min(100%,360px)!important;padding:22px!important;border-radius:22px!important;background:#fff!important;color:#40534c!important;box-shadow:0 18px 50px #253a3228!important}
 #sheet-root .room-sheet .hs-room-premium .hs-room-invite-seat-action{border:1px solid #dce8e1!important;border-radius:10px!important;background:#f4f8f5!important;color:#5b796a!important}
+
+
+/* HAMSAT room — brighter, colorful pastel finish; interaction hooks untouched */
+#sheet-root .room-sheet .hs-room-premium{background:linear-gradient(155deg,#fff3f0 0%,#f6f0ff 48%,#eaf8f7 100%)!important;color:#344052!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-topbar{border-color:#ead8ee!important;background:linear-gradient(125deg,#f9dfe9 0%,#eee3fb 52%,#def2ed 100%)!important;color:#4c4262!important;box-shadow:0 7px 20px #9b7eaa18!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-title h2{color:#55436c!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-title p{color:#8a7898!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-live{border-color:#bfe5d6!important;background:#f4fff9!important;color:#39836b!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-actions>button{border-color:#e8d9ef!important;background:linear-gradient(145deg,#fff,#f4eefa)!important;color:#8b6fa5!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-member-count,#sheet-root .room-sheet .hs-room-premium .hs-room-id-chip{border-color:#e6dbee!important;background:#fff9ff!important;color:#806b94!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-announcement-ticker{border-color:#f1d9e6!important;background:linear-gradient(100deg,#fff6fa,#f4f0ff)!important;color:#98738e!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-stage,#sheet-root .room-sheet .hs-room-premium .hs-v2-listeners,#sheet-root .room-sheet .hs-room-premium .hs-v2-chat{border-color:#e9dfee!important;background:linear-gradient(145deg,#fff 0%,#fffaff 55%,#f5fbfa 100%)!important;color:#485064!important;box-shadow:0 6px 18px #806d9910!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-stage-head h3,#sheet-root .room-sheet .hs-room-premium .hs-v2-section-head h3{color:#5b4c72!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-stage-head h3 svg,#sheet-root .room-sheet .hs-room-premium .hs-v2-section-head h3 svg{color:#b17cae!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats.hs-room-seats{border-color:#eadff0!important;background:radial-gradient(circle at 15% 20%,#f9e6f1 0 12%,transparent 42%),radial-gradient(circle at 85% 85%,#dff3ef 0 10%,transparent 45%),linear-gradient(145deg,#fcf8ff,#f4f8ff)!important;gap:12px 6px!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat{position:relative!important;border-radius:15px!important;transition:transform .18s ease,filter .18s ease!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat:active{transform:scale(.96)!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat.empty .hs-seat-ring{border-color:#d8c9f0!important;background:linear-gradient(145deg,#fff,#f0e7ff)!important;box-shadow:0 4px 12px #8b6db522!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat.empty .hs-seat-chair{color:#a18acb!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat.empty .hs-seat-center-mic{color:#9a7bc8!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat.occupied .hs-seat-ring{border-color:#edc48e!important;background:linear-gradient(145deg,#fffdf6,#fff0d9)!important;box-shadow:0 0 0 3px #f5d8aa44,0 4px 12px #a57c3420!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat.is-speaking .hs-seat-ring{border-color:#82cdb2!important;box-shadow:0 0 0 4px #8bd8bc38,0 0 16px #8bd8bc55!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat b{color:#625779!important;font-size:10px!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat .hs-seat-duration{color:#9b89a9!important;font-size:8px!important}
+#sheet-root .room-sheet .hs-room-premium #room-seats>.hs-room-seat .hs-seat-number{border-color:#e5d9f0!important;background:#fff!important;color:#8a75a6!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-listeners .hs-room-person{border-color:#e9dced!important;background:linear-gradient(145deg,#fff,#f7f1fb)!important;color:#756184!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-chat .hs-room-chat-tabs button{border-color:#eadced!important;background:#fbf6fc!important;color:#9a7da3!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-chat .hs-room-chat-tabs button.active{border-color:#d9c9ef!important;background:#eee5fb!important;color:#765eaa!important}
+#sheet-root .room-sheet .hs-room-premium #room-chat.hs-room-chat{color:#55516b!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-message{border-color:#f0e4ed!important;background:linear-gradient(110deg,#fff8fb,#f7f5ff)!important;color:#5b5266!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-message b{color:#a46d9b!important}
+#sheet-root .room-sheet .hs-room-premium .hs-v2-control-dock{border-top-color:#e9ddec!important;background:rgba(255,250,255,.97)!important;box-shadow:0 -6px 20px #8d719015!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-compose{border-color:#e7dceb!important;background:#fbf7fc!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-compose input{color:#51465f!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-compose button{background:#eee4fa!important;color:#8668ae!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-tools-row button{border-color:#e8dced!important;background:linear-gradient(145deg,#fff,#f5effa)!important;color:#89709f!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-tools-row #voice-start,#sheet-root .room-sheet .hs-room-premium .hs-room-tools-row #room-send-gift{border-color:#efd6a1!important;background:linear-gradient(135deg,#fff0ca,#f4dca1)!important;color:#85632e!important}
