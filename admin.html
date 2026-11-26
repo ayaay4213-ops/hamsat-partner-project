@@ -149,7 +149,7 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 #admin-menu:before{content:"القائمة الرئيسية";display:block;color:#9eacc0;font-size:12px;font-weight:700;letter-spacing:.04em;padding:2px 10px 12px}
 #admin-menu .tab{display:flex!important;align-items:center;justify-content:flex-start!important;gap:11px;width:100%;flex:0 0 auto!important;min-height:46px!important;padding:10px 12px!important;text-align:right!important;background:transparent!important;border:1px solid transparent!important;border-radius:11px!important;color:#d5deea!important;font-size:14px!important}
 #admin-menu .tab:before{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:7px;background:#ffffff12;color:#b8c8dd;font-size:15px;flex:none}
-#admin-menu [data-tab="catalog"]:before{content:"▧"}#admin-menu [data-tab="gifts"]:before{content:"✧"}#admin-menu [data-tab="users"]:before{content:"♙"}#admin-menu [data-tab="logins"]:before{content:"◷"}#admin-menu [data-tab="rooms"]:before{content:"◫"}#admin-menu [data-tab="games"]:before{content:"♟"}#admin-menu [data-tab="bomb"]:before{content:"✺"}#admin-menu [data-tab="agencies"]:before{content:"♧"}#admin-menu [data-tab="staff"]:before{content:"♧"}#admin-menu [data-tab="reports"]:before{content:"⚑"}#admin-menu [data-tab="feedback"]:before{content:"☷"}
+#admin-menu [data-tab="catalog"]:before{content:"▧"}#admin-menu [data-tab="gifts"]:before{content:"✧"}#admin-menu [data-tab="users"]:before{content:"♙"}#admin-menu [data-tab="logins"]:before{content:"◷"}#admin-menu [data-tab="rooms"]:before{content:"◫"}#admin-menu [data-tab="games"]:before{content:"♟"}#admin-menu [data-tab="bomb"]:before{content:"✺"}#admin-menu [data-tab="hosts"]:before{content:"♙"}#admin-menu [data-tab="agencies"]:before{content:"♧"}#admin-menu [data-tab="staff"]:before{content:"♧"}#admin-menu [data-tab="reports"]:before{content:"⚑"}#admin-menu [data-tab="feedback"]:before{content:"☷"}
 #admin-menu .tab:hover{background:#ffffff0c!important;border-color:#ffffff12!important;color:#fff!important}
 #admin-menu .tab.active{background:linear-gradient(90deg,#315b8b,#28476c)!important;border-color:#47709b!important;color:#fff!important;box-shadow:inset 3px 0 #82b5ed!important}
 #admin-menu .tab.active:before{background:#ffffff20;color:#fff}
@@ -196,7 +196,7 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 </head>
 <body><div class="wrap space-y-4">
 <header class="flex flex-wrap items-center justify-between gap-3 py-3"><div class="flex items-center gap-3"><button id="admin-menu-toggle" class="ghost text-2xl leading-none" type="button" aria-label="فتح قائمة لوحة الإدارة">☰</button><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
-<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab active" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
+<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab active" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="hosts">المضيفون</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
 <div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
 <main id="admin" class="hidden space-y-4">
 <section id="overview" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -342,7 +342,7 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 <button class="btn sm:col-span-2" type="submit">إنشاء الوكالة</button>
 </form>
 <div><h3 class="font-bold mb-2">الوكالات الحالية</h3><div id="agency-list" class="space-y-2"></div></div>
-<div class="border-t border-slate-200 pt-4"><h3 class="font-bold mb-2">المضيفون ونشاط آخر 30 يوماً</h3><p class="muted text-xs mb-3">عرض ساعات البث وقيمة الهدايا المسجلة فقط. الأهداف والرواتب بالدولار لا تُعرض قبل اعتماد جداول الاستحقاق الرسمية.</p><div id="host-list" class="grid gap-2"><p class="muted">جارٍ تحميل بيانات المضيفين...</p></div></div>
+
 <div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-3">إضافة عضو إلى وكالة</h3>
 <form id="agency-member-form" class="grid sm:grid-cols-2 gap-3">
 <label class="text-sm">الوكالة<select class="field mt-1" name="agency_id" id="agency-select" required></select></label>
@@ -361,6 +361,11 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 <button class="btn sm:col-span-2" type="submit">حفظ الباقة</button>
 </form><div id="topup-package-list" class="space-y-2 mt-3"></div></div>
 <div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">طلبات الشحن الخارجية</h3><p class="muted text-xs mb-3">عرض ومتابعة فقط. لا يتم اعتماد الدفع أو إضافة العملات من هذه القائمة قبل وجود تحقق موثوق من مزود الدفع.</p><div id="topup-order-list" class="grid gap-2"><p class="muted">جارٍ تحميل الطلبات...</p></div></div>
+</section>
+<section id="hosts" class="panel space-y-4 hidden">
+<div><h2 class="text-xl font-bold">إدارة المضيفين</h2><p class="muted text-sm">متابعة المضيفين المرتبطين بالوكالات وساعات البث والهدايا المسجلة خلال آخر 30 يوماً.</p></div>
+<div class="room-design-notice"><b>تنبيه مالي</b><span>هذه البيانات تشغيلية فقط. لا تمثل الماسات أو الرواتب أو المستحقات النقدية. لا توجد حالياً أهداف شهرية معتمدة أو شاشة اعتماد مستحقات.</span></div>
+<div id="host-list" class="grid gap-2"><p class="muted">جارٍ تحميل بيانات المضيفين...</p></div>
 </section>
 <section id="staff" class="panel space-y-5 hidden">
 <div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
