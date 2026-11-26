@@ -36,7 +36,7 @@ async function boot(){
    catch(error){
     console.error('HAMSAT admin section failed:',label,error);
     const target=({
-     'نمو المستخدمين':'#signup-trend','المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
+     'نمو المستخدمين':'#signup-trend','المضيفون':'#host-list','المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
      'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
      'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
     })[label];
@@ -510,7 +510,7 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','hosts','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
 $('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
 let loginChannel=null;
 function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}
