@@ -580,7 +580,7 @@ async function homeScreen(params = new URLSearchParams()) {
   const dots = [...(carousel?.querySelectorAll('[data-slide]') || [])];
   const setSlide = index => {
     slideIndex = (index + 3) % 3;
-    if (slideTrack) slideTrack.style.transform = `translateX(${slideIndex * 100}%)`;
+    if (slideTrack) slideTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
     dots.forEach((dot,i)=>dot.classList.toggle('active',i===slideIndex));
   };
   dots.forEach(dot=>dot.onclick=()=>setSlide(Number(dot.dataset.slide)));
