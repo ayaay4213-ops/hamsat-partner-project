@@ -34,9 +34,14 @@ async function boot(){
    watchLoginEvents();
   }else{
    message('مرحباً '+(profile?.display_name||'بالمسؤول')+' — تم التحقق من صلاحية إدارة الغرف فقط.');
+   const brand=document.querySelector('header .text-amber-300'),access=document.querySelector('header .pill'),subtitle=document.querySelector('header p');
+   if(brand)brand.textContent='H A M S A T · ROOM MODERATION';
+   if(access)access.textContent='ROOM MODERATOR';
+   if(subtitle)subtitle.textContent='صلاحية محدودة · متابعة الغرف والإشراف على الأعضاء';
    document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>{button.hidden=button.dataset.tab!=='rooms';});
    $('#admin-menu')?.classList.remove('hidden');
    if($('#admin-menu-toggle'))$('#admin-menu-toggle').hidden=true;
+   $('#overview')?.classList.add('hidden');
    document.querySelectorAll('section.panel').forEach(section=>section.classList.toggle('hidden',section.id!=='rooms'));
    document.querySelector('.room-design-studio')?.classList.add('hidden');
   }
