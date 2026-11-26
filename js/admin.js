@@ -66,7 +66,7 @@ async function loadStats(){
   try{
    const {count,error}=await supabase.from(t).select('id',{count:'exact',head:true});
    if(error)throw error;
-   $('#'+ids[i]).textContent=count??0;
+   $('#'+ids[i]).textContent=Number(count??0).toLocaleString('ar-DZ');
    return null;
   }catch(error){
    $('#'+ids[i]).textContent='—';
@@ -74,6 +74,18 @@ async function loadStats(){
    return t;
   }
  }));
+ try{
+  const {data,error}=await supabase.rpc('get_public_room_presence');
+  if(error)throw error;
+  const rooms=Array.isArray(data)?data:[];
+  const members=rooms.reduce((sum,row)=>sum+Math.max(0,Number(row.active_count)||0),0);
+  $('#stat-live-rooms').textContent=rooms.length.toLocaleString('ar-DZ');
+  $('#stat-room-members').textContent=members.toLocaleString('ar-DZ');
+ }catch(error){
+  $('#stat-live-rooms').textContent='—';
+  $('#stat-room-members').textContent='—';
+  console.warn('HAMSAT live room presence metric unavailable:',error);
+ }
  const failed=results.filter(Boolean);
  if(failed.length)throw new Error('تعذر جلب إحصاءات: '+failed.join('، '));
 }
