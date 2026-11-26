@@ -19,19 +19,34 @@ async function boot(){
    'قراءة ملف الحساب'
   );
   if(e)throw e;
-  message('الخطوة 3/3: التحقق من صلاحية Super Admin…');
-  const {data:isOwner,error:ownerError}=await withTimeout(supabase.rpc('is_admin'),'فحص صلاحية الإدارة');
+  message('الخطوة 3/3: التحقق من صلاحيات الإدارة…');
+  const [{data:isOwner,error:ownerError},{data:staffRole,error:staffError}]=await withTimeout(Promise.all([
+   supabase.rpc('is_admin'),
+   supabase.from('staff_roles').select('permissions,active').eq('user_id',session.user.id).maybeSingle()
+  ]),'فحص صلاحيات الإدارة');
   if(ownerError)throw ownerError;
-  if(isOwner!==true){message('تم تسجيل الدخول، لكن هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
+  if(staffError)throw staffError;
+  const canModerateRooms=isOwner===true||(staffRole?.active===true&&Array.isArray(staffRole.permissions)&&staffRole.permissions.includes('room_moderation'));
+  if(!canModerateRooms){message('تم تسجيل الدخول، لكن هذا الحساب لا يملك صلاحية إدارة الغرف.',true);return;}
   admin.classList.remove('hidden');
-  message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
-  watchLoginEvents();
+  if(isOwner===true){
+   message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
+   watchLoginEvents();
+  }else{
+   message('مرحباً '+(profile?.display_name||'بالمسؤول')+' — تم التحقق من صلاحية إدارة الغرف فقط.');
+   document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>{button.hidden=button.dataset.tab!=='rooms';});
+   $('#admin-menu')?.classList.remove('hidden');
+   if($('#admin-menu-toggle'))$('#admin-menu-toggle').hidden=true;
+   document.querySelectorAll('section.panel').forEach(section=>section.classList.toggle('hidden',section.id!=='rooms'));
+   document.querySelector('.room-design-studio')?.classList.add('hidden');
+  }
   setInterval(()=>refreshRoomPresence().catch(error=>{console.warn('Automatic room presence refresh failed:',error);}),30000);
-  const sections=[
+  const ownerSections=[
    ['الإحصاءات',loadStats],['نمو المستخدمين',loadSignupTrend],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
    ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
    ['الوكالات',loadAgencies],['المضيفون',loadHosts],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
   ];
+  const sections=isOwner===true?ownerSections:[['الغرف',loadRooms]];
   await Promise.all(sections.map(async([label,load])=>{
    try{await load();}
    catch(error){
