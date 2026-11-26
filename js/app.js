@@ -694,7 +694,7 @@ async function openRoom(r) {
           </div>
           <small class="hs-room-seat-layout-note">المقعد الأول مخصص للمضيفة. قبل تقليل العدد، أنزلي الأعضاء من المقاعد التي ستُزال.</small>
         </div>
-        <div class="hs-room-settings-group hs-room-background-settings"><div class="hs-room-background-heading"><span class="hs-room-background-icon"><i data-lucide="image"></i></span><div><h4>خلفية الغرفة</h4><p class="hs-room-settings-hint">اختاري صورة تظهر خلف المايكات فقط، دون تغطية الدردشة أو أدوات الغرفة. يبقى غلاف الغرفة منفصلاً.</p></div></div>
+        <div class="hs-room-settings-group hs-room-background-settings"><div class="hs-room-background-heading"><span class="hs-room-background-icon"><i data-lucide="image"></i></span><div><h4>خلفية الغرفة</h4><p class="hs-room-settings-hint">خلفية تظهر خلف المايكات فقط. اختاري صورة دون تغطية الدردشة أو أدوات الغرفة، ويبقى غلاف الغرفة منفصلاً.</p></div></div>
           <input id="room-background-gallery-file" class="hs-room-file-input" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" aria-label="اختيار صورة خلفية من معرض الهاتف">
           <button type="button" id="room-background-gallery-trigger" class="hs-room-gallery-action"><span class="hs-room-gallery-action-icon"><i data-lucide="images"></i></span><span><b>إضافة خلفية من المعرض</b><small>اختاري صورة من هاتفك · JPG أو PNG أو WEBP</small></span><i data-lucide="chevron-left" class="hs-room-gallery-chevron"></i></button>
           <div id="room-background-preview" class="hs-room-background-preview" aria-live="polite"><div class="hs-room-background-empty"><i data-lucide="image-plus"></i><b>لم تختاري خلفية بعد</b><small>ستظهر معاينة الصورة هنا قبل الحفظ</small></div></div>
