@@ -6911,3 +6911,27 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-me-diamond-copy em{font-size:8px;font-style:normal;color:#7772a8}
 .hs-me-diamond-arrow{position:absolute;left:9px;bottom:10px;width:15px;height:15px;color:#7b72b7}
 @media(max-width:340px){.hs-me-reference .hs-me-balance-grid{gap:6px;margin-inline:10px}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-banner,.hs-me-diamond-card{padding-inline:8px}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy strong{font-size:14px}}
+
+
+/* HAMSAT recovery polish: compact account page and reliable hidden dialogs */
+.hs-me-reference{width:100%;max-width:100%;box-sizing:border-box;overflow-x:hidden;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+.hs-me-reference .hs-me-hero{padding:18px 14px 28px!important;border-radius:0 0 22px 22px!important}
+.hs-me-reference .hs-me-cover{height:clamp(150px,46vw,205px)!important;min-height:0!important;border-radius:0 0 18px 18px!important;overflow:hidden!important}
+.hs-me-reference .hs-me-cover img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+.hs-me-reference .hs-me-user{gap:11px!important;margin-top:14px!important;align-items:center!important}
+.hs-me-reference .hs-me-avatar{flex:0 0 76px!important;width:76px!important;height:76px!important}
+.hs-me-reference .hs-me-user-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important}
+.hs-me-reference .hs-me-uid{margin-top:2px!important;max-width:100%!important}
+.hs-me-reference .hs-me-level{margin-top:2px!important}
+.hs-me-reference .hs-me-stats{margin:-15px 12px 12px!important;padding:10px 5px!important}
+.hs-me-reference .hs-me-balance-grid{margin:0 12px 12px!important;gap:9px!important}
+.hs-me-reference .hs-me-balance-grid>*{min-width:0!important;width:100%!important;box-sizing:border-box!important}
+.hs-me-reference .hs-me-level-cards{margin:0 12px 12px!important;gap:9px!important}
+.hs-me-reference .hs-me-level-cards>a{min-height:104px!important;padding:12px!important;border-radius:16px!important}
+.hs-me-reference .hs-me-spin-banner,.hs-me-reference .hs-me-quick-card,.hs-me-reference .hs-me-settings-card{margin-inline:12px!important}
+.hs-me-reference .hs-me-section-heading{margin-bottom:10px!important}
+.hs-me-reference .hs-me-quick-grid{gap:12px 7px!important}
+.hs-me-reference .hs-me-quick-grid a{min-width:0!important}
+.hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{min-height:48px!important}
+.hs-me-reference .hs-me-footer{padding:14px 0 6px!important}
+@media(max-width:380px){.hs-me-reference .hs-me-balance-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-banner,.hs-me-reference .hs-me-diamond-card{min-height:118px!important;padding:10px!important}.hs-me-reference .hs-me-level-cards>a{min-height:96px!important}.hs-me-reference .hs-me-user{gap:8px!important}.hs-me-reference .hs-me-avatar{flex-basis:68px!important;width:68px!important;height:68px!important}}
