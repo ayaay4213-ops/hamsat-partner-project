@@ -633,7 +633,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v4')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v5')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -649,7 +649,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v4')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v5')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
