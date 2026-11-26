@@ -1537,52 +1537,177 @@ async function giftsScreen() {
 
 
 async function shopScreen() {
-  screen.innerHTML = header('المتجر والمقتنيات', `<a href="#/wallet" class="text-sm text-gold-300">${coin(18)} ${num(state.wallet?.balance)}</a>`) + `
-    <div class="px-5 pt-4 pb-8 fade-in">
-      <div class="card ornament p-4 mb-4"><p class="font-bold text-gold-300">متجر همسات الملكي</p><p class="text-xs text-[#c7bdab] leading-6 mt-1">امتلكي إطارات لحسابك وحزم إيموجي وخلفيات للغرف. العناصر التي تشترينها تبقى محفوظة في مقتنياتك.</p></div>
-      <div class="flex gap-2 mb-3"><button class="chip active" data-shop-tab="all">المتجر</button><button class="chip" data-shop-tab="owned">مقتنياتي</button></div>
-      <div class="hs-shop-layout"><nav id="shop-category-tabs" class="hs-shop-category-tabs"><button type="button" class="active" data-shop-category="all">الكل</button><button type="button" data-shop-category="ride">الركوبة</button><button type="button" data-shop-category="frame">الإطار</button><button type="button" data-shop-category="special_id">ايدي مميز</button><button type="button" data-shop-category="ring">الخاتم</button><button type="button" data-shop-category="profile_frame">خلفية بطاقة البيانات</button><button type="button" data-shop-category="entrance">مؤثرات الدخولية</button></nav><div class="hs-shop-products"><label for="shop-search" class="sr-only">البحث في المتجر والمقتنيات</label><input id="shop-search" type="search" dir="rtl" autocomplete="off" placeholder="ابحثي عن عنصر…" aria-label="البحث في المتجر والمقتنيات" class="hs-shop-search"><div id="shop-grid" class="grid grid-cols-2 gap-3"></div></div></div>
-    </div>`;
+  tabbar.classList.remove('hidden');
+  state.wallet = (await api.wallet().catch(() => ({wallet:state.wallet||{balance:0}}))).wallet || state.wallet || {balance:0};
+  screen.innerHTML = `<section class="hs-vstore fade-in" dir="rtl">
+      <header class="hs-vstore-header">
+        <button type="button" id="vstore-back" class="hs-vstore-back" aria-label="رجوع"><i data-lucide="arrow-right"></i></button>
+        <h1>المتجر</h1>
+        <button type="button" id="vstore-backpack" class="hs-vstore-backpack"><i data-lucide="backpack"></i><span>الحقيبة</span></button>
+      </header>
+      <div class="hs-vstore-intro"><span>H A M S A T</span><strong>مقتنيات تليق بك</strong><small>اختاري لمستك الخاصة داخل همسات</small></div>
+      <div class="hs-vstore-layout">
+        <aside class="hs-vstore-sidebar" aria-label="تصنيفات المتجر">
+          <button type="button" class="active" data-vcat="frame"><i data-lucide="circle-user-round"></i><span>الإطار</span></button>
+          <button type="button" data-vcat="ride"><i data-lucide="car-front"></i><span>الركوب</span></button>
+          <button type="button" data-vcat="bubble"><i data-lucide="message-circle"></i><span>الفقاعة</span></button>
+          <button type="button" data-vcat="wave"><i data-lucide="audio-waveform"></i><span>تأثير صوتي</span></button>
+          <button type="button" data-vcat="banner"><i data-lucide="panels-top-left"></i><span>تأثير الدخول</span></button>
+        </aside>
+        <main class="hs-vstore-main">
+          <div class="hs-vstore-section-head"><div><small id="vstore-mode-label">المتجر الافتراضي</small><h2 id="vstore-category-title">إطارات الصور</h2></div><label class="hs-vstore-search"><i data-lucide="search"></i><input id="vstore-search" type="search" placeholder="بحث" aria-label="بحث في العناصر"></label></div>
+          <div id="vstore-grid" class="hs-vstore-grid"><div class="hs-vstore-loading">جارٍ تحميل المقتنيات…</div></div>
+        </main>
+      </div>
+      <div class="hs-vstore-footer">
+        <div class="hs-vstore-balance"><span>رصيدك</span><strong id="vstore-balance">0</strong><i class="hs-vstore-coin">✦</i></div>
+        <button type="button" id="vstore-buy" class="hs-vstore-buy" disabled>اختاري عنصرًا</button>
+      </div>
+      <div id="vstore-preview-root"></div>
+    </section>`;
   icons_();
-  let items=[],owned=[];
-  try {
-    const [catalog,inventory]=await Promise.all([api.shopItems(),api.inventory()]);
-    items=catalog.items;owned=inventory.items;
-  } catch(e) { $('#shop-grid').innerHTML=emptyBox('wifi-off','تعذّر تحميل المتجر',e.message);return; }
-  let mode='all',category='all',searchQuery='';
+
+  let items=[],owned=[],mode='store',category='frame',searchQuery='',selectedId=null;
+  const categoryTypes={
+    frame:['frame','profile_frame'],
+    ride:['ride','vehicle','entrance_vehicle'],
+    bubble:['chat_bubble'],
+    wave:['sound_frame','voice_wave'],
+    banner:['entrance','entrance_banner']
+  };
+  const categoryLabels={frame:'إطارات الصور',ride:'مركبات الدخول',bubble:'فقاعات الدردشة',wave:'تأثيرات المايك',banner:'دخوليات فاخرة'};
+  const typeCategory=(type)=>{
+    for(const key of Object.keys(categoryTypes)) if(categoryTypes[key].includes(type)) return key;
+    return 'frame';
+  };
+  const findSelected=()=> (mode==='bag'?owned:items).find(x=>String(x.id)===String(selectedId)) || null;
+  const equippedFor=(it)=>{
+    const map={frame:state.profile?.equippedFrameId,profile_frame:state.profile?.equippedProfileFrameId,entrance:state.profile?.equippedEntranceId,entrance_banner:state.profile?.equippedEntranceId,chat_bubble:state.profile?.equippedBubbleId,special_id:state.profile?.equippedSpecialId,sound_frame:state.profile?.equippedSoundFrameId,voice_wave:state.profile?.equippedVoiceWaveId};
+    return String(map[it.item_type]||'')===String(it.id);
+  };
+  const durationLabel=(it)=>{
+    const d=Number(it.duration_days||0);
+    return d>0?'يوم '+num(d):'دائم';
+  };
+  const refreshBalance=()=>{
+    const el=$('#vstore-balance');
+    if(el)el.textContent=num(state.wallet?.balance||0);
+  };
   const draw=()=>{
-    const baseList=mode==='owned'?owned:items;
+    const grid=$('#vstore-grid');if(!grid)return;
+    const types=categoryTypes[category]||[];
+    const source=mode==='bag'?owned:items;
     const query=searchQuery.trim().toLocaleLowerCase('ar');
-    const list=baseList.filter(it=>(category==='all'||it.item_type===category)&&(!query||[it.name,it.rarity,it.item_type].some(value=>String(value||'').toLocaleLowerCase('ar').includes(query))));
-    $('#shop-grid').innerHTML=list.length?list.map(it=>{
-      const has=owned.some(o=>o.id===it.id);
-      const visual=it.image_url?'<div class="cosmetic-preview"><img src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" style="width:100%;height:100%;object-fit:contain;border-radius:12px"></div>':['frame','profile_frame','sound_frame'].includes(it.item_type)?'<div class="cosmetic-preview"><span class="cosmetic-avatar '+esc(it.visual_key)+'">هـ</span></div>':
-        '<div class="cosmetic-preview emoji-preview">'+(it.visual_key==='love'?'💖 💗 💕':it.visual_key==='luxe'?'👑 💎 ✨':'🌙 ⭐ 🌟')+'</div>';
-      const equippedId=({frame:state.profile?.equippedFrameId,profile_frame:state.profile?.equippedProfileFrameId,entrance:state.profile?.equippedEntranceId,chat_bubble:state.profile?.equippedBubbleId,special_id:state.profile?.equippedSpecialId,sound_frame:state.profile?.equippedSoundFrameId,voice_wave:state.profile?.equippedVoiceWaveId,emoji_pack:state.profile?.equippedEmojiPackId})[it.item_type];
-      const equipped=has&&equippedId===it.id;const roomBackground=it.item_type==='room_background';const costLabel=Number(it.price)===0?'مجانية':num(it.price)+' عملة';
-      const remaining=it.expiresAt?Math.max(0,Math.ceil((new Date(it.expiresAt).getTime()-Date.now())/86400000)):null;const expiry=it.expiresAt?'متبقي '+num(remaining)+' يوم':'دائم';
-      return `<article class="card p-3 flex flex-col items-center text-center cosmetic-card">${visual}<p class="font-bold text-sm mt-2">${esc(it.name)}</p><span class="text-[10px] text-gold-300 mt-1">${esc(it.rarity)}</span><p class="text-xs text-[#c7bdab] mt-2">${has?expiry:costLabel}</p>
-        <button class="btn-${has?(equipped?'ghost':'gold'):'gold'} w-full text-xs py-2 mt-3" data-item="${esc(it.id)}" data-type="${esc(it.item_type)}" data-owned="${has}" data-equipped="${equipped}">${roomBackground?(has?'اختيار من إعدادات الغرفة':'شراء الخلفية'):has?(equipped?'إلغاء الاستخدام':'استخدام'):'شراء'}</button></article>`;
-    }).join(''):emptyBox('search',searchQuery?'لا توجد نتائج مطابقة':mode==='owned'?'لا توجد مقتنيات بعد':'لا توجد عناصر في هذا القسم',searchQuery?'جرّبي كلمة بحث أخرى':mode==='owned'?'تصفحي المتجر لاقتناء أول إطار أو حزمة إيموجي':'اختاري قسمًا آخر من أقسام المتجر');
-    $('#shop-grid').querySelectorAll('[data-item]').forEach(b=>b.onclick=async()=>{
-      b.disabled=true;
-      try{
-        if(b.dataset.owned==='true'){if(b.dataset.type==='room_background'){toast('افتحي إعدادات غرفتك ثم اختاري الخلفية من قائمة الخلفيات المملوكة');}else if(b.dataset.equipped==='true'){await api.unequipShopItem(b.dataset.type);toast('تم إلغاء استخدام العنصر');}else{await api.equipShopItem(b.dataset.item);toast('تم تجهيز العنصر في حسابك');}if(b.dataset.type!=='room_background')state.profile=(await api.me()).profile;}
-        else{await api.purchaseShopItem(b.dataset.item);state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;toast('تم الشراء وإضافة العنصر إلى مقتنياتك');}
-        draw();
-      }catch(e){toast(e.message,'error');b.disabled=false;}
+    const list=source.filter(it=>(types.includes(it.item_type))&&(!query||[it.name,it.rarity,it.description,it.item_type].some(v=>String(v||'').toLocaleLowerCase('ar').includes(query))));
+    $('#vstore-mode-label').textContent=mode==='bag'?'مقتنياتي المحفوظة':'المتجر الافتراضي';
+    $('#vstore-category-title').textContent=categoryLabels[category]||'العناصر';
+    $('#vstore-backpack').classList.toggle('active',mode==='bag');
+    grid.innerHTML=list.length?list.map(it=>{
+      const isOwned=owned.some(o=>String(o.id)===String(it.id));
+      const selected=String(selectedId)===String(it.id);
+      const image=it.image_url?'<img class="hs-vstore-product-image" src="'+esc(it.image_url)+'" alt="'+esc(it.name)+'" loading="lazy" decoding="async">':'<div class="hs-vstore-art-fallback"><span>'+(category==='ride'?'🏎️':category==='bubble'?'💬':category==='wave'?'🎙️':category==='banner'?'✨':'👑')+'</span><small>HAMSAT</small></div>';
+      return '<article class="hs-vstore-card '+(selected?'is-selected':'')+'" data-vproduct="'+esc(it.id)+'" role="button" tabindex="0" aria-pressed="'+selected+'">'
+        +'<div class="hs-vstore-art">'+image+'<span class="hs-vstore-duration">'+esc(durationLabel(it))+'</span><button type="button" class="hs-vstore-play" data-vpreview="'+esc(it.id)+'" aria-label="معاينة '+esc(it.name)+'"><i data-lucide="play"></i></button></div>'
+        +'<div class="hs-vstore-card-copy"><strong>'+esc(it.name)+'</strong><small>'+esc(it.rarity||categoryLabels[category])+'</small><div class="hs-vstore-card-meta"><span>'+num(it.price||0)+' <b>✦</b></span>'+(isOwned?'<em>في الحقيبة</em>':'')+'</div></div></article>';
+    }).join(''):'<div class="hs-vstore-empty"><span>✧</span><strong>'+(mode==='bag'?'لا توجد مقتنيات في هذا القسم':'لا توجد عناصر في هذا القسم')+'</strong><small>'+(mode==='bag'?'ستظهر هنا العناصر التي اقتنيتها':'اختاري قسمًا آخر أو عودي لاحقًا للعناصر الجديدة')+'</small></div>';
+    grid.querySelectorAll('.hs-vstore-product-image').forEach(img=>img.addEventListener('error',()=>{
+      const art=img.closest('.hs-vstore-art');if(!art)return;
+      img.remove();const fallback=document.createElement('div');fallback.className='hs-vstore-art-fallback';fallback.innerHTML='<span>✧</span><small>HAMSAT</small>';art.prepend(fallback);
+    },{once:true}));
+    grid.querySelectorAll('[data-vproduct]').forEach(card=>{
+      const select=()=>{selectedId=card.dataset.vproduct;draw();};
+      card.addEventListener('click',e=>{if(e.target.closest('[data-vpreview]'))return;select();});
+      card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select();}});
     });
+    grid.querySelectorAll('[data-vpreview]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const item=source.find(x=>String(x.id)===String(btn.dataset.vpreview));if(item)openVirtualPreview(item);}));
+    refreshBalance();
+    const selected=findSelected(),buy=$('#vstore-buy');
+    if(buy){
+      if(!selected){buy.disabled=true;buy.textContent='اختاري عنصرًا';}
+      else if(mode==='bag'){buy.disabled=false;buy.textContent=equippedFor(selected)?'إزالة التفعيل':'تفعيل العنصر';}
+      else if(owned.some(o=>String(o.id)===String(selected.id))){buy.disabled=false;buy.textContent='عرض في الحقيبة';}
+      else{buy.disabled=false;buy.textContent='شراء';}
+    }
     icons_();
   };
-  $('#shop-search')?.addEventListener('input',event=>{searchQuery=event.target.value;draw();});
-  screen.querySelectorAll('[data-shop-category]').forEach(b=>b.onclick=()=>{category=b.dataset.shopCategory;screen.querySelectorAll('[data-shop-category]').forEach(x=>x.classList.toggle('active',x===b));draw();});
-  screen.querySelectorAll('[data-shop-tab]').forEach(b=>b.onclick=()=>{
-    mode=b.dataset.shopTab;
-    screen.querySelectorAll('[data-shop-tab]').forEach(x=>x.classList.toggle('active',x===b));
-    draw();
+
+  const scriptCache={};
+  const loadScript=(url)=>scriptCache[url]||(scriptCache[url]=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');script.src=url;script.async=true;
+    script.onload=resolve;script.onerror=()=>reject(new Error('تعذّر تحميل مشغل الحركة'));document.head.appendChild(script);
+  }));
+  function openVirtualPreview(item){
+    const root=$('#vstore-preview-root');if(!root)return;
+    const url=String(item.animation_url||'').trim();
+    root.innerHTML='<div class="hs-vstore-preview-backdrop" data-preview-close></div><section class="hs-vstore-preview" role="dialog" aria-modal="true" aria-label="معاينة '+esc(item.name)+'"><button type="button" class="hs-vstore-preview-close" data-preview-close aria-label="إغلاق"><i data-lucide="x"></i></button><div class="hs-vstore-preview-kicker">H A M S A T · LIVE PREVIEW</div><h3>'+esc(item.name)+'</h3><div id="hs-vstore-animation-stage" class="hs-vstore-animation-stage"><div class="hs-vstore-art-fallback"><span>✧</span><small>جارٍ تجهيز المعاينة</small></div></div><p>معاينة العنصر قبل الاقتناء</p></section>';
+    root.querySelectorAll('[data-preview-close]').forEach(b=>b.addEventListener('click',()=>{root.innerHTML='';}));
+    icons_();
+    const stage=$('#hs-vstore-animation-stage');
+    const fallback=()=>{if(stage)stage.innerHTML=item.image_url?'<img src="'+esc(item.image_url)+'" alt="'+esc(item.name)+'" class="hs-vstore-preview-image">':'<div class="hs-vstore-art-fallback"><span>✧</span><small>لا تتوفر معاينة متحركة لهذا العنصر بعد</small></div>';};
+    if(!url){fallback();return;}
+    const clean=url.split('?')[0].toLowerCase();
+    if(/\.(mp4|webm|mov)$/.test(clean)){stage.innerHTML='<video class="hs-vstore-preview-video" src="'+esc(url)+'" autoplay muted loop playsinline controls></video>';return;}
+    if(/\.(gif|webp|png|jpe?g)$/.test(clean)){stage.innerHTML='<img src="'+esc(url)+'" alt="'+esc(item.name)+'" class="hs-vstore-preview-image">';return;}
+    if(clean.endsWith('.json')){
+      loadScript('https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js').then(()=>{
+        if(!stage.isConnected)return;stage.innerHTML='<div id="hs-vstore-lottie" class="hs-vstore-lottie"></div>';
+        window.lottie.loadAnimation({container:$('#hs-vstore-lottie'),renderer:'svg',loop:true,autoplay:true,path:url});
+      }).catch(fallback);return;
+    }
+    if(clean.endsWith('.svga')){
+      loadScript('https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.2/build/svga.lite.min.js').then(()=>{
+        if(!stage.isConnected)return;stage.innerHTML='<canvas id="hs-vstore-svga" class="hs-vstore-svga"></canvas>';
+        const player=new window.SVGA.Player('#hs-vstore-svga');const parser=new window.SVGA.Parser('#hs-vstore-svga');
+        parser.load(url,videoItem=>{if(stage.isConnected){player.setVideoItem(videoItem);player.startAnimation();}},fallback);
+      }).catch(fallback);return;
+    }
+    fallback();
+  }
+
+  try{
+    const results=await Promise.all([api.shopItems(),api.inventory()]);
+    items=results[0].items||[];owned=results[1].items||[];
+  }catch(e){
+    $('#vstore-grid').innerHTML='<div class="hs-vstore-empty"><span>!</span><strong>تعذّر تحميل المتجر</strong><small>'+esc(e.message||'حاولي مرة أخرى')+'</small></div>';
+  }
+  const firstAvailable=Object.keys(categoryTypes).find(key=>items.some(it=>categoryTypes[key].includes(it.item_type)));
+  if(firstAvailable)category=firstAvailable;
+  selectedId=(mode==='bag'?owned:items).find(it=>categoryTypes[category].includes(it.item_type))?.id||null;
+  screen.querySelectorAll('[data-vcat]').forEach(btn=>btn.addEventListener('click',()=>{
+    category=btn.dataset.vcat;selectedId=null;
+    screen.querySelectorAll('[data-vcat]').forEach(x=>x.classList.toggle('active',x===btn));draw();
+  }));
+  $('#vstore-back').onclick=()=>{location.hash='#/home';};
+  $('#vstore-backpack').onclick=()=>{
+    mode=mode==='store'?'bag':'store';selectedId=null;
+    $('#vstore-backpack').innerHTML=mode==='bag'?'<i data-lucide="store"></i><span>المتجر</span>':'<i data-lucide="backpack"></i><span>الحقيبة</span>';
+    selectedId=(mode==='bag'?owned:items).find(it=>categoryTypes[category].includes(it.item_type))?.id||null;draw();
+  };
+  $('#vstore-search').addEventListener('input',e=>{searchQuery=e.target.value;draw();});
+  $('#vstore-buy').addEventListener('click',async()=>{
+    const item=findSelected();if(!item)return;
+    if(mode==='bag'){
+      try{
+        if(equippedFor(item))await api.unequipShopItem(item.item_type);else await api.equipShopItem(item.id);
+        state.profile=(await api.me()).profile;toast(equippedFor(item)?'تم تحديث العنصر':'تم تفعيل العنصر');draw();
+      }catch(e){toast(e.message,'error');}
+      return;
+    }
+    if(owned.some(o=>String(o.id)===String(item.id))){mode='bag';draw();return;}
+    openSheet('<div class="hs-vstore-confirm" dir="rtl"><p class="hs-vstore-confirm-kicker">تأكيد الاقتناء</p><h3>'+esc(item.name)+'</h3><div class="hs-vstore-confirm-row"><span>السعر</span><strong>'+num(item.price||0)+' ✦</strong></div><div class="hs-vstore-confirm-row"><span>مدة الصلاحية المسجلة للعنصر</span><strong>'+esc(durationLabel(item))+'</strong></div><p class="hs-vstore-confirm-note">سيتم خصم السعر وإضافة العنصر إلى حقيبتك بعد تأكيد العملية عبر خادم همسات.</p><button type="button" class="hs-vstore-gift" disabled title="الإهداء غير مفعّل في خدمة المتجر الحالية"><i data-lucide="gift"></i> إهداء لصديق · قريبًا</button><button type="button" id="vstore-confirm-purchase" class="hs-vstore-confirm-buy">تأكيد الشراء</button></div>',async sheet=>{
+      const confirmButton=sheet.querySelector('#vstore-confirm-purchase');
+      confirmButton.onclick=async()=>{
+        confirmButton.disabled=true;confirmButton.textContent='جارٍ تأكيد الشراء…';
+        try{
+          await api.purchaseShopItem(item.id);
+          state.wallet=(await api.wallet()).wallet;owned=(await api.inventory()).items;mode='bag';closeSheet();toast('تم الشراء وإضافة العنصر إلى الحقيبة');draw();
+        }catch(e){toast(e.message,'error');confirmButton.disabled=false;confirmButton.textContent='تأكيد الشراء';}
+      };
+    });
   });
   draw();
 }
+
 
 async function walletScreen() {
   screen.innerHTML = header('المحفظة') + `<div id="wallet-body" class="px-5 pt-4 pb-6 fade-in">${loading()}</div>`;
