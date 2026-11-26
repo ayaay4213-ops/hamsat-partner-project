@@ -90,13 +90,11 @@ tailwind.config = { theme: { extend: {
     </script>
     <div id="screen" class="flex-1 flex flex-col"></div>
     <nav id="tabbar" class="hidden fixed bottom-0 inset-x-0 mx-auto app-width z-30 bg-ink-900/95 backdrop-blur border-t border-ink-600">
-      <div class="grid grid-cols-6 pb-safe">
-        <a href="#/home" data-tab="home" class="tab"><i data-lucide="house"></i><span>الرئيسية</span></a>
-        <a href="#/recent-rooms" data-tab="recent-rooms" class="tab"><i data-lucide="history"></i><span>غرفي</span></a>
-        <a href="#/inbox" data-tab="chat" class="tab"><i data-lucide="message-circle"></i><span>الدردشة</span></a>
-        <a href="#/games" data-tab="games" class="tab"><i data-lucide="gamepad-2"></i><span>الألعاب</span></a>
-        <a href="#/moments" data-tab="moments" class="tab"><i data-lucide="image-plus"></i><span>لحظة</span></a>
-        <a href="#/me" data-tab="me" class="tab tab-me-text"><span>أنا</span></a>
+      <div class="grid grid-cols-4 pb-safe hs-bottom-nav">
+        <a href="#/home" data-tab="party" class="tab"><span class="hs-bottom-3d-icon">🎙️</span><span>حفلة</span></a>
+        <a href="#/activities" data-tab="discover" class="tab"><span class="hs-bottom-3d-icon">🧭</span><span>اكتشاف</span></a>
+        <a href="#/inbox" data-tab="messages" class="tab hs-bottom-message"><span class="hs-bottom-3d-icon">💬</span><span>رسالة</span><b data-unread-badge hidden></b></a>
+        <a href="#/me" data-tab="me" class="tab tab-me-text"><span class="hs-bottom-3d-icon">👑</span><span>أنا</span></a>
       </div>
     </nav>
     <div id="side-drawer-root"></div>
