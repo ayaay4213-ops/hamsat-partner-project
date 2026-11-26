@@ -351,13 +351,32 @@ export const api = {
       fail(res.error); owners = res.data;
     }
     const mappedOwners=await mapProfilesWithFrames(owners);const byId = Object.fromEntries(mappedOwners.map(p => [p.uuid,p]));
+    const presenceResult=await client().rpc('get_public_room_presence');fail(presenceResult.error);
+    const presenceByRoom=Object.fromEntries((presenceResult.data||[]).map(x=>[x.room_id,Number(x.active_count||0)]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
       return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 10, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
-        ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
+        ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '', ownerAvatarUrl:p.avatarUrl||null, ownerFrameUrl:p.equippedProfileFrameUrl||null, ownerVipLevel:p.vipLevel||0, ownerCountry:p.country||'', memberCount:presenceByRoom[r.id]||0,
         ownerColor: p.color || '#7c3aed' };
     }) };
+  },
+  roomPresenceCounts: async () => {
+    const {data,error}=await client().rpc('get_public_room_presence');fail(error);
+    return {counts:Object.fromEntries((data||[]).map(x=>[x.room_id,Number(x.active_count||0)]))};
+  },
+  partyLeaderboardData: async () => {
+    const [charismaResult,coupleResult]=await Promise.all([
+      client().from('profiles').select('id,public_id,handle,display_name,avatar_url,country,charisma_level,vip_level,equipped_profile_frame_id').order('charisma_level',{ascending:false}).order('created_at',{ascending:true}).limit(3),
+      client().from('couple_spaces').select('owner_id,partner_id,updated_at').eq('status','active').order('updated_at',{ascending:false}).limit(3)
+    ]);
+    fail(charismaResult.error);fail(coupleResult.error);
+    const ids=[...new Set((coupleResult.data||[]).flatMap(x=>[x.owner_id,x.partner_id]))];
+    let coupleProfiles=[];
+    if(ids.length){const result=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(result.error);coupleProfiles=await mapProfilesWithFrames(result.data||[]);}
+    const byId=Object.fromEntries(coupleProfiles.map(p=>[p.uuid,p]));
+    const charisma=await mapProfilesWithFrames(charismaResult.data||[]);
+    return {charisma,couples:(coupleResult.data||[]).map(x=>({updatedAt:x.updated_at,owner:byId[x.owner_id]||null,partner:byId[x.partner_id]||null}))};
   },
   createRoom: async (r) => {
     const user = await currentUser();
