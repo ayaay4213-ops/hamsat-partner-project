@@ -1813,7 +1813,7 @@ async function hostDataScreen(){
  mePage('بيانات المضيف',`<section class="hs-host-v2" dir="rtl">
   <header class="hs-host-v2-hero"><div class="hs-host-v2-identity">${avatar(profile,64)}<div><b>${esc(profile.displayName||'عضو همسات')}</b><small>UID: ${esc(profile.publicId||'—')}</small></div></div><span class="hs-host-v2-status">جارٍ التحقق من حالة الاستضافة</span><p>حالة الوكالة: <b id="hs-host-agency-status">جارٍ التحميل</b></p><p>توقيت التقارير: <b>UTC</b></p><div class="hs-host-v2-salary"><small>الراتب الأساسي بالساعة</small><strong>غير متاح</strong><span>تُعرض التعرفة بعد اعتماد سياسة الرواتب وربط سجل الاستحقاقات</span></div><div class="hs-host-v2-progress"><div><small>التقدم إلى المستوى التالي</small><b>غير متاح</b></div><i></i></div><button type="button" id="hs-host-claim" disabled>المطالبة بالراتب — غير مفعّل</button></header>
   <div class="hs-host-v2-toolbar"><h3>ملخص الماسات</h3><button type="button" id="host-range">آخر 7 أيام ▾</button></div>
-  <div class="hs-host-v2-grid"><article><small>إجمالي الدخل</small><b id="hs-host-income">—</b></article><article><small>الاستهلاك</small><b>—</b></article><article><small>الهدايا</small><b id="hs-host-gifts">—</b></article><article><small>الراتب الأساسي</small><b>—</b><article><small>المهام</small><b>—</b></article></div>
+  <div class="hs-host-v2-grid"><article><small>إجمالي الدخل</small><b id="hs-host-income">—</b></article><article><small>الاستهلاك</small><b>—</b></article><article><small>الهدايا</small><b id="hs-host-gifts">—</b></article><article><small>الراتب الأساسي</small><b>—</b></article><article><small>المهام</small><b>—</b></article></div>
   <p class="hs-host-v2-note">لا يوجد حالياً سجل موثوق مستقل للراتب الأساسي أو الماسات أو المطالبات. لن نعتبر عملات الهدايا راتباً، ولن نسمح بالمطالبة حتى اعتماد سياسة الصرف وربط سجل مالي آمن.</p>
  </section>`);
  $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">فترة التقرير</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
@@ -1823,12 +1823,8 @@ async function hostDataScreen(){
   const status=$('#hs-host-agency-status');
   if(status)status.textContent=agency?(agency.status==='active'?'وكالة مرتبطة':String(agency.status||'حالة غير محددة')):'لا يوجد وكيل';
   if(agency){
-   const stats=await api.agencyHostStats(agency.id);
-   const own=(stats.stats||[]).filter(item=>item.host_id===profile.uuid);
-   const total=own.reduce((sum,item)=>sum+Number(item.gift_coins||0),0);
-   const income=$('#hs-host-income'),gifts=$('#hs-host-gifts');
-   if(income)income.textContent=num(total);
-   if(gifts)gifts.textContent=num(total);
+   // Existing agency gift totals are Coins, not Diamonds or salary; keep financial cards unfilled until dedicated ledgers exist.
+   await api.agencyHostStats(agency.id);
   }
  }catch(error){const status=$('#hs-host-agency-status');if(status)status.textContent='تعذّر تحميل الحالة';console.warn('Host dashboard load failed',error);}
 }
