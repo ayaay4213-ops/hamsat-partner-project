@@ -7123,3 +7123,52 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-vstore-confirm-buy{margin-top:9px;background:linear-gradient(120deg,#f5e5a5,#d6b354,#9c742b);color:#211909;border:1px solid #f4dfa0}
 @media(max-width:370px){.hs-vstore-sidebar button{min-height:68px;font-size:8px}.hs-vstore-art{height:90px}.hs-vstore-main{padding-inline:8px}.hs-vstore-grid{gap:7px}.hs-vstore-card{padding:6px}.hs-vstore-card.is-selected{padding:5px}}
 @media(min-width:481px){.hs-vstore{max-width:480px;margin:0 auto}.hs-vstore-footer{bottom:62px}}
+
+
+/* HAMSAT compact Me page + restore owner shortcuts */
+.hs-me-reference .hs-me-hero{padding:12px 14px 20px!important;border-radius:0 0 22px 22px!important}
+.hs-me-reference .hs-me-hero-top{min-height:32px;gap:8px}
+.hs-me-admin-link{display:inline-flex;align-items:center;gap:5px;margin-inline-start:auto;margin-inline-end:7px;padding:7px 10px;border:1px solid #fff8;border-radius:999px;background:#ffffff24;color:#fff;font-size:10px;font-weight:900;white-space:nowrap}
+.hs-me-admin-link svg{width:14px;height:14px}
+.hs-me-reference .hs-me-checkin{padding:7px 9px!important;font-size:9px!important;white-space:nowrap}
+.hs-me-reference .hs-me-user{margin-top:12px!important;gap:10px!important}
+.hs-me-reference .hs-me-avatar{width:70px!important;height:70px!important;padding:3px!important}
+.hs-me-reference .hs-me-name{font-size:16px!important}
+.hs-me-edit-profile-action{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:5px 9px;border:1px solid #ffffff70;border-radius:8px;background:#ffffff20;color:#fff;font-size:10px;font-weight:800}
+.hs-me-edit-profile-action svg{width:13px;height:13px}
+.hs-me-reference .hs-me-uid{margin-top:5px!important;padding:4px 7px!important}
+.hs-me-reference .hs-me-level{margin-top:4px!important;padding:3px 8px!important}
+.hs-me-reference .hs-me-stats{margin:12px 0 -30px!important;padding:8px 6px!important;border-radius:13px!important}
+.hs-me-reference .hs-me-stats b{font-size:15px!important}
+.hs-me-reference .hs-me-stats span{font-size:8px!important}
+.hs-me-reference .hs-me-wallet-banner{min-height:82px!important;margin:42px 11px 9px!important;padding:10px 11px!important;border-radius:15px!important;gap:9px!important}
+.hs-me-wallet-art{width:58px!important;height:54px!important}
+.hs-wallet-bag{width:43px!important;height:41px!important}
+.hs-wallet-bag svg{width:22px!important;height:22px!important}
+.hs-me-wallet-copy strong{font-size:19px!important}
+.hs-me-reference .hs-me-level-cards{gap:8px!important;margin:0 11px 9px!important}
+.hs-me-reference .hs-me-level-cards>a{min-height:76px!important;padding:9px 10px 8px 45px!important;border-radius:14px!important}
+.hs-me-metal-icon{top:13px!important;left:8px!important;width:32px!important;height:32px!important}
+.hs-me-metal-icon svg{width:18px!important;height:18px!important}
+.hs-me-level-cards>a b{font-size:15px!important}
+.hs-me-reference .hs-me-spin-banner{min-height:78px!important;margin:0 11px 9px!important;padding:8px 10px!important;border-radius:14px!important}
+.hs-me-wheel-art{width:51px!important;height:51px!important;border-width:3px!important}
+.hs-wheel-center{width:20px!important;height:20px!important;font-size:11px!important}
+.hs-me-cash>b{font-size:14px!important}
+.hs-me-cash>strong{font-size:12px!important}
+.hs-me-reference .hs-me-quick-card,.hs-me-reference .hs-me-settings-card{margin:0 11px 9px!important;padding:10px 12px!important;border-radius:15px!important}
+.hs-me-section-heading{margin-bottom:8px!important}
+.hs-me-section-heading h2{font-size:13px!important}
+.hs-me-reference .hs-me-quick-grid{gap:10px 7px!important}
+.hs-me-reference .hs-me-quick-grid a{gap:4px!important;font-size:9px!important}
+.hs-me-reference .hs-me-quick-grid a span{width:39px!important;height:39px!important;border-radius:12px!important}
+.hs-me-reference .hs-me-quick-grid a svg{width:19px!important;height:19px!important}
+.hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{padding:8px 0!important;gap:8px!important}
+.hs-me-reference .hs-me-settings-card>a>span,.hs-me-reference .hs-me-settings-card>button>span{width:29px!important;height:29px!important;border-radius:9px!important}
+.hs-me-reference .hs-me-footer{padding:7px!important}
+@media(max-width:380px){
+ .hs-me-admin-link{padding:6px 7px;font-size:9px}
+ .hs-me-reference .hs-me-checkin span{display:none}
+ .hs-me-reference .hs-me-avatar{width:64px!important;height:64px!important}
+ .hs-me-reference .hs-me-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
