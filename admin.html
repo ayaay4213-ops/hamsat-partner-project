@@ -278,7 +278,15 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 <section id="logins" class="panel space-y-3 hidden"><div><h2 class="text-xl font-bold">إشعارات دخول الأعضاء</h2><p class="muted text-sm">كل تسجيل دخول جديد يظهر هنا مباشرة مع رقم العضو والوقت، دون عرض بيانات الاتصال الخاصة.</p></div><div id="login-events" class="space-y-2"><p class="muted">جارٍ تحميل سجل الدخول...</p></div></section>
 <section id="rooms" class="panel space-y-4 hidden">
 <div><h2 class="text-xl font-bold">إدارة الغرف وتصميمها</h2><p class="muted text-sm">معاينة تخطيط موحّد أو تخطيط مستقل لغرفة محددة.</p></div>
-<button id="refresh-rooms" class="ghost" type="button">تحديث قائمة الغرف</button><div id="room-list" class="space-y-2"></div>
+<div class="room-design-notice"><b>متابعة مباشرة للحضور</b><span>بيانات الغرف والحضور للقراءة فقط. يتم تحديث أعداد الحضور تلقائياً كل 30 ثانية، ولا تتوفر بعد أوامر الإغلاق أو الطرد أو كتم الميكروفون من لوحة الإدارة.</span></div>
+<div class="grid sm:grid-cols-[minmax(0,1fr)_220px_auto] gap-2 items-end">
+ <label class="text-sm">البحث في الغرف<input id="room-search" class="field mt-1" type="search" placeholder="اسم الغرفة أو رقمها أو المضيفة"></label>
+ <label class="text-sm">عرض الغرف<select id="room-presence-filter" class="field mt-1"><option value="all">كل الغرف</option><option value="live">بها حضور الآن</option><option value="quiet">دون حضور ظاهر</option></select></label>
+ <button id="refresh-rooms" class="ghost" type="button">إعادة تحميل الغرف</button>
+</div>
+<div id="room-live-summary" class="grid grid-cols-2 sm:grid-cols-3 gap-2" aria-live="polite"></div>
+<p id="room-presence-updated" class="muted text-xs" aria-live="polite">لم يتم تحديث الحضور بعد.</p>
+<div id="room-list" class="space-y-2"></div>
 <div class="room-design-studio space-y-4">
   <div class="room-design-notice"><b>وضع المعاينة فقط</b><span>التعديلات هنا تجريبية داخل لوحة الإدارة ولا تُحفظ ولا تُطبّق على الغرف بعد. ربط الحفظ يحتاج طبقة تخزين وصلاحيات آمنة منفصلة.</span></div>
   <div class="grid sm:grid-cols-2 gap-3">
