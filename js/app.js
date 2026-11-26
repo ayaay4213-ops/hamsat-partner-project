@@ -2107,7 +2107,7 @@ async function render() {
   closeSideMenu();
   tabbar.classList.remove('hidden');
   screen.className = 'flex-1 flex flex-col has-tabbar';
-  const activeTab = route === 'inbox' || route === 'dm' ? 'messages' : route === 'activities' ? 'discover' : ['rooms','home','recent-rooms'].includes(route) ? 'party' : route;
+  const activeTab = route === 'inbox' || route === 'dm' ? 'messages' : route === 'activities' ? 'discover' : ['rooms','home','recent-rooms','charisma'].includes(route) ? 'party' : route;
   tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === activeTab));
   refreshBottomUnreadBadge();
   window.scrollTo(0, 0);
