@@ -6882,3 +6882,32 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-me-reference .hs-me-level{background:linear-gradient(110deg,#f7efd9,#e9d9ad)!important;border:1px solid #e8d9b4!important;color:#76613a!important}
 .hs-me-reference .hs-me-avatar{border-color:#fff!important;background:#fff!important;box-shadow:0 4px 13px #324a3a20!important}
 @media(max-width:390px){.hs-me-reference .hs-me-cover{height:205px!important}}
+
+
+/* HAMSAT profile balances — paired cards, no duplicate target tile */
+.hs-me-reference .hs-me-balance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:53px 14px 12px;align-items:stretch;direction:rtl}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-banner{min-width:0;min-height:132px;height:100%;margin:0;padding:14px 10px 12px;gap:6px;align-items:flex-start;justify-content:center;flex-direction:column;border-radius:18px;background:linear-gradient(145deg,#fff1c9 0%,#f6d58b 55%,#e9ad62 100%);box-shadow:0 7px 18px #a36c2520}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-art{width:42px;height:40px;flex:none}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-bag{width:35px;height:34px;border-radius:10px}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-bag:before{top:-7px;width:16px;height:10px;border-width:3px}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-bag svg{width:19px;height:19px}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-coin{width:14px;height:14px;font-size:8px}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-coin.coin-a{top:0;right:0}
+.hs-me-reference .hs-me-balance-grid .hs-wallet-coin.coin-b{bottom:0;left:0}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy{gap:2px}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy small{font-size:9px}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy strong{font-size:clamp(15px,4.6vw,20px);white-space:nowrap}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy strong em{font-size:9px}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy>span{font-size:8px}
+.hs-me-reference .hs-me-balance-grid .hs-me-first-tag{font-size:7px;padding:4px 7px}
+.hs-me-reference .hs-me-balance-grid .hs-me-wallet-open{position:absolute;left:8px;right:auto;bottom:8px;width:22px;height:22px}
+.hs-me-diamond-card{position:relative;display:flex;min-width:0;min-height:132px;height:100%;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;padding:14px 11px 12px;border:1px solid #d9d8fb;border-radius:18px;background:linear-gradient(145deg,#f1edff 0%,#dcdafa 52%,#c9e8f3 100%);color:#423b79;box-shadow:0 7px 18px #6256a31b;overflow:hidden}
+.hs-me-diamond-card:after{content:"";position:absolute;width:100px;height:100px;left:-38px;bottom:-54px;border-radius:50%;background:#ffffff55;pointer-events:none}
+.hs-me-diamond-icon{width:42px;height:40px;display:grid;place-items:center;border:1px solid #ffffffb5;border-radius:13px;background:linear-gradient(145deg,#fff,#e4e3ff);color:#7869ca;box-shadow:0 4px 12px #6e64b522}
+.hs-me-diamond-icon svg{width:22px;height:22px}
+.hs-me-diamond-copy{display:flex;min-width:0;flex-direction:column;gap:3px}
+.hs-me-diamond-copy small{font-size:9px;font-weight:800;color:#716aa1}
+.hs-me-diamond-copy strong{font-size:15px;line-height:1.3;color:#49427f}
+.hs-me-diamond-copy em{font-size:8px;font-style:normal;color:#7772a8}
+.hs-me-diamond-arrow{position:absolute;left:9px;bottom:10px;width:15px;height:15px;color:#7b72b7}
+@media(max-width:340px){.hs-me-reference .hs-me-balance-grid{gap:6px;margin-inline:10px}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-banner,.hs-me-diamond-card{padding-inline:8px}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-copy strong{font-size:14px}}
