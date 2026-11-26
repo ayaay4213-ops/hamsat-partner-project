@@ -530,84 +530,135 @@ function onboardingScreen() {
 }
 
 async function homeScreen(params = new URLSearchParams()) {
-  screen.innerHTML = header('الرئيسية', '<button id="new-room" class="btn-gold text-sm py-2 px-3"><i data-lucide="plus" class="w-4 h-4"></i>إنشاء غرفة</button>') + `
-    <div class="px-4 pt-4 pb-6 fade-in">
-      <a href="#/activities" class="hs-weekly-banner mb-3" aria-label="استكشفي فعاليات همسات الأسبوعية">
-        <div><small>HAMSAT · WEEKLY EVENTS</small><strong>نجوم همسات</strong><span>فعاليات، تحديات، وغرف مميزة بانتظارك</span><em class="hs-banner-action">اكتشفي الأنشطة <i data-lucide="arrow-left"></i></em></div><i data-lucide="crown"></i>
-      </a>
-      <div class="hs-home-categories mb-4">
-        <a href="#/family"><i data-lucide="users-round"></i><span>عائلة</span></a>
-        <a href="#/family"><i data-lucide="gem"></i><span>قائمة CP</span></a>
-        <a href="#/me"><i data-lucide="trophy"></i><span>كارزما</span></a>
-      </div>
-      <div class="flex items-center justify-between mb-2"><span class="text-sm font-bold">الغرف الصوتية</span><span id="rooms-real-count" class="text-xs text-gold-300">—</span></div>
-      <div id="filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-3">
-        ${['الكل', ...TOPICS].map(t => `<button data-t="${esc(t)}" class="chip ${t === roomFilter ? 'active' : ''}">${esc(t)}</button>`).join('')}
-      </div>
-      <div id="rooms-list" class="hs-home-room-list space-y-3 pt-1 pb-6"><div class="skeleton h-40"></div></div>
-    </div>`;
+  screen.innerHTML = `
+    <main class="hs-party-home fade-in" dir="rtl">
+      <header class="hs-party-header">
+        <div class="hs-party-actions">
+          <button type="button" id="new-room" class="hs-party-action" aria-label="غرفتي" title="غرفتي"><i data-lucide="door-open"></i></button>
+          <button type="button" id="party-search" class="hs-party-action" aria-label="البحث عن غرفة أو عضو" title="بحث"><i data-lucide="search"></i></button>
+        </div>
+        <nav class="hs-party-top-tabs" aria-label="التنقل الرئيسي">
+          <a href="#/me">أنا</a><a href="#/home" class="active" aria-current="page">حفلة</a><a href="#/activities">الأنشطة</a><button type="button" id="party-country-tab">دولة</button>
+        </nav>
+        <span class="hs-party-header-mark">✦</span>
+      </header>
+      <section class="hs-party-content">
+        <div class="hs-party-carousel" id="hs-party-carousel" aria-label="فعاليات همسات">
+          <div class="hs-party-slides">
+            <a href="#/activities" class="hs-party-slide hs-party-slide-weekly">
+              <span class="hs-party-slide-kicker">HAMSAT · WEEKLY STAR</span><b>نجوم همسات الأسبوعية</b><small>فعاليات وتحديات وغرف مميزة بانتظارك</small><em>اكتشفي الفعالية <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">✦</span>
+            </a>
+            <a href="#/activities" class="hs-party-slide hs-party-slide-events">
+              <span class="hs-party-slide-kicker">HAMSAT · ACTIVITIES</span><b>مساحتك تبدأ بلحظة</b><small>انضمي إلى الأنشطة واكتشفي مجتمع همسات</small><em>عرض الأنشطة <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">♛</span>
+            </a>
+            <a href="#/family" class="hs-party-slide hs-party-slide-family">
+              <span class="hs-party-slide-kicker">HAMSAT · COMMUNITY</span><b>عائلتك وأصدقاؤك</b><small>اكتشفي الروابط والمساحات المشتركة</small><em>اكتشفي المزيد <i data-lucide="arrow-left"></i></em><span class="hs-party-slide-art" aria-hidden="true">❖</span>
+            </a>
+          </div>
+          <div class="hs-party-dots" role="tablist" aria-label="شرائح الفعاليات"><button class="active" type="button" data-slide="0" aria-label="الشريحة الأولى"></button><button type="button" data-slide="1" aria-label="الشريحة الثانية"></button><button type="button" data-slide="2" aria-label="الشريحة الثالثة"></button></div>
+        </div>
+        <section class="hs-party-leaderboards" aria-label="قوائم المجتمع">
+          <a href="#/me" class="hs-party-rank-card hs-rank-charisma"><span class="hs-party-rank-title">الكاريزما</span><span class="hs-party-rank-symbol">✧</span><span class="hs-party-rank-avatars"><i>★</i><i>★</i><i>★</i></span><small>قائمة الترتيب</small></a>
+          <a href="#/family" class="hs-party-rank-card hs-rank-cp"><span class="hs-party-rank-title">قائمة CP</span><span class="hs-party-rank-symbol">♡</span><span class="hs-party-rank-avatars"><i>♡</i><i>♡</i><i>♡</i></span><small>مساحات CP</small></a>
+          <a href="#/family" class="hs-party-rank-card hs-rank-family"><span class="hs-party-rank-title">عائلة</span><span class="hs-party-rank-symbol">♛</span><span class="hs-party-rank-avatars"><i>♛</i><i>♛</i><i>♛</i></span><small>العائلات</small></a>
+        </section>
+        <div class="hs-party-room-heading"><div><small>HAMSAT VOICE ROOMS</small><h2>اكتشفي الغرف</h2></div><span id="rooms-real-count">—</span></div>
+        <div id="filters" class="hs-party-filters" role="group" aria-label="فلترة الغرف">
+          <button type="button" class="active" data-room-filter="popular">🔥 شائع</button>
+          <button type="button" data-room-filter="new">🎉 غرفة جديدة</button>
+        </div>
+        <div id="rooms-list" class="hs-party-rooms-grid"><div class="skeleton h-40"></div><div class="skeleton h-40"></div></div>
+      </section>
+      <button type="button" class="hs-party-spin" id="party-spin" aria-label="عجلة الحظ"><span>✦</span><b>SPIN</b><small>قريباً</small></button>
+    </main>`;
   icons_();
-  const roomAction = $('#new-room');
-  if (roomAction) roomAction.onclick = newRoomSheet;
-  if (params.get('new')) {
-    history.replaceState(null, '', '#/home');
-    newRoomSheet();
-  }
   let rooms = [];
+  let activeFilter = 'popular';
+  let slideIndex = 0;
+  const carousel = $('#hs-party-carousel');
+  const slideTrack = carousel?.querySelector('.hs-party-slides');
+  const dots = [...(carousel?.querySelectorAll('[data-slide]') || [])];
+  const setSlide = index => {
+    slideIndex = (index + 3) % 3;
+    if (slideTrack) slideTrack.style.transform = `translateX(${slideIndex * 100}%)`;
+    dots.forEach((dot,i)=>dot.classList.toggle('active',i===slideIndex));
+  };
+  dots.forEach(dot=>dot.onclick=()=>setSlide(Number(dot.dataset.slide)));
+  const carouselTimer = window.setInterval(()=>{if(carousel?.isConnected)setSlide(slideIndex+1);},5000);
+  window.addEventListener('hashchange',()=>window.clearInterval(carouselTimer),{once:true});
+
+  const roomAction = $('#new-room');
+  roomAction.onclick = () => {
+    const ownRoom = rooms.find(room => String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());
+    if (ownRoom) openRoom(ownRoom); else newRoomSheet();
+  };
+  $('#party-search').onclick = () => openSheet(`
+    <section class="hs-party-search-sheet" dir="rtl">
+      <h2>البحث في همسات</h2><p>ابحثي برقم الغرفة أو UID أو اسم العضو</p>
+      <form id="party-search-form"><input id="party-search-input" class="field" placeholder="ROOM-000001 أو UID أو الاسم" autocomplete="off" required><button class="btn-gold w-full" type="submit"><i data-lucide="search"></i> بحث</button></form>
+      <div id="party-search-results" aria-live="polite"></div>
+    </section>`, root=>{
+      const form=root.querySelector('#party-search-form'), input=root.querySelector('#party-search-input'), result=root.querySelector('#party-search-results');
+      form.onsubmit=async event=>{
+        event.preventDefault();const q=input.value.trim();if(!q)return;
+        result.innerHTML='<div class="py-4 text-center"><span class="spinner"></span></div>';
+        try{
+          if(/^ROOM-/i.test(q)){
+            const found=await api.roomById(q.replace(/^ROOM-/i,'').replace(/^0+/, '')||'0');
+            closeSheet();await openRoom(found.room);return;
+          }
+          const found=await api.searchUsers(q);
+          if(!found.users?.length){result.innerHTML='<p class="text-sm text-center py-4 text-[#b7b2a5]">لم نعثر على عضو بهذا الاسم أو الرقم.</p>';return;}
+          result.innerHTML=found.users.map(user=>`<button type="button" class="hs-party-search-user" data-user-handle="${esc(user.handle)}"><span>${avatar(user,38)}</span><b>${esc(user.displayName||user.handle)}</b><small>@${esc(user.handle)}</small></button>`).join('');
+          result.querySelectorAll('[data-user-handle]').forEach(button=>button.onclick=()=>{closeSheet();location.hash='#/u/'+encodeURIComponent(button.dataset.userHandle);});
+        }catch(error){result.innerHTML='<p class="text-sm text-center py-4 text-red-300">'+esc(error.message||'تعذّر البحث')+'</p>';}
+      };
+      icons_();input.focus();
+    });
+  };
+  $('#party-country-tab').onclick=()=>toast('فلترة الغرف حسب الدولة تحتاج إلى إضافة دولة مالك الغرفة إلى بيانات الغرف.');
+  $('#party-spin').onclick=()=>toast('عجلة الحظ ستُفعّل بعد ربط نظام المكافآت.');
   const draw = () => {
-    const list = roomFilter === 'الكل' ? rooms : rooms.filter(r => r.topic === roomFilter);
-    const el = $('#rooms-list');
-    if (!el) return;
-    el.innerHTML = list.length ? list.map(roomCard).join('') : emptyBox('mic-off', 'لا توجد غرف في هذا التصنيف', 'يمكنك اختيار تصنيف آخر أو إنشاء غرفة جديدة');
-    bindRoomCards(el, list);
-    const badge = $('#rooms-real-count');
-    if (badge) badge.textContent = num(list.length) + ' غرفة';
+    const list = activeFilter==='new' ? [...rooms].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)) : rooms;
+    const el=$('#rooms-list');if(!el)return;
+    el.innerHTML=list.length?list.map(roomCard).join(''):emptyBox('mic-off','لا توجد غرف حالياً','يمكنك إنشاء غرفة جديدة أو المحاولة لاحقاً');
+    bindRoomCards(el,list);
+    const badge=$('#rooms-real-count');if(badge)badge.textContent=num(list.length)+' غرفة';
     icons_();
   };
-  $('#filters').querySelectorAll('[data-t]').forEach(button => button.onclick = () => {
-    roomFilter = button.dataset.t;
-    $('#filters').querySelectorAll('.chip').forEach(chip => chip.classList.toggle('active', chip === button));
+  $('#filters').querySelectorAll('[data-room-filter]').forEach(button=>button.onclick=()=>{
+    activeFilter=button.dataset.roomFilter;
+    $('#filters').querySelectorAll('[data-room-filter]').forEach(chip=>chip.classList.toggle('active',chip===button));
     draw();
   });
-  try {
-    rooms = (await api.rooms()).rooms || [];
-    const ownRoom = rooms.find(room => String(room.ownerUuid || '').toLowerCase() === String(state.profile?.uuid || state.account?.id || '').toLowerCase());
-    if (ownRoom && roomAction) {
-      roomAction.innerHTML = '<i data-lucide="door-open" class="w-4 h-4"></i> دخول إلى غرفتك';
-      roomAction.onclick = () => openRoom(ownRoom);
-      icons_();
-    }
+  if(params.get('new')){history.replaceState(null,'','#/home');newRoomSheet();}
+  try{
+    rooms=(await api.rooms()).rooms||[];
+    const ownRoom=rooms.find(room=>String(room.ownerUuid||'').toLowerCase()===String(state.profile?.uuid||state.account?.id||'').toLowerCase());
+    if(ownRoom)roomAction.classList.add('has-own-room');
     draw();
-    const inviteId = params.get('invite');
-    if (inviteId) {
-      const { room } = await api.roomById(inviteId);
-      history.replaceState(null, '', location.pathname + location.search + '#/home');
-      openRoom(room);
-    }
-  } catch (error) {
-    const el = $('#rooms-list');
-    if (el) el.innerHTML = emptyBox('wifi-off', 'تعذّر تحميل الغرف', error.message || 'حاولي مرة أخرى');
-    icons_();
+    const inviteId=params.get('invite');
+    if(inviteId){const {room}=await api.roomById(inviteId);history.replaceState(null,'',location.pathname+location.search+'#/home');openRoom(room);}
+  }catch(error){
+    const el=$('#rooms-list');if(el)el.innerHTML=emptyBox('wifi-off','تعذّر تحميل الغرف',error.message||'حاولي مرة أخرى');icons_();
   }
 }
+
 function emptyBox(icon, title, sub = '') {
   return `<div class="card p-6 text-center"><i data-lucide="${icon}" class="w-8 h-8 mx-auto text-ink-500 mb-3"></i><p class="font-bold text-sm">${esc(title)}</p>${sub ? `<p class="text-xs text-[#8a76a8] mt-1">${esc(sub)}</p>` : ''}</div>`;
 }
 
 function roomCard(r) {
-  return `<button data-room="${esc(r.id)}" class="room-card card w-full text-right overflow-hidden transition" aria-label="دخول غرفة ${esc(r.title)}">
-    <div class="room-cover" ${r.coverUrl ? `style="background-image:url('${esc(r.coverUrl)}');background-size:cover;background-position:center"` : ''}>
-      <div class="room-cover-glow"></div>
-      <span class="room-cover-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> غرفة عامة</span>
-      <span class="room-cover-symbol"><i data-lucide="audio-lines" class="w-10 h-10"></i></span>
-      <span class="room-cover-topic">${esc(r.topic)}</span>
+  const cover = r.coverUrl ? `background-image:linear-gradient(180deg,transparent 42%,rgba(0,0,0,.78)),url('${esc(r.coverUrl)}');background-size:cover;background-position:center` : '';
+  return `<button data-room="${esc(r.id)}" class="hs-party-room-card" type="button" aria-label="دخول غرفة ${esc(r.title)}">
+    <div class="hs-party-room-cover" style="${cover}">
+      ${!r.coverUrl ? '<span class="hs-party-room-placeholder" aria-hidden="true">🎙️</span>' : ''}
+      <span class="hs-party-room-vip" aria-hidden="true">✦</span>
+      <span class="hs-party-room-live"><i data-lucide="audio-lines"></i><b>مباشر</b><small>—</small></span>
+      <span class="hs-party-room-owner">${esc(r.ownerName||'عضو')}</span>
     </div>
-    <div class="room-card-body">
-      <div class="room-card-title-row">
-        <p class="font-extrabold text-[15px] truncate">${esc(r.title)}</p>
-        <span class="room-enter" aria-hidden="true"><i data-lucide="log-in"></i></span>
-      </div>
-    </div>
+    <div class="hs-party-room-footer"><b>${esc(r.title||'غرفة همسات')}</b><span title="الدولة غير متاحة">🌐</span></div>
+    <small class="hs-party-room-topic">${esc(r.topic||'عام')}</small>
   </button>`;
 }
 function bindRoomCards(root, rooms) {
