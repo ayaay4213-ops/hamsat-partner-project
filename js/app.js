@@ -1769,18 +1769,31 @@ async function dailyCheckinSheet(){
   <p class="hs-daily-kicker">HAMSAT DAILY GIFT</p><h2>مكافأة الدخول اليومي</h2>
   <p class="hs-daily-status">${status}</p>
   <div class="hs-daily-reward-value"><span>✦</span><b>مكافأتك اليومية</b><small>تُحدَّد قيمتها من الخادم عند الاستلام</small></div>
-  <button type="button" id="daily-more-rewards" class="hs-daily-more">المزيد من المكافآت</button>
+  <button type="button" id="daily-weekly-open" class="hs-daily-more">عرض سجل الحضور الأسبوعي</button><button type="button" id="daily-more-rewards" class="hs-daily-more">المزيد من المكافآت</button>
   <button type="button" id="daily-confirm" class="hs-daily-confirm" ${canClaim?'':'disabled'}>${canClaim?'تأكيد واستلام':'تم الاستلام'}</button>
   <p class="hs-daily-foot">يتم تسجيل الاستلام مرة واحدة وفق توقيت الخادم</p>
  </section>`;
  openSheet(html,root=>{
   root.querySelector('#daily-more-rewards').onclick=()=>{closeSheet();location.hash='#/tasks';};
+  root.querySelector('#daily-weekly-open').onclick=()=>weeklyCheckinSheet();
   root.querySelector('#daily-confirm').onclick=async event=>{
    const button=event.currentTarget;button.disabled=true;
    try{const result=await api.claimDaily();state.wallet=result.wallet;closeSheet();toast('تم تأكيد استلام مكافأة الدخول');if(location.hash==='#/wallet')drawWallet();else if(location.hash==='#/me')meScreen();}
    catch(error){toast(error.message||'تعذّر استلام المكافأة','error');button.disabled=false;}
   };
  });
+}
+function weeklyCheckinSheet(){
+ const days=['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+ const html=`<section class="hs-weekly-checkin" dir="rtl">
+  <button type="button" class="hs-daily-close" data-close aria-label="إغلاق">×</button>
+  <div class="hs-weekly-head"><span>✦</span><small>HAMSAT WEEKLY STREAK</small><h2>تسجيل الحضور الأسبوعي</h2><p>سبعة أيام من النشاط والاستمرارية</p></div>
+  <div class="hs-weekly-rings" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="hs-weekly-grid">${days.map((day,index)=>`<article class="hs-weekly-day ${index===6?'hs-weekly-day-last':''}"><small>${day}</small><b>${index+1}</b><span>بانتظار المزامنة</span></article>`).join('')}</div>
+  <p class="hs-weekly-note">لم يتم ربط سجل الأيام المتتالية بالخادم بعد؛ لذلك لا نعرض أياماً مكتملة أو مكافآت غير مؤكدة.</p>
+  <button type="button" class="hs-weekly-disabled" disabled>تسجيل الحضور الأسبوعي غير متاح حالياً</button>
+ </section>`;
+ openSheet(html);
 }
 function mePage(title,body){screen.innerHTML=header(title)+'<main class="hs-me-subpage" dir="rtl">'+body+'</main>';icons_();}
 async function cpHouseScreen(){
