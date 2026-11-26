@@ -40,6 +40,7 @@ async function boot(){
    if(subtitle)subtitle.textContent='صلاحية محدودة · متابعة الغرف والإشراف على الأعضاء';
    document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>{button.hidden=button.dataset.tab!=='rooms';});
    $('#admin-menu')?.classList.remove('hidden');
+   document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>button.classList.toggle('active',button.dataset.tab==='rooms'));
    if($('#admin-menu-toggle'))$('#admin-menu-toggle').hidden=true;
    $('#overview')?.classList.add('hidden');
    document.querySelectorAll('section.panel').forEach(section=>section.classList.toggle('hidden',section.id!=='rooms'));
@@ -451,7 +452,8 @@ async function runRoomModeration(action,roomId,userId,button){
   const {data,error}=await supabase.functions.invoke('admin-room-moderation',{body:{action,room_id:roomId,participant_id:userId}});
   if(error)throw error;if(data?.error)throw new Error(data.error);
   message(data?.warning||({mute:'تم كتم مايك العضو.',unmute:'تم إرسال طلب إلغاء الكتم.',kick:'تم طرد العضو من الغرفة.'}[action]||'تم تنفيذ الإجراء.'),Boolean(data?.warning));
-  await loadRoomRoster(roomId);await refreshRoomPresence();
+  try{await loadRoomRoster(roomId);await refreshRoomPresence();}
+  catch(refreshError){message('تم تنفيذ الإجراء، لكن تعذّر تحديث قائمة الغرفة: '+(refreshError.message||'خطأ غير معروف'),true);}
  }catch(error){message(error.message||'تعذّر تنفيذ إجراء إدارة الغرفة.',true);if(button)button.disabled=false;}
 }
 function bindRoomModerationControls(root){
