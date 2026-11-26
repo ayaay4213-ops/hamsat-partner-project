@@ -630,11 +630,17 @@ if (fs.existsSync(adminJsPath)) {
   if (!adminJs.includes("$('#'+ids[i]).textContent='—'")) {
     errors.push('Super Admin statistics must show a safe fallback when an individual count fails');
   }
+  for (const token of ['async function loadSignupTrend(days=30)', 'async function loadHosts()', "supabase.rpc('get_public_room_presence')", "from('agency_host_daily_stats')"]) {
+    if (!adminJs.includes(token)) errors.push('Master Admin is missing a live data feature: ' + token);
+  }
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
   if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v5')) {
     errors.push('Super Admin script must use the current cache-busting version');
+  }
+  for (const token of ['id="stat-live-rooms"', 'id="stat-room-members"', 'id="signup-trend"', 'data-tab="hosts"', 'id="hosts"']) {
+    if (!adminHtml.includes(token)) errors.push('Master Admin is missing required dashboard markup: ' + token);
   }
 }
 
