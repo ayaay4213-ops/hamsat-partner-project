@@ -630,13 +630,13 @@ if (fs.existsSync(adminJsPath)) {
   if (!adminJs.includes("$('#'+ids[i]).textContent='—'")) {
     errors.push('Super Admin statistics must show a safe fallback when an individual count fails');
   }
-  for (const token of ['async function loadSignupTrend(days=30)', 'async function loadHosts()', 'async function uploadGiftAnimation(file)', "supabase.rpc('get_public_room_presence')", "from('agency_host_daily_stats')", "f.elements.animation_file.files[0]"]) {
+  for (const token of ['async function loadSignupTrend(days=30)', 'async function loadHosts()', 'async function uploadGiftAnimation(file)', "supabase.rpc('get_public_room_presence')", "from('agency_host_daily_stats')", "f.elements.animation_file.files[0]", "data-edit-gift="]) {
     if (!adminJs.includes(token)) errors.push('Master Admin is missing a live data feature: ' + token);
   }
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v6')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v7')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
   for (const token of ['id="stat-live-rooms"', 'id="stat-room-members"', 'id="signup-trend"', 'data-tab="hosts"', 'id="hosts"']) {
@@ -655,7 +655,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v6')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v7')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
