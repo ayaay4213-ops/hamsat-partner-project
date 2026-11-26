@@ -26,6 +26,7 @@ async function boot(){
   admin.classList.remove('hidden');
   message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
   watchLoginEvents();
+  setInterval(()=>refreshRoomPresence().catch(error=>{console.warn('Automatic room presence refresh failed:',error);}),30000);
   const sections=[
    ['الإحصاءات',loadStats],['نمو المستخدمين',loadSignupTrend],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
    ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
@@ -409,7 +410,7 @@ function renderRoomList(){
  const filtered=roomDesignRooms.filter(room=>{
   const count=roomPresenceByRoom[room.id];
   if(filter==='live'&&!(Number(count)>0))return false;
-  if(filter==='quiet'&&count!==0)return false;
+  if(filter==='quiet'&&(count??0)!==0)return false;
   const haystack=[room.title,room.topic,room.public_id,room.ownerName].join(' ').toLocaleLowerCase();
   return !query||haystack.includes(query);
  });
@@ -634,7 +635,6 @@ function initRoomDesignStudio(){
  apply(defaults);
 }
 $('#refresh-rooms').onclick=()=>loadRooms().catch(e=>message(e.message,true));
-setInterval(()=>refreshRoomPresence().catch(error=>{console.warn('Automatic room presence refresh failed:',error);}),30000);
 initRoomDesignStudio();
 $('#logout').onclick=async()=>{await supabase?.auth.signOut();location.href='./';};
 boot().catch(e=>message(e.message,true));
