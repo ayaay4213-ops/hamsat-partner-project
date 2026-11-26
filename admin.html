@@ -278,7 +278,7 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 <section id="logins" class="panel space-y-3 hidden"><div><h2 class="text-xl font-bold">إشعارات دخول الأعضاء</h2><p class="muted text-sm">كل تسجيل دخول جديد يظهر هنا مباشرة مع رقم العضو والوقت، دون عرض بيانات الاتصال الخاصة.</p></div><div id="login-events" class="space-y-2"><p class="muted">جارٍ تحميل سجل الدخول...</p></div></section>
 <section id="rooms" class="panel space-y-4 hidden">
 <div><h2 class="text-xl font-bold">إدارة الغرف وتصميمها</h2><p class="muted text-sm">معاينة تخطيط موحّد أو تخطيط مستقل لغرفة محددة.</p></div>
-<div class="room-design-notice"><b>متابعة مباشرة للحضور</b><span>بيانات الغرف والحضور للقراءة فقط. يتم تحديث أعداد الحضور تلقائياً كل 30 ثانية، ولا تتوفر بعد أوامر الإغلاق أو الطرد أو كتم الميكروفون من لوحة الإدارة.</span></div>
+<div class="room-design-notice"><b>متابعة مباشرة للحضور</b><span>يمكن للمسؤولة الرئيسية أو المسؤول المعيّن بصلاحية إدارة الغرف عرض الأعضاء النشطين وكتم المايك أو طرد العضو. كل إجراء يمر عبر تحقق خادمي ويُسجل في سجل التدقيق. لا يتم حذف الغرفة أو إغلاقها من هذه الشاشة.</span></div>
 <div class="grid sm:grid-cols-[minmax(0,1fr)_220px_auto] gap-2 items-end">
  <label class="text-sm">البحث في الغرف<input id="room-search" class="field mt-1" type="search" placeholder="اسم الغرفة أو رقمها أو المضيفة"></label>
  <label class="text-sm">عرض الغرف<select id="room-presence-filter" class="field mt-1"><option value="all">كل الغرف</option><option value="live">بها حضور الآن</option><option value="quiet">دون حضور ظاهر</option></select></label>
@@ -382,8 +382,8 @@ body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
 <div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
 <form id="staff-assign-form" class="grid sm:grid-cols-2 gap-3">
 <label class="text-sm">المعرّف العام للعضو<input class="field mt-1" name="public_id" type="number" min="1" required placeholder="مثال: 100025"></label>
-<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span><p class="muted text-xs mb-2">مراجعة البلاغات هي الصلاحية المرتبطة حاليًا بإجراء خادمي. بقية الصلاحيات قيد الربط ولن تكون قابلة للتعيين الآن.</p>
-<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation" disabled> إدارة الغرف والإشراف · قريبًا</label>
+<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span><p class="muted text-xs mb-2">صلاحية إدارة الغرف تتيح عرض الحضور وكتم المايك وطرد العضو من لوحة الغرف فقط. يتم التحقق منها على الخادم في كل طلب.</p>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation"> إدارة الغرف والإشراف</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="report_review"> مراجعة البلاغات</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="member_support" disabled> دعم الأعضاء · قريبًا</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="event_management" disabled> إدارة الفعاليات · قريبًا</label>
@@ -413,4 +413,4 @@ window.addEventListener('unhandledrejection',function(e){
  if(n)n.textContent='تعذر إكمال تحميل لوحة الإدارة: '+(e.reason?.message||String(e.reason||'خطأ غير معروف'));
 });
 </script>
-<script type="module" src="js/admin.js?v=20261126-master-admin-v9" onerror="document.getElementById('notice').textContent='تعذر تحميل ملفات لوحة الإدارة. تحققي من اتصال الإنترنت ثم أعيدي فتح الرابط.'"></script></body></html>
+<script type="module" src="js/admin.js?v=20261126-master-admin-v10" onerror="document.getElementById('notice').textContent='تعذر تحميل ملفات لوحة الإدارة. تحققي من اتصال الإنترنت ثم أعيدي فتح الرابط.'"></script></body></html>
