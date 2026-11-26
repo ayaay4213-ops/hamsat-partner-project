@@ -398,7 +398,7 @@ if (fs.existsSync(adminHtmlPath) && fs.existsSync(adminScriptPath)) {
   for (const token of ['id="room-search"', 'id="room-presence-filter"', 'id="room-live-summary"', 'id="room-presence-updated"', 'تحديث أعداد الحضور تلقائياً كل 30 ثانية']) {
     if (!adminHtml.includes(token)) errors.push('Missing room-monitoring UI element: ' + token);
   }
-  for (const token of ['function renderRoomList()', 'async function refreshRoomPresence()', "supabase.rpc('get_public_room_presence')", "addEventListener('input',renderRoomList)", "addEventListener('change',renderRoomList)", 'setInterval(()=>refreshRoomPresence()', 'roomPresenceUpdatedAt']) {
+  for (const token of ['function renderRoomList()', 'async function refreshRoomPresence()', "supabase.rpc('get_public_room_presence')", "addEventListener('input',renderRoomList)", "addEventListener('change',renderRoomList)", 'setInterval(()=>refreshRoomPresence()', 'roomPresenceUpdatedAt', "if(filter==='quiet'&&(count??0)!==0)return false;"]) {
     if (!adminJs.includes(token)) errors.push('Missing room-monitoring behavior: ' + token);
   }
   if (!adminHtml.includes('admin.js?v=20261126-master-admin-v9')) {
