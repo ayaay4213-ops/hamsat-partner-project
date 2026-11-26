@@ -1730,21 +1730,31 @@ function profileView(p, own) {
     </section>`;
 }
 function meScreen() {
- const p=state.profile||{}, wallet=Number(state.wallet?.balance||0), flag=p.country&&/الجزائر|algeria/i.test(p.country)?'🇩🇿':p.country&&/tunisia/i.test(p.country)?'🇹🇳':p.country&&/morocco/i.test(p.country)?'🇲🇦':p.country&&/egypt/i.test(p.country)?'🇪🇬':'🌍';
- const tiles=[['medal','ميدالية الشرف','#/honor'],['users-round','العائلة','#/family'],['store','المتجر','#/shop'],['heart-handshake','منزل CP','#/cp'],['mic-2','بيانات المضيف','#/host-data'],['target','مركز المهام','#/tasks']];
+ const p=state.profile||{}, wallet=Number(state.wallet?.balance||0);
+ const flag=p.country&&/الجزائر|algeria/i.test(p.country)?'🇩🇿':p.country&&/tunisia/i.test(p.country)?'🇹🇳':p.country&&/morocco/i.test(p.country)?'🇲🇦':p.country&&/egypt/i.test(p.country)?'🇪🇬':'🌍';
+ const tiles=[
+  ['🏅','ميدالية الشرف','#/honor','medal'],
+  ['🏰','العائلة','#/family','family'],
+  ['🛍️','المتجر','#/shop','shop'],
+  ['💚','منزل CP','#/cp','cp'],
+  ['📜','بيانات المضيف','#/host-data','host'],
+  ['🎁','مركز المهام','#/tasks','tasks']
+ ];
  const rows=[['history','سجل المكافآت','#/wallet'],['backpack','الأدوات والمقتنيات','#/inventory'],['message-square','التعليقات والاقتراحات','#/feedback'],['settings','الإعدادات','#/settings']];
  screen.innerHTML='<main class="hs-me-v2 hs-me-reference" dir="rtl">'+
  '<section class="hs-me-hero"><div class="hs-me-hero-glow"></div><div class="hs-me-hero-top"><span class="hs-me-brand-mark">HAMSAT <i>✦</i></span><button id="me-checkin" class="hs-me-checkin"><i data-lucide="calendar-check"></i><span>تسجيل الحضور</span></button></div>'+
- '<div class="hs-me-user"><div class="hs-me-avatar">'+avatar(p,82)+'</div><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
- '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>Following</span></button><i></i><button data-profile-stat-go="fans"><b data-profile-stat="followers">—</b><span>Fans</span></button><i></i><button><b>'+num(p.charismaLevel||0)+'</b><span>Charisma</span></button></div></section>'+
- '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيدكِ وإدارة العملات</span></div><span class="hs-me-first-tag">FIRST RECHARGE</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
- '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><span class="hs-metal-icon"><i data-lucide="crown"></i></span><small>عضوية VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'VIP')+'</b><em>اكتشفي امتيازاتكِ</em></a><a href="#/wallet" class="hs-me-wealth-card"><span class="hs-metal-icon"><i data-lucide="gem"></i></span><small>مستوى الثروة</small><b>LV. '+num(p.wealthLevel||0)+'</b><em>تقدّم مستوى الثروة</em></a></div>'+
- '<a href="#/wallet" class="hs-me-spin-banner"><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>PURPLE LUCKY SPIN</small><b>Cash-out</b><span>تحويل الألماس إلى نقد</span><strong>$0 <em>=</em> 0</strong><small>Only 900000 left to withdraw</small><i class="hs-spin-progress"><span></span></i></div><i data-lucide="chevron-left" class="hs-spin-arrow"></i></a>'+
- '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الوصول السريع</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
+ '<div class="hs-me-user"><button type="button" id="me-edit-profile" class="hs-me-avatar" aria-label="تعديل الملف الشخصي">'+avatar(p,80)+'<span class="hs-me-avatar-edit">✎</span></button><div class="hs-me-user-copy"><div class="hs-me-name">'+esc(p.displayName||'عضو همسات')+' <span>'+flag+'</span></div><div class="hs-me-handle" dir="ltr">@'+esc(p.handle||'hamsat_user')+'</div><button class="hs-me-uid" data-copy-public-id="'+esc(p.publicId||'')+'" dir="ltr"><i data-lucide="copy"></i> UID: '+esc(p.publicId||'—')+'</button><span class="hs-me-level"><i data-lucide="star"></i> LEVEL '+num(p.charismaLevel||1)+'</span></div></div>'+
+ '<div class="hs-me-stats"><button data-profile-stat-go="following"><b data-profile-stat="following">—</b><span>المتابعة</span></button><i></i><button data-profile-stat-go="followers"><b data-profile-stat="followers">—</b><span>المعجبون</span></button><i></i><button type="button" class="hs-me-charisma-stat"><b>'+num(p.charismaLevel||0)+'</b><span>الكاريزما</span></button></div></section>'+
+ '<section class="hs-me-wallet-banner"><div class="hs-me-wallet-art" aria-hidden="true"><span class="hs-wallet-coin coin-a">✦</span><span class="hs-wallet-coin coin-b">✦</span><span class="hs-wallet-bag"><i data-lucide="coins"></i></span></div><div class="hs-me-wallet-copy"><small>محفظة همسات</small><strong>'+num(wallet)+' <em>Coins</em></strong><span>رصيد العملات الحالي</span></div><span class="hs-me-first-tag">اشحني لأول مرة</span><a href="#/wallet" class="hs-me-wallet-open" aria-label="فتح المحفظة"><i data-lucide="chevron-left"></i></a></section>'+
+ '<div class="hs-me-level-cards"><a href="#/aristocracy" class="hs-me-vip-card"><span class="hs-metal-icon hs-metal-vip">👑</span><small>عضوية VIP</small><b>'+(p.vipLevel>0?'VIP '+num(p.vipLevel):'غير مشترك')+'</b><em>حالة العضوية وامتيازاتها</em></a><a href="#/wallet" class="hs-me-wealth-card"><span class="hs-metal-icon hs-metal-wealth">🛡️</span><small>مستوى الثروة</small><b>LV. '+num(p.wealthLevel||0)+'</b><em>مستواك الحالي</em></a></div>'+
+ '<section class="hs-me-spin-banner" aria-label="عجلة الحظ والماس"><button type="button" id="me-spin-info" class="hs-me-spin-go">GO</button><div class="hs-me-wheel-art"><span class="hs-wheel-center">✦</span><i></i></div><div class="hs-me-cash"><small>LUCKY SPIN · DIAMONDS</small><b>عجلة الحظ والسحب</b><span>الماس: غير مفعّل حالياً</span><strong>السحب <em>غير متاح</em></strong><small>سيظهر الرصيد والحد بعد اعتماد نظام الماس</small></div><i data-lucide="sparkles" class="hs-spin-arrow"></i></section>'+
+ '<section class="hs-me-quick-card"><div class="hs-me-section-heading"><div><small>HAMSAT SERVICES</small><h2>الخدمات والأدوات</h2></div><span>06</span></div><div class="hs-me-quick-grid">'+tiles.map((x,i)=>'<a href="'+x[2]+'" class="hs-me-service hs-me-service-'+i+'"><span class="hs-me-3d-icon hs-me-icon-'+x[3]+'" aria-hidden="true">'+x[0]+'</span><b>'+x[1]+'</b></a>').join('')+'</div></section>'+
  '<section class="hs-me-settings-card"><div class="hs-me-section-heading"><div><small>ACCOUNT & SUPPORT</small><h2>الحساب والخدمات</h2></div><i data-lucide="sliders-horizontal"></i></div>'+rows.map(x=>'<a href="'+x[2]+'"><span><i data-lucide="'+x[0]+'"></i></span><b>'+x[1]+'</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></a>').join('')+'<button id="me-logout"><span><i data-lucide="log-out"></i></span><b>تسجيل الخروج</b><i data-lucide="chevron-left" class="hs-me-chevron"></i></button></section><div class="hs-me-footer">H A M S A T <i>✦</i></div></main>';
  icons_(); loadProfileStats(p.uuid,false);
  const copy=$('[data-copy-public-id]');if(copy)copy.onclick=async()=>{try{await navigator.clipboard.writeText(p.publicId||'');toast('تم نسخ UID');}catch(e){toast(p.publicId||'لا يوجد UID');}};
+ $('#me-edit-profile').onclick=()=>openSheet('<h2 class="text-lg font-bold mb-3">تعديل الملف الشخصي</h2>'+profileForm(p,false),sheet=>bindProfileForm(sheet,()=>{closeSheet();toast('تم حفظ الملف الشخصي');meScreen();}));
  $('#me-checkin').onclick=dailyCheckinSheet;
+ $('#me-spin-info').onclick=()=>toast('عجلة الحظ ونظام الماس والسحب لم تُفعّل بعد، ولن نعرض رصيداً أو هدف سحب غير حقيقي.');
  $('#me-logout').onclick=()=>openSheet('<h2 class="font-bold mb-2">تسجيل الخروج</h2><p class="text-sm mb-4">هل تريدين تسجيل الخروج من همسات؟</p><div class="grid grid-cols-2 gap-2"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-me-logout" class="btn-danger">تسجيل الخروج</button></div>',s=>s.querySelector('#confirm-me-logout').onclick=signOut);
  document.querySelectorAll('[data-profile-stat-go]').forEach(x=>x.onclick=()=>location.hash='#/friends');
 }
@@ -1939,6 +1949,11 @@ async function friendsScreen(){
   };
 }
 
+async function refreshBottomUnreadBadge(){
+ const badge=document.querySelector('#tabbar [data-unread-badge]');if(!badge||!state.account)return;
+ try{const result=await api.conversations();const count=(result.conversations||[]).reduce((sum,item)=>sum+Number(item.unread||0),0);badge.textContent=count>99?'99+':String(count);badge.hidden=count<1;badge.setAttribute('aria-label',count+' رسائل غير مقروءة');}
+ catch(_){badge.hidden=true;}
+}
 /* ---------- router ---------- */
 async function inviteScreen() {
   const inviteUrl=location.origin+location.pathname+'#/u/'+encodeURIComponent(state.profile?.handle||'');
@@ -1965,8 +1980,9 @@ async function render() {
   closeSideMenu();
   tabbar.classList.remove('hidden');
   screen.className = 'flex-1 flex flex-col has-tabbar';
-  const activeTab = route === 'inbox' ? 'chat' : ['rooms','activities'].includes(route) ? 'home' : route;
+  const activeTab = route === 'inbox' || route === 'dm' ? 'messages' : route === 'activities' ? 'discover' : ['rooms','home','recent-rooms'].includes(route) ? 'party' : route;
   tabbar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === activeTab));
+  refreshBottomUnreadBadge();
   window.scrollTo(0, 0);
 
   try {
