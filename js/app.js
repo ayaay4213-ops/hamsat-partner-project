@@ -1758,9 +1758,29 @@ function meScreen() {
  $('#me-logout').onclick=()=>openSheet('<h2 class="font-bold mb-2">تسجيل الخروج</h2><p class="text-sm mb-4">هل تريدين تسجيل الخروج من همسات؟</p><div class="grid grid-cols-2 gap-2"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-me-logout" class="btn-danger">تسجيل الخروج</button></div>',s=>s.querySelector('#confirm-me-logout').onclick=signOut);
  document.querySelectorAll('[data-profile-stat-go]').forEach(x=>x.onclick=()=>location.hash='#/friends');
 }
-function dailyCheckinSheet(){
- const rewards=[24,30,36,45,54,72,90];
- openSheet('<div class="hs-checkin-sheet"><h2>مكافأة الحضور الأسبوعية</h2><p>اليوم 1 إلى اليوم 7</p><div class="hs-checkin-days">'+rewards.map((v,i)=>'<div class="hs-checkin-day"><small>اليوم '+(i+1)+'</small><b>✦ '+v+'</b><span>عملة</span></div>').join('')+'</div><p class="hs-checkin-note">مكافأة الخادم الحالية: '+num(state.wallet?.dailyReward||20)+' عملة. لم يتم تغيير اقتصاد العملات أو جدول الصرف.</p><button id="claim-current-daily" class="btn-gold w-full">استلام المكافأة اليومية الحالية</button></div>',s=>s.querySelector('#claim-current-daily').onclick=async e=>{const btn=e.currentTarget;btn.disabled=true;try{const r=await api.claimDaily();state.wallet=r.wallet;closeSheet();toast('تم استلام المكافأة');meScreen();}catch(err){toast(err.message,'error');btn.disabled=false;}});
+async function dailyCheckinSheet(){
+ let wallet=state.wallet;
+ try { const result=await api.wallet(); wallet=result.wallet; state.wallet=wallet; } catch(error) { toast(error.message||'تعذّر تحميل حالة المكافأة','error'); return; }
+ const canClaim=!wallet?.nextDailyAt||Date.now()>=wallet.nextDailyAt;
+ const status=canClaim?'يمكنكِ تأكيد استلام مكافأة الدخول الحالية.':'تم استلام مكافأة اليوم بالفعل.';
+ const html=`<section class="hs-daily-reward" dir="rtl">
+  <button type="button" class="hs-daily-close" data-close aria-label="إغلاق">×</button>
+  <div class="hs-daily-gift" aria-hidden="true"><span class="hs-daily-coin c1">✦</span><span class="hs-daily-coin c2">✧</span><span class="hs-daily-box">🎁</span></div>
+  <p class="hs-daily-kicker">HAMSAT DAILY GIFT</p><h2>مكافأة الدخول اليومي</h2>
+  <p class="hs-daily-status">${status}</p>
+  <div class="hs-daily-reward-value"><span>✦</span><b>مكافأتك اليومية</b><small>تُحدَّد قيمتها من الخادم عند الاستلام</small></div>
+  <button type="button" id="daily-more-rewards" class="hs-daily-more">المزيد من المكافآت</button>
+  <button type="button" id="daily-confirm" class="hs-daily-confirm" ${canClaim?'':'disabled'}>${canClaim?'تأكيد واستلام':'تم الاستلام'}</button>
+  <p class="hs-daily-foot">يتم تسجيل الاستلام مرة واحدة وفق توقيت الخادم</p>
+ </section>`;
+ openSheet(html,root=>{
+  root.querySelector('#daily-more-rewards').onclick=()=>{closeSheet();location.hash='#/tasks';};
+  root.querySelector('#daily-confirm').onclick=async event=>{
+   const button=event.currentTarget;button.disabled=true;
+   try{const result=await api.claimDaily();state.wallet=result.wallet;closeSheet();toast('تم تأكيد استلام مكافأة الدخول');if(location.hash==='#/wallet')drawWallet();else if(location.hash==='#/me')meScreen();}
+   catch(error){toast(error.message||'تعذّر استلام المكافأة','error');button.disabled=false;}
+  };
+ });
 }
 function mePage(title,body){screen.innerHTML=header(title)+'<main class="hs-me-subpage" dir="rtl">'+body+'</main>';icons_();}
 async function cpHouseScreen(){
@@ -1777,13 +1797,40 @@ function familyScreen(){
  $('#family-create').onclick=()=>toast('خدمة إنشاء العائلات غير مربوطة بالخادم بعد.');$('#family-join').onclick=()=>toast('خدمة العائلات غير مربوطة بالخادم بعد.');
 }
 function tasksScreen(){
- mePage('مركز المهام','<section class="hs-tasks-page"><div class="hs-task-rewards"><div><small>اليوم</small><b>—</b></div><div><small>الأسبوع الحالي</small><b>—</b></div></div><div class="hs-task-tabs"><button class="active" data-task="host">المضيف</button><button data-task="daily">يومياً</button></div><article class="hs-task-card"><span>🎙️</span><div><b>تحدثي على المايك لمدة ساعة</b><small>0 / 60 دقيقة</small><i><em></em></i></div><button disabled>غير مفعّل</button></article><p class="hs-task-note">واجهة المهام جاهزة؛ احتساب التقدم والمكافآت يحتاج إلى خدمة مهام موثقة.</p></section>');
- document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-task]').forEach(x=>x.classList.toggle('active',x===b));});
+ mePage('مركز المهام',`<section class="hs-tasks-v2" dir="rtl">
+  <header class="hs-tasks-hero"><small>HAMSAT REWARDS</small><h2>مركز المهام</h2><p>تابعي إنجازك واجمعي المكافآت المتاحة</p><div class="hs-tasks-reset"><span>⏳</span><div><small>إعادة ضبط المهام اليومية</small><b>يُحدَّد حسب توقيت الخادم</b></div></div></header>
+  <div class="hs-tasks-summary"><div><small>إنجاز اليوم</small><b>—</b><em>بانتظار ربط سجل المهام</em></div><div><small>إنجاز الأسبوع</small><b>—</b><em>بانتظار ربط سجل المهام</em></div></div>
+  <div class="hs-tasks-switch"><button type="button" class="active" data-task-kind="daily">يومياً</button><button type="button" data-task-kind="host">المضيف</button></div>
+  <div class="hs-tasks-list"><article class="hs-task-v2-card"><span class="hs-task-v2-icon">🎙️</span><div class="hs-task-v2-copy"><b>نشاط الغرفة الصوتية</b><small>سيظهر تقدم وقت المايك بعد ربط سجل النشاط</small><div class="hs-task-v2-track"><i></i></div></div><span class="hs-task-v2-state">غير متاح</span></article>
+   <article class="hs-task-v2-card"><span class="hs-task-v2-icon">🎁</span><div class="hs-task-v2-copy"><b>مكافآت المهام</b><small>قيمة المكافأة وشروطها تُحمّل من الخادم</small><div class="hs-task-v2-track"><i></i></div></div><span class="hs-task-v2-state">قريباً</span></article>
+  </div>
+  <p class="hs-tasks-safe-note">لن تظهر أرقام تقدم أو ماسات تقديرية. ستُفعّل أزرار «لإكمال» و«استلام» بعد ربط شروط المهمة ومكافأتها والتحقق منها على الخادم.</p>
+ </section>`);
+ document.querySelectorAll('[data-task-kind]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-task-kind]').forEach(item=>item.classList.toggle('active',item===button));});
 }
 async function hostDataScreen(){
- mePage('بيانات المضيف','<section class="hs-host-data"><div class="hs-host-overview"><span>معلومات المضيف</span><b>'+esc(state.profile.displayName||'عضو')+'</b><small>حالة الوكالة: جارٍ التحقق</small><strong>50,000 / ساعة</strong><div class="hs-host-progress"><i></i></div><small>تقدم الترقية</small></div><button id="host-range">آخر 30 يوماً ▾</button><h3>ملخص الماسات</h3><div class="hs-host-grid">'+[['إجمالي الدخل','—'],['الاستهلاك','—'],['الراتب الأساسي','—'],['الهدايا','—'],['المهام','—']].map(x=>'<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>').join('')+'</div><p class="hs-task-note">بيانات المضيف التفصيلية غير متاحة حتى ربط سجل الاستحقاقات.</p></section>');
- $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">الفترة الزمنية</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
- try{const r=await api.myAgencies();const ag=(r.agencies||[]).find(x=>['hosts','both'].includes(x.agency_type));if(ag){const s=await api.agencyHostStats(ag.id);const own=(s.stats||[]).filter(x=>x.host_id===state.profile.uuid);const total=own.reduce((n,x)=>n+Number(x.gift_coins||0),0);$('.hs-host-grid div:first-child b').textContent=num(total);$('.hs-host-grid div:nth-child(4) b').textContent=num(total);$('.hs-host-overview small').textContent='حالة الوكالة: '+ag.status;}}catch(e){console.warn(e);}
+ const profile=state.profile||{};
+ mePage('بيانات المضيف',`<section class="hs-host-v2" dir="rtl">
+  <header class="hs-host-v2-hero"><div class="hs-host-v2-identity">${avatar(profile,64)}<div><b>${esc(profile.displayName||'عضو همسات')}</b><small>UID: ${esc(profile.publicId||'—')}</small></div></div><span class="hs-host-v2-status">جارٍ التحقق من حالة الاستضافة</span><p>حالة الوكالة: <b id="hs-host-agency-status">جارٍ التحميل</b></p><p>توقيت التقارير: <b>UTC</b></p><div class="hs-host-v2-salary"><small>الراتب الأساسي بالساعة</small><strong>غير متاح</strong><span>تُعرض التعرفة بعد اعتماد سياسة الرواتب وربط سجل الاستحقاقات</span></div><div class="hs-host-v2-progress"><div><small>التقدم إلى المستوى التالي</small><b>غير متاح</b></div><i></i></div><button type="button" id="hs-host-claim" disabled>المطالبة بالراتب — غير مفعّل</button></header>
+  <div class="hs-host-v2-toolbar"><h3>ملخص الماسات</h3><button type="button" id="host-range">آخر 7 أيام ▾</button></div>
+  <div class="hs-host-v2-grid"><article><small>إجمالي الدخل</small><b id="hs-host-income">—</b></article><article><small>الاستهلاك</small><b>—</b></article><article><small>الهدايا</small><b id="hs-host-gifts">—</b></article><article><small>الراتب الأساسي</small><b>—</b><article><small>المهام</small><b>—</b></article></div>
+  <p class="hs-host-v2-note">لا يوجد حالياً سجل موثوق مستقل للراتب الأساسي أو الماسات أو المطالبات. لن نعتبر عملات الهدايا راتباً، ولن نسمح بالمطالبة حتى اعتماد سياسة الصرف وربط سجل مالي آمن.</p>
+ </section>`);
+ $('#host-range').onclick=()=>openSheet('<h2 class="font-bold mb-3">فترة التقرير</h2><div class="grid grid-cols-2 gap-2"><button class="btn-ghost" data-close>7 أيام</button><button class="btn-ghost" data-close>30 يوماً</button><button class="btn-ghost" data-close>هذا الشهر</button><button class="btn-ghost" data-close>الشهر السابق</button></div>');
+ try{
+  const result=await api.myAgencies();
+  const agency=(result.agencies||[]).find(item=>['hosts','both'].includes(item.agency_type));
+  const status=$('#hs-host-agency-status');
+  if(status)status.textContent=agency?(agency.status==='active'?'وكالة مرتبطة':String(agency.status||'حالة غير محددة')):'لا يوجد وكيل';
+  if(agency){
+   const stats=await api.agencyHostStats(agency.id);
+   const own=(stats.stats||[]).filter(item=>item.host_id===profile.uuid);
+   const total=own.reduce((sum,item)=>sum+Number(item.gift_coins||0),0);
+   const income=$('#hs-host-income'),gifts=$('#hs-host-gifts');
+   if(income)income.textContent=num(total);
+   if(gifts)gifts.textContent=num(total);
+  }
+ }catch(error){const status=$('#hs-host-agency-status');if(status)status.textContent='تعذّر تحميل الحالة';console.warn('Host dashboard load failed',error);}
 }
 function settingsScreen(){
  const items=[['bell','إشعار الرسالة','notify'],['link','ربط الحساب','bind'],['languages','إعداد اللغة','language'],['info','حول','about'],['message-square','التعليقات والاقتراحات','feedback'],['ban','القائمة السوداء','blacklist'],['shield-check','بيان الخصوصية','privacy']];
