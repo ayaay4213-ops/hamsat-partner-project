@@ -137,8 +137,21 @@ async function loadItems(){
 }
 async function loadGifts(){
  const {data,error}=await supabase.from('gifts').select('*').order('price');if(error)throw error;
- $('#gift-list').innerHTML=data.length?data.map(x=>row(x.icon+' '+x.name,x.id+' · '+x.price+' عملة · '+({app:'التطبيق',event:'الحدث',lucky:'محظوظة',special:'خاصة'}[x.category]||'التطبيق'),x.id,x.active,'gift')).join(''):'<p class="muted">لا توجد هدايا بعد.</p>';
+ $('#gift-list').innerHTML=data.length?data.map(x=>{
+  const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-14 h-14 rounded-xl object-cover border border-slate-200">':'<div class="w-14 h-14 rounded-xl bg-slate-100 grid place-items-center text-2xl">'+esc(x.icon||'🎁')+'</div>';
+  const status=x.active?'منشورة':'مخفية';
+  return '<article class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+Number(x.price).toLocaleString('ar-DZ')+' Coins · '+esc(({app:'التطبيق',event:'الحدث',lucky:'محظوظة',special:'خاصة'}[x.category]||'التطبيق'))+'</p><p class="muted text-xs">'+status+(x.animation_url?' · حركة مرتبطة':' · بلا حركة')+'</p></div></div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-edit-gift="'+esc(x.id)+'">تعديل</button><button type="button" class="ghost text-xs" data-toggle="'+esc(x.id)+'" data-kind="gift">'+(x.active?'إخفاء':'نشر')+'</button></div></article>';
+ }).join(''):'<p class="muted">لا توجد هدايا بعد.</p>';
  bindToggles('#gift-list',data,'gift');
+ $('#gift-list').querySelectorAll('[data-edit-gift]').forEach(button=>button.onclick=()=>{
+  const gift=data.find(x=>x.id===button.dataset.editGift),form=$('#gift-form');if(!gift||!form)return;
+  form.elements.id.value=gift.id;form.elements.name.value=gift.name;form.elements.price.value=gift.price;
+  form.elements.icon.value=gift.icon||'🎁';form.elements.category.value=gift.category||'app';
+  form.elements.description.value=gift.description||'';form.elements.image_url.value=gift.image_url||'';
+  form.elements.animation_url.value=gift.animation_url||'';form.elements.active.checked=Boolean(gift.active);
+  form.elements.image_file.value='';form.elements.animation_file.value='';
+  form.scrollIntoView({behavior:'smooth',block:'start'});message('تم تحميل بيانات الهدية للتعديل. احفظي بعد الانتهاء.');
+ });
 }
 function bindToggles(root,data,kind){
  const tables={gift:'gifts',item:'shop_items',game:'games'};
