@@ -6815,3 +6815,66 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .room-sheet .hs-room-seat.occupied .hs-seat-ring{border-color:#e6c96f!important}
 .room-sheet .hs-room-chat-heading>div:after{content:none!important}
 .room-sheet .hs-room-section-title>div:after{content:none!important}
+
+
+/* HAMSAT ME PAGE — specification pass */
+.hs-me-reference{padding-bottom:calc(18px + env(safe-area-inset-bottom));overflow-x:hidden}
+.hs-me-reference .hs-me-hero{padding-top:calc(18px + env(safe-area-inset-top));background:linear-gradient(155deg,#a9d9bb 0%,#d8eadc 47%,#f7faf7 100%);color:#254635;border-radius:0 0 28px 28px;box-shadow:0 10px 28px rgba(48,103,69,.10)}
+.hs-me-reference .hs-me-hero-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 88% 5%,rgba(255,255,255,.65),transparent 38%),linear-gradient(180deg,rgba(255,255,255,.08),transparent)}
+.hs-me-reference .hs-me-brand-mark{color:#376c4c;font-weight:900;letter-spacing:3px}
+.hs-me-reference .hs-me-checkin{position:relative;z-index:1;background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.85);color:#315a42;box-shadow:0 4px 14px rgba(37,85,52,.08)}
+.hs-me-reference .hs-me-avatar{position:relative;display:grid;place-items:center;width:88px;height:88px;min-width:88px;padding:3px;border:3px solid #e6c36a;border-radius:50%;background:linear-gradient(145deg,#fff,#e8f1e8);box-shadow:0 7px 20px rgba(33,82,48,.18);overflow:visible}
+.hs-me-reference .hs-me-avatar>.avatar{width:100%!important;height:100%!important;border-radius:50%;overflow:hidden}
+.hs-me-avatar-edit{position:absolute;bottom:-2px;left:-2px;width:25px;height:25px;display:grid;place-items:center;border:2px solid #fff;border-radius:50%;background:linear-gradient(145deg,#f8e4a0,#c99a3e);color:#513a12;font-size:15px;font-weight:900}
+.hs-me-reference .hs-me-user{align-items:center;gap:13px;margin-top:20px}
+.hs-me-reference .hs-me-name{color:#244c34;text-shadow:none}
+.hs-me-reference .hs-me-handle{color:#55735f;opacity:1}
+.hs-me-reference .hs-me-uid{background:rgba(255,255,255,.62);color:#345b42;border:1px solid rgba(255,255,255,.9)}
+.hs-me-reference .hs-me-level{background:linear-gradient(135deg,#fff0b4,#d9b24f);color:#654b15;box-shadow:0 3px 8px #80602120}
+.hs-me-reference .hs-me-stats{margin-top:-18px;z-index:2;border:1px solid #edf2ed;box-shadow:0 8px 24px rgba(33,77,48,.10)}
+.hs-me-reference .hs-me-stats button{min-width:0}
+.hs-me-reference .hs-me-stats span{color:#849087}
+.hs-me-reference .hs-me-wallet-banner{margin-top:2px;border:1px solid rgba(191,146,49,.35);box-shadow:0 9px 22px rgba(148,111,35,.15);min-height:108px}
+.hs-me-reference .hs-me-wallet-art{width:78px;height:72px;position:relative;display:grid;place-items:center;flex:none}
+.hs-me-reference .hs-wallet-bag{width:57px;height:54px;display:grid;place-items:center;border-radius:16px 16px 19px 19px;background:linear-gradient(145deg,#fff0b0 0%,#d7a83e 48%,#98651d 100%);border:2px solid #ffe9a0;box-shadow:inset 0 3px 7px #fff8,0 7px 12px #72501e55;transform:rotate(-7deg)}
+.hs-me-reference .hs-wallet-bag svg{width:31px;height:31px;color:#704b12;filter:drop-shadow(0 2px 1px #fff6)}
+.hs-me-reference .hs-wallet-coin{position:absolute;z-index:2;color:#fff4b6;text-shadow:0 2px 4px #80520c;font-size:20px}
+.hs-me-reference .hs-wallet-coin.coin-a{top:0;right:5px}.hs-me-reference .hs-wallet-coin.coin-b{bottom:0;left:4px}
+.hs-me-reference .hs-me-first-tag{top:-7px;right:18px;border-radius:99px;padding:6px 12px;background:linear-gradient(135deg,#39895d,#1e6742);box-shadow:0 4px 10px #174c3150;font-size:10px}
+.hs-me-reference .hs-me-level-cards{gap:11px}
+.hs-me-reference .hs-me-vip-card,.hs-me-reference .hs-me-wealth-card{min-height:138px;border-radius:16px;padding:15px 13px;overflow:hidden;box-shadow:0 8px 18px rgba(31,57,42,.12)}
+.hs-me-reference .hs-me-vip-card{background:radial-gradient(circle at 85% 8%,#5d4b28,#201c20 52%,#11151a);border:1px solid #b99b52;color:#f4e3b2}
+.hs-me-reference .hs-me-wealth-card{background:radial-gradient(circle at 85% 8%,#287a53,#104a38 54%,#0d3329);border:1px solid #4b9b70;color:#e0f3e6}
+.hs-me-reference .hs-metal-icon{width:53px;height:53px;display:grid;place-items:center;border-radius:17px;font-size:30px;background:linear-gradient(145deg,#ffffff35,#ffffff08);border:1px solid #ffffff3d;filter:drop-shadow(0 4px 5px #0005)}
+.hs-me-reference .hs-metal-vip{color:#f6d77b;text-shadow:0 3px 3px #0008}
+.hs-me-reference .hs-metal-wealth{text-shadow:0 3px 3px #0008}
+.hs-me-reference .hs-me-vip-card small,.hs-me-reference .hs-me-wealth-card small{color:#ffffffb8}
+.hs-me-reference .hs-me-vip-card b,.hs-me-reference .hs-me-wealth-card b{font-size:19px}
+.hs-me-reference .hs-me-spin-banner{position:relative;display:flex;align-items:center;gap:10px;margin:0 14px 13px;padding:14px 12px;min-height:122px;border-radius:17px;overflow:hidden;background:linear-gradient(115deg,#263c89,#6651c6 53%,#a16bc5);color:#fff;box-shadow:0 9px 22px #3d3a9a30}
+.hs-me-reference .hs-me-spin-go{position:relative;z-index:2;order:0;width:43px;height:43px;flex:none;border-radius:50%;background:linear-gradient(145deg,#ffeaa0,#d9a53e);color:#493313;font-size:12px;font-weight:1000;box-shadow:0 4px 12px #17143c77}
+.hs-me-reference .hs-me-wheel-art{width:67px;height:67px;flex:none;border:5px solid #ffe39a;border-radius:50%;background:conic-gradient(#ffdc73 0 45deg,#ef7b8c 45deg 90deg,#70d7c2 90deg 135deg,#8da8ff 135deg 180deg,#ffdc73 180deg 225deg,#ef7b8c 225deg 270deg,#70d7c2 270deg 315deg,#8da8ff 315deg);box-shadow:0 4px 12px #14143c88,inset 0 0 0 2px #ffffff9c;display:grid;place-items:center}
+.hs-me-reference .hs-wheel-center{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#fff6c9,#e3ae42);color:#604411;box-shadow:0 2px 5px #2228}
+.hs-me-reference .hs-me-cash{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.hs-me-reference .hs-me-cash small{font-size:9px;line-height:1.35;color:#e7e4ff}
+.hs-me-reference .hs-me-cash b{font-size:14px;color:#fff}
+.hs-me-reference .hs-me-cash span{font-size:10px;color:#f4edff}
+.hs-me-reference .hs-me-cash strong{font-size:12px;color:#ffe7a4}
+.hs-me-reference .hs-me-cash strong em{font-style:normal;font-size:10px}
+.hs-me-reference .hs-spin-arrow{width:17px;flex:none;color:#fff}
+.hs-me-reference .hs-me-quick-card,.hs-me-reference .hs-me-settings-card{margin:0 14px 13px;border-radius:17px;border:1px solid #e8eee9;box-shadow:0 7px 20px rgba(39,73,49,.07)}
+.hs-me-reference .hs-me-quick-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:15px 8px}
+.hs-me-reference .hs-me-quick-grid a{min-width:0;gap:7px}
+.hs-me-reference .hs-me-3d-icon{width:55px;height:55px;display:grid;place-items:center;border-radius:18px;font-size:30px;line-height:1;background:linear-gradient(145deg,#fff,#e7efe8);border:1px solid #e1e9e1;box-shadow:0 5px 0 #d5e1d6,0 8px 13px #304b361f,inset 0 2px 3px #fff;filter:drop-shadow(0 3px 2px #294b3420)}
+.hs-me-reference .hs-me-service b{font-size:10px;line-height:1.4;color:#42594a}
+.hs-me-reference .hs-me-settings-card{background:#fff}
+.hs-me-reference .hs-me-settings-card> a,.hs-me-reference .hs-me-settings-card>button{min-height:53px}
+.hs-me-reference .hs-me-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+#tabbar.hs-bottom-nav{border-top:1px solid rgba(213,192,127,.35);background:rgba(255,255,255,.96);color:#617267;box-shadow:0 -5px 20px rgba(36,65,44,.08)}
+.hs-bottom-nav>div{grid-template-columns:repeat(4,minmax(0,1fr))}
+#tabbar.hs-bottom-nav .tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;color:#8b968e;font-size:10px}
+#tabbar.hs-bottom-nav .tab.active{color:#a17a28;font-weight:900}
+.hs-bottom-3d-icon{font-size:23px;line-height:1;filter:drop-shadow(0 2px 1px #5a482b40);transition:transform .18s ease}
+#tabbar.hs-bottom-nav .tab.active .hs-bottom-3d-icon{font-size:27px;transform:translateY(-2px)}
+.hs-bottom-message [data-unread-badge]{position:absolute;top:4px;right:calc(50% - 22px);min-width:15px;height:15px;padding:0 4px;border-radius:99px;background:#e34848;color:#fff;font-size:9px;font-weight:900;line-height:15px;text-align:center;box-shadow:0 2px 5px #0002}
+.hs-bottom-message [data-unread-badge][hidden]{display:none}
+@media(max-width:360px){.hs-me-reference .hs-me-quick-grid{gap:12px 4px}.hs-me-reference .hs-me-3d-icon{width:48px;height:48px;font-size:27px}.hs-me-reference .hs-me-spin-banner{gap:7px;padding-inline:8px}.hs-me-reference .hs-me-wheel-art{width:55px;height:55px}}
