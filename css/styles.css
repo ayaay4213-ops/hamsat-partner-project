@@ -6935,3 +6935,28 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{min-height:48px!important}
 .hs-me-reference .hs-me-footer{padding:14px 0 6px!important}
 @media(max-width:380px){.hs-me-reference .hs-me-balance-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.hs-me-reference .hs-me-balance-grid .hs-me-wallet-banner,.hs-me-reference .hs-me-diamond-card{min-height:118px!important;padding:10px!important}.hs-me-reference .hs-me-level-cards>a{min-height:96px!important}.hs-me-reference .hs-me-user{gap:8px!important}.hs-me-reference .hs-me-avatar{flex-basis:68px!important;width:68px!important;height:68px!important}}
+
+
+/* HAMSAT mobile repair pass: profile flow, UID wrapping and page scrolling */
+html,body,#app{min-height:100dvh!important;height:auto!important}
+#screen{min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-y:contain!important}
+.hs-me-reference{display:block!important;min-height:100%!important;height:auto!important;overflow:visible!important;padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+.hs-me-reference .hs-me-hero{overflow:visible!important;padding:14px 12px 25px!important}
+.hs-me-reference .hs-me-cover{position:relative!important;width:100%!important;height:clamp(145px,43vw,190px)!important;min-height:0!important}
+.hs-me-reference .hs-me-hero-top{top:10px!important;right:12px!important;left:12px!important;gap:8px!important}
+.hs-me-reference .hs-me-user{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;margin-top:14px!important}
+.hs-me-reference .hs-me-avatar{flex:0 0 66px!important;width:66px!important;height:66px!important;padding:2px!important}
+.hs-me-reference .hs-me-user-copy{display:flex!important;flex:1 1 0!important;min-width:0!important;width:0!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important;overflow:visible!important}
+.hs-me-reference .hs-me-name{max-width:100%!important;font-size:17px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+.hs-me-reference .hs-me-handle{max-width:100%!important;line-height:1.4!important}
+.hs-me-reference .hs-me-uid{display:inline-flex!important;align-items:center!important;max-width:100%!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;line-height:1.45!important;padding:6px 8px!important;margin:0!important}
+.hs-me-reference .hs-me-edit-profile{display:inline-flex!important;max-width:100%!important;white-space:nowrap!important;margin:0!important}
+.hs-me-reference .hs-me-level{margin:0!important}
+.hs-me-reference .hs-me-stats{margin:-13px 10px 11px!important}
+.hs-me-reference .hs-me-balance-grid{margin:0 10px 11px!important;gap:8px!important}
+.hs-me-reference .hs-me-level-cards,.hs-me-reference .hs-me-spin-banner,.hs-me-reference .hs-me-quick-card,.hs-me-reference .hs-me-settings-card{margin-inline:10px!important}
+.hs-me-reference .hs-me-quick-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 6px!important}
+.hs-me-reference .hs-me-quick-grid a{display:flex!important;min-width:0!important;align-items:center!important;justify-content:flex-start!important;flex-direction:column!important;text-align:center!important;gap:6px!important;overflow-wrap:anywhere!important}
+.hs-me-reference .hs-me-quick-grid a span{width:48px!important;height:48px!important;flex:none!important}
+.hs-me-reference .hs-me-settings-card>a,.hs-me-reference .hs-me-settings-card>button{min-height:48px!important}
+@media(max-width:360px){.hs-me-reference .hs-me-user{gap:7px!important}.hs-me-reference .hs-me-avatar{flex-basis:58px!important;width:58px!important;height:58px!important}.hs-me-reference .hs-me-name{font-size:15px!important}.hs-me-reference .hs-me-uid{font-size:9px!important;padding:5px 6px!important}.hs-me-reference .hs-me-quick-grid a span{width:42px!important;height:42px!important}}
