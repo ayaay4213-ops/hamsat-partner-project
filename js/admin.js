@@ -29,7 +29,7 @@ async function boot(){
   const sections=[
    ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
    ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-   ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
+   ['الوكالات',loadAgencies],['المضيفون',loadHosts],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
   ];
   await Promise.all(sections.map(async([label,load])=>{
    try{await load();}
@@ -158,6 +158,36 @@ async function loadAgencies(){
  select.innerHTML=(data||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
  root.querySelectorAll('[data-agency-toggle]').forEach(b=>b.onclick=async()=>{try{const {error}=await supabase.rpc('admin_update_agency',{p_agency_id:b.dataset.agencyToggle,p_status:b.dataset.status,p_commission_percent:Number(b.dataset.commission),p_agent_commission_percent:Number(b.dataset.agent)});if(error)throw error;await loadAgencies();message('تم تحديث حالة الوكالة.');}catch(e){message(e.message,true);}});
 }
+
+async function loadHosts(){
+ const root=$('#host-list');if(!root)return;
+ const {data:members,error}=await supabase.from('agency_members').select('agency_id,user_id,status,member_role,joined_at').eq('member_role','host').eq('status','active').order('joined_at',{ascending:false});
+ if(error)throw error;
+ if(!members?.length){root.innerHTML='<p class="muted">لا يوجد مضيفون مرتبطون بوكالات نشطة حالياً.</p>';return;}
+ const agencyIds=[...new Set(members.map(x=>x.agency_id))],userIds=[...new Set(members.map(x=>x.user_id))];
+ const [agenciesResult,profilesResult]=await Promise.all([
+  supabase.from('agencies').select('id,name,status,agency_type').in('id',agencyIds),
+  supabase.from('profiles').select('id,public_id,display_name,handle').in('id',userIds)
+ ]);
+ if(agenciesResult.error)throw agenciesResult.error;
+ if(profilesResult.error)throw profilesResult.error;
+ const since=new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10);
+ const statsResult=await supabase.from('agency_host_daily_stats').select('agency_id,host_id,live_seconds,gift_coins,stat_date').in('agency_id',agencyIds).in('host_id',userIds).gte('stat_date',since);
+ if(statsResult.error)throw statsResult.error;
+ const agencies=Object.fromEntries((agenciesResult.data||[]).map(x=>[x.id,x]));
+ const profiles=Object.fromEntries((profilesResult.data||[]).map(x=>[x.id,x]));
+ const totals=new Map();
+ for(const row of statsResult.data||[]){
+  const key=row.agency_id+':'+row.host_id,old=totals.get(key)||{seconds:0,gifts:0};
+  old.seconds+=Math.max(0,Number(row.live_seconds)||0);old.gifts+=Math.max(0,Number(row.gift_coins)||0);totals.set(key,old);
+ }
+ root.innerHTML=members.map(member=>{
+  const agency=agencies[member.agency_id]||{},profile=profiles[member.user_id]||{},stats=totals.get(member.agency_id+':'+member.user_id)||{seconds:0,gifts:0};
+  const hours=(stats.seconds/3600).toFixed(1);
+  return '<article class="item"><div class="min-w-0"><b>'+esc(profile.display_name||profile.handle||'مضيف')+'</b><p class="muted text-xs">UID '+esc(profile.public_id||'—')+' · '+esc(agency.name||'وكالة غير معروفة')+' · '+esc(agency.status||'')+'</p><p class="text-xs mt-2">ساعات البث المسجلة: <b>'+esc(hours)+'</b> ساعة · هدايا مسجلة: <b>'+stats.gifts.toLocaleString('ar-DZ')+'</b> Coins</p><p class="muted text-xs">الهدف والراتب: غير متاحين حتى ربط سياسة الأهداف والاستحقاقات</p></div></article>';
+ }).join('');
+}
+
 async function loadTopupPackages(){
  const root=$('#topup-package-list');
  const {data,error}=await supabase.from('topup_packages').select('*').order('sort_order');
