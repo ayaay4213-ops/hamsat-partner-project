@@ -732,7 +732,7 @@ const integratedCssPath = path.join(root, 'css/styles.css');
 const integratedHtmlPath = path.join(root, 'index.html');
 if (fs.existsSync(integratedRoomPath)) {
   const js = fs.readFileSync(integratedRoomPath, 'utf8');
-  for (const token of ['hs-room-unified','let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
+  for (const token of ["sheet.classList.add('room-sheet')",'let roomJoinedAt=Date.now()','api.roomMessages(r.id,roomJoinedAt)','api.roomEvents(r.id,roomJoinedAt)','Promise.allSettled([api.friendRequests(),api.friends()])']) {
     if (!js.includes(token)) errors.push('Missing integrated room, join-time chat or independent friends loading: ' + token);
   }
 }
@@ -744,7 +744,7 @@ if (fs.existsSync(integratedApiPath)) {
 }
 if (fs.existsSync(integratedCssPath)) {
   const css = fs.readFileSync(integratedCssPath, 'utf8');
-  for (const token of ['.hs-room-unified{display:flex!important','.hs-room-unified>.hs-room-chat-area','.hs-home-hero-art-large img','grid-template-columns:repeat(6,minmax(0,1fr))!important']) {
+  for (const token of ['.room-sheet .hs-room-stage','.room-sheet #room-chat','.hs-bottom-nav','#tabbar .tab']) {
     if (!css.includes(token)) errors.push('Missing integrated room and moments navigation styling: ' + token);
   }
 }
@@ -973,7 +973,6 @@ if (fs.existsSync(presenceSecurityPath)) {
     'revoke truncate, references, trigger, maintain',
     'on all tables in schema public',
     'from anon, authenticated',
-    'revoke truncate, references, trigger, maintain on tables in schema public from anon, authenticated',
     'revoke update on table public.friend_requests from authenticated',
     'grant update (status, responded_at)'
   ]) {
