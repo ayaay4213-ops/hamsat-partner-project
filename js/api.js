@@ -322,7 +322,13 @@ export const api = {
     return api.wallet();
   },
   roomById: async (roomId) => {
-    const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
+    const raw=String(roomId||'').trim();
+    const publicMatch=raw.match(/^(?:ROOM-?)?0*([0-9]+)$/i);
+    const query=client().from('rooms').select('*');
+    let result;
+    if(publicMatch) result=await query.eq('public_id',Number(publicMatch[1])).single();
+    else result=await query.eq('id',raw).single();
+    const {data,error}=result;fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=await mapProfileWithFrame(p);
     return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||10,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
