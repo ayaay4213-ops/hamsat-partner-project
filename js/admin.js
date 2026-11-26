@@ -31,6 +31,7 @@ async function boot(){
   admin.classList.remove('hidden');
   if(isOwner===true){
    message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
+   $('#admin-menu')?.classList.remove('hidden');
    watchLoginEvents();
   }else{
    message('مرحباً '+(profile?.display_name||'بالمسؤول')+' — تم التحقق من صلاحية إدارة الغرف فقط.');
@@ -661,7 +662,7 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','hosts','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#overview')?.classList.toggle('hidden',b.dataset.tab!=='catalog');$('#admin-menu')?.classList.remove('hidden');});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','hosts','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));const showOverview=b.dataset.tab==='catalog';$('#overview')?.classList.toggle('hidden',!showOverview);document.querySelectorAll('#admin > section.panel:not([id])').forEach(section=>section.classList.toggle('hidden',!showOverview));$('#admin-menu')?.classList.remove('hidden');});
 $('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
 let loginChannel=null;
 function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}
