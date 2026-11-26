@@ -139,3 +139,19 @@
 #sheet-root .room-sheet .hs-room-premium .hs-room-compose button{background:#eee4fa!important;color:#8668ae!important}
 #sheet-root .room-sheet .hs-room-premium .hs-room-tools-row button{border-color:#e8dced!important;background:linear-gradient(145deg,#fff,#f5effa)!important;color:#89709f!important}
 #sheet-root .room-sheet .hs-room-premium .hs-room-tools-row #voice-start,#sheet-root .room-sheet .hs-room-premium .hs-room-tools-row #room-send-gift{border-color:#efd6a1!important;background:linear-gradient(135deg,#fff0ca,#f4dca1)!important;color:#85632e!important}
+
+
+/* Critical: the hidden utility must win over the dialog's grid display. Without this,
+   the invitation overlay remains on top of the room and blocks all room controls. */
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-modal.hidden,
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-modal[hidden]{display:none!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-modal:not(.hidden):not([hidden]){display:grid!important;place-items:center!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-card{width:min(100%,360px)!important;max-height:calc(100dvh - 40px)!important;overflow:auto!important;padding:24px 20px 18px!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-card p{color:#586b66!important;font-size:14px!important;line-height:1.85!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-card h3{color:#405c52!important;font-size:19px!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-card>small:first-of-type{color:#a88948!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-expiry{color:#899991!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-actions button{min-height:48px!important;font-size:14px!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-actions .btn-gold{background:linear-gradient(135deg,#f4dfa0,#d7b65d)!important;color:#493b1b!important;border:1px solid #e5cf91!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-actions .btn-ghost{background:#fff!important;border:1px solid #e2e8e4!important;color:#667b70!important}
+#sheet-root .room-sheet .hs-room-premium .hs-room-seat-invite-actions button:disabled{opacity:.55!important;cursor:wait!important}
