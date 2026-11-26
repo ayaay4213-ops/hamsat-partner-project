@@ -380,6 +380,7 @@ if (fs.existsSync(appRoomPath)) {
 }
 
 const adminScriptPath = path.join(root, 'js/admin.js');
+const adminHtmlPath = path.join(root, 'admin.html');
 if (fs.existsSync(adminScriptPath)) {
   const js = fs.readFileSync(adminScriptPath, 'utf8');
   for (const token of ["$('#room-background-files').onchange", "$('#profile-frame-files').onchange", "$('#asset-batch-upload').onclick", 'PROFILE_FRAME_ASSETS', 'profile_ref_09_purple_cat_bows', 'backgrounds.length!==12', 'frames.length!==9', 'publishBlocked=media&&!x.image_url&&!x.active', "لا يمكن نشر خلفية أو إطار قبل رفع صورته ومراجعتها.", 'URL.createObjectURL', 'catalog/room-backgrounds', 'catalog/profile-frames', 'URL.revokeObjectURL(url)', 'data-replace-image', 'replaceMediaImage', 'اكتمل الرفع جزئياً']) {
@@ -395,7 +396,7 @@ if (fs.existsSync(appRoomPath)) {
 if (fs.existsSync(adminHtmlPath) && fs.existsSync(adminScriptPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
   const adminJs = fs.readFileSync(adminScriptPath, 'utf8');
-  for (const token of ['id="room-search"', 'id="room-presence-filter"', 'id="room-live-summary"', 'id="room-presence-updated"', 'تحديث أعداد الحضور تلقائياً كل 30 ثانية']) {
+  for (const token of ['id="room-search"', 'id="room-presence-filter"', 'id="room-live-summary"', 'id="room-presence-updated"', 'كل إجراء يمر عبر تحقق خادمي ويُسجل في سجل التدقيق.']) {
     if (!adminHtml.includes(token)) errors.push('Missing room-monitoring UI element: ' + token);
   }
   for (const token of ['function renderRoomList()', 'async function refreshRoomPresence()', "supabase.rpc('get_public_room_presence')", "addEventListener('input',renderRoomList)", "addEventListener('change',renderRoomList)", 'setInterval(()=>refreshRoomPresence()', 'roomPresenceUpdatedAt', "if(filter==='quiet'&&(count??0)!==0)return false;"]) {
@@ -404,6 +405,15 @@ if (fs.existsSync(adminHtmlPath) && fs.existsSync(adminScriptPath)) {
   if (!adminHtml.includes('admin.js?v=20261126-master-admin-v9')) {
     errors.push('Admin JavaScript cache version is out of date');
   }
+}
+const roomModerationFunctionPath = path.join(root, 'supabase/functions/admin-room-moderation/index.ts');
+if (fs.existsSync(roomModerationFunctionPath)) {
+  const fn = fs.readFileSync(roomModerationFunctionPath, 'utf8');
+  for (const token of ['caller.auth.getUser(token)', 'caller.from("staff_roles")', 'permissions.includes("room_moderation")', 'service.from("room_members")', 'service.from("staff_audit_log")', 'livekit.mutePublishedTrack', 'livekit.removeParticipant', 'action === "list"']) {
+    if (!fn.includes(token)) errors.push('Room moderation edge function is missing a security/action feature: ' + token);
+  }
+} else {
+  errors.push('Missing admin-room-moderation Edge Function source');
 }
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
@@ -631,7 +641,6 @@ if (html) {
 }
 
 const adminJsPath = path.join(root, 'js/admin.js');
-const adminHtmlPath = path.join(root, 'admin.html');
 if (fs.existsSync(adminJsPath)) {
   const adminJs = fs.readFileSync(adminJsPath, 'utf8');
   if (!adminJs.includes('const sections=[') || !adminJs.includes('await Promise.all(sections.map(async([label,load])=>')) {
@@ -649,7 +658,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v9')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v10')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
   for (const token of ['id="stat-live-rooms"', 'id="stat-room-members"', 'id="signup-trend"', 'data-tab="hosts"', 'id="hosts"']) {
@@ -668,7 +677,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v9')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-master-admin-v10')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
