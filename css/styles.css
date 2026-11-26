@@ -7041,3 +7041,5 @@ body:has(.room-sheet) #tabbar{display:none!important}
 .hs-charisma-rank-name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hs-charisma-rank-name small{font-size:10px;color:#a9a1b6}
 .hs-charisma-rank-row>strong{color:#e7c65a;font-size:14px}
+
+.hs-party-room-owner{position:relative}
