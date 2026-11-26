@@ -1758,7 +1758,7 @@ function meScreen() {
  $('#me-logout').onclick=()=>openSheet('<h2 class="font-bold mb-2">تسجيل الخروج</h2><p class="text-sm mb-4">هل تريدين تسجيل الخروج من همسات؟</p><div class="grid grid-cols-2 gap-2"><button data-close class="btn-ghost">إلغاء</button><button id="confirm-me-logout" class="btn-danger">تسجيل الخروج</button></div>',s=>s.querySelector('#confirm-me-logout').onclick=signOut);
  document.querySelectorAll('[data-profile-stat-go]').forEach(x=>x.onclick=()=>location.hash='#/friends');
 }
-async function dailyCheckinSheet(){
+async async function dailyCheckinSheet(){
  let wallet=state.wallet;
  try { const result=await api.wallet(); wallet=result.wallet; state.wallet=wallet; } catch(error) { toast(error.message||'تعذّر تحميل حالة المكافأة','error'); return; }
  const canClaim=!wallet?.nextDailyAt||Date.now()>=wallet.nextDailyAt;
