@@ -27,7 +27,7 @@ async function boot(){
   message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
   watchLoginEvents();
   const sections=[
-   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
+   ['الإحصاءات',loadStats],['نمو المستخدمين',loadSignupTrend],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
    ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
    ['الوكالات',loadAgencies],['المضيفون',loadHosts],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
   ];
@@ -36,7 +36,7 @@ async function boot(){
    catch(error){
     console.error('HAMSAT admin section failed:',label,error);
     const target=({
-     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
+     'نمو المستخدمين':'#signup-trend','المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
      'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
      'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
     })[label];
@@ -89,6 +89,22 @@ async function loadStats(){
  const failed=results.filter(Boolean);
  if(failed.length)throw new Error('تعذر جلب إحصاءات: '+failed.join('، '));
 }
+async function loadSignupTrend(days=30){
+ const root=$('#signup-trend');if(!root)return;
+ const span=Math.max(7,Math.min(30,Number(days)||30));
+ const start=new Date();start.setHours(0,0,0,0);start.setDate(start.getDate()-(span-1));
+ const {data,error}=await supabase.from('profiles').select('created_at').gte('created_at',start.toISOString()).order('created_at',{ascending:true});
+ if(error)throw error;
+ const key=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+ const counts=new Map();
+ for(const row of data||[]){if(!row.created_at)continue;const d=new Date(row.created_at);const k=key(d);counts.set(k,(counts.get(k)||0)+1);}
+ const daysList=Array.from({length:span},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return {date:d,count:counts.get(key(d))||0};});
+ const max=Math.max(1,...daysList.map(x=>x.count));
+ const number=(data||[]).length.toLocaleString('ar-DZ');
+ root.innerHTML='<div class="flex items-center justify-between gap-2"><b class="text-lg">'+number+'</b><span class="muted text-xs">حساباً جديداً خلال '+span+' يوماً</span></div><div style="display:flex;align-items:flex-end;gap:5px;height:172px;overflow-x:auto;padding:10px 2px 4px;direction:ltr">'+daysList.map((x,i)=>{const label=x.date.toLocaleDateString('ar-DZ',{day:'numeric',month:'short'});const height=Math.max(3,Math.round(x.count/max*112));return '<div title="'+esc(label+': '+x.count)+' حساب" style="flex:1 0 '+(span===7?'28px':'14px')+';min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px"><small style="font-size:10px;color:#718096">'+(x.count||'')+'</small><i style="display:block;width:100%;max-width:24px;height:'+height+'px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#5b9bd5,#2876ba)"></i><small style="font-size:9px;color:#718096;white-space:nowrap">'+(span===7||i%5===0||i===span-1?label:'')+'</small></div>';}).join('')+'</div>';
+ document.querySelectorAll('[data-signup-range]').forEach(button=>button.classList.toggle('active',Number(button.dataset.signupRange)===span));
+}
+document.querySelectorAll('[data-signup-range]').forEach(button=>button.addEventListener('click',()=>loadSignupTrend(Number(button.dataset.signupRange)).catch(error=>message('تعذر تحميل اتجاه التسجيلات: '+error.message,true))));
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
  const mediaItems=data.filter(x=>['room_background','profile_frame'].includes(x.item_type));
