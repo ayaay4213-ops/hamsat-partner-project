@@ -612,7 +612,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261126-rewards-host-tasks-v1','js/app.js?v=20261126-rewards-host-tasks-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT room assets are missing cache-busting reference: ${token}`);
   }
 }
@@ -633,7 +633,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-admin-validation-fixes-v1')) {
     errors.push('Super Admin script must use the current cache-busting version');
   }
 }
@@ -649,7 +649,7 @@ if (fs.existsSync(adminJsPath)) {
 }
 if (fs.existsSync(adminHtmlPath)) {
   const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
-  if (!adminHtml.includes('js/admin.js?v=20261123-staff-permissions-v2')) {
+  if (!adminHtml.includes('js/admin.js?v=20261126-admin-validation-fixes-v1')) {
     errors.push('Admin script cache-busting must match the room bomb validation update');
   }
 }
@@ -706,7 +706,7 @@ if (fs.existsSync(roomStylePath)) {
   }
 }
 if (html) {
-  for (const token of ['css/styles.css?v=20261123-royal-room-v22','js/app.js?v=20261123-dm-realtime-fallback-v1']) {
+  for (const token of ['css/styles.css?v=20261126-rewards-host-tasks-v1','js/app.js?v=20261126-rewards-host-tasks-v1']) {
     if (!html.includes(token)) errors.push(`HAMSAT must refresh the latest room layout assets: ${token}`);
   }
 }
@@ -750,8 +750,9 @@ if (fs.existsSync(integratedCssPath)) {
 }
 if (fs.existsSync(integratedHtmlPath)) {
   const htmlSource = fs.readFileSync(integratedHtmlPath, 'utf8');
-  if (!htmlSource.includes('data-tab="moments"') || !htmlSource.includes('grid grid-cols-6 pb-safe')) {
-    errors.push('Bottom navigation must include the moments shortcut beside the profile tab');
+  const bottomTabs = [...htmlSource.matchAll(/data-tab="(party|discover|messages|me)"/g)].map(match => match[1]);
+  if (bottomTabs.join(',') !== 'party,discover,messages,me' || !htmlSource.includes('grid grid-cols-4 pb-safe')) {
+    errors.push('Bottom navigation must preserve the approved four tabs: party, discover, messages, and me');
   }
 }
 const roomHistoryMigrationPath = path.join(root, 'supabase/migrations/20261120204747_0061_room_chat_history_since_join.sql');
@@ -1336,7 +1337,7 @@ if (fs.existsSync(path.join(root, 'supabase/migrations/20261123130000_0080_shop_
 const activeMigrationDirectory = path.join(root, 'supabase/migrations');
 if (fs.existsSync(activeMigrationDirectory)) {
   for (const file of fs.readdirSync(activeMigrationDirectory).filter(name => name.endsWith('.sql'))) {
-    if (!/^\\d{14}_/.test(file)) {
+    if (!/^\d{14}_/.test(file)) {
       errors.push('Active migration must use its production 14-digit timestamp: ' + file);
     }
   }
