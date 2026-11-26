@@ -374,11 +374,32 @@ async function loadUsers(term=''){
 }
 let roomDesignRooms=[];
 async function loadRooms(){
- const data=[];for(let from=0;;from+=200){const {data:page,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).range(from,from+199);if(error)throw error;data.push(...(page||[]));if(!page||page.length<200)break;}
- const ids=[...new Set(data.map(x=>x.owner_id))],p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};if(p.error)throw p.error;
- const byId=Object.fromEntries(p.data.map(x=>[x.id,x]));roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
- const roomSelect=$('#rd-room');if(roomSelect){const selected=roomSelect.value;roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;}
- $('#room-list').innerHTML=data.length?data.map(x=>{const owner=byId[x.owner_id]||{};return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p></div><span class="pill">غرفة</span></div>';}).join(''):'<p class="muted">لا توجد غرف.</p>';
+ const data=[];
+ for(let from=0;;from+=200){
+  const {data:page,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).range(from,from+199);
+  if(error)throw error;data.push(...(page||[]));if(!page||page.length<200)break;
+ }
+ const ids=[...new Set(data.map(x=>x.owner_id))];
+ const p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};
+ if(p.error)throw p.error;
+ let presenceByRoom={};
+ try{
+  const presence=await supabase.rpc('get_public_room_presence');
+  if(presence.error)throw presence.error;
+  presenceByRoom=Object.fromEntries((presence.data||[]).map(x=>[x.room_id,Number(x.active_count)||0]));
+ }catch(error){console.warn('Room presence unavailable in admin list:',error);}
+ const byId=Object.fromEntries((p.data||[]).map(x=>[x.id,x]));
+ roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
+ const roomSelect=$('#rd-room');
+ if(roomSelect){
+  const selected=roomSelect.value;
+  roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');
+  if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;
+ }
+ $('#room-list').innerHTML=data.length?data.map(x=>{
+  const owner=byId[x.owner_id]||{},count=presenceByRoom[x.id];
+  return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+ (count===undefined?'غير متاح':count.toLocaleString('ar-DZ')) +'</b></p></div><span class="pill">غرفة</span></div>';
+ }).join(''):'<p class="muted">لا توجد غرف.</p>';
 }
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const id=f.elements.id.value.trim(),item_type=f.elements.item_type.value;const imageFile=f.elements.image.files[0];const imageFolder=item_type==='room_background'?'catalog/room-backgrounds':item_type==='profile_frame'?'catalog/profile-frames':'catalog';const image_url=imageFile?await upload(imageFile,imageFolder,['room_background','profile_frame'].includes(item_type)?id:null):null;const payload={id,name:f.elements.name.value.trim(),item_type,price:Number(f.elements.price.value),duration_days:Number(f.elements.duration_days.value||0),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 const ROOM_BACKGROUND_ASSETS=[
