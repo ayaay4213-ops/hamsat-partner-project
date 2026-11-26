@@ -392,6 +392,20 @@ if (fs.existsSync(appRoomPath)) {
     errors.push('Missing transparent equipped profile-frame rendering');
   }
 }
+const adminHtmlPath = path.join(root, 'admin.html');
+if (fs.existsSync(adminHtmlPath) && fs.existsSync(adminScriptPath)) {
+  const adminHtml = fs.readFileSync(adminHtmlPath, 'utf8');
+  const adminJs = fs.readFileSync(adminScriptPath, 'utf8');
+  for (const token of ['id="room-search"', 'id="room-presence-filter"', 'id="room-live-summary"', 'id="room-presence-updated"', 'تحديث أعداد الحضور تلقائياً كل 30 ثانية']) {
+    if (!adminHtml.includes(token)) errors.push('Missing room-monitoring UI element: ' + token);
+  }
+  for (const token of ['function renderRoomList()', 'async function refreshRoomPresence()', "supabase.rpc('get_public_room_presence')", "addEventListener('input',renderRoomList)", "addEventListener('change',renderRoomList)", 'setInterval(()=>refreshRoomPresence()', 'roomPresenceUpdatedAt']) {
+    if (!adminJs.includes(token)) errors.push('Missing room-monitoring behavior: ' + token);
+  }
+  if (!adminHtml.includes('admin.js?v=20261126-master-admin-v9')) {
+    errors.push('Admin JavaScript cache version is out of date');
+  }
+}
 const apiFilePath = path.join(root, 'js/api.js');
 if (fs.existsSync(apiFilePath)) {
   const js = fs.readFileSync(apiFilePath, 'utf8');
