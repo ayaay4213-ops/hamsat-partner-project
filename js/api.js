@@ -331,7 +331,7 @@ export const api = {
     const {data,error}=result;fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=await mapProfileWithFrame(p);
-    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||10,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
+    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||12,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
     // Load every public room in pages instead of silently stopping at the first 100.
@@ -355,10 +355,10 @@ export const api = {
     const presenceByRoom=Object.fromEntries((presenceResult.data||[]).map(x=>[x.room_id,Number(x.active_count||0)]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
-      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 10, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
+      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 12, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
         ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '', ownerAvatarUrl:p.avatarUrl||null, ownerFrameUrl:p.equippedProfileFrameUrl||null, ownerVipLevel:p.vipLevel||0, ownerCountry:p.country||'', memberCount:presenceByRoom[r.id]||0,
-        ownerColor: p.color || '#7c3aed' };
+        ownerColor: p.color || '#2f8051' };
     }) };
   },
   roomPresenceCounts: async () => {
