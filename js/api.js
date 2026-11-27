@@ -409,7 +409,7 @@ export const api = {
     const user = await currentUser();
     const seatLimit = Number(settings.seatLimit ?? 10);
     const seatLayout = String(settings.seatLayout || 'grid');
-    if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 10) throw new Error('عدد المايكات يجب أن يكون بين 1 و10');
+    if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 12) throw new Error('عدد المايكات يجب أن يكون بين 1 و12');
     if (!['grid','one-top','two-top','row'].includes(seatLayout)) throw new Error('اختيار توزيع المقاعد غير صالح');
     const payload = {
       title: String(settings.title || '').trim().slice(0, 50),
