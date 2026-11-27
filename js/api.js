@@ -407,7 +407,7 @@ export const api = {
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
-    const seatLimit = Number(settings.seatLimit ?? 10);
+    const seatLimit = Number(settings.seatLimit ?? 12);
     const seatLayout = String(settings.seatLayout || 'grid');
     if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 12) throw new Error('عدد المايكات يجب أن يكون بين 1 و12');
     if (!['grid','one-top','two-top','row'].includes(seatLayout)) throw new Error('اختيار توزيع المقاعد غير صالح');
