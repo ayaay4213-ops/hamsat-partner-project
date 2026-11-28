@@ -134,11 +134,105 @@ header p,header small{color:#77786d!important}
 
 
 .room-design-studio{border:1px solid #d8b66e35;border-radius:18px;padding:14px;background:#fffdf8}.room-design-notice{display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid #d6a33166;border-radius:12px;background:#fff8e8;color:#6a4a10;font-size:13px}.room-design-notice span{color:#6d6250;line-height:1.7}.rd-value{float:left;color:#98701c;font-weight:800}.rd-preview{overflow:hidden;border:1px solid #d8b66e55;border-radius:18px;background:#11121c;color:#f6edda;padding:12px;max-width:680px;margin:auto}.rd-preview-head{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #ffffff20;font-size:12px}.rd-preview-head small{color:#d8b66e}.rd-preview-stage{margin-top:10px;padding:12px;border-radius:15px;background:#211d30;border:1px solid #d8b66e55}.rd-preview-host{display:flex;align-items:center;justify-content:center;gap:8px;color:#e9ce91;font-size:12px;margin-bottom:12px}.rd-seat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 10px;align-items:start}.rd-seat{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;font-size:10px;color:#f3e9d6}.rd-seat-avatar{display:grid;place-items:center;border-radius:50%;border:2px solid #d8b66e;background:linear-gradient(145deg,#493b59,#1b1928);box-shadow:0 0 0 3px #d8b66e22}.rd-seat small{color:#c9bdd0;font-size:9px}.rd-preview-lower{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rd-preview-box{padding:10px;border:1px solid #ffffff20;border-radius:12px;background:#ffffff0b;color:#d9d0bf;font-size:10px;min-height:48px}.rd-preview-toolbar{display:flex;justify-content:space-around;margin-top:10px;padding:10px;border-radius:14px;background:#282334;color:#e8ca80}.rd-preview-toolbar span{font-size:17px}@media(max-width:420px){.rd-seat-grid{gap:12px 5px}.rd-preview{padding:8px}.rd-preview-lower{grid-template-columns:1fr}.rd-preview-box{min-height:34px}}
+
+/* HAMSAT ADMIN — Clean Modern SaaS RTL workspace */
+body:not(:has(#admin:not(.hidden))) #admin-menu{display:none!important}
+:root{color-scheme:light;--admin-ink:#172235;--admin-muted:#697586;--admin-line:#e7ebf1;--admin-bg:#f4f6fa}
+html,body{min-height:100%;background:var(--admin-bg)!important;color:#202938!important}
+body{background:linear-gradient(135deg,#f7f9fc 0%,#f1f4f8 100%)!important}
+.wrap{width:100%!important;max-width:none!important;margin:0!important;padding:18px!important;display:grid;grid-template-columns:258px minmax(0,1fr);grid-template-areas:"sidebar header" "sidebar notice" "sidebar workspace";align-items:start;gap:14px 18px;direction:rtl}
+.wrap>header{grid-area:header;min-width:0;margin:0!important;padding:8px 4px 16px!important;border-bottom:1px solid var(--admin-line)!important}
+.wrap>header h1{color:#172235!important;font-size:25px!important}
+.wrap>header p{color:var(--admin-muted)!important}
+.wrap>header .tracking-\\[\\.35em\\]{color:#64748b!important}
+#admin-menu{grid-area:sidebar;position:sticky!important;top:16px!important;align-self:start;height:calc(100dvh - 32px);overflow-y:auto;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:6px!important;padding:16px!important;border-radius:18px!important;background:linear-gradient(180deg,#1b2a40,#152238)!important;border:1px solid #263952!important;box-shadow:0 12px 32px rgba(20,35,55,.13)!important}
+#admin-menu:before{content:"القائمة الرئيسية";display:block;color:#9eacc0;font-size:12px;font-weight:700;letter-spacing:.04em;padding:2px 10px 12px}
+#admin-menu .tab{display:flex!important;align-items:center;justify-content:flex-start!important;gap:11px;width:100%;flex:0 0 auto!important;min-height:46px!important;padding:10px 12px!important;text-align:right!important;background:transparent!important;border:1px solid transparent!important;border-radius:11px!important;color:#d5deea!important;font-size:14px!important}
+#admin-menu .tab:before{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:7px;background:#ffffff12;color:#b8c8dd;font-size:15px;flex:none}
+#admin-menu [data-tab="catalog"]:before{content:"▧"}#admin-menu [data-tab="gifts"]:before{content:"✧"}#admin-menu [data-tab="users"]:before{content:"♙"}#admin-menu [data-tab="logins"]:before{content:"◷"}#admin-menu [data-tab="rooms"]:before{content:"◫"}#admin-menu [data-tab="games"]:before{content:"♟"}#admin-menu [data-tab="bomb"]:before{content:"✺"}#admin-menu [data-tab="hosts"]:before{content:"♙"}#admin-menu [data-tab="agencies"]:before{content:"♧"}#admin-menu [data-tab="staff"]:before{content:"♧"}#admin-menu [data-tab="reports"]:before{content:"⚑"}#admin-menu [data-tab="feedback"]:before{content:"☷"}
+#admin-menu .tab:hover{background:#ffffff0c!important;border-color:#ffffff12!important;color:#fff!important}
+#admin-menu .tab.active{background:linear-gradient(90deg,#315b8b,#28476c)!important;border-color:#47709b!important;color:#fff!important;box-shadow:inset 3px 0 #82b5ed!important}
+#admin-menu .tab.active:before{background:#ffffff20;color:#fff}
+#notice{grid-area:notice;margin:0!important;background:#fff!important;border:1px solid var(--admin-line)!important;border-inline-start:4px solid #2876ba!important;border-radius:13px!important;color:#526071!important;box-shadow:0 3px 12px #1d29390a!important}
+#admin{grid-area:workspace;min-width:0;width:100%;gap:16px!important}
+#admin>nav{display:none!important}
+#admin-menu-toggle{display:none!important}
+.panel{background:#fff!important;border:1px solid var(--admin-line)!important;border-radius:16px!important;color:#263244!important;box-shadow:0 5px 18px rgba(25,40,60,.045)!important}
+.panel h2,.panel h3,.panel label{color:#263244!important}
+.stat{background:#fff!important;border:1px solid var(--admin-line)!important;border-radius:15px!important;box-shadow:0 4px 14px #1b2a4008!important}
+.stat span{color:#68778b!important}
+.stat b{font-size:29px!important;color:#1e3552!important}
+#overview .stat:nth-child(1){border-top:4px solid #2876ba!important}
+#overview .stat:nth-child(2){border-top:4px solid #16834a!important}
+#overview .stat:nth-child(3){border-top:4px solid #df8b28!important}
+#overview .stat:nth-child(4){border-top:4px solid #8055b7!important}
+.field{background:#fff!important;color:#253247!important;border:1px solid #d9e0e9!important;border-radius:10px!important}
+.field:focus{border-color:#4b83bd!important;box-shadow:0 0 0 3px #4b83bd18!important}
+.btn{background:#2468a6!important;color:#fff!important;border:1px solid #2468a6!important;border-radius:10px!important;box-shadow:none!important}
+.ghost{background:#f3f7fb!important;color:#315f8b!important;border:1px solid #d6e1ed!important;border-radius:10px!important}
+.tab{background:#f7f9fc!important;color:#58677a!important;border:1px solid #e2e8f0!important}
+.tab.active{background:#eaf2fa!important;color:#245d92!important;border-color:#b7cee4!important}
+.item{background:#fff!important;color:#263244!important;border:1px solid #e5eaf0!important;border-radius:13px!important;box-shadow:0 2px 8px #182b4306!important}
+.item b{color:#263244!important}
+.item .muted,.muted{color:#718096!important}
+.pill{background:#edf4fb!important;color:#315f8b!important;border:1px solid #d7e5f2!important}
+#notice{line-height:1.8}
+@media(max-width:760px){
+ .wrap{grid-template-columns:minmax(0,1fr);grid-template-areas:"header" "notice" "sidebar" "workspace";padding:12px!important;gap:11px}
+ .wrap>header{padding:4px 2px 13px!important}
+ .wrap>header h1{font-size:20px!important}
+ #admin-menu{position:static!important;height:auto;max-height:none;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;padding:11px!important}
+ #admin-menu:before{grid-column:1/-1;padding:2px 6px 5px}
+ #admin-menu .tab{min-height:42px!important;padding:8px!important;font-size:12px!important;gap:7px}
+ #admin-menu .tab:before{width:20px;height:20px}
+ #overview{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #overview .stat{min-height:78px!important;padding:11px!important}
+ #overview .stat b{font-size:24px!important}
+ #admin{min-width:0}
+}
+@media(min-width:761px) and (max-width:1050px){.wrap{grid-template-columns:220px minmax(0,1fr);gap:12px}#admin-menu{padding:12px!important}#admin-menu .tab{font-size:13px!important}}
+
+
+/* HAMSAT ADMIN MOBILE COMPACT NAV — keep every section one tap away */
+@media(max-width:760px){
+ .wrap{grid-template-areas:"header" "notice" "sidebar" "workspace"!important;gap:9px!important;padding:10px!important}
+ .wrap>header{align-items:center!important;padding:3px 2px 9px!important}
+ .wrap>header h1{font-size:18px!important}
+ .wrap>header p{font-size:10px!important;line-height:1.5}
+ .wrap>header #logout{min-height:34px!important;padding:6px 8px!important;font-size:11px!important}
+ #notice{padding:8px 10px!important;font-size:11px!important}
+ #admin-menu{position:sticky!important;top:env(safe-area-inset-top)!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important;height:auto!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;padding:7px!important;border-radius:12px!important;scrollbar-width:none;overscroll-behavior-inline:contain}
+ #admin-menu::-webkit-scrollbar{display:none}
+ #admin-menu:before{display:none!important}
+ #admin-menu .tab{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;min-height:36px!important;padding:7px 10px!important;font-size:11px!important;border-radius:9px!important}
+ #admin-menu .tab:before{width:17px!important;height:17px!important;font-size:12px!important}
+ #admin{gap:9px!important}
+ #overview{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+ #overview .stat{min-height:64px!important;padding:7px!important;border-radius:10px!important}
+ #overview .stat span{font-size:9px!important;line-height:1.35}
+ #overview .stat b{font-size:18px!important}
+ #overview .stat small{font-size:8px!important;line-height:1.3}
+ .panel{padding:10px!important;border-radius:13px!important}
+ .panel h2{font-size:15px!important}
+ .panel p{font-size:11px!important;line-height:1.6!important}
+ .field{min-height:40px!important;padding:9px!important;font-size:13px!important}
+ .btn,.ghost,.tab{min-height:36px!important;padding:7px 10px!important;font-size:11px!important}
+ .item{padding:9px!important;border-radius:10px!important}
+ .item b{font-size:12px!important}
+ .item .muted{font-size:10px!important}
+}
+@media(min-width:761px){
+ #admin-menu{max-height:calc(100dvh - 32px)!important}
+ #overview{gap:9px!important}
+ #overview .stat{min-height:72px!important;padding:10px!important}
+ #overview .stat b{font-size:23px!important}
+}
+
 </style>
 </head>
 <body><div class="wrap space-y-4">
 <header class="flex flex-wrap items-center justify-between gap-3 py-3"><div class="flex items-center gap-3"><button id="admin-menu-toggle" class="ghost text-2xl leading-none" type="button" aria-label="فتح قائمة لوحة الإدارة">☰</button><div><div class="text-amber-300 tracking-[.35em] text-xs">H A M S A T · SUPER ADMIN</div><h1 class="text-2xl font-extrabold mt-1">مركز إدارة HAMSAT</h1><p class="muted text-sm">لوحة خاصة بالمديرة · إدارة المتجر والأعضاء والغرف</p></div></div><div class="flex gap-2 items-center"><span class="pill">ADMIN ACCESS</span><button id="logout" class="ghost">تسجيل الخروج</button></div></header>
-<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
+<nav id="admin-menu" class="panel hidden flex flex-wrap gap-2" aria-label="أقسام لوحة الإدارة"><button class="tab active" data-tab="catalog">المتجر والإطارات</button><button class="tab" data-tab="gifts">الهدايا</button><button class="tab" data-tab="users">الأعضاء</button><button class="tab" data-tab="logins">دخول الأعضاء</button><button class="tab" data-tab="rooms">الغرف</button><button class="tab" data-tab="games">الألعاب</button><button class="tab" data-tab="bomb">قنبلة الغرفة</button><button class="tab" data-tab="hosts">المضيفون</button><button class="tab" data-tab="agencies">الوكالات والشحن</button><button class="tab" data-tab="staff">المسؤولون المساعدون</button><button class="tab" data-tab="reports">البلاغات</button><button class="tab" data-tab="feedback">ملاحظات الأعضاء</button></nav>
 <div id="notice" class="panel text-sm">جارٍ التحقق من صلاحية الإدارة...</div>
 <main id="admin" class="hidden space-y-4">
 <section id="overview" class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -146,6 +240,16 @@ header p,header small{color:#77786d!important}
 <div class="stat"><span class="muted text-sm">الغرف</span><b id="stat-rooms">—</b></div>
 <div class="stat"><span class="muted text-sm">الهدايا</span><b id="stat-gifts">—</b></div>
 <div class="stat"><span class="muted text-sm">مقتنيات المتجر</span><b id="stat-items">—</b></div>
+<div class="stat"><span class="muted text-sm">الغرف ذات حضور الآن</span><b id="stat-live-rooms">—</b><small class="muted text-xs">وفق آخر تحديث للحضور</small></div>
+<div class="stat"><span class="muted text-sm">الأعضاء داخل الغرف الآن</span><b id="stat-room-members">—</b><small class="muted text-xs">عدد الحضور داخل الغرف، وليس عدد المستخدمين الفريدين</small></div>
+</section>
+<section class="panel space-y-2" aria-label="حالة التحليلات المالية">
+<div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold">التحليلات المالية</h2><span class="pill">بانتظار ربط دفتر العملات</span></div>
+<p class="muted text-sm leading-7">لن نعرض إجمالي الشحن أو الأرباح أو الرواتب أو طلبات السحب كأرقام تقديرية. ستظهر هذه المؤشرات بعد ربط دفتر معاملات موثوق وخدمات مالية بصلاحيات ومراجعة إدارية.</p>
+</section>
+<section class="panel space-y-3" aria-label="نمو المستخدمين">
+<div class="flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-bold">نمو تسجيلات المستخدمين</h2><p class="muted text-xs">عدد الحسابات الجديدة المسجلة فعلياً حسب تاريخ الإنشاء</p></div><div class="flex gap-2"><button type="button" class="ghost text-xs" data-signup-range="7">7 أيام</button><button type="button" class="ghost text-xs" data-signup-range="30">30 يوماً</button></div></div>
+<div id="signup-trend" class="min-w-0" aria-live="polite"><p class="muted text-sm">جارٍ تحميل بيانات التسجيل...</p></div>
 </section>
 <nav class="flex flex-wrap gap-2">
 <button class="tab active" data-tab="catalog">الإطارات والدخوليات</button>
@@ -195,6 +299,9 @@ header p,header small{color:#77786d!important}
 <label class="text-sm sm:col-span-2">الوصف<textarea class="field mt-1" name="description" rows="2"></textarea></label>
 <label class="text-sm sm:col-span-2">رابط صورة الهدية<input class="field mt-1" name="image_url" type="url" placeholder="https://..."></label>
 <label class="text-sm sm:col-span-2">رابط حركة الهدية<input class="field mt-1" name="animation_url" type="url" placeholder="https://..."></label>
+<label class="text-sm sm:col-span-2">أو ارفعي صورة الهدية<input class="field mt-1" name="image_file" type="file" accept="image/png,image/jpeg,image/webp"></label>
+<label class="text-sm sm:col-span-2">أو ارفعي الحركة (SVGA / Lottie JSON)<input class="field mt-1" name="animation_file" type="file" accept=".svga,.json,.lottie,application/json"></label>
+<p class="muted text-xs sm:col-span-2">الصورة: PNG/JPG/WEBP حتى 5MB. الحركة: SVGA أو JSON/Lottie حتى 15MB. يعتمد الرفع على صلاحيات مساحة التخزين.</p>
 <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="active" checked> نشر الهدية</label>
 <button class="btn sm:col-span-2" type="submit">حفظ الهدية</button></form>
 <div><h3 class="font-bold mb-2">الهدايا المسجلة</h3><div id="gift-list" class="space-y-2"></div></div>
@@ -207,7 +314,15 @@ header p,header small{color:#77786d!important}
 <section id="logins" class="panel space-y-3 hidden"><div><h2 class="text-xl font-bold">إشعارات دخول الأعضاء</h2><p class="muted text-sm">كل تسجيل دخول جديد يظهر هنا مباشرة مع رقم العضو والوقت، دون عرض بيانات الاتصال الخاصة.</p></div><div id="login-events" class="space-y-2"><p class="muted">جارٍ تحميل سجل الدخول...</p></div></section>
 <section id="rooms" class="panel space-y-4 hidden">
 <div><h2 class="text-xl font-bold">إدارة الغرف وتصميمها</h2><p class="muted text-sm">معاينة تخطيط موحّد أو تخطيط مستقل لغرفة محددة.</p></div>
-<button id="refresh-rooms" class="ghost" type="button">تحديث قائمة الغرف</button><div id="room-list" class="space-y-2"></div>
+<div class="room-design-notice"><b>متابعة مباشرة للحضور</b><span>يمكن للمسؤولة الرئيسية أو المسؤول المعيّن بصلاحية إدارة الغرف عرض الأعضاء النشطين وكتم المايك أو طرد العضو. كل إجراء يمر عبر تحقق خادمي ويُسجل في سجل التدقيق. لا يتم حذف الغرفة أو إغلاقها من هذه الشاشة.</span></div>
+<div class="grid sm:grid-cols-[minmax(0,1fr)_220px_auto] gap-2 items-end">
+ <label class="text-sm">البحث في الغرف<input id="room-search" class="field mt-1" type="search" placeholder="اسم الغرفة أو رقمها أو المضيفة"></label>
+ <label class="text-sm">عرض الغرف<select id="room-presence-filter" class="field mt-1"><option value="all">كل الغرف</option><option value="live">بها حضور الآن</option><option value="quiet">دون حضور ظاهر</option></select></label>
+ <button id="refresh-rooms" class="ghost" type="button">إعادة تحميل الغرف</button>
+</div>
+<div id="room-live-summary" class="grid grid-cols-2 sm:grid-cols-3 gap-2" aria-live="polite"></div>
+<p id="room-presence-updated" class="muted text-xs" aria-live="polite">لم يتم تحديث الحضور بعد.</p>
+<div id="room-list" class="space-y-2"></div>
 <div class="room-design-studio space-y-4">
   <div class="room-design-notice"><b>وضع المعاينة فقط</b><span>التعديلات هنا تجريبية داخل لوحة الإدارة ولا تُحفظ ولا تُطبّق على الغرف بعد. ربط الحفظ يحتاج طبقة تخزين وصلاحيات آمنة منفصلة.</span></div>
   <div class="grid sm:grid-cols-2 gap-3">
@@ -274,6 +389,7 @@ header p,header small{color:#77786d!important}
 <button class="btn sm:col-span-2" type="submit">إنشاء الوكالة</button>
 </form>
 <div><h3 class="font-bold mb-2">الوكالات الحالية</h3><div id="agency-list" class="space-y-2"></div></div>
+
 <div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-3">إضافة عضو إلى وكالة</h3>
 <form id="agency-member-form" class="grid sm:grid-cols-2 gap-3">
 <label class="text-sm">الوكالة<select class="field mt-1" name="agency_id" id="agency-select" required></select></label>
@@ -293,12 +409,17 @@ header p,header small{color:#77786d!important}
 </form><div id="topup-package-list" class="space-y-2 mt-3"></div></div>
 <div class="border-t border-white/10 pt-4"><h3 class="font-bold mb-2">طلبات الشحن الخارجية</h3><p class="muted text-xs mb-3">عرض ومتابعة فقط. لا يتم اعتماد الدفع أو إضافة العملات من هذه القائمة قبل وجود تحقق موثوق من مزود الدفع.</p><div id="topup-order-list" class="grid gap-2"><p class="muted">جارٍ تحميل الطلبات...</p></div></div>
 </section>
+<section id="hosts" class="panel space-y-4 hidden">
+<div><h2 class="text-xl font-bold">إدارة المضيفين</h2><p class="muted text-sm">متابعة المضيفين المرتبطين بالوكالات وساعات البث والهدايا المسجلة خلال آخر 30 يوماً.</p></div>
+<div class="room-design-notice"><b>تنبيه مالي</b><span>هذه البيانات تشغيلية فقط. لا تمثل الماسات أو الرواتب أو المستحقات النقدية. لا توجد حالياً أهداف شهرية معتمدة أو شاشة اعتماد مستحقات.</span></div>
+<div id="host-list" class="grid gap-2"><p class="muted">جارٍ تحميل بيانات المضيفين...</p></div>
+</section>
 <section id="staff" class="panel space-y-5 hidden">
 <div><h2 class="text-xl font-bold">إدارة المسؤولين المساعدين</h2><p class="muted text-sm">امنحي العضو صلاحيات محددة دون منحه صلاحية Super Admin. يمكن تعطيل المسؤول أو سحب صلاحياته في أي وقت.</p></div>
 <form id="staff-assign-form" class="grid sm:grid-cols-2 gap-3">
 <label class="text-sm">المعرّف العام للعضو<input class="field mt-1" name="public_id" type="number" min="1" required placeholder="مثال: 100025"></label>
-<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span><p class="muted text-xs mb-2">مراجعة البلاغات هي الصلاحية المرتبطة حاليًا بإجراء خادمي. بقية الصلاحيات قيد الربط ولن تكون قابلة للتعيين الآن.</p>
-<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation" disabled> إدارة الغرف والإشراف · قريبًا</label>
+<div class="text-sm"><span class="block mb-2">الصلاحيات المتاحة</span><p class="muted text-xs mb-2">صلاحية إدارة الغرف تتيح عرض الحضور وكتم المايك وطرد العضو من لوحة الغرف فقط. يتم التحقق منها على الخادم في كل طلب.</p>
+<label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="room_moderation"> إدارة الغرف والإشراف</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="report_review"> مراجعة البلاغات</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="member_support" disabled> دعم الأعضاء · قريبًا</label>
 <label class="flex items-center gap-2 mb-2"><input type="checkbox" name="permissions" value="event_management" disabled> إدارة الفعاليات · قريبًا</label>
@@ -328,4 +449,4 @@ window.addEventListener('unhandledrejection',function(e){
  if(n)n.textContent='تعذر إكمال تحميل لوحة الإدارة: '+(e.reason?.message||String(e.reason||'خطأ غير معروف'));
 });
 </script>
-<script type="module" src="js/admin.js?v=20261124-admin-auth-diagnostics-v3" onerror="document.getElementById('notice').textContent='تعذر تحميل ملفات لوحة الإدارة. تحققي من اتصال الإنترنت ثم أعيدي فتح الرابط.'"></script></body></html>
+<script type="module" src="js/admin.js?v=20261127-compact-admin-v1" onerror="document.getElementById('notice').textContent='تعذر تحميل ملفات لوحة الإدارة. تحققي من اتصال الإنترنت ثم أعيدي فتح الرابط.'"></script></body></html>

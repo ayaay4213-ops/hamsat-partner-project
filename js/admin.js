@@ -19,24 +19,47 @@ async function boot(){
    'قراءة ملف الحساب'
   );
   if(e)throw e;
-  message('الخطوة 3/3: التحقق من صلاحية Super Admin…');
-  const {data:isOwner,error:ownerError}=await withTimeout(supabase.rpc('is_admin'),'فحص صلاحية الإدارة');
+  message('الخطوة 3/3: التحقق من صلاحيات الإدارة…');
+  const [{data:isOwner,error:ownerError},{data:staffRole,error:staffError}]=await withTimeout(Promise.all([
+   supabase.rpc('is_admin'),
+   supabase.from('staff_roles').select('permissions,active').eq('user_id',session.user.id).maybeSingle()
+  ]),'فحص صلاحيات الإدارة');
   if(ownerError)throw ownerError;
-  if(isOwner!==true){message('تم تسجيل الدخول، لكن هذا الحساب لا يملك صلاحية Super Admin الرئيسية. الوصول محمي.',true);return;}
+  if(staffError)throw staffError;
+  const canModerateRooms=isOwner===true||(staffRole?.active===true&&Array.isArray(staffRole.permissions)&&staffRole.permissions.includes('room_moderation'));
+  if(!canModerateRooms){message('تم تسجيل الدخول، لكن هذا الحساب لا يملك صلاحية إدارة الغرف.',true);return;}
   admin.classList.remove('hidden');
-  message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
-  watchLoginEvents();
-  const sections=[
-   ['الإحصاءات',loadStats],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
+  if(isOwner===true){
+   message('مرحباً '+(profile?.display_name||'بالمديرة')+' — تم التحقق من صلاحية Super Admin.');
+   $('#admin-menu')?.classList.remove('hidden');
+   watchLoginEvents();
+  }else{
+   message('مرحباً '+(profile?.display_name||'بالمسؤول')+' — تم التحقق من صلاحية إدارة الغرف فقط.');
+   const brand=document.querySelector('header .text-amber-300'),access=document.querySelector('header .pill'),subtitle=document.querySelector('header p');
+   if(brand)brand.textContent='H A M S A T · ROOM MODERATION';
+   if(access)access.textContent='ROOM MODERATOR';
+   if(subtitle)subtitle.textContent='صلاحية محدودة · متابعة الغرف والإشراف على الأعضاء';
+   document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>{button.hidden=button.dataset.tab!=='rooms';});
+   $('#admin-menu')?.classList.remove('hidden');
+   document.querySelectorAll('#admin-menu [data-tab]').forEach(button=>button.classList.toggle('active',button.dataset.tab==='rooms'));
+   if($('#admin-menu-toggle'))$('#admin-menu-toggle').hidden=true;
+   $('#overview')?.classList.add('hidden');
+   document.querySelectorAll('section.panel').forEach(section=>section.classList.toggle('hidden',section.id!=='rooms'));
+   document.querySelector('.room-design-studio')?.classList.add('hidden');
+  }
+  setInterval(()=>refreshRoomPresence().catch(error=>{console.warn('Automatic room presence refresh failed:',error);}),30000);
+  const ownerSections=[
+   ['الإحصاءات',loadStats],['نمو المستخدمين',loadSignupTrend],['المتجر والإطارات والخلفيات',loadItems],['الهدايا',loadGifts],['دخول الأعضاء',loadLogins],
    ['الألعاب',loadGames],['الغرف',loadRooms],['الأعضاء',loadUsers],['قنبلة الغرفة',loadBombLevels],
-   ['الوكالات',loadAgencies],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
+   ['الوكالات',loadAgencies],['المضيفون',loadHosts],['باقات الشحن',loadTopupPackages],['طلبات الشحن الخارجية',loadExternalTopupOrders],['المسؤولون المساعدون',loadStaffRoles],['البلاغات',loadReports],['ملاحظات الأعضاء',loadFeedback]
   ];
+  const sections=isOwner===true?ownerSections:[['الغرف',loadRooms]];
   await Promise.all(sections.map(async([label,load])=>{
    try{await load();}
    catch(error){
     console.error('HAMSAT admin section failed:',label,error);
     const target=({
-     'المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
+     'نمو المستخدمين':'#signup-trend','المضيفون':'#host-list','المتجر والإطارات والخلفيات':'#item-list','الهدايا':'#gift-list','الألعاب':'#game-list',
      'الغرف':'#room-list','الأعضاء':'#user-results','دخول الأعضاء':'#login-events','قنبلة الغرفة':'#bomb-level-list',
      'الوكالات':'#agency-list','باقات الشحن':'#topup-package-list','طلبات الشحن الخارجية':'#topup-order-list','المسؤولون المساعدون':'#staff-list','البلاغات':'#report-list','ملاحظات الأعضاء':'#feedback-list'
     })[label];
@@ -59,6 +82,17 @@ async function upload(file,folder,stableName=null){
  const {data,error}=await supabase.storage.from('hamsat-media').upload(path,file,{upsert:true,contentType:file.type});if(error)throw error;
  return supabase.storage.from('hamsat-media').getPublicUrl(data.path).data.publicUrl;
 }
+async function uploadGiftAnimation(file){
+ if(!file)return null;
+ const ext=(file.name.match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase();
+ if(!['svga','json','lottie'].includes(ext)||file.size>15*1024*1024)throw Error('ملف الحركة يجب أن يكون SVGA أو JSON/Lottie وأقل من 15MB');
+ const {data:{user}}=await supabase.auth.getUser();
+ const path=user.id+'/catalog/gift-animations/'+crypto.randomUUID()+'.'+ext;
+ const contentType=file.type||(ext==='json'?'application/json':'application/octet-stream');
+ const {data,error}=await supabase.storage.from('hamsat-media').upload(path,file,{upsert:false,contentType});
+ if(error)throw error;
+ return supabase.storage.from('hamsat-media').getPublicUrl(data.path).data.publicUrl;
+}
 function row(title,sub,id,active,kind){return '<div class="item"><div class="min-w-0"><b>'+esc(title)+'</b><p class="muted text-xs">'+esc(sub)+' · '+(active?'منشور':'مخفي')+'</p></div><button class="ghost text-sm" data-toggle="'+esc(id)+'" data-kind="'+kind+'">'+(active?'إخفاء':'نشر')+'</button></div>'}
 async function loadStats(){
  const tables=['profiles','rooms','gifts','shop_items'],ids=['stat-users','stat-rooms','stat-gifts','stat-items'];
@@ -66,7 +100,7 @@ async function loadStats(){
   try{
    const {count,error}=await supabase.from(t).select('id',{count:'exact',head:true});
    if(error)throw error;
-   $('#'+ids[i]).textContent=count??0;
+   $('#'+ids[i]).textContent=Number(count??0).toLocaleString('ar-DZ');
    return null;
   }catch(error){
    $('#'+ids[i]).textContent='—';
@@ -74,9 +108,37 @@ async function loadStats(){
    return t;
   }
  }));
+ try{
+  const {data,error}=await supabase.rpc('get_public_room_presence');
+  if(error)throw error;
+  const rooms=Array.isArray(data)?data:[];
+  const members=rooms.reduce((sum,row)=>sum+Math.max(0,Number(row.active_count)||0),0);
+  $('#stat-live-rooms').textContent=rooms.length.toLocaleString('ar-DZ');
+  $('#stat-room-members').textContent=members.toLocaleString('ar-DZ');
+ }catch(error){
+  $('#stat-live-rooms').textContent='—';
+  $('#stat-room-members').textContent='—';
+  console.warn('HAMSAT live room presence metric unavailable:',error);
+ }
  const failed=results.filter(Boolean);
  if(failed.length)throw new Error('تعذر جلب إحصاءات: '+failed.join('، '));
 }
+async function loadSignupTrend(days=30){
+ const root=$('#signup-trend');if(!root)return;
+ const span=Math.max(7,Math.min(30,Number(days)||30));
+ const start=new Date();start.setHours(0,0,0,0);start.setDate(start.getDate()-(span-1));
+ const {data,error}=await supabase.from('profiles').select('created_at').gte('created_at',start.toISOString()).order('created_at',{ascending:true});
+ if(error)throw error;
+ const key=date=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+ const counts=new Map();
+ for(const row of data||[]){if(!row.created_at)continue;const d=new Date(row.created_at);const k=key(d);counts.set(k,(counts.get(k)||0)+1);}
+ const daysList=Array.from({length:span},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return {date:d,count:counts.get(key(d))||0};});
+ const max=Math.max(1,...daysList.map(x=>x.count));
+ const number=(data||[]).length.toLocaleString('ar-DZ');
+ root.innerHTML='<div class="flex items-center justify-between gap-2"><b class="text-lg">'+number+'</b><span class="muted text-xs">حساباً جديداً خلال '+span+' يوماً</span></div><div style="display:flex;align-items:flex-end;gap:5px;height:172px;overflow-x:auto;padding:10px 2px 4px;direction:ltr">'+daysList.map((x,i)=>{const label=x.date.toLocaleDateString('ar-DZ',{day:'numeric',month:'short'});const height=Math.max(3,Math.round(x.count/max*112));return '<div title="'+esc(label+': '+x.count)+' حساب" style="flex:1 0 '+(span===7?'28px':'14px')+';min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px"><small style="font-size:10px;color:#718096">'+(x.count||'')+'</small><i style="display:block;width:100%;max-width:24px;height:'+height+'px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#5b9bd5,#2876ba)"></i><small style="font-size:9px;color:#718096;white-space:nowrap">'+(span===7||i%5===0||i===span-1?label:'')+'</small></div>';}).join('')+'</div>';
+ document.querySelectorAll('[data-signup-range]').forEach(button=>button.classList.toggle('active',Number(button.dataset.signupRange)===span));
+}
+document.querySelectorAll('[data-signup-range]').forEach(button=>button.addEventListener('click',()=>loadSignupTrend(Number(button.dataset.signupRange)).catch(error=>message('تعذر تحميل اتجاه التسجيلات: '+error.message,true))));
 async function loadItems(){
  const {data,error}=await supabase.from('shop_items').select('*').order('item_type').order('name');if(error)throw error;
  const mediaItems=data.filter(x=>['room_background','profile_frame'].includes(x.item_type));
@@ -98,8 +160,21 @@ async function loadItems(){
 }
 async function loadGifts(){
  const {data,error}=await supabase.from('gifts').select('*').order('price');if(error)throw error;
- $('#gift-list').innerHTML=data.length?data.map(x=>row(x.icon+' '+x.name,x.id+' · '+x.price+' عملة · '+({app:'التطبيق',event:'الحدث',lucky:'محظوظة',special:'خاصة'}[x.category]||'التطبيق'),x.id,x.active,'gift')).join(''):'<p class="muted">لا توجد هدايا بعد.</p>';
+ $('#gift-list').innerHTML=data.length?data.map(x=>{
+  const preview=x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.name)+'" loading="lazy" class="w-14 h-14 rounded-xl object-cover border border-slate-200">':'<div class="w-14 h-14 rounded-xl bg-slate-100 grid place-items-center text-2xl">'+esc(x.icon||'🎁')+'</div>';
+  const status=x.active?'منشورة':'مخفية';
+  return '<article class="item"><div class="flex gap-3 items-center min-w-0">'+preview+'<div class="min-w-0"><b>'+esc(x.name)+'</b><p class="muted text-xs">'+esc(x.id)+' · '+Number(x.price).toLocaleString('ar-DZ')+' Coins · '+esc(({app:'التطبيق',event:'الحدث',lucky:'محظوظة',special:'خاصة'}[x.category]||'التطبيق'))+'</p><p class="muted text-xs">'+status+(x.animation_url?' · حركة مرتبطة':' · بلا حركة')+'</p></div></div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-edit-gift="'+esc(x.id)+'">تعديل</button><button type="button" class="ghost text-xs" data-toggle="'+esc(x.id)+'" data-kind="gift">'+(x.active?'إخفاء':'نشر')+'</button></div></article>';
+ }).join(''):'<p class="muted">لا توجد هدايا بعد.</p>';
  bindToggles('#gift-list',data,'gift');
+ $('#gift-list').querySelectorAll('[data-edit-gift]').forEach(button=>button.onclick=()=>{
+  const gift=data.find(x=>x.id===button.dataset.editGift),form=$('#gift-form');if(!gift||!form)return;
+  form.elements.id.value=gift.id;form.elements.name.value=gift.name;form.elements.price.value=gift.price;
+  form.elements.icon.value=gift.icon||'🎁';form.elements.category.value=gift.category||'app';
+  form.elements.description.value=gift.description||'';form.elements.image_url.value=gift.image_url||'';
+  form.elements.animation_url.value=gift.animation_url||'';form.elements.active.checked=Boolean(gift.active);
+  form.elements.image_file.value='';form.elements.animation_file.value='';
+  form.scrollIntoView({behavior:'smooth',block:'start'});message('تم تحميل بيانات الهدية للتعديل. احفظي بعد الانتهاء.');
+ });
 }
 function bindToggles(root,data,kind){
  const tables={gift:'gifts',item:'shop_items',game:'games'};
@@ -146,6 +221,36 @@ async function loadAgencies(){
  select.innerHTML=(data||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
  root.querySelectorAll('[data-agency-toggle]').forEach(b=>b.onclick=async()=>{try{const {error}=await supabase.rpc('admin_update_agency',{p_agency_id:b.dataset.agencyToggle,p_status:b.dataset.status,p_commission_percent:Number(b.dataset.commission),p_agent_commission_percent:Number(b.dataset.agent)});if(error)throw error;await loadAgencies();message('تم تحديث حالة الوكالة.');}catch(e){message(e.message,true);}});
 }
+
+async function loadHosts(){
+ const root=$('#host-list');if(!root)return;
+ const {data:members,error}=await supabase.from('agency_members').select('agency_id,user_id,status,member_role,joined_at').eq('member_role','host').eq('status','active').order('joined_at',{ascending:false});
+ if(error)throw error;
+ if(!members?.length){root.innerHTML='<p class="muted">لا يوجد مضيفون مرتبطون بوكالات نشطة حالياً.</p>';return;}
+ const agencyIds=[...new Set(members.map(x=>x.agency_id))],userIds=[...new Set(members.map(x=>x.user_id))];
+ const [agenciesResult,profilesResult]=await Promise.all([
+  supabase.from('agencies').select('id,name,status,agency_type').in('id',agencyIds),
+  supabase.from('profiles').select('id,public_id,display_name,handle').in('id',userIds)
+ ]);
+ if(agenciesResult.error)throw agenciesResult.error;
+ if(profilesResult.error)throw profilesResult.error;
+ const since=new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10);
+ const statsResult=await supabase.from('agency_host_daily_stats').select('agency_id,host_id,live_seconds,gift_coins,stat_date').in('agency_id',agencyIds).in('host_id',userIds).gte('stat_date',since);
+ if(statsResult.error)throw statsResult.error;
+ const agencies=Object.fromEntries((agenciesResult.data||[]).map(x=>[x.id,x]));
+ const profiles=Object.fromEntries((profilesResult.data||[]).map(x=>[x.id,x]));
+ const totals=new Map();
+ for(const row of statsResult.data||[]){
+  const key=row.agency_id+':'+row.host_id,old=totals.get(key)||{seconds:0,gifts:0};
+  old.seconds+=Math.max(0,Number(row.live_seconds)||0);old.gifts+=Math.max(0,Number(row.gift_coins)||0);totals.set(key,old);
+ }
+ root.innerHTML=members.map(member=>{
+  const agency=agencies[member.agency_id]||{},profile=profiles[member.user_id]||{},stats=totals.get(member.agency_id+':'+member.user_id)||{seconds:0,gifts:0};
+  const hours=(stats.seconds/3600).toFixed(1);
+  return '<article class="item"><div class="min-w-0"><b>'+esc(profile.display_name||profile.handle||'مضيف')+'</b><p class="muted text-xs">UID '+esc(profile.public_id||'—')+' · '+esc(agency.name||'وكالة غير معروفة')+' · '+esc(agency.status||'')+'</p><p class="text-xs mt-2">ساعات البث المسجلة: <b>'+esc(hours)+'</b> ساعة · هدايا مسجلة: <b>'+stats.gifts.toLocaleString('ar-DZ')+'</b> Coins</p><p class="muted text-xs">الهدف والراتب: غير متاحين حتى ربط سياسة الأهداف والاستحقاقات</p></div></article>';
+ }).join('');
+}
+
 async function loadTopupPackages(){
  const root=$('#topup-package-list');
  const {data,error}=await supabase.from('topup_packages').select('*').order('sort_order');
@@ -249,11 +354,14 @@ async function loadUsers(term=''){
   if(page.length<pageSize)break;
  }
  const out=$('#user-results');
- let activityByUser={};
+ let activityByUser={},walletByUser={};
  if(data.length){
   const activity=await supabase.rpc('admin_user_activity',{p_user_ids:data.map(x=>x.id)});
   if(!activity.error)activityByUser=Object.fromEntries((activity.data||[]).map(x=>[x.user_id,x]));
   else console.warn('HAMSAT admin user activity is unavailable:',activity.error.message);
+  const wallets=await supabase.from('wallets').select('user_id,balance').in('user_id',data.map(x=>x.id));
+  if(!wallets.error)walletByUser=Object.fromEntries((wallets.data||[]).map(x=>[x.user_id,x]));
+  else console.warn('HAMSAT admin wallet balances are unavailable:',wallets.error.message);
  }
  const dateText=value=>value?new Date(value).toLocaleString('ar-DZ'):'غير متاح';
  out.innerHTML=data.length?data.map(x=>{
@@ -263,7 +371,7 @@ async function loadUsers(term=''){
   const handle=String(x.handle||'').trim();
   const registered=activity.account_created_at||x.created_at;
   const lastLogin=activity.last_sign_in_at;
-  return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-user-details="'+esc(x.id)+'">التفاصيل</button><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div></div>';
+  return '<div class="item"><div class="min-w-0"><b>'+esc(name||'عضو بدون اسم')+'</b><p class="muted text-xs">HAMSAT-'+esc(publicId)+' · '+esc(handle?'@'+handle:'لم يحدد اسم مستخدم')+' · '+esc(x.role||'user')+' · '+(x.is_banned?'محظور':'نشط')+'</p><p class="muted text-xs mt-1">رصيد Coins: '+(walletByUser[x.id]?.balance===undefined?'غير متاح':Number(walletByUser[x.id].balance).toLocaleString('ar-DZ'))+'</p><p class="muted text-xs mt-1">تاريخ التسجيل: '+esc(dateText(registered))+' · آخر دخول: '+esc(dateText(lastLogin))+'</p>'+(name&&handle?'':'<p class="text-amber-200 text-xs mt-1">لم يكمل العضو بيانات الملف الشخصي؛ لا يوجد اسم معلن للتعرّف عليه.</p>')+'</div><div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-user-details="'+esc(x.id)+'">التفاصيل</button><button class="ghost text-xs" data-moderate-user="'+esc(x.id)+'" data-banned="'+(x.is_banned?'true':'false')+'">'+(x.is_banned?'فك الحظر':'حظر الحساب')+'</button></div></div>';
  }).join(''):'<p class="muted">لا يوجد أعضاء مطابقون.</p>';
 
  out.querySelectorAll('[data-user-details]').forEach(detailButton=>{
@@ -280,6 +388,8 @@ async function loadUsers(term=''){
     '<p>اسم المستخدم: '+esc(x.handle?'@'+x.handle:'غير محدد')+'</p>'+
     '<p>نوع الحساب: '+esc(x.role||'user')+'</p>'+
     '<p>الحالة: '+(x.is_banned?'محظور':'نشط')+'</p>'+
+    '<p>رصيد Coins: '+(walletByUser[x.id]?.balance===undefined?'غير متاح':Number(walletByUser[x.id].balance).toLocaleString('ar-DZ'))+'</p>'+
+    '<p class="muted text-xs">تعديل الرصيد غير متاح من الواجهة الحالية؛ يجب أن يمر عبر إجراء مالي آمن ومسجل.</p>'+
     '<p>تاريخ التسجيل: '+esc(dateText(activity.account_created_at||x.created_at))+'</p>'+
     '<p>آخر دخول: '+esc(dateText(activity.last_sign_in_at))+'</p>'+
     '<p class="muted text-xs">لا تُعرض أرقام الهاتف أو البريد الإلكتروني في هذه اللوحة.</p>';
@@ -314,14 +424,104 @@ async function loadUsers(term=''){
   }catch(e){message(e.message||'تعذّر تحديث حالة العضو.',true);b.disabled=false;}
  });
 }
-let roomDesignRooms=[];
-async function loadRooms(){
- const data=[];for(let from=0;;from+=200){const {data:page,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).range(from,from+199);if(error)throw error;data.push(...(page||[]));if(!page||page.length<200)break;}
- const ids=[...new Set(data.map(x=>x.owner_id))],p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};if(p.error)throw p.error;
- const byId=Object.fromEntries(p.data.map(x=>[x.id,x]));roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
- const roomSelect=$('#rd-room');if(roomSelect){const selected=roomSelect.value;roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;}
- $('#room-list').innerHTML=data.length?data.map(x=>{const owner=byId[x.owner_id]||{};return '<div class="item"><div><b>'+esc(x.title)+'</b><p class="muted text-xs">'+esc('ROOM-'+String(x.public_id).padStart(6,'0'))+' · '+esc(x.topic||'عام')+' · المضيفة: '+esc(owner.display_name||'عضو')+'</p></div><span class="pill">غرفة</span></div>';}).join(''):'<p class="muted">لا توجد غرف.</p>';
+let roomDesignRooms=[],roomPresenceByRoom={},roomPresenceAvailable=false,roomPresenceUpdatedAt=null,roomRosterByRoom={},roomRosterOpen=new Set();
+function renderRoomRosterHtml(roomId){
+ const state=roomRosterByRoom[roomId];
+ if(!state)return '<p class="muted text-xs">اضغطي «عرض الأعضاء» لتحميل الحضور الحالي.</p>';
+ if(state.loading)return '<p class="muted text-xs">جارٍ تحميل أعضاء الغرفة…</p>';
+ if(state.error)return '<p class="text-red-300 text-xs">'+esc(state.error)+'</p>';
+ const members=state.members||[];
+ if(!members.length)return '<p class="muted text-xs">لا يوجد أعضاء نشطون في الغرفة حالياً.</p>';
+ return '<div class="grid gap-2">'+members.map(member=>{
+  const profile=member.profile||{},name=profile.display_name||profile.handle||'عضو';
+  const publicId=profile.public_id?'HAMSAT-'+String(profile.public_id).padStart(6,'0'):'عضو';
+  const seat=member.seat_no?' · المايك '+member.seat_no:' · مستمع';
+  const controls=member.is_room_owner?'<span class="pill">مضيفة الغرفة</span>':'<div class="flex flex-wrap gap-2"><button type="button" class="ghost text-xs" data-room-mute="'+esc(roomId)+'" data-user="'+esc(member.user_id)+'" data-muted="'+(member.muted?'true':'false')+'">'+(member.muted?'إلغاء كتم المايك':'كتم المايك')+'</button><button type="button" class="ghost text-xs" data-room-kick="'+esc(roomId)+'" data-user="'+esc(member.user_id)+'">طرد من الغرفة</button></div>';
+  return '<div class="item flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><b>'+esc(name)+'</b><p class="muted text-xs">'+esc(publicId)+esc(seat)+(member.muted?' · المايك مكتوم':'')+'</p></div>'+controls+'</div>';
+ }).join('')+'</div>';
 }
+async function loadRoomRoster(roomId){
+ roomRosterByRoom[roomId]={loading:true};renderRoomList();
+ const {data,error}=await supabase.functions.invoke('admin-room-moderation',{body:{action:'list',room_id:roomId}});
+ if(error)throw error;if(data?.error)throw new Error(data.error);
+ roomRosterByRoom[roomId]={members:data?.members||[],loadedAt:Date.now()};renderRoomList();
+}
+async function runRoomModeration(action,roomId,userId,button){
+ if(action==='kick'&&!confirm('سيتم فصل العضو صوتياً وإزالته من الغرفة. هل تريدين المتابعة؟'))return;
+ if(button)button.disabled=true;
+ try{
+  const {data,error}=await supabase.functions.invoke('admin-room-moderation',{body:{action,room_id:roomId,participant_id:userId}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  message(data?.warning||({mute:'تم كتم مايك العضو.',unmute:'تم إرسال طلب إلغاء الكتم.',kick:'تم طرد العضو من الغرفة.'}[action]||'تم تنفيذ الإجراء.'),Boolean(data?.warning));
+  try{await loadRoomRoster(roomId);await refreshRoomPresence();}
+  catch(refreshError){message('تم تنفيذ الإجراء، لكن تعذّر تحديث قائمة الغرفة: '+(refreshError.message||'خطأ غير معروف'),true);}
+ }catch(error){message(error.message||'تعذّر تنفيذ إجراء إدارة الغرفة.',true);if(button)button.disabled=false;}
+}
+function bindRoomModerationControls(root){
+ root.querySelectorAll('[data-room-roster]').forEach(button=>button.onclick=async()=>{
+  const roomId=button.dataset.roomRoster;
+  if(roomRosterOpen.has(roomId)){roomRosterOpen.delete(roomId);renderRoomList();return;}
+  roomRosterOpen.add(roomId);roomRosterByRoom[roomId]={loading:true};renderRoomList();
+  try{await loadRoomRoster(roomId);}catch(error){roomRosterByRoom[roomId]={error:error.message||'تعذّر تحميل الأعضاء.'};renderRoomList();}
+ });
+ root.querySelectorAll('[data-room-mute]').forEach(button=>button.onclick=()=>runRoomModeration(button.dataset.muted==='true'?'unmute':'mute',button.dataset.roomMute,button.dataset.user,button));
+ root.querySelectorAll('[data-room-kick]').forEach(button=>button.onclick=()=>runRoomModeration('kick',button.dataset.roomKick,button.dataset.user,button));
+}
+function renderRoomList(){
+ const root=$('#room-list');if(!root)return;
+ const query=($('#room-search')?.value||'').trim().toLocaleLowerCase();
+ const filter=$('#room-presence-filter')?.value||'all';
+ const filtered=roomDesignRooms.filter(room=>{
+  const count=roomPresenceByRoom[room.id];
+  if(filter==='live'&&!(Number(count)>0))return false;
+  if(filter==='quiet'&&(count??0)!==0)return false;
+  const haystack=[room.title,room.topic,room.public_id,room.ownerName].join(' ').toLocaleLowerCase();
+  return !query||haystack.includes(query);
+ });
+ const active=roomDesignRooms.filter(room=>Number(roomPresenceByRoom[room.id])>0).length;
+ const members=Object.values(roomPresenceByRoom).reduce((sum,count)=>sum+Math.max(0,Number(count)||0),0);
+ $('#room-live-summary').innerHTML=[
+  ['إجمالي الغرف',roomDesignRooms.length.toLocaleString('ar-DZ')],
+  ['غرف بها حضور',roomPresenceAvailable?active.toLocaleString('ar-DZ'):'—'],
+  ['مقاعد/أعضاء ظاهرون',roomPresenceAvailable?members.toLocaleString('ar-DZ'):'—']
+ ].map(([label,value])=>'<div class="stat"><span class="muted text-xs">'+label+'</span><b>'+value+'</b></div>').join('');
+ root.innerHTML=filtered.length?filtered.map(room=>{
+  const count=roomPresenceByRoom[room.id];
+  const countLabel=roomPresenceAvailable?(count??0).toLocaleString('ar-DZ'):'غير متاح';
+  const live=roomPresenceAvailable&&Number(count)>0,opened=roomRosterOpen.has(room.id);
+  return '<article class="item"><div class="flex flex-wrap items-center justify-between gap-3"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><b>'+esc(room.title)+'</b><span class="pill">'+(live?'نشطة الآن':'غرفة')+'</span></div><p class="muted text-xs">'+esc('ROOM-'+String(room.public_id).padStart(6,'0'))+' · '+esc(room.topic||'عام')+' · المضيفة: '+esc(room.ownerName||'عضو')+'</p><p class="text-xs mt-1">الحضور الآن: <b>'+countLabel+'</b></p></div><button type="button" class="ghost text-xs" data-room-roster="'+esc(room.id)+'">'+(opened?'إخفاء الأعضاء':'عرض الأعضاء وإدارتهم')+'</button></div><div class="mt-3 pt-3 border-t border-slate-200/70" data-room-roster-panel="'+esc(room.id)+'" '+(opened?'':'hidden')+'>'+ (opened?renderRoomRosterHtml(room.id):'')+'</div></article>';
+ }).join(''):'<p class="muted">لا توجد غرف تطابق البحث أو الفلتر المحدد.</p>';
+ if(roomPresenceUpdatedAt)$('#room-presence-updated').textContent='آخر تحديث للحضور: '+roomPresenceUpdatedAt.toLocaleTimeString('ar-DZ');
+ bindRoomModerationControls(root);
+}
+async function refreshRoomPresence(){
+ const {data,error}=await supabase.rpc('get_public_room_presence');
+ if(error)throw error;
+ roomPresenceByRoom=Object.fromEntries((data||[]).map(row=>[row.room_id,Math.max(0,Number(row.active_count)||0)]));
+ roomPresenceAvailable=true;roomPresenceUpdatedAt=new Date();renderRoomList();
+}
+async function loadRooms(){
+ const data=[];
+ for(let from=0;;from+=200){
+  const {data:page,error}=await supabase.from('rooms').select('id,public_id,title,topic,owner_id,created_at').order('created_at',{ascending:false}).range(from,from+199);
+  if(error)throw error;data.push(...(page||[]));if(!page||page.length<200)break;
+ }
+ const ids=[...new Set(data.map(x=>x.owner_id))];
+ const p=ids.length?await supabase.from('profiles').select('id,display_name,public_id').in('id',ids):{data:[],error:null};
+ if(p.error)throw p.error;
+ const byId=Object.fromEntries((p.data||[]).map(x=>[x.id,x]));
+ roomDesignRooms=data.map(x=>({...x,ownerName:byId[x.owner_id]?.display_name||'عضو'}));
+ const roomSelect=$('#rd-room');
+ if(roomSelect){
+  const selected=roomSelect.value;
+  roomSelect.innerHTML='<option value="">اختاري غرفة</option>'+roomDesignRooms.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.title)+' · ROOM-'+esc(String(x.public_id).padStart(6,'0'))+'</option>').join('');
+  if(roomDesignRooms.some(x=>x.id===selected))roomSelect.value=selected;
+ }
+ try{await refreshRoomPresence();}
+ catch(error){roomPresenceAvailable=false;roomPresenceByRoom={};roomPresenceUpdatedAt=null;$('#room-presence-updated').textContent='تعذر جلب الحضور: '+(error.message||'خطأ غير معروف');renderRoomList();}
+}
+$('#room-search')?.addEventListener('input',renderRoomList);
+$('#room-presence-filter')?.addEventListener('change',renderRoomList);
 $('#item-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const id=f.elements.id.value.trim(),item_type=f.elements.item_type.value;const imageFile=f.elements.image.files[0];const imageFolder=item_type==='room_background'?'catalog/room-backgrounds':item_type==='profile_frame'?'catalog/profile-frames':'catalog';const image_url=imageFile?await upload(imageFile,imageFolder,['room_background','profile_frame'].includes(item_type)?id:null):null;const payload={id,name:f.elements.name.value.trim(),item_type,price:Number(f.elements.price.value),duration_days:Number(f.elements.duration_days.value||0),rarity:f.elements.rarity.value,visual_key:f.elements.visual_key.value.trim(),description:f.elements.description.value.trim(),image_url,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('shop_items').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadItems(),loadStats()]);message('تم حفظ العنصر في كتالوج الإدارة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 const ROOM_BACKGROUND_ASSETS=[
  ['free_01_queen_girl','الخلفية المجانية 1'],['free_02_moonlit_terrace','الخلفية المجانية 2'],
@@ -396,7 +596,17 @@ $('#asset-batch-upload').onclick=async()=>{
  }catch(err){result.textContent=err.message||'تعذر بدء الرفع.';message(result.textContent,true);}
  finally{button.disabled=false;}
 };
-$('#gift-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),category:f.elements.category.value,description:f.elements.description.value.trim(),image_url:f.elements.image_url.value.trim()||null,animation_url:f.elements.animation_url.value.trim()||null,active:f.elements.active.checked};const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية في الكتالوج.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
+$('#gift-form').onsubmit=async e=>{
+ e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;
+ try{
+  const imageFile=f.elements.image_file.files[0],animationFile=f.elements.animation_file.files[0];
+  const image_url=imageFile?await upload(imageFile,'catalog/gifts'):f.elements.image_url.value.trim()||null;
+  const animation_url=animationFile?await uploadGiftAnimation(animationFile):f.elements.animation_url.value.trim()||null;
+  const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),price:Number(f.elements.price.value),icon:f.elements.icon.value.trim(),category:f.elements.category.value,description:f.elements.description.value.trim(),image_url,animation_url,active:f.elements.active.checked};
+  const {error}=await supabase.from('gifts').upsert(payload,{onConflict:'id'});if(error)throw error;
+  f.reset();await Promise.all([loadGifts(),loadStats()]);message('تم حفظ الهدية وربط ملفاتها في الكتالوج.');
+ }catch(e){message(e.message,true);}finally{b.disabled=false;}
+};
 $('#bomb-level-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const payload={level:Number(f.elements.level.value),threshold:Number(f.elements.threshold.value),reward_min:Number(f.elements.reward_min.value),reward_max:Number(f.elements.reward_max.value),active:f.elements.active.checked,updated_at:new Date().toISOString()};if(!Number.isInteger(payload.level)||payload.level<1||payload.level>5)throw Error('المستوى يجب أن يكون بين LV.1 وLV.5.');if(!Number.isSafeInteger(payload.threshold)||payload.threshold<=0)throw Error('نقاط الوصول يجب أن تكون عدداً صحيحاً أكبر من صفر.');if(!Number.isSafeInteger(payload.reward_min)||payload.reward_min<0||!Number.isSafeInteger(payload.reward_max)||payload.reward_max<0)throw Error('قيم المكافأة يجب أن تكون أعداداً صحيحة غير سالبة.');if(payload.reward_max<payload.reward_min)throw Error('أعلى مكافأة يجب أن تكون أكبر من أو تساوي أقل مكافأة.');const {error}=await supabase.from('room_bomb_levels').upsert(payload,{onConflict:'level'});if(error)throw error;await loadBombLevels();message('تم حفظ إعدادات مستوى القنبلة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#agency-create-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {data,error}=await supabase.rpc('admin_create_agency',{p_name:f.elements.name.value.trim(),p_type:f.elements.agency_type.value,p_owner_public_id:Number(f.elements.owner_public_id.value),p_commission_percent:Number(f.elements.commission_percent.value),p_agent_commission_percent:Number(f.elements.agent_commission_percent.value)});if(error)throw error;f.reset();await loadAgencies();message('تم إنشاء الوكالة: '+data);}catch(err){message(err.message,true);}finally{b.disabled=false;}};
 $('#agency-member-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{const {error}=await supabase.rpc('agency_add_member',{p_agency_id:f.elements.agency_id.value,p_member_public_id:Number(f.elements.public_id.value),p_role:f.elements.role.value});if(error)throw error;f.elements.public_id.value='';message('تمت إضافة العضو إلى الوكالة.');}catch(err){message(err.message,true);}finally{b.disabled=false;}};
@@ -452,7 +662,7 @@ $('#seed-default-games').onclick=async()=>{
  finally{button.disabled=false;}
 };
 $('#game-form').onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button[type=submit]');b.disabled=true;try{let config;try{config=JSON.parse(f.elements.config.value||'{}');}catch{throw Error('إعدادات JSON غير صحيحة');}const payload={id:f.elements.id.value.trim(),name:f.elements.name.value.trim(),game_type:f.elements.game_type.value,icon:f.elements.icon.value||'🎮',description:f.elements.description.value.trim(),config,active:f.elements.active.checked};const {error}=await supabase.from('games').upsert(payload,{onConflict:'id'});if(error)throw error;f.reset();f.elements.config.value='{}';await loadGames();message('تم حفظ اللعبة.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));$('#admin-menu')?.classList.add('hidden');});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===b.dataset.tab));['catalog','gifts','users','logins','rooms','games','bomb','hosts','agencies','staff','reports','feedback'].forEach(id=>$('#'+id).classList.toggle('hidden',id!==b.dataset.tab));const showOverview=b.dataset.tab==='catalog';$('#overview')?.classList.toggle('hidden',!showOverview);document.querySelectorAll('#admin > section.panel:not([id])').forEach(section=>section.classList.toggle('hidden',!showOverview));$('#admin-menu')?.classList.remove('hidden');});
 $('#admin-menu-toggle').onclick=()=>$('#admin-menu').classList.toggle('hidden');
 let loginChannel=null;
 function watchLoginEvents(){if(loginChannel)return;loginChannel=supabase.channel('hamsat-admin-login-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_login_events'},async payload=>{message('دخول عضو جديد إلى همسات · '+new Date(payload.new?.signed_in_at||Date.now()).toLocaleString('ar-DZ'));try{await loadLogins();await loadStats();}catch(e){console.warn('تعذّر تحديث إشعارات الدخول',e);}}).subscribe();}

@@ -322,10 +322,16 @@ export const api = {
     return api.wallet();
   },
   roomById: async (roomId) => {
-    const {data,error}=await client().from('rooms').select('*').eq('id',roomId).single();fail(error);
+    const raw=String(roomId||'').trim();
+    const publicMatch=raw.match(/^(?:ROOM-?)?0*([0-9]+)$/i);
+    const query=client().from('rooms').select('*');
+    let result;
+    if(publicMatch) result=await query.eq('public_id',Number(publicMatch[1])).single();
+    else result=await query.eq('id',raw).single();
+    const {data,error}=result;fail(error);
     const {data:p,error:pe}=await client().from('profiles').select(PROFILE_COLUMNS).eq('id',data.owner_id).single();fail(pe);
     const owner=await mapProfileWithFrame(p);
-    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||10,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
+    return {room:{id:data.id,publicId:'ROOM-'+String(data.public_id).padStart(6,'0'),seatLimit:data.seat_limit||12,seatLayout:data.seat_layout||'grid',ownerUuid:data.owner_id,title:data.title,topic:data.topic,description:data.description,coverUrl:data.cover_url||null,backgroundItemId:data.background_item_id||null,roomEmoji:data.room_emoji||'🎙️',createdAt:new Date(data.created_at).getTime(),ownerName:owner.displayName||'عضو',ownerHandle:owner.handle||'',ownerColor:owner.color||'#C9A64B'}};
   },
   rooms: async () => {
     // Load every public room in pages instead of silently stopping at the first 100.
@@ -345,13 +351,32 @@ export const api = {
       fail(res.error); owners = res.data;
     }
     const mappedOwners=await mapProfilesWithFrames(owners);const byId = Object.fromEntries(mappedOwners.map(p => [p.uuid,p]));
+    const presenceResult=await client().rpc('get_public_room_presence');fail(presenceResult.error);
+    const presenceByRoom=Object.fromEntries((presenceResult.data||[]).map(x=>[x.room_id,Number(x.active_count||0)]));
     return { rooms: data.map(r => {
       const p = byId[r.owner_id] || {};
-      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 10, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
+      return { id: r.id, publicId: 'ROOM-' + String(r.public_id).padStart(6,'0'), seatLimit: r.seat_limit || 12, seatLayout: r.seat_layout || 'grid', ownerUuid: r.owner_id, title: r.title, topic: r.topic,
         description: r.description, coverUrl: r.cover_url || null, backgroundItemId: r.background_item_id || null, roomEmoji: r.room_emoji || '🎙️', createdAt: new Date(r.created_at).getTime(),
-        ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '',
-        ownerColor: p.color || '#7c3aed' };
+        ownerName: p.displayName || 'عضو', ownerHandle: p.handle || '', ownerAvatarUrl:p.avatarUrl||null, ownerFrameUrl:p.equippedProfileFrameUrl||null, ownerVipLevel:p.vipLevel||0, ownerCountry:p.country||'', memberCount:presenceByRoom[r.id]||0,
+        ownerColor: p.color || '#2f8051' };
     }) };
+  },
+  roomPresenceCounts: async () => {
+    const {data,error}=await client().rpc('get_public_room_presence');fail(error);
+    return {counts:Object.fromEntries((data||[]).map(x=>[x.room_id,Number(x.active_count||0)]))};
+  },
+  partyLeaderboardData: async () => {
+    const [charismaResult,coupleResult]=await Promise.all([
+      client().from('profiles').select('id,public_id,handle,display_name,avatar_url,country,charisma_level,vip_level,equipped_profile_frame_id').order('charisma_level',{ascending:false}).order('created_at',{ascending:true}).limit(3),
+      client().from('couple_spaces').select('owner_id,partner_id,updated_at').eq('status','active').order('updated_at',{ascending:false}).limit(3)
+    ]);
+    fail(charismaResult.error);fail(coupleResult.error);
+    const ids=[...new Set((coupleResult.data||[]).flatMap(x=>[x.owner_id,x.partner_id]))];
+    let coupleProfiles=[];
+    if(ids.length){const result=await client().from('profiles').select(PROFILE_COLUMNS).in('id',ids);fail(result.error);coupleProfiles=await mapProfilesWithFrames(result.data||[]);}
+    const byId=Object.fromEntries(coupleProfiles.map(p=>[p.uuid,p]));
+    const charisma=await mapProfilesWithFrames(charismaResult.data||[]);
+    return {charisma,couples:(coupleResult.data||[]).map(x=>({updatedAt:x.updated_at,owner:byId[x.owner_id]||null,partner:byId[x.partner_id]||null}))};
   },
   createRoom: async (r) => {
     const user = await currentUser();
@@ -382,9 +407,9 @@ export const api = {
   },
   updateRoomSettings: async (roomId, settings) => {
     const user = await currentUser();
-    const seatLimit = Number(settings.seatLimit ?? 10);
+    const seatLimit = Number(settings.seatLimit ?? 12);
     const seatLayout = String(settings.seatLayout || 'grid');
-    if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 10) throw new Error('عدد المايكات يجب أن يكون بين 1 و10');
+    if (!Number.isInteger(seatLimit) || seatLimit < 1 || seatLimit > 12) throw new Error('عدد المايكات يجب أن يكون بين 1 و12');
     if (!['grid','one-top','two-top','row'].includes(seatLayout)) throw new Error('اختيار توزيع المقاعد غير صالح');
     const payload = {
       title: String(settings.title || '').trim().slice(0, 50),
